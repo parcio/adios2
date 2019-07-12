@@ -6,6 +6,8 @@
 add_subdirectory(basics)
 add_subdirectory(hello)
 add_subdirectory(useCases)
+add_subdirectory(julea)
+
 
 if(ADIOS2_HAVE_MPI)
   #if(MPIEXEC_MAX_NUMPROCS GREATER 3)
