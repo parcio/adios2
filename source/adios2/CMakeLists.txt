@@ -146,9 +146,9 @@ if(ADIOS2_HAVE_JULEA_GONDOLIN)
       /home/elentari/Documents/julea/build/lib/libjulea-item.so
       /home/elentari/Documents/julea/build/lib/libjulea-object.so
       /home/elentari/Documents/julea/build/lib/libjulea-kv.so
-     # /home/elentari/Documents/julea/build/lib/libjulea-smd.so
-     # /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-vkknhrxkirz2rercghai22rreonhkwv3
-   # /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/lib/
+    # /home/elentari/Documents/julea/build/lib/libjulea-smd.so
+    # /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-vkknhrxkirz2rercghai22rreonhkwv3
+    # /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/lib/
     #-lpthread -lm
     #${CMAKE_THREAD_LIBS_INIT}
     )
