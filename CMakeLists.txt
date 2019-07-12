@@ -122,6 +122,11 @@ adios_option(Fortran   "Enable support for Fortran bindings" AUTO)
 adios_option(SysVShMem "Enable support for SysV Shared Memory IPC on *NIX" AUTO)
 adios_option(Profiling "Enable support for profiling" AUTO)
 adios_option(Endian_Reverse "Enable support for Little/Big Endian Interoperability" AUTO)
+adios_option(JULEA_GONDOLIN "Enable support for JULEA on Gondolin" AUTO)
+adios_option(JULEA "Enable support for JULEA" AUTO)
+adios_option(JULEA_CLUSTER "Enable support for JULEA on Cluster" AUTO)
+adios_option(JULEA_MINASTIRITH "Enable support for JULEA on Minas Tirith" AUTO)
+adios_option(JULEA_VINYAMAR "Enable support for JULEA on Vinyamar" AUTO)
 include(${PROJECT_SOURCE_DIR}/cmake/DetectOptions.cmake)
 
 if(ADIOS2_HAVE_MPI)
@@ -135,7 +140,7 @@ if(ADIOS2_HAVE_MPI)
 endif()
 
 set(ADIOS2_CONFIG_OPTS
-    Blosc BZip2 ZFP SZ MGARD PNG MPI DataMan SSC SST ZeroMQ HDF5 Python Fortran SysVShMem Profiling Endian_Reverse
+    Blosc BZip2 ZFP SZ MGARD PNG MPI DataMan SSC SST ZeroMQ HDF5 Python Fortran SysVShMem Profiling Endian_Reverse JULEA JULEA_GONDOLIN JULEA_CLUSTER JULEA_MINASTIRITH JULEA_VINYAMAR
 )
 GenerateADIOSHeaderConfig(${ADIOS2_CONFIG_OPTS})
 configure_file(
@@ -199,9 +204,9 @@ else()
   set(ADIOS2_BUILD_TESTING_DEFAULT ON)
 endif()
 unset(BUILD_TESTING)
-option(ADIOS2_BUILD_TESTING "Build the ADIOS2 testing tree" 
+option(ADIOS2_BUILD_TESTING "Build the ADIOS2 testing tree"
        ${ADIOS2_BUILD_TESTING_DEFAULT})
-       
+
 include(CTest)
 set(BUILD_TESTING ${ADIOS2_BUILD_TESTING})
 if(BUILD_TESTING)
@@ -239,8 +244,8 @@ add_subdirectory(cmake/install/post)
 message("")
 message("ADIOS2 build configuration:")
 message("  ADIOS Version: ${ADIOS2_VERSION}")
-message("  C++ Compiler : ${CMAKE_CXX_COMPILER_ID} " 
-                         "${CMAKE_CXX_COMPILER_VERSION} " 
+message("  C++ Compiler : ${CMAKE_CXX_COMPILER_ID} "
+                         "${CMAKE_CXX_COMPILER_VERSION} "
                          "${CMAKE_CXX_COMPILER_WRAPPER}")
 message("    ${CMAKE_CXX_COMPILER}")
 message("")
@@ -281,7 +286,7 @@ foreach(opt IN LISTS ADIOS2_CONFIG_OPTS)
     message("${label}: OFF")
   endif()
 endforeach()
-if (ADIOS2_HAVE_SST AND ADIOS2_SST_HAVE_LIBFABRIC) 
+if (ADIOS2_HAVE_SST AND ADIOS2_SST_HAVE_LIBFABRIC)
 message("    RDMA Transport for Staging: Available")
 else()
 message("    RDMA Transport for Staging: Unconfigured")

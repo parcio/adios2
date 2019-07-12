@@ -2,7 +2,7 @@
 # Distributed under the OSI-approved Apache License, Version 2.0.  See
 # accompanying file Copyright.txt for details.
 #------------------------------------------------------------------------------#
-  
+
 add_library(taustubs
   toolkit/profiling/taustubs/tautimer.cpp
   toolkit/profiling/taustubs/tautimer.hpp
@@ -15,8 +15,8 @@ target_include_directories(taustubs PRIVATE
 
 add_library(adios2
   common/ADIOSTypes.cpp
-  
-  core/Attribute.cpp 
+
+  core/Attribute.cpp
   core/AttributeBase.cpp
   core/ADIOS.cpp
   core/Engine.cpp
@@ -42,7 +42,7 @@ add_library(adios2
   helper/adiosType.cpp
   helper/adiosXML.cpp
 
-#engine derived classes  
+#engine derived classes
   engine/bp3/BP3Reader.cpp engine/bp3/BP3Reader.tcc
   engine/bp3/BP3Writer.cpp engine/bp3/BP3Writer.tcc
 
@@ -54,7 +54,7 @@ add_library(adios2
 
   engine/inline/InlineReader.cpp engine/inline/InlineReader.tcc
   engine/inline/InlineWriter.cpp engine/inline/InlineWriter.tcc
-  
+
   engine/null/NullEngine.cpp
 
   engine/nullcore/NullCoreWriter.cpp engine/nullcore/NullCoreWriter.tcc
@@ -68,7 +68,7 @@ add_library(adios2
   toolkit/format/bp4/BP4Base.cpp toolkit/format/bp4/BP4Base.tcc
   toolkit/format/bp4/BP4Serializer.cpp toolkit/format/bp4/BP4Serializer.tcc
   toolkit/format/bp4/BP4Deserializer.cpp toolkit/format/bp4/BP4Deserializer.tcc
-  
+
   toolkit/format/bpOperation/BPOperation.cpp toolkit/format/bpOperation/BPOperation.tcc
   toolkit/format/bpOperation/compress/BPZFP.cpp toolkit/format/bpOperation/compress/BPZFP.tcc
   toolkit/format/bpOperation/compress/BPSZ.cpp
@@ -76,7 +76,7 @@ add_library(adios2
   toolkit/format/bpOperation/compress/BPPNG.cpp
   toolkit/format/bpOperation/compress/BPBZIP2.cpp toolkit/format/bpOperation/compress/BPBZIP2.tcc
   toolkit/format/bpOperation/compress/BPBlosc.cpp
-  
+
   toolkit/profiling/iochrono/Timer.cpp
 
   toolkit/transport/Transport.cpp
@@ -116,6 +116,114 @@ if(ADIOS2_HAVE_ZeroMQ)
         toolkit/transportman/stagingman/StagingMan.cpp
         )
     target_link_libraries(adios2 PRIVATE ZeroMQ::ZMQ)
+endif()
+
+
+#options for all machines I need to compile this on
+if(ADIOS2_HAVE_JULEA_GONDOLIN)
+  target_sources(adios2 PRIVATE
+      engine/julea/JuleaReader.cpp
+      engine/julea/JuleaReader.h
+      engine/julea/JuleaReader.tcc
+      engine/julea/JuleaWriter.cpp
+      engine/julea/JuleaWriter.h
+      engine/julea/JuleaWriter.tcc
+  )
+  target_include_directories(adios2 PRIVATE
+    /home/elentari/Documents/julea/include
+    /home/elentari/Documents/julea/build/include
+    /home/elentari/Documents/dependencies/
+    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-vkknhrxkirz2rercghai22rreonhkwv3/lib
+    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-vkknhrxkirz2rercghai22rreonhkwv3/include/glib-2.0
+    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-vkknhrxkirz2rercghai22rreonhkwv3/lib/glib-2.0/include
+    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/lib
+    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/include/libbson-1.0
+    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/lib/libbson-1)
+  target_link_libraries(adios2 PRIVATE
+     # /home/elentari/Documents/julea/build/lib/
+      /home/elentari/Documents/julea/build/lib/libjulea.so
+      /home/elentari/Documents/julea/build/lib/libjulea-adios.so
+      /home/elentari/Documents/julea/build/lib/libjulea-item.so
+      /home/elentari/Documents/julea/build/lib/libjulea-object.so
+      /home/elentari/Documents/julea/build/lib/libjulea-kv.so
+     # /home/elentari/Documents/julea/build/lib/libjulea-smd.so
+     # /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-vkknhrxkirz2rercghai22rreonhkwv3
+   # /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/lib/
+    #-lpthread -lm
+    #${CMAKE_THREAD_LIBS_INIT}
+    )
+endif()
+
+if(ADIOS2_HAVE_JULEA)
+  target_sources(adios2 PRIVATE
+      engine/julea/JuleaReader.cpp
+      engine/julea/JuleaReader.h
+      engine/julea/JuleaReader.tcc
+      engine/julea/JuleaWriter.cpp
+      engine/julea/JuleaWriter.h
+      engine/julea/JuleaWriter.tcc
+  )
+  target_link_libraries(adios2 PRIVATE /home/elentari/Documents/Promotion/Code/julea/build/lib/libjulea.so)
+endif()
+
+
+if(ADIOS2_HAVE_JULEA_CLUSTER)
+  target_sources(adios2 PRIVATE
+      engine/julea/JuleaReader.cpp
+      engine/julea/JuleaReader.h
+      engine/julea/JuleaReader.tcc
+      engine/julea/JuleaWriter.cpp
+      engine/julea/JuleaWriter.h
+      engine/julea/JuleaWriter.tcc
+  )
+  #target_link_libraries(adios2 PRIVATE /home/duwe/Promotion/Code/julea/build/lib/libjulea.so)
+  target_link_libraries(adios2 PRIVATE ../../julea/build/lib/libjulea.so)
+endif()
+
+if(ADIOS2_HAVE_JULEA_MINASTIRITH)
+  target_sources(adios2 PRIVATE
+      engine/julea/JuleaReader.cpp
+      engine/julea/JuleaReader.h
+      engine/julea/JuleaReader.tcc
+      engine/julea/JuleaWriter.cpp
+      engine/julea/JuleaWriter.h
+      engine/julea/JuleaWriter.tcc
+  )
+  target_include_directories(adios2 PRIVATE
+  /home/kira/Dokumente/julea/include
+  /home/kira/Dokumente/julea/build/include
+  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-agygv3srpucrawreuxujsyz5g2x3nio4/lib
+  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-agygv3srpucrawreuxujsyz5g2x3nio4/include/glib-2.0
+  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-agygv3srpucrawreuxujsyz5g2x3nio4/lib/glib-2.0/include
+  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/include/libbson-1.0
+  # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.2-lx5f3xdx43bqvr7tgnkdgni6yw5oxw5t/lib
+  # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.2-lx5f3xdx43bqvr7tgnkdgni6yw5oxw5t/include/glib-2.0
+  # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.2-lx5f3xdx43bqvr7tgnkdgni6yw5oxw5t/lib/glib-2.0/include
+  # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/include/libbson-1.0/
+  )
+  target_link_libraries(adios2 PRIVATE
+  /home/kira/Dokumente/julea/build/lib/                     # does not suffice... to include here
+  /home/kira/Dokumente/julea/build/lib/libjulea.so
+  /home/kira/Dokumente/julea/build/lib/libjulea-adios.so
+  /home/kira/Dokumente/julea/build/lib/libjulea-item.so
+  /home/kira/Dokumente/julea/build/lib/libjulea-object.so
+  /home/kira/Dokumente/julea/build/lib/libjulea-kv.so
+  # /home/kira/Dokumente/julea/build/lib/libjulea-smd.so
+  #/home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.2-lx5f3xdx43bqvr7tgnkdgni6yw5oxw5t/lib
+  #/home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/lib
+  )
+endif()
+
+if(ADIOS2_HAVE_JULEA_VINYAMAR)
+  target_sources(adios2 PRIVATE
+      engine/julea/JuleaReader.cpp
+      engine/julea/JuleaReader.h
+      engine/julea/JuleaReader.tcc
+      engine/julea/JuleaWriter.cpp
+      engine/julea/JuleaWriter.h
+      engine/julea/JuleaWriter.tcc
+  )
+  target_link_libraries(adios2 PRIVATE /home/elentari/Documents/Promotion/Code/julea/build/lib/libjulea.so)
 endif()
 
 if(ADIOS2_HAVE_DataMan)
@@ -207,12 +315,12 @@ if(ADIOS2_HAVE_HDF5)
       engine/hdf5/HDF5ReaderP.cpp
       engine/hdf5/HDF5WriterP.cpp
       toolkit/interop/hdf5/HDF5Common.cpp toolkit/interop/hdf5/HDF5Common.tcc
-    )  
+    )
   else()
     target_sources(adios2 PRIVATE
       engine/hdf5/HDF5ReaderP.cpp
       engine/hdf5/HDF5WriterP.cpp
-      engine/mixer/HDFMixer.cpp	
+      engine/mixer/HDFMixer.cpp
       engine/mixer/HDFMixer.tcc
       engine/mixer/HDFMixerWriter.cpp
       toolkit/interop/hdf5/HDF5Common.cpp toolkit/interop/hdf5/HDF5Common.tcc

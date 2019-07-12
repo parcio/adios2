@@ -59,6 +59,37 @@
 #include "adios2/engine/insitumpi/InSituMPIWriter.h"
 #endif
 
+
+// #ifdef ADIOS2_HAVE_JULEA_GONDOLIN || ADIOS2_HAVE_JULEA_CLUSTER || ADIOS2_HAVE_JULEA_MINASTIRITH || ADIOS2_HAVE_JULEA_VINYAMAR || ADIOS2_HAVE_JULEA // external dependencies
+// #include "adios2/engine/julea/JuleaReader.h"
+// #include "adios2/engine/julea/JuleaWriter.h"
+// #endif
+
+// #ifdef ADIOS2_HAVE_JULEA // external dependencies
+// #include "adios2/engine/julea/JuleaReader.h"
+// #include "adios2/engine/julea/JuleaWriter.h"
+// #endif
+
+#ifdef ADIOS2_HAVE_JULEA_CLUSTER // external dependencies
+#include "adios2/engine/julea/JuleaReader.h"
+#include "adios2/engine/julea/JuleaWriter.h"
+#endif
+
+#ifdef ADIOS2_HAVE_JULEA_GONDOLIN // external dependencies
+#include "adios2/engine/julea/JuleaReader.h"
+#include "adios2/engine/julea/JuleaWriter.h"
+#endif
+
+#ifdef ADIOS2_HAVE_JULEA_MINASTIRITH // external dependencies
+#include "adios2/engine/julea/JuleaReader.h"
+#include "adios2/engine/julea/JuleaWriter.h"
+#endif
+
+#ifdef ADIOS2_HAVE_JULEA_VINYAMAR // external dependencies
+#include "adios2/engine/julea/JuleaReader.h"
+#include "adios2/engine/julea/JuleaWriter.h"
+#endif
+
 namespace adios2
 {
 namespace core
@@ -628,6 +659,15 @@ Engine &IO::Open(const std::string &name, const Mode mode,
                 "ERROR: nullcore engine does not support read mode");
         else
             engine = std::make_shared<engine::NullCoreWriter>(*this, name, mode,
+                                                              mpiComm);
+    }
+    else if (engineTypeLC == "julea")
+    {
+        if (mode == Mode::Read)
+            engine = std::make_shared<engine::JuleaReader>(*this, name, mode,
+                                                              mpiComm);
+        else
+            engine = std::make_shared<engine::JuleaWriter>(*this, name, mode,
                                                               mpiComm);
     }
     else
