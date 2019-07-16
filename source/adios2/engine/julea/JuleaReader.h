@@ -11,6 +11,8 @@
 #ifndef ADIOS2_ENGINE_JULEAREADER_H_
 #define ADIOS2_ENGINE_JULEAREADER_H_
 
+#include "JuleaMetadata.h"
+
 // #include "adios2/ADIOSConfig.h"  //FIXME: missing
 #include "adios2/core/ADIOS.h"
 #include "adios2/core/Engine.h"
@@ -20,7 +22,10 @@
 #include "adios2/toolkit/transportman/TransportMan.h" //transport::TransportsMan
 
 #include <julea.h>
-#include <julea-adios.h>
+// #include <julea-adios.h>
+#include <adios/jadios2.h>
+#include <glib.h>
+#include <complex.h>
 
 namespace adios2
 {

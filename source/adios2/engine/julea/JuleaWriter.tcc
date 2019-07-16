@@ -164,6 +164,8 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable,
         *metadata->memory_count = blockInfo.MemoryCount[0];
     }
 
+    metadata->test_header = 42;     //additional test member for transition of adios client logic to engine
+
     metadata->steps_start = blockInfo.StepsStart;
     metadata->steps_count = blockInfo.StepsCount;
     metadata->block_id = blockInfo.BlockID;
@@ -216,7 +218,8 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable,
     // batch = j_batch_new(semantics);
     batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 
-    j_adios_put_variable(m_JuleaInfo->name_space, metadata, blockInfo.Data, batch, use_batch);
+    // j_adios_put_variable(m_JuleaInfo->name_space, metadata, blockInfo.Data, batch, use_batch);
+    PutVariableToJulea(m_JuleaInfo->name_space, metadata, blockInfo.Data, batch);
 
     if (m_Verbosity == 5)
     {

@@ -11,6 +11,9 @@
 #include "JuleaReader.h"
 #include "JuleaReader.tcc"
 
+#include "JuleaClientLogic.h"
+#include "JuleaClientLogic.cpp"
+
 #include "adios2/helper/adiosFunctions.h" // CSVToVector
 
 #include <iostream>
@@ -304,7 +307,7 @@ void JuleaReader::InitVariables()
     int size = 0;
 
     //TODO: fix memory leak
-    j_adios_get_all_var_names_from_kv(m_JuleaInfo->name_space, &names, &types, &count_names, m_JuleaInfo->semantics);
+    // j_adios_get_all_var_names_from_kv(m_JuleaInfo->name_space, &names, &types, &count_names, m_JuleaInfo->semantics); FIXME
     for(unsigned int i = 0; i < count_names; i++)
     {
         Dims shape;
@@ -317,7 +320,7 @@ void JuleaReader::InitVariables()
         metadata->count = g_slice_new(unsigned long);
 
         // std::cout << "JuleaReader names: " << names[i] << std::endl;
-        j_adios_get_var_metadata_from_kv(m_JuleaInfo->name_space, names[i], metadata, m_JuleaInfo->semantics);
+        // j_adios_get_var_metadata_from_kv(m_JuleaInfo->name_space, names[i], metadata, m_JuleaInfo->semantics); FIXME
 
         Dims shape2 (metadata->shape, metadata->shape + metadata->shape_size);
         Dims start2 (metadata->start, metadata->start);//FIXME: why is start size not correct?

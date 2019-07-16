@@ -12,6 +12,8 @@
 #ifndef ADIOS2_ENGINE_JULEAMPIWRITER_H_
 #define ADIOS2_ENGINE_JULEAMPIWRITER_H_
 
+#include "JuleaMetadata.h"
+
 // #include "adios2/ADIOSConfig.h"  //FIXME: missing
 #include "adios2/core/Engine.h"
 #include "adios2/toolkit/format/bp3/BP3.h" //BP3Serializer
@@ -21,7 +23,10 @@
 
 // #include "adios2/../julea/include/julea.h" KILLME!
 #include <julea.h>
-#include <julea-adios.h>
+// #include <julea-adios.h>
+#include <adios/jadios2.h>
+#include <glib.h>
+#include <complex.h>
 
 // #include "julea.h"
 

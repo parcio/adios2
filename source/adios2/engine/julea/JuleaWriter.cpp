@@ -11,6 +11,9 @@
 #include "JuleaWriter.h"
 #include "JuleaWriter.tcc"
 
+#include "JuleaClientLogic.h"
+// #include "JuleaClientLogic.cpp"
+
 // #include "adios2/ADIOSMPI.h" //FIXME: missing
 // #include "adios2/ADIOSMacros.h" //FIXME: missing
 #include "adios2/core/IO.h"
@@ -21,6 +24,7 @@
 #include <iostream>
 #include <julea-object.h>
 #include <julea-config.h>
+
 // #include <julea-adios.h>
 
 
@@ -220,7 +224,7 @@ void JuleaWriter::Init()
     m_JuleaInfo->semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     m_JuleaInfo->name_space = g_strdup(m_Name.c_str());
 
-    j_adios_init(m_JuleaInfo);
+    // j_adios_init(m_JuleaInfo);
 
     InitParameters();
     InitTransports();
@@ -514,7 +518,7 @@ void JuleaWriter::PutAttributes(core::IO &io)
         attr_metadata->number_elements = static_cast<uint32_t>(attributesDataMap.size());
         parse_attribute_type(type, attr_metadata);
         void* data;
-    j_adios_put_attribute(m_JuleaInfo->name_space, attr_metadata,data, batch, true );
+    // j_adios_put_attribute(m_JuleaInfo->name_space, attr_metadata,data, batch, true ); FIXME
 
         // each attribute is only written to output once
         // so filter out the ones already written
@@ -535,23 +539,22 @@ void JuleaWriter::PutAttributes(core::IO &io)
             attr_metadata->is_single_value = attribute.m_IsSingleValue;        \
             if(attribute.m_IsSingleValue)                                      \
             {                                                                  \
-                j_adios_put_attribute(m_JuleaInfo->name_space, attr_metadata,  \
-                    &attribute.m_DataSingleValue, batch, true);                \
+                PutAttributeToJulea(m_JuleaInfo->name_space, attr_metadata,    \
+                &attribute.m_DataSingleValue, batch);                          \
             }                                                                  \
             else                                                               \
             {                                                                  \
-                j_adios_put_attribute(m_JuleaInfo->name_space, attr_metadata,  \
-                    &attribute.m_DataArray, batch, true);                      \
+                PutAttributeToJulea(m_JuleaInfo->name_space, attr_metadata,    \
+                &attribute.m_DataArray, batch);                                \
             }                                                                  \
         }
         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_type)
 #undef declare_type
-//         ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 
         j_batch_execute(batch);
     }
 }
-        // ADIOS2_FOREACH_ATTRIBUTE_TYPE_1ARG(declare_type)
+
 
 /**
  * Originally from BP3Base resetting the passed buffer
