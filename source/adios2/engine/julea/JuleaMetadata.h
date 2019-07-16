@@ -21,7 +21,7 @@
 
 // #include "adios2/../julea/include/julea.h" KILLME!
 #include <julea.h>
-#include <julea-adios.h>
+// #include <julea-adios.h>
 
 
 namespace adios2
@@ -208,6 +208,11 @@ struct AttributeMetadata
 };
 typedef struct AttributeMetadata AttributeMetadata;
 
+struct JuleaInfo{
+ JSemantics* semantics;
+ char* name_space;
+};
+typedef struct JuleaInfo JuleaInfo;
 
 
 } // end namespace engine

@@ -19,7 +19,7 @@
 #include <glib.h>
 #include <string.h>
 
-#include <adios/jadios.h>
+// #include <adios/jadios.h>
 
 #include <julea.h>
 #include <julea-internal.h>

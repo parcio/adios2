@@ -57,8 +57,9 @@ void JuleaReader::GetSyncCommon(Variable<std::string> &variable,
     }
 }
 
+//inline needed? is in skeleton-engine
 template <class T>
-inline void JuleaReader::GetSyncCommon(Variable<T> &variable, T *data)
+void JuleaReader::GetSyncCommon(Variable<T> &variable, T *data)
 {
     gchar** names;
     int* types;
@@ -87,6 +88,7 @@ inline void JuleaReader::GetSyncCommon(Variable<T> &variable, T *data)
     //     std::cout << "Data before: " <<  float_data[i] << std::endl;
     // }
     /* all the additional metadata which is not used in InitVariables has to be read again */
+
 
     // GetVarMetadataFromKV(m_JuleaInfo->name_space, metadata->name, metadata, m_JuleaInfo->semantics); //FIXME
 
