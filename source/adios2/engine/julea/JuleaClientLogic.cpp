@@ -9,7 +9,6 @@
  */
 
 #include "JuleaClientLogic.h"
-
 #include "JuleaMetadata.h"
 
 #include <julea-config.h>
@@ -19,13 +18,10 @@
 #include <glib.h>
 #include <string.h>
 
-// #include <adios/jadios.h>
-
 #include <julea.h>
 #include <julea-internal.h>
 #include <julea-kv.h>
 #include <julea-object.h>
-
 
 namespace adios2
 {

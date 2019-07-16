@@ -12,9 +12,7 @@
 #define ADIOS2_ENGINE_JULEACLIENTLOGIC_H_
 
 #include "JuleaMetadata.h"
-// #include "adios2/../julea/include/julea.h" KILLME!
 #include <julea.h>
-// #include <julea-adios.h>
 
 
 namespace adios2
@@ -51,4 +49,4 @@ void j_adios_delete_attribute(char* name_space, char* attr_name, JBatch* batch);
 } // end namespace core
 } // end namespace adios2
 
-#endif /* ADIOS2_ENGINE_JULEAMPIWRITER_H_ */
+#endif /* ADIOS2_ENGINE_JULEACLIENTLOGIC_H_ */

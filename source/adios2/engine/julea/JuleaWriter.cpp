@@ -12,14 +12,10 @@
 #include "JuleaWriter.tcc"
 
 #include "JuleaClientLogic.h"
-// #include "JuleaClientLogic.cpp"
 
-// #include "adios2/ADIOSMPI.h" //FIXME: missing
-// #include "adios2/ADIOSMacros.h" //FIXME: missing
 #include "adios2/core/IO.h"
 #include "adios2/helper/adiosFunctions.h"
 #include "adios2/toolkit/transport/file/FileFStream.h"
-
 
 #include <iostream>
 #include <julea-object.h> //needed?

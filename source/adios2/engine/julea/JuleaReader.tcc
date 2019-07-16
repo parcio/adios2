@@ -17,8 +17,6 @@
 // #include <fstream>
 // #include <string>
 
-// #include <julea-adios.h>
-
 namespace adios2
 {
 namespace core
