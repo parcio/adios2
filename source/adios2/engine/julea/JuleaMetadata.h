@@ -31,56 +31,6 @@ namespace core
 namespace engine
 {
 
-// ADIOS version 2.3.1 TYPES
-// enum variable_type{
-//  COMPOUND,
-//  UNKNOWN,
-//  STRING,
-//  CHAR,
-//  SIGNED_CHAR,
-//  UNSIGNED_CHAR,
-//  SHORT,
-//  UNSIGNED_SHORT,
-//  INT,
-//  UNSIGNED_INT,
-//  LONG_INT,
-//  UNSIGNED_LONG_INT,
-//  LONG_LONG_INT,
-//  UNSIGNED_LONG_LONG_INT,
-//  FLOAT,
-//  DOUBLE,
-//  LONG_DOUBLE,
-//  FLOAT_COMPLEX,
-//  DOUBLE_COMPLEX
-// };
-// typedef enum variable_type variable_type_2_3_1;
-
-
-// union value_type{
-//  //compound?!
-//  //unknown?!
-//  // char *string; //TODO: needed?
-//  char character;
-//  signed char s_character;
-//  unsigned char u_character;
-//  short shorter;
-//  unsigned short u_shorter;
-//  int integer;
-//  unsigned int u_integer;
-//  long int l_integer;
-//  unsigned long int ul_integer;
-//  long long int ll_integer;
-//  unsigned long long int ull_integer;
-//  float real_float;
-//  double real_double;
-//  long double lreal_double;
-//  // float complex float_complex;     //not yet implemented in ADIOS2
-//  // double complex double_complex;   //not yet implemented in ADIOS2
-// };
-// typedef union value_type value_type_2_3_1;
-
-
-
 /* ADIOS Types in ADIOS2-2.4.0 */
 enum variable_type{
     STRING,
@@ -99,31 +49,6 @@ enum variable_type{
     DOUBLE_COMPLEX
 };
 typedef enum variable_type variable_type;
-
-// enum variable_type
-// {
-//     type_unknown = -1, //!< type_unknown
-//     type_byte = 0,     //!< type_byte
-//     type_short = 1,    //!< type_short
-//     type_integer = 2,  //!< type_integer
-//     type_long = 4,     //!< type_long
-
-//     type_unsigned_byte = 50,    //!< type_unsigned_byte
-//     type_unsigned_short = 51,   //!< type_unsigned_short
-//     type_unsigned_integer = 52, //!< type_unsigned_integer
-//     type_unsigned_long = 54,    //!< type_unsigned_long
-
-//     type_real = 5,        //!< type_real or float
-//     type_double = 6,      //!< type_double
-//     type_long_double = 7, //!< type_long_double
-
-//     type_string = 9,          //!< type_string
-//     type_complex = 10,        //!< type_complex
-//     type_double_complex = 11, //!< type_double_complex
-//     type_string_array = 12,   //!< type_string_array
-// };
-// typedef enum variable_type variable_type;
-
 
 union value_type{
     char *string; //TODO: needed?
