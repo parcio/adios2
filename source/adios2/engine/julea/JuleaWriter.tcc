@@ -97,16 +97,18 @@ void parse_variable_type(Variable<T> &variable,const typename Variable<T>::Info 
         metadata->var_type = LONG_DOUBLE;
         metadata->sizeof_var_type = sizeof(long double);
     }
-    // else if(helper::GetType<T>() == "float complex" )
-    // {
-    //     metadata->var_type = FLOAT_COMPLEX;
-    //     // metadata->sizeof_var_type = sizeof(float complex); //TODO
-    // }
-    // else if(helper::GetType<T>() == "double complex" )
-    // {
-    //     metadata->var_type = DOUBLE_COMPLEX;
-    //     // metadata->sizeof_var_type = sizeof(double complex); //TODO
-    // }
+
+
+    else if(helper::GetType<T>() == "float complex" )
+    {
+        metadata->var_type = FLOAT_COMPLEX;
+        // metadata->sizeof_var_type = sizeof(float complex); //TODO
+    }
+    else if(helper::GetType<T>() == "double complex" )
+    {
+        metadata->var_type = DOUBLE_COMPLEX;
+        // metadata->sizeof_var_type = sizeof(double complex); //TODO
+    }
 }
 
 template <class T>

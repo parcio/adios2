@@ -4,7 +4,7 @@
  *
  * JULEA engine using the JULEA storage framework to handle lower I/O.
  *
- *  Created on: Nov 14, 2018
+ *  Created on: Jul 16, 2019
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
@@ -31,16 +31,14 @@ namespace engine
 /* performs data put AND metadata put*/
 void PutVariableToJulea(char* name_space, Metadata* metadata, void* data_pointer, JBatch* batch);
 void PutAttributeToJulea(char* name_space, AttributeMetadata* attr_metadata, void* data_pointer, JBatch* batch);
-// void j_adios_put_variable(char* name_space, Metadata* metadata, void* data_pointer, JBatch* batch, gboolean use_batch);
-// void j_adios_put_attribute(char* name_space, AttributeMetadata* attr_metadata, void* data_pointer, JBatch* batch, gboolean use_batch);
 
 /* get data from object store*/
-void j_adios_get_var_data(char* name_space, char* variable_name, unsigned int length, void* data_pointer, JBatch* batch, gboolean use_batch);
-void j_adios_get_attr_data(char* name_space, char* attribute_name, unsigned int length, void* data_pointer, JBatch* batch, gboolean use_batch);
+void GetVarDataFromJulea(char* name_space, char* variable_name, unsigned int length, void* data_pointer, JBatch* batch);
+void GetAttrDataFromJulea(char* name_space, char* attribute_name, unsigned int length, void* data_pointer, JBatch* batch);
 
 /* get metadata from kv store; hopefully soon from SMD backend*/
-void j_adios_get_all_var_names_from_kv(char* name_space, char*** names, int** types, unsigned int* count_names, JSemantics* semantics);
-void j_adios_get_var_metadata_from_kv(char* name_space, char* var_name, Metadata* metadata, JSemantics* semantics);
+void GetAllVarNamesFromKV(char* name_space, char*** names, int** types, unsigned int* count_names, JSemantics* semantics);
+void GetVarMetadataFromKV(char* name_space, char* var_name, Metadata* metadata, JSemantics* semantics);
 
 /* get attributes from kv store; hopefully soon from SMD backend */
 void j_adios_get_all_attr_names_from_kv(char* name_space, char*** names, int** types, unsigned int count_names, JSemantics* semantics);

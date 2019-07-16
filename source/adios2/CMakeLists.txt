@@ -122,12 +122,15 @@ endif()
 #options for all machines I need to compile this on
 if(ADIOS2_HAVE_JULEA_GONDOLIN)
   target_sources(adios2 PRIVATE
-      engine/julea/JuleaReader.cpp
       engine/julea/JuleaReader.h
+      engine/julea/JuleaReader.cpp
       engine/julea/JuleaReader.tcc
-      engine/julea/JuleaWriter.cpp
       engine/julea/JuleaWriter.h
+      engine/julea/JuleaWriter.cpp
       engine/julea/JuleaWriter.tcc
+      engine/julea/JuleaClientLogic.h
+      engine/julea/JuleaClientLogic.cpp
+      engine/julea/JuleaMetadata.h
   )
   target_include_directories(adios2 PRIVATE
     /home/elentari/Documents/julea/include

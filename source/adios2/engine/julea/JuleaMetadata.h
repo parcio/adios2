@@ -214,4 +214,4 @@ typedef struct AttributeMetadata AttributeMetadata;
 } // end namespace core
 } // end namespace adios2
 
-#endif /* ADIOS2_ENGINE_JULEAMPIWRITER_H_ */
+#endif /* ADIOS2_ENGINE_JULEAMETADATA_H_ */

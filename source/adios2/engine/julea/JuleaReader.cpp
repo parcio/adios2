@@ -12,11 +12,12 @@
 #include "JuleaReader.tcc"
 
 #include "JuleaClientLogic.h"
-#include "JuleaClientLogic.cpp"
+// #include "JuleaClientLogic.cpp"
 
 #include "adios2/helper/adiosFunctions.h" // CSVToVector
 
 #include <iostream>
+
 
 namespace adios2
 {
@@ -262,7 +263,7 @@ void JuleaReader::Init()
     m_JuleaInfo = g_slice_new(JuleaInfo);
     m_JuleaInfo->semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     m_JuleaInfo->name_space = g_strdup(m_Name.c_str());
-    j_adios_init(m_JuleaInfo);
+    // j_adios_init(m_JuleaInfo);
 
     InitParameters();
     InitTransports();
@@ -320,7 +321,7 @@ void JuleaReader::InitVariables()
         metadata->count = g_slice_new(unsigned long);
 
         // std::cout << "JuleaReader names: " << names[i] << std::endl;
-        // j_adios_get_var_metadata_from_kv(m_JuleaInfo->name_space, names[i], metadata, m_JuleaInfo->semantics); FIXME
+        GetVarMetadataFromKV(m_JuleaInfo->name_space, names[i], metadata, m_JuleaInfo->semantics);
 
         Dims shape2 (metadata->shape, metadata->shape + metadata->shape_size);
         Dims start2 (metadata->start, metadata->start);//FIXME: why is start size not correct?

@@ -22,8 +22,8 @@
 
 
 #include <iostream>
-#include <julea-object.h>
-#include <julea-config.h>
+#include <julea-object.h> //needed?
+#include <julea-config.h> //needed?
 
 // #include <julea-adios.h>
 

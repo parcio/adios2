@@ -27,7 +27,7 @@ namespace engine
 {
 
 template <>
-inline void JuleaReader::GetSyncCommon(Variable<std::string> &variable,
+void JuleaReader::GetSyncCommon(Variable<std::string> &variable,
                                           std::string *data)
 {
     g_autoptr(JBatch) batch = NULL;
@@ -44,8 +44,7 @@ inline void JuleaReader::GetSyncCommon(Variable<std::string> &variable,
     std::cout << "Julea Reader " << m_ReaderRank << " Reached Get Sync Common (String, String) " << std::endl;
     std::cout << "Julea Reader " << m_ReaderRank << " Namespace of variable " << m_Name << std::endl;
     // std::cout << "++ Julea Reader DEBUG PRINT data_size %d" << metadata->data_size << std::endl;    //FIXME
-
-    // j_adios_get_var_data(name_space, metadata->name,  metadata->data_size, (void*)(data), batch, use_batch); FIXME
+    // GetVarDataFromJulea(name_space, metadata->name,  metadata->data_size, (void*)(data), batch);
 
     //FIXME: additional metadata infos as "IsReadAsJoined" need to be stored in ADIOS
 
@@ -88,10 +87,11 @@ inline void JuleaReader::GetSyncCommon(Variable<T> &variable, T *data)
     //     std::cout << "Data before: " <<  float_data[i] << std::endl;
     // }
     /* all the additional metadata which is not used in InitVariables has to be read again */
-    // j_adios_get_var_metadata_from_kv(m_JuleaInfo->name_space, metadata->name, metadata, m_JuleaInfo->semantics);FIXME
 
-    // j_adios_get_var_data(name_space, metadata->name,  metadata->data_size, (void*)(data), batch, use_batch);FIXME
-    // std::cout << "++ Julea Reader DEBUG PRINT data_size: " << metadata->data_size << std::endl;    //FIXME
+    // GetVarMetadataFromKV(m_JuleaInfo->name_space, metadata->name, metadata, m_JuleaInfo->semantics); //FIXME
+
+    // GetVarDataFromJulea(name_space, metadata->name,  metadata->data_size, (void*)(data), batch);
+    std::cout << "++ Julea Reader DEBUG PRINT data_size: " << metadata->data_size << std::endl;    //FIXME
 
     // for(int i = 0; i < 10; i++)
     // {
@@ -126,4 +126,4 @@ void JuleaReader::GetDeferredCommon(Variable<T> &variable, T *data)
 } // end namespace core
 } // end namespace adios2
 
-#endif // ADIOS2_ENGINE_SKELETONREADER_TCC_
+#endif // ADIOS2_ENGINE_JULEAREADER_TCC_
