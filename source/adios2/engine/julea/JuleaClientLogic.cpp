@@ -497,9 +497,9 @@ GetVarMetadataFromKV(char* name_space, char *var_name, Metadata* metadata, JSema
 
 	string_metadata_kv = g_strdup_printf("variables_%s", name_space);
 	kv_object = j_kv_new(string_metadata_kv, var_name);
-	// bson_metadata = bson_new();
+	bson_metadata = bson_new();
 
-	j_kv_get(kv_object,(void**) bson_metadata, &value_len, batch);
+	j_kv_get(kv_object, (void**) bson_metadata, &value_len, batch); //FIXME: void** ?
 	j_kv_get(kv_object, &names_buf, &value_len, batch);
 	j_batch_execute(batch);
 

@@ -306,8 +306,13 @@ void JuleaReader::InitVariables()
     unsigned int count_names = 0;
     int size = 0;
 
+    std::cout << "++ Julea Reader DEBUG PRINT: 1" << std::endl;
+
     //TODO: fix memory leak
-    // j_adios_get_all_var_names_from_kv(m_JuleaInfo->name_space, &names, &types, &count_names, m_JuleaInfo->semantics); FIXME
+    GetAllVarNamesFromKV(m_JuleaInfo->name_space, &names, &types, &count_names, m_JuleaInfo->semantics);
+
+    std::cout << "++ Julea Reader DEBUG PRINT: count_names " << count_names << std::endl;
+
     for(unsigned int i = 0; i < count_names; i++)
     {
         Dims shape;
@@ -319,19 +324,29 @@ void JuleaReader::InitVariables()
         metadata->start = g_slice_new(unsigned long);
         metadata->count = g_slice_new(unsigned long);
 
-        // std::cout << "JuleaReader names: " << names[i] << std::endl;
+        std::cout << "JuleaReader names: " << names[i] << std::endl;
         GetVarMetadataFromKV(m_JuleaInfo->name_space, names[i], metadata, m_JuleaInfo->semantics);
-
-        Dims shape2 (metadata->shape, metadata->shape + metadata->shape_size);
-        Dims start2 (metadata->start, metadata->start);//FIXME: why is start size not correct?
-        Dims count2 (metadata->count, metadata->count + metadata->count_size);
-
-        bool constantdims;
 
         // std::cout << "JuleaReader metadata address: " << (void*) metadata << std::endl;
         std::cout << "++ Julea Reader DEBUG PRINT: shape_size: " << metadata->shape_size << std::endl;
         std::cout << "++ Julea Reader DEBUG PRINT: start_size: " << metadata->start_size << std::endl;
         std::cout << "++ Julea Reader DEBUG PRINT: count_size: " << metadata->count_size << std::endl;
+
+        //why add shape + shape_size?
+        //without adding:
+        //invalid conversion from ‘long unsigned int*’ to ‘std::vector<long unsigned int>::size_type {aka long unsigned int}’
+        Dims shape2 (metadata->shape, metadata->shape + metadata->shape_size);
+        Dims start2 (metadata->start, metadata->start);//FIXME: why is start size not correct?
+        Dims count2 (metadata->count, metadata->count + metadata->count_size);
+
+        // Dims shape2 (metadata->shape, metadata->shape_size); //what would this do?
+
+        std::cout << "++ Julea Reader DEBUG PRINT: 2 " << std::endl;
+        std::cout << "++ Julea Reader DEBUG PRINT: 3 " << std::endl;
+        std::cout << "++ Julea Reader DEBUG PRINT: 4 " << std::endl;
+
+        bool constantdims;
+
 
         metadata->start_size = 0; //FIXME: why is start_size = 13744632839234567870
 
@@ -353,6 +368,7 @@ void JuleaReader::InitVariables()
             // count.front() = *metadata->count;
             // std::cout << "++ Julea Reader DEBUG PRINT: count" << std::endl;
         }
+        std::cout << "++ Julea Reader DEBUG PRINT: 5 " << std::endl;
 
         constantdims = metadata->is_constant_dims;
         // constantdims = true;
@@ -375,6 +391,7 @@ void JuleaReader::InitVariables()
 // #undef make_case
 //         } // end switch
 
+        std::cout << "++ Julea Reader DEBUG PRINT: 6 " << std::endl;
         switch(types[i])
         {
             // case COMPOUND:

@@ -12,6 +12,7 @@
 #define ADIOS2_ENGINE_JULEAREADER_TCC_
 
 #include "JuleaReader.h"
+#include "JuleaClientLogic.h"
 
 #include <iostream>
 // #include <fstream>
@@ -42,7 +43,7 @@ void JuleaReader::GetSyncCommon(Variable<std::string> &variable,
     std::cout << "Julea Reader " << m_ReaderRank << " Reached Get Sync Common (String, String) " << std::endl;
     std::cout << "Julea Reader " << m_ReaderRank << " Namespace of variable " << m_Name << std::endl;
     // std::cout << "++ Julea Reader DEBUG PRINT data_size %d" << metadata->data_size << std::endl;    //FIXME
-    // GetVarDataFromJulea(name_space, metadata->name,  metadata->data_size, (void*)(data), batch);
+    GetVarDataFromJulea(name_space, metadata->name,  metadata->data_size, (void*)(data), batch);
 
     //FIXME: additional metadata infos as "IsReadAsJoined" need to be stored in ADIOS
 
@@ -88,15 +89,15 @@ void JuleaReader::GetSyncCommon(Variable<T> &variable, T *data)
     /* all the additional metadata which is not used in InitVariables has to be read again */
 
 
-    // GetVarMetadataFromKV(m_JuleaInfo->name_space, metadata->name, metadata, m_JuleaInfo->semantics); //FIXME
+    GetVarMetadataFromKV(m_JuleaInfo->name_space, metadata->name, metadata, m_JuleaInfo->semantics); //FIXME
 
-    // GetVarDataFromJulea(name_space, metadata->name,  metadata->data_size, (void*)(data), batch);
+    GetVarDataFromJulea(name_space, metadata->name,  metadata->data_size, (void*)(data), batch);
     std::cout << "++ Julea Reader DEBUG PRINT data_size: " << metadata->data_size << std::endl;    //FIXME
 
-    // for(int i = 0; i < 10; i++)
-    // {
-    //     std::cout << "Data: " << float_data[i] << std::endl;
-    // }
+    for(int i = 0; i < 10; i++)
+    {
+        std::cout << "Data: " << data[i] << std::endl;
+    }
 
     //FIXME: additional metadata infos as "IsReadAsJoined" need to be stored in ADIOS
 
