@@ -157,40 +157,43 @@ if(ADIOS2_HAVE_JULEA_GONDOLIN)
     )
 endif()
 
-if(ADIOS2_HAVE_JULEA)
-  target_sources(adios2 PRIVATE
-      engine/julea/JuleaReader.cpp
-      engine/julea/JuleaReader.h
-      engine/julea/JuleaReader.tcc
-      engine/julea/JuleaWriter.cpp
-      engine/julea/JuleaWriter.h
-      engine/julea/JuleaWriter.tcc
-  )
-  target_link_libraries(adios2 PRIVATE /home/elentari/Documents/Promotion/Code/julea/build/lib/libjulea.so)
-endif()
+# if(ADIOS2_HAVE_JULEA)
+#   target_sources(adios2 PRIVATE
+#       engine/julea/JuleaReader.cpp
+#       engine/julea/JuleaReader.h
+#       engine/julea/JuleaReader.tcc
+#       engine/julea/JuleaWriter.cpp
+#       engine/julea/JuleaWriter.h
+#       engine/julea/JuleaWriter.tcc
+#   )
+#   target_link_libraries(adios2 PRIVATE /home/elentari/Documents/Promotion/Code/julea/build/lib/libjulea.so)
+# endif()
 
 
-if(ADIOS2_HAVE_JULEA_CLUSTER)
-  target_sources(adios2 PRIVATE
-      engine/julea/JuleaReader.cpp
-      engine/julea/JuleaReader.h
-      engine/julea/JuleaReader.tcc
-      engine/julea/JuleaWriter.cpp
-      engine/julea/JuleaWriter.h
-      engine/julea/JuleaWriter.tcc
-  )
-  #target_link_libraries(adios2 PRIVATE /home/duwe/Promotion/Code/julea/build/lib/libjulea.so)
-  target_link_libraries(adios2 PRIVATE ../../julea/build/lib/libjulea.so)
-endif()
+# if(ADIOS2_HAVE_JULEA_CLUSTER)
+#   target_sources(adios2 PRIVATE
+#       engine/julea/JuleaReader.cpp
+#       engine/julea/JuleaReader.h
+#       engine/julea/JuleaReader.tcc
+#       engine/julea/JuleaWriter.cpp
+#       engine/julea/JuleaWriter.h
+#       engine/julea/JuleaWriter.tcc
+#   )
+#   #target_link_libraries(adios2 PRIVATE /home/duwe/Promotion/Code/julea/build/lib/libjulea.so)
+#   target_link_libraries(adios2 PRIVATE ../../julea/build/lib/libjulea.so)
+# endif()
 
 if(ADIOS2_HAVE_JULEA_MINASTIRITH)
   target_sources(adios2 PRIVATE
-      engine/julea/JuleaReader.cpp
       engine/julea/JuleaReader.h
+      engine/julea/JuleaReader.cpp
       engine/julea/JuleaReader.tcc
-      engine/julea/JuleaWriter.cpp
       engine/julea/JuleaWriter.h
+      engine/julea/JuleaWriter.cpp
       engine/julea/JuleaWriter.tcc
+      engine/julea/JuleaClientLogic.h
+      engine/julea/JuleaClientLogic.cpp
+      engine/julea/JuleaMetadata.h
   )
   target_include_directories(adios2 PRIVATE
   /home/kira/Dokumente/julea/include
@@ -217,17 +220,17 @@ if(ADIOS2_HAVE_JULEA_MINASTIRITH)
   )
 endif()
 
-if(ADIOS2_HAVE_JULEA_VINYAMAR)
-  target_sources(adios2 PRIVATE
-      engine/julea/JuleaReader.cpp
-      engine/julea/JuleaReader.h
-      engine/julea/JuleaReader.tcc
-      engine/julea/JuleaWriter.cpp
-      engine/julea/JuleaWriter.h
-      engine/julea/JuleaWriter.tcc
-  )
-  target_link_libraries(adios2 PRIVATE /home/elentari/Documents/Promotion/Code/julea/build/lib/libjulea.so)
-endif()
+# if(ADIOS2_HAVE_JULEA_VINYAMAR)
+#   target_sources(adios2 PRIVATE
+#       engine/julea/JuleaReader.cpp
+#       engine/julea/JuleaReader.h
+#       engine/julea/JuleaReader.tcc
+#       engine/julea/JuleaWriter.cpp
+#       engine/julea/JuleaWriter.h
+#       engine/julea/JuleaWriter.tcc
+#   )
+#   target_link_libraries(adios2 PRIVATE /home/elentari/Documents/Promotion/Code/julea/build/lib/libjulea.so)
+# endif()
 
 if(ADIOS2_HAVE_DataMan)
     target_sources(adios2 PRIVATE

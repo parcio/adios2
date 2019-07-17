@@ -60,7 +60,19 @@
 #endif
 
 
-#ifdef ADIOS2_HAVE_JULEA_GONDOLIN || ADIOS2_HAVE_JULEA_CLUSTER || ADIOS2_HAVE_JULEA_MINASTIRITH || ADIOS2_HAVE_JULEA_VINYAMAR || ADIOS2_HAVE_JULEA // external dependencies
+// #ifdef ADIOS2_HAVE_JULEA_GONDOLIN || ADIOS2_HAVE_JULEA_CLUSTER || ADIOS2_HAVE_JULEA_MINASTIRITH || ADIOS2_HAVE_JULEA_VINYAMAR || ADIOS2_HAVE_JULEA // external dependencies
+// #include "adios2/engine/julea/JuleaReader.h"
+// #include "adios2/engine/julea/JuleaWriter.h"
+// // #include "adios2/engine/julea/JuleaxClientLogic.h" //needed?
+// #endif
+
+
+#ifdef ADIOS2_HAVE_JULEA_GONDOLIN // external dependencies
+#include "adios2/engine/julea/JuleaReader.h"
+#include "adios2/engine/julea/JuleaWriter.h"
+#endif
+
+#ifdef ADIOS2_HAVE_JULEA_MINASTIRITH // external dependencies
 #include "adios2/engine/julea/JuleaReader.h"
 #include "adios2/engine/julea/JuleaWriter.h"
 #endif

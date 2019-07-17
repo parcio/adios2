@@ -333,7 +333,7 @@ PutVariableToJulea(char* name_space, Metadata* metadata, void* data_pointer, JBa
  * \param [r] use_batch     pass false when using deferred/asynchronous I/O; true for synchronous I/O
  */
 void
-j_adios_put_attribute(char* name_space, AttributeMetadata* attr_metadata, void* data_pointer, JBatch* batch)
+PutAttributeToJulea(char* name_space, AttributeMetadata* attr_metadata, void* data_pointer, JBatch* batch)
 {
 	JBatch *batch_2;
 	guint64 bytes_written = 0; //nb = bytes written; see benchmark
