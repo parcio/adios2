@@ -45,63 +45,68 @@ void
 var_metadata_to_bson(Metadata* metadata, bson_t* bson_meta_data)
 {
 	gchar* key;
-
-	assert(bson_append_int64(bson_meta_data, "shape_size", -1, metadata->shape_size));
+	// bson_append_int64(bson_meta_data, "shape_size", -1, metadata->shape_size);
+	g_assert_true(bson_append_int64(bson_meta_data, "shape_size", -1, metadata->shape_size));
 	for(guint i = 0; i < metadata->shape_size; i++)
 	{
 		key = g_strdup_printf("shape_%d",i);
-		assert(bson_append_int64(bson_meta_data, key, -1, metadata->shape[i]));
+		g_assert_true(bson_append_int64(bson_meta_data, key, -1, metadata->shape[i]));
 	}
+	std::cout << "var_metadata_to_bson: bson_meta_data->len " << bson_meta_data->len << std::endl ;
 
-	assert(bson_append_int64(bson_meta_data, "start_size", -1, metadata->start_size));
+	g_assert_true(bson_append_int64(bson_meta_data, "start_size", -1, metadata->start_size));
 	for(guint i = 0; i < metadata->start_size; i++)
 	{
 		key = g_strdup_printf("start_%d",i);
-		assert(bson_append_int64(bson_meta_data, key, -1, metadata->start[i]));
+		g_assert_true(bson_append_int64(bson_meta_data, key, -1, metadata->start[i]));
 	}
 
-	assert(bson_append_int64(bson_meta_data, "count_size", -1, metadata->count_size));
+	std::cout << "var_metadata_to_bson: bson_meta_data->len " << bson_meta_data->len << std::endl ;
+	g_assert_true(bson_append_int64(bson_meta_data, "count_size", -1, metadata->count_size));
 	for(guint i = 0; i < metadata->count_size; i++)
 	{
 		key = g_strdup_printf("count_%d",i);
-		assert(bson_append_int64(bson_meta_data, key, -1, metadata->count[i]));
+		g_assert_true(bson_append_int64(bson_meta_data, key, -1, metadata->count[i]));
 	}
 
-	assert(bson_append_int64(bson_meta_data, "memory_start_size", -1, metadata->memory_start_size));
+	std::cout << "var_metadata_to_bson: bson_meta_data->len " << bson_meta_data->len << std::endl ;
+	g_assert_true(bson_append_int64(bson_meta_data, "memory_start_size", -1, metadata->memory_start_size));
 	for(guint i = 0; i < metadata->memory_start_size; i++)
 	{
 		key = g_strdup_printf("memory_start_%d",i);
-		assert(bson_append_int64(bson_meta_data, key, -1, metadata->memory_start[i]));
+		g_assert_true(bson_append_int64(bson_meta_data, key, -1, metadata->memory_start[i]));
 	}
 
-	assert(bson_append_int64(bson_meta_data, "memory_count_size", -1, metadata->memory_count_size));
+	g_assert_true(bson_append_int64(bson_meta_data, "memory_count_size", -1, metadata->memory_count_size));
 	for(guint i = 0; i < metadata->memory_count_size; i++)
 	{
 		key = g_strdup_printf("memory_count_%d",i);
-		assert(bson_append_int64(bson_meta_data, key, -1, metadata->memory_count[i]));
+		g_assert_true(bson_append_int64(bson_meta_data, key, -1, metadata->memory_count[i]));
 	}
 
-	assert(bson_append_int64(bson_meta_data, "steps_start", -1, metadata->steps_start));
-	assert(bson_append_int64(bson_meta_data, "steps_count", -1, metadata->steps_count));
-	assert(bson_append_int64(bson_meta_data, "block_id", -1, metadata->block_id));
-	assert(bson_append_int64(bson_meta_data, "index_start", -1, metadata->index_start));
-	assert(bson_append_int64(bson_meta_data, "element_size", -1, metadata->element_size));
-	assert(bson_append_int64(bson_meta_data, "available_steps_start", -1, metadata->available_steps_start));
-	assert(bson_append_int64(bson_meta_data, "available_steps_count", -1, metadata->available_steps_count));
+	std::cout << "var_metadata_to_bson: bson_meta_data->len " << bson_meta_data->len << std::endl ;
+	g_assert_true(bson_append_int64(bson_meta_data, "steps_start", -1, metadata->steps_start));
+	g_assert_true(bson_append_int64(bson_meta_data, "steps_count", -1, metadata->steps_count));
+	g_assert_true(bson_append_int64(bson_meta_data, "block_id", -1, metadata->block_id));
+	g_assert_true(bson_append_int64(bson_meta_data, "index_start", -1, metadata->index_start));
+	g_assert_true(bson_append_int64(bson_meta_data, "element_size", -1, metadata->element_size));
+	g_assert_true(bson_append_int64(bson_meta_data, "available_steps_start", -1, metadata->available_steps_start));
+	g_assert_true(bson_append_int64(bson_meta_data, "available_steps_count", -1, metadata->available_steps_count));
 
-	assert(bson_append_int64(bson_meta_data, "var_type", -1, metadata->var_type));
+	g_assert_true(bson_append_int64(bson_meta_data, "var_type", -1, metadata->var_type));
 
-	assert(bson_append_int64(bson_meta_data, "data_size", -1, metadata->data_size));
+	g_assert_true(bson_append_int64(bson_meta_data, "data_size", -1, metadata->data_size));
 
-	assert(bson_append_bool(bson_meta_data, "is_value", -1, metadata->is_value));
-	assert(bson_append_bool(bson_meta_data, "is_single_value", -1, metadata->is_single_value));
-	assert(bson_append_bool(bson_meta_data, "is_single_value", -1, metadata->is_single_value));
-	assert(bson_append_bool(bson_meta_data, "is_constant_dims", -1, metadata->is_constant_dims));
-	assert(bson_append_bool(bson_meta_data, "is_read_as_joined", -1, metadata->is_read_as_joined));
-	assert(bson_append_bool(bson_meta_data, "is_read_as_local_value", -1, metadata->is_read_as_local_value));
-	assert(bson_append_bool(bson_meta_data, "is_random_access", -1, metadata->is_random_access));
-	assert(bson_append_bool(bson_meta_data, "is_first_streaming_step", -1, metadata->is_first_streaming_step));
+	g_assert_true(bson_append_bool(bson_meta_data, "is_value", -1, metadata->is_value));
+	g_assert_true(bson_append_bool(bson_meta_data, "is_single_value", -1, metadata->is_single_value));
+	g_assert_true(bson_append_bool(bson_meta_data, "is_single_value", -1, metadata->is_single_value));
+	g_assert_true(bson_append_bool(bson_meta_data, "is_constant_dims", -1, metadata->is_constant_dims));
+	g_assert_true(bson_append_bool(bson_meta_data, "is_read_as_joined", -1, metadata->is_read_as_joined));
+	g_assert_true(bson_append_bool(bson_meta_data, "is_read_as_local_value", -1, metadata->is_read_as_local_value));
+	g_assert_true(bson_append_bool(bson_meta_data, "is_random_access", -1, metadata->is_random_access));
+	g_assert_true(bson_append_bool(bson_meta_data, "is_first_streaming_step", -1, metadata->is_first_streaming_step));
 
+	std::cout << "var_metadata_to_bson: bson_meta_data->len " << bson_meta_data->len << std::endl ;
 	/* now comes the part for "min_value" of type T in C++ */
 	if(metadata->var_type == STRING) //FIXME data types
 	{
@@ -109,9 +114,9 @@ var_metadata_to_bson(Metadata* metadata, bson_t* bson_meta_data)
 	}
 	else if(metadata->var_type == INT32)
 	{
-		assert(bson_append_int32(bson_meta_data, "min_value", -1, metadata->min_value.integer_32));
-		assert(bson_append_int32(bson_meta_data, "max_value", -1, metadata->max_value.integer_32));
-		assert(bson_append_int32(bson_meta_data, "curr_value", -1, metadata->curr_value.integer_32));
+		g_assert_true(bson_append_int32(bson_meta_data, "min_value", -1, metadata->min_value.integer_32));
+		g_assert_true(bson_append_int32(bson_meta_data, "max_value", -1, metadata->max_value.integer_32));
+		g_assert_true(bson_append_int32(bson_meta_data, "curr_value", -1, metadata->curr_value.integer_32));
 	}
 	// else if(metadata->var_type == SIGNED_CHAR)
 	// {
@@ -131,9 +136,9 @@ var_metadata_to_bson(Metadata* metadata, bson_t* bson_meta_data)
 	// }
 	else if(metadata->var_type == INT64)
 	{
-		assert(bson_append_int64(bson_meta_data, "min_value", -1, metadata->min_value.integer_64));
-		assert(bson_append_int64(bson_meta_data, "max_value", -1, metadata->max_value.integer_64));
-		assert(bson_append_int64(bson_meta_data, "curr_value", -1, metadata->curr_value.integer_64));
+		g_assert_true(bson_append_int64(bson_meta_data, "min_value", -1, metadata->min_value.integer_64));
+		g_assert_true(bson_append_int64(bson_meta_data, "max_value", -1, metadata->max_value.integer_64));
+		g_assert_true(bson_append_int64(bson_meta_data, "curr_value", -1, metadata->curr_value.integer_64));
 	}
 	// else if(metadata->var_type == UNSIGNED_INT)
 	// {
@@ -152,24 +157,24 @@ var_metadata_to_bson(Metadata* metadata, bson_t* bson_meta_data)
 	// }
 	// else if(metadata->var_type == UNSIGNED_LONG_LONG_INT)
 	// {
-	// 	assert(bson_append_decimal128(bson_meta_data, "min_value", -1,
+	// 	g_assert_true(bson_append_decimal128(bson_meta_data, "min_value", -1,
 	// 		(void*) metadata->min_value.ull_integer));
-	// 	assert(bson_append_decimal128(bson_meta_data, "max_value", -1,
+	// 	g_assert_true(bson_append_decimal128(bson_meta_data, "max_value", -1,
 	// 		(void*) metadata->max_value.ull_integer));
-	// 	assert(bson_append_decimal128(bson_meta_data, "curr_value", -1,
+	// 	g_assert_true(bson_append_decimal128(bson_meta_data, "curr_value", -1,
 	// 		(void*) metadata->curr_value.ull_integer));
 	// }
 	else if(metadata->var_type == FLOAT)
 	{
-		assert(bson_append_double(bson_meta_data, "min_value", -1, metadata->min_value.real_float));
-		assert(bson_append_double(bson_meta_data, "max_value", -1, metadata->max_value.real_float));
-		assert(bson_append_double(bson_meta_data, "curr_value", -1, metadata->curr_value.real_float));
+		g_assert_true(bson_append_double(bson_meta_data, "min_value", -1, metadata->min_value.real_float));
+		g_assert_true(bson_append_double(bson_meta_data, "max_value", -1, metadata->max_value.real_float));
+		g_assert_true(bson_append_double(bson_meta_data, "curr_value", -1, metadata->curr_value.real_float));
 	}
 	else if(metadata->var_type == DOUBLE)
 	{
-		assert(bson_append_double(bson_meta_data, "min_value", -1, metadata->min_value.real_double));
-		assert(bson_append_double(bson_meta_data, "max_value", -1, metadata->max_value.real_double));
-		assert(bson_append_double(bson_meta_data, "curr_value", -1, metadata->curr_value.real_double));
+		g_assert_true(bson_append_double(bson_meta_data, "min_value", -1, metadata->min_value.real_double));
+		g_assert_true(bson_append_double(bson_meta_data, "max_value", -1, metadata->max_value.real_double));
+		g_assert_true(bson_append_double(bson_meta_data, "curr_value", -1, metadata->curr_value.real_double));
 	}
 	else if(metadata->var_type == LONG_DOUBLE)
 	{
@@ -183,6 +188,7 @@ var_metadata_to_bson(Metadata* metadata, bson_t* bson_meta_data)
 	{
 		//TODO: implement
 	}
+	std::cout << "var_metadata_to_bson: bson_meta_data->len " << bson_meta_data->len << std::endl ;
 	g_free(key);
 }
 
@@ -195,9 +201,9 @@ var_metadata_to_bson(Metadata* metadata, bson_t* bson_meta_data)
 void
 attr_metadata_to_bson(AttributeMetadata* attr_metadata, bson_t* bson_meta_data)
 {
-	assert(bson_append_int64(bson_meta_data, "var_type", -1, attr_metadata->attr_type));
-	assert(bson_append_int64(bson_meta_data, "number_elements", -1, attr_metadata->number_elements));
-	assert(bson_append_bool(bson_meta_data, "is_single_value", -1, attr_metadata->is_single_value));
+	g_assert_true(bson_append_int64(bson_meta_data, "var_type", -1, attr_metadata->attr_type));
+	g_assert_true(bson_append_int64(bson_meta_data, "number_elements", -1, attr_metadata->number_elements));
+	g_assert_true(bson_append_bool(bson_meta_data, "is_single_value", -1, attr_metadata->is_single_value));
 }
 
 /**
@@ -491,8 +497,8 @@ GetVarMetadataFromKV(char* name_space, char *var_name, Metadata* metadata, JSema
 	JBatch* batch;
 	gchar* string_metadata_kv;
 	gchar* key;
-	bson_t* bson_metadata;
-	// bson_t bson_metadata;
+	// bson_t* bson_metadata;
+	bson_t bson_metadata;
 	bson_iter_t b_iter;
 	guint32 value_len = 0;
 
@@ -520,15 +526,17 @@ GetVarMetadataFromKV(char* name_space, char *var_name, Metadata* metadata, JSema
     	// std::cout << "++ Julea Reader DEBUG PRINT: value_len = " << value_len << std::endl;
 
 		// bson_metadata = bson_new_from_data(meta_data_buf, value_len); //was original in Julea Client
-		bson_metadata = bson_new_from_data((uint8_t*) meta_data_buf, value_len);
+		// bson_metadata = bson_new_from_data((uint8_t*) meta_data_buf, value_len);
 		// bson_init_static(&bson_metadata, (const uint8_t*) meta_data_buf, value_len);
-		// bson_init_static(&bson_metadata, (uint8_t*) meta_data_buf, value_len);
+		bson_init_static(&bson_metadata, (uint8_t*) meta_data_buf, value_len);
     	std::cout << "++ Julea Reader DEBUG PRINT: GetVarMetadataFromKV 2 " << std::endl;
     	std::cout << "++ Julea Reader DEBUG PRINT: value_len = " << value_len << std::endl;
+    	std::cout << "++ Julea Reader DEBUG PRINT: value_len = " << bson_metadata.len << std::endl;
 	}
 
 	// bson_iter_init(&b_iter, bson_metadata);
-	if(bson_iter_init(&b_iter, bson_metadata))
+	// if(bson_iter_init(&b_iter, bson_metadata))
+	if(bson_iter_init(&b_iter, &bson_metadata))
 	{
 		std::cout << "Bson iterator is valid" << std::endl;
     	std::cout << "++ Julea Reader DEBUG PRINT: GetVarMetadataFromKV 3 " << std::endl;
