@@ -324,6 +324,13 @@ void JuleaReader::InitVariables()
         metadata->start = g_slice_new(unsigned long);
         metadata->count = g_slice_new(unsigned long);
 
+        //TODO: test init for checking whether retrieving from kv works
+        // metadata->shape_size = 42;
+        // metadata->start_size = 42;
+        // metadata->count_size = 42;
+        // metadata->steps_start = 42;
+        // metadata->steps_count = 42;
+
         std::cout << "JuleaReader names: " << names[i] << std::endl;
         GetVarMetadataFromKV(m_JuleaInfo->name_space, names[i], metadata, m_JuleaInfo->semantics);
 

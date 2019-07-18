@@ -20,7 +20,7 @@ int write_test(){
     std::vector<float> myFloats = {12345.6, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     // std::vector<float> myFloats2 = {-6666.6, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     std::vector<int> myInts = {555, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    // std::vector<int> myInts2 = {777, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    std::vector<int> myInts2 = {777, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     const std::size_t Nx = myFloats.size();
     const std::size_t Nx2 = myInts.size();
 
@@ -41,8 +41,8 @@ int write_test(){
         // "juleaFloats2", {}, {}, {Nx}, adios2::ConstantDims);
     adios2::Variable<int> juleaInts = juleaIO.DefineVariable<int>(
         "juleaInts", {}, {}, {Nx2}, adios2::ConstantDims);
-    // adios2::Variable<int> juleaInts2 = juleaIO.DefineVariable<int>(
-        // "juleaInts2", {}, {}, {Nx2}, adios2::ConstantDims);
+    adios2::Variable<int> juleaInts2 = juleaIO.DefineVariable<int>(
+        "juleaInts2", {}, {}, {Nx2}, adios2::ConstantDims);
 
     /** Engine derived class, spawned to start IO operations */
     adios2::Engine juleaWriter = juleaIO.Open("test", adios2::Mode::Write );
@@ -51,7 +51,7 @@ int write_test(){
     juleaWriter.Put<float>(juleaFloats, myFloats.data(),adios2::Mode::Sync);
     // juleaWriter.Put<float>(juleaFloats2, myFloats2.data(),adios2::Mode::Sync);
     juleaWriter.Put<int>(juleaInts, myInts.data(),adios2::Mode::Sync);
-    // juleaWriter.Put<int>(juleaInts2, myInts2.data(),adios2::Mode::Sync);
+    juleaWriter.Put<int>(juleaInts2, myInts2.data(),adios2::Mode::Sync);
 
     /** Create bp file, engine becomes unreachable after this*/
     juleaWriter.Close();

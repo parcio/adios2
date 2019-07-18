@@ -164,7 +164,7 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable,
         *metadata->memory_count = blockInfo.MemoryCount[0];
     }
 
-    metadata->test_header = 42;     //additional test member for transition of adios client logic to engine
+    // metadata->test_header = 42;     //additional test member for transition of adios client logic to engine
 
     metadata->steps_start = blockInfo.StepsStart;
     metadata->steps_count = blockInfo.StepsCount;

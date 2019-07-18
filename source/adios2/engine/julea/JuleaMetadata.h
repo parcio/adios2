@@ -79,7 +79,7 @@ struct Metadata{
     unsigned long count_size;
     unsigned long memory_start_size; //TODO
     unsigned long memory_count_size; //TODO
-    unsigned long test_header; //TODO
+    // unsigned long test_header; //TODO
 
     size_t steps_start;
     size_t steps_count;

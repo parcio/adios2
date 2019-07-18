@@ -22,6 +22,8 @@
 #include <julea-internal.h>
 #include <julea-kv.h>
 #include <julea-object.h>
+#include <iostream>
+
 
 namespace adios2
 {
@@ -294,7 +296,9 @@ PutVariableToJulea(char* name_space, Metadata* metadata, void* data_pointer, JBa
 	bson_meta_data = bson_new();
 	var_metadata_to_bson(metadata, bson_meta_data);
 
-	printf("j_adios_put_variable: data_size %d\n",metadata->data_size );
+	// printf("j_adios_put_variable: data_size %d\n",metadata->data_size );
+	std::cout << "PutVariableToJulea: bson_names->len " << bson_names->len << std::endl ;
+	std::cout << "PutVariableToJulea: bson_meta_data->len " << bson_meta_data->len << std::endl ;
 
 	meta_data_buf = g_memdup(bson_get_data(bson_meta_data), bson_meta_data->len);
 	names_buf = g_memdup(bson_get_data(bson_names), bson_names->len);
@@ -375,11 +379,11 @@ PutAttributeToJulea(char* name_space, AttributeMetadata* attr_metadata, void* da
 	kv_object_names = j_kv_new("attribute_names", name_space);
 
 	bson_meta_data = bson_new();
-	bson_names = bson_new();
+	// bson_names = bson_new(); FIXME
 
 	value_len = strlen(name_space);
 
-	j_kv_get(kv_object_names, (void**) bson_names, &value_len, batch_2);
+	// j_kv_get(kv_object_names, (void*) bson_names, &value_len, batch_2); FIXME
 	j_batch_execute(batch_2);
 
 	/* check if variable name is already in kv store */
@@ -393,10 +397,10 @@ PutAttributeToJulea(char* name_space, AttributeMetadata* attr_metadata, void* da
 		printf("NOW ENGINE: ---* Julea Adios Client: Attribute %s already in kv store. \n", attr_metadata->name);
 	}
 
-	value_len = strlen(attr_metadata->name);
+	value_len = strlen(attr_metadata->name); //FIXME?!
 	attr_metadata_to_bson(attr_metadata, bson_meta_data);
 	j_kv_put(kv_object_metadata, bson_meta_data,value_len, g_free, batch);
-	value_len = strlen(name_space);
+	value_len = strlen(name_space); //FIXME?!
 	j_kv_put(kv_object_names, bson_names,value_len, g_free, batch);
 
 	//j_smd_put_metadata(name_space, metadata, batch); //TODO use SMD backend
@@ -452,7 +456,7 @@ GetAllVarNamesFromKV(char* name_space, char*** names, int** types, unsigned int*
 	}
 
 	*count_names = bson_count_keys(bson_names);
-	// printf("-- JADIOS DEBUG PRINT: count_names %d\n",*count_names );
+	printf("-- JADIOS DEBUG PRINT: count_names %d\n",*count_names );
 
 	*names = (char**) g_slice_alloc(*count_names * sizeof(char*));
 	*types = (int*) g_slice_alloc(*count_names * sizeof(int));
@@ -488,19 +492,22 @@ GetVarMetadataFromKV(char* name_space, char *var_name, Metadata* metadata, JSema
 	gchar* string_metadata_kv;
 	gchar* key;
 	bson_t* bson_metadata;
+	// bson_t bson_metadata;
 	bson_iter_t b_iter;
 	guint32 value_len = 0;
 
 	g_autoptr(JKV) kv_object = NULL;
-	gpointer names_buf = NULL;
+	gpointer meta_data_buf = NULL;
 	batch = j_batch_new(semantics);
 
 	string_metadata_kv = g_strdup_printf("variables_%s", name_space);
 	kv_object = j_kv_new(string_metadata_kv, var_name);
-	bson_metadata = bson_new();
+	// bson_metadata = bson_new();
 
-	j_kv_get(kv_object, (void**) bson_metadata, &value_len, batch); //FIXME: void** ?
-	j_kv_get(kv_object, &names_buf, &value_len, batch);
+    std::cout << "++ Julea Reader DEBUG PRINT: GetVarMetadataFromKV 1 " << std::endl;
+    std::cout << "++ Julea Reader DEBUG PRINT: var_name " << var_name << std::endl;
+
+	j_kv_get(kv_object, &meta_data_buf, &value_len, batch);
 	j_batch_execute(batch);
 
 	if(value_len == 0)
@@ -510,23 +517,41 @@ GetVarMetadataFromKV(char* name_space, char *var_name, Metadata* metadata, JSema
 	}
 	else
 	{
-		bson_metadata = bson_new_from_data((const uint8_t*) names_buf, value_len);
+    	// std::cout << "++ Julea Reader DEBUG PRINT: value_len = " << value_len << std::endl;
+
+		// bson_metadata = bson_new_from_data(meta_data_buf, value_len); //was original in Julea Client
+		bson_metadata = bson_new_from_data((uint8_t*) meta_data_buf, value_len);
+		// bson_init_static(&bson_metadata, (const uint8_t*) meta_data_buf, value_len);
+		// bson_init_static(&bson_metadata, (uint8_t*) meta_data_buf, value_len);
+    	std::cout << "++ Julea Reader DEBUG PRINT: GetVarMetadataFromKV 2 " << std::endl;
+    	std::cout << "++ Julea Reader DEBUG PRINT: value_len = " << value_len << std::endl;
 	}
 
-	bson_iter_init(&b_iter, bson_metadata);
+	// bson_iter_init(&b_iter, bson_metadata);
+	if(bson_iter_init(&b_iter, bson_metadata))
+	{
+		std::cout << "Bson iterator is valid" << std::endl;
+    	std::cout << "++ Julea Reader DEBUG PRINT: GetVarMetadataFromKV 3 " << std::endl;
+	}
+
 
 	/* probably not very efficient */
 	while(bson_iter_next(&b_iter))
 	{
+    	std::cout << "++ Julea Reader DEBUG PRINT: GetVarMetadataFromKV 4 " << std::endl;
 		if(g_strcmp0(bson_iter_key(&b_iter),"shape_size") == 0)
 		{
+    		std::cout << "++ Julea Reader DEBUG PRINT: GetVarMetadataFromKV 5 " << std::endl;
 			metadata->shape_size = bson_iter_int64(&b_iter);
 			// printf("-- JADIOS DEBUG PRINT: shape_size = %ld \n", metadata->shape_size);
+    		std::cout << "++ Julea Reader DEBUG PRINT: GetVarMetadataFromKV 6 " << std::endl;
 
 			if(metadata->shape_size > 0)
 			{
+    			std::cout << "++ Julea Reader DEBUG PRINT: GetVarMetadataFromKV 7 " << std::endl;
 				for(guint i = 0; i < metadata->shape_size; i++)
 				{
+    				std::cout << "++ Julea Reader DEBUG PRINT: GetVarMetadataFromKV 8 " << std::endl;
 					bson_iter_next(&b_iter);
 					key = g_strdup_printf("shape_%d",i);
 					if(g_strcmp0(bson_iter_key(&b_iter),key) == 0)
@@ -754,9 +779,10 @@ GetVarMetadataFromKV(char* name_space, char *var_name, Metadata* metadata, JSema
 			printf("Unknown key '%s' when retrieving metadata for variable %s\n", bson_iter_key(&b_iter), metadata->name);
 		}
 	}
+    std::cout << "++ Julea Reader DEBUG PRINT: GetVarMetadataFromKV 9 " << std::endl;
 
-	g_free(string_metadata_kv);
-	g_free(key);
+	// g_free(string_metadata_kv);
+	// g_free(key);
 	printf("NOW ENGINE: ---* Julea Adios Client: Get Variable Metadata \n");
 }
 
@@ -786,7 +812,7 @@ j_adios_get_all_attr_names_from_kv(char* name_space, char*** names, int** types,
 	bson_names = bson_new();
 
 	value_len = strlen(name_space);
-	j_kv_get(kv_object, (void**) bson_names, &value_len, batch);
+	// j_kv_get(kv_object, (void*) bson_names, &value_len, batch); FIXME
 	count_names = bson_count_keys(bson_names);
 
 	*names = (char**) g_slice_alloc(count_names* sizeof(char*));
@@ -832,7 +858,7 @@ j_adios_get_attr_metadata_from_kv(char* name_space, char* attr_name, AttributeMe
 	bson_metadata = bson_new();
 
 	value_len = strlen(attr_name);
-	j_kv_get(kv_object, (void**) bson_metadata, &value_len, batch);
+	// j_kv_get(kv_object, (void*) bson_metadata, &value_len, batch); FIXME
 	bson_iter_init(b_iter, bson_metadata);
 
 	while(bson_iter_next(b_iter))
