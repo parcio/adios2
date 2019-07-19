@@ -45,12 +45,11 @@ void GetVarMetadataFromKV(char *name_space, char *var_name, Metadata *metadata,
                           JSemantics *semantics);
 
 /* get attributes from kv store; hopefully soon from SMD backend */
-void GetAllAttrNamesFromKV(char *name_space, char ***names,
-                                        int **types, unsigned int *count_names,
-                                        JSemantics *semantics);
+void GetAllAttrNamesFromKV(char *name_space, char ***names, int **types,
+                           unsigned int *count_names, JSemantics *semantics);
 void GetAttrMetadataFromKV(char *name_space, char *var_name,
-                                       AttributeMetadata *attr_metadata,
-                                       JSemantics *semantics);
+                           AttributeMetadata *attr_metadata,
+                           JSemantics *semantics);
 
 /* delete variable data as well as metadata */
 void DeleteVariable(char *name_space, char *var_name, JBatch *batch);

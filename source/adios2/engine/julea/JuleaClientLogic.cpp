@@ -55,7 +55,7 @@ void var_metadata_to_bson(Metadata *metadata, bson_t *bson_meta_data)
             bson_append_int64(bson_meta_data, key, -1, metadata->shape[i]));
     }
     // std::cout << "var_metadata_to_bson: bson_meta_data->len "
-              // << bson_meta_data->len << std::endl;
+    // << bson_meta_data->len << std::endl;
 
     g_assert_true(bson_append_int64(bson_meta_data, "start_size", -1,
                                     metadata->start_size));
@@ -277,12 +277,12 @@ void attr_metadata_to_bson(AttributeMetadata *attr_metadata,
  * object store while the metadata is stored in the structured metadata backend
  * (SMD).
  *
- * \param [r] name_space   	namespace of the variables = unique name of
- * engine in m_IO \param [r] metadata     	metadata struct containing the
- * information to store in SMD backend \param [r] data_pointer 	data to be
- * stored in object store \param [r] batch 	 	batch to execute the
- * operation in \param [r] use_batch    	pass false when using
- * deferred/asynchronous I/O; true for synchronous I/O
+ * \param [r] name_space   unique name of engine in m_IO
+ * \param [r] metadata       metadata struct (stored in kv/smd)
+ * \param [r] data_pointer 	data to be stored in object store
+ * \param [r] batch 	 	batch to execute the operation in
+ * \param [r] use_batch    	pass false when using deferred/asynchronous I/O;
+ * true for synchronous I/O
  */
 void PutVariableToJulea(char *name_space, Metadata *metadata,
                         void *data_pointer, JBatch *batch)
@@ -293,8 +293,8 @@ void PutVariableToJulea(char *name_space, Metadata *metadata,
     bson_iter_t b_iter;
     bson_t *bson_names;
 
-    void* names_buf = NULL;
-    void* meta_data_buf = NULL;
+    void *names_buf = NULL;
+    void *meta_data_buf = NULL;
 
     auto batch_2 = j_batch_new(j_batch_get_semantics(batch));
 
@@ -375,8 +375,7 @@ void PutVariableToJulea(char *name_space, Metadata *metadata,
  object store while the metadata is stored in the structured metadata backend
  (SMD).
  *
- * \param [r] name_space    namespace of the attribute; defined by
- io.open("namespace")
+ * \param [r] name_space    defined by io.open("namespace")
  * \param [r] attr_metadata attribute metadata struct containing the information
                                                         to store in SMD backend
  * \param [r] data_pointer  attribute data to be stored in object store
@@ -402,8 +401,8 @@ void PutAttributeToJulea(char *name_space, AttributeMetadata *attr_metadata,
     // gchar *string_metadata_kv;
     // gchar *string_data_object;
 
-    void* names_buf = NULL;
-    void* meta_data_buf = NULL;
+    void *names_buf = NULL;
+    void *meta_data_buf = NULL;
 
     auto batch_2 = j_batch_new(j_batch_get_semantics(batch));
 
@@ -482,9 +481,9 @@ void PutAttributeToJulea(char *name_space, AttributeMetadata *attr_metadata,
  *
  * NOTE: WILL BE DEPRECATED WHEN SMD BACKEND IS FINISHED!
  *
- * \param [r] name_space  namespace of the variables; defined by
- * io.open("namespace") \param [w] names       array to store the retrieved
- * names \param [w] types       array to store the retrieved variable types
+ * \param [r] name_space  defined by io.open("namespace")
+ * \param [w] names       array to store the retrieved names
+ * \param [w] types       array to store the retrieved variable types
  * \param [w] count_names number of names to retrieve
  * \param [r] semantics   semantics to be used
  */
@@ -496,7 +495,7 @@ void GetAllVarNamesFromKV(char *name_space, char ***names, int **types,
     guint32 value_len = 0;
 
     // g_autoptr(JKV) kv_object = NULL;
-    void* names_buf = NULL;
+    void *names_buf = NULL;
 
     auto batch = j_batch_new(semantics);
     // printf("-- JADIOS DEBUG PRINT: get_all_var_names_from_kv \n");
@@ -543,10 +542,11 @@ void GetAllVarNamesFromKV(char *name_space, char ***names, int **types,
  *
  * NOTE: WILL BE DEPRECATED WHEN SMD BACKEND IS FINISHED!
  *
- * \param [r] name_space    namespace of variable; defined by
- * io.open("namespace") \param [r] var_name 		variable name \param [w]
- * metadata   	metadata information struct; needs to be allocated \param [r]
- * semantics  	semantics to be used
+ * \param [r] name_space    defined by io.open("namespace")
+ * \param [r] var_name 		variable name
+ * \param [w] metadata   	metadata information struct; needs to be
+ * allocated
+ * \param [r] semantics  	semantics to be used
  */
 void GetVarMetadataFromKV(char *name_space, char *var_name, Metadata *metadata,
                           JSemantics *semantics)
@@ -560,7 +560,7 @@ void GetVarMetadataFromKV(char *name_space, char *var_name, Metadata *metadata,
     guint32 value_len = 0;
 
     // g_autoptr(JKV) kv_object = NULL;
-    void* meta_data_buf = NULL;
+    void *meta_data_buf = NULL;
     auto batch = j_batch_new(semantics);
 
     auto string_metadata_kv = g_strdup_printf("variables_%s", name_space);
@@ -584,7 +584,8 @@ void GetVarMetadataFromKV(char *name_space, char *var_name, Metadata *metadata,
     // if(bson_iter_init(&b_iter, bson_metadata))
     if (bson_iter_init(&b_iter, &bson_metadata))
     {
-        std::cout << "++ Julea Client Logic: Bson iterator is valid" << std::endl;
+        std::cout << "++ Julea Client Logic: Bson iterator is valid"
+                  << std::endl;
     }
     else
     {
@@ -855,26 +856,24 @@ void GetVarMetadataFromKV(char *name_space, char *var_name, Metadata *metadata,
  *
  * NOTE: WILL BE DEPRECATED WHEN SMD BACKEND IS FINISHED!
  *
- * \param [r] name_space  namespace of the attribute; defined by
- * io.open("namespace") \param [w] names       array to store the retrieved
- * names \param [w] types       array to store the retrieved variable types
+ * \param [r] name_space  defined by io.open("namespace")
+ * \param [w] names       array to store the retrieved names
+ * \param [w] types       array to store the retrieved variable types
  * \param [w] count_names number of names to retrieve
  * \param [r] semantics   semantics to be used
  */
-void GetAllAttrNamesFromKV(char *name_space, char ***names,
-                                        int **types, unsigned int *count_names,
-                                        JSemantics *semantics)
+void GetAllAttrNamesFromKV(char *name_space, char ***names, int **types,
+                           unsigned int *count_names, JSemantics *semantics)
 {
     bson_t *bson_names;
     bson_iter_t b_iter;
     guint32 value_len = 0;
 
-    // g_autoptr(JKV) kv_object = NULL;
-    void* names_buf = NULL;
+    void *names_buf = NULL;
 
     auto batch = j_batch_new(semantics);
-
     auto kv_object = j_kv_new("attribute_names", name_space);
+
     j_kv_get(kv_object, &names_buf, &value_len, batch);
     j_batch_execute(batch);
 
@@ -889,7 +888,6 @@ void GetAllAttrNamesFromKV(char *name_space, char ***names,
         bson_names = bson_new_from_data((const uint8_t *)names_buf, value_len);
     }
 
-    // j_kv_get(kv_object, (void*) bson_names, &value_len, batch); FIXME
     *count_names = bson_count_keys(bson_names);
 
     *names = (char **)g_slice_alloc(*count_names * sizeof(char *));
@@ -912,29 +910,25 @@ void GetAllAttrNamesFromKV(char *name_space, char ***names,
  *
  * NOTE: WILL BE DEPRECATED WHEN SMD BACKEND IS FINISHED!
  *
- * \param [r] name_space    namespace of attribute; defined by
- * io.open("namespace") \param [r] var_name 		namespace of the
- * attribute = unique engine name in m_IO \param [w] metadata   	metadata
- * information struct; needs to be allocated
+ * \param [r] name_space    defined by io.open("namespace")
+ * \param [r] var_name 		namespace of attr = unique engine name in m_IO
+ * \param [w] metadata   	metadata information struct; needs to be
+ * allocated
  * \param [r] semantics  	semantics to be used
  */
 void GetAttrMetadataFromKV(char *name_space, char *attr_name,
-                                       AttributeMetadata *attr_metadata,
-                                       JSemantics *semantics)
+                           AttributeMetadata *attr_metadata,
+                           JSemantics *semantics)
 {
-    // JBatch *batch;
-    // gchar *string_metadata_kv;
     bson_t bson_metadata;
     bson_iter_t b_iter;
     guint32 value_len = 0;
 
-    // g_autoptr(JKV) kv_object = NULL;
-    void* meta_data_buf = NULL;
+    void *meta_data_buf = NULL;
     auto batch = j_batch_new(semantics);
 
     auto string_metadata_kv = g_strdup_printf("attributes_%s", name_space);
     auto kv_object = j_kv_new(string_metadata_kv, attr_name);
-    // auto bson_metadata = bson_new();
 
     j_kv_get(kv_object, &meta_data_buf, &value_len, batch);
     j_batch_execute(batch);
@@ -984,10 +978,11 @@ void GetAttrMetadataFromKV(char *name_space, char *attr_name,
 /**
  * Get the data for the passed variable from the object store.
  *
- * \param [r] name_space    namespace of variable; defined by
- * io.open("namespace") \param [r] variable_name name of variable \param [r]
- * length        number of bytes to read \param [w] data_pointer  pointer to
- * return data \param [r] batch         batch to execute this operation in
+ * \param [r] name_space    defined by io.open("namespace")
+ * \param [r] variable_name name of variable
+ * \param [r] length        number of bytes to read
+ * \param [w] data_pointer  pointer to return data
+ * \param [r] batch         batch to execute this operation in
  * \param [r] use_batch     pass false when using deferred/asynchronous I/O;
  * true for synchronous I/O
  */
@@ -1023,12 +1018,14 @@ void GetVarDataFromJulea(char *name_space, char *variable_name,
 /**
  * Get the data for the passed attribute from the object store.
  *
- * \param [r] name_space    namespace of variable; defined in
- * io.open("namespace") \param [r] variable_name name of variable \param [r]
- * length        number of bytes to read \param [w] data_pointer  pointer to
- * return data \param [r] batch         batch to execute this operation in
+ * \param [r] name_space    defined in io.open("namespace")
+ * \param [r] variable_name name of variable
+ * \param [r] length        number of bytes to read
+ * \param [w] data_pointer  pointer to return data
+ * \param [r] batch         batch to execute this operation in
  * \param [r] use_batch     pass false when using deferred/asynchronous I/O;
- * true for synchronous I/O \return               	returns 0 on success
+ * true for synchronous I/O \return
+ * returns 0 on success
  */
 void GetAttrDataFromJulea(char *name_space, char *attribute_name,
                           unsigned int length, void *data_pointer,

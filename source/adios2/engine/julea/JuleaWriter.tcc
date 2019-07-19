@@ -13,8 +13,8 @@
 
 #include "JuleaWriter.h"
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <utility>
@@ -31,25 +31,27 @@ namespace engine
  * Great that types are handled as string here...
  */
 template <class T>
-void parse_variable_type(Variable<T> &variable,const typename Variable<T>::Info &blockInfo, Metadata *metadata)
+void parse_variable_type(Variable<T> &variable,
+                         const typename Variable<T>::Info &blockInfo,
+                         Metadata *metadata)
 {
 
-    if(helper::GetType<T>() == "string")
+    if (helper::GetType<T>() == "string")
     {
         metadata->var_type = STRING;
         // metadata->min_value.string = blockInfo.Min;
     }
-    else if(helper::GetType<T>() == "int8_t")
+    else if (helper::GetType<T>() == "int8_t")
     {
         metadata->var_type = INT8;
         metadata->sizeof_var_type = sizeof(int8_t);
     }
-    else if(helper::GetType<T>() == "uint8_t")
+    else if (helper::GetType<T>() == "uint8_t")
     {
         metadata->var_type = UINT8;
         metadata->sizeof_var_type = sizeof(uint8_t);
     }
-    else if(helper::GetType<T>() == "int16_t")
+    else if (helper::GetType<T>() == "int16_t")
     {
         metadata->var_type = INT16;
         metadata->sizeof_var_type = sizeof(int16_t);
@@ -57,54 +59,53 @@ void parse_variable_type(Variable<T> &variable,const typename Variable<T>::Info 
         // metadata->min_value.shorter = static_cast<short>(variable.m_Min);
         // metadata->min_value.shorter = reinterpret_cast<T>(variable.m_Min);
     }
-    else if(helper::GetType<T>() == "uint16_t")
+    else if (helper::GetType<T>() == "uint16_t")
     {
         metadata->var_type = UINT16;
         metadata->sizeof_var_type = sizeof(uint16_t);
     }
-    else if(helper::GetType<T>() == "int32_t")
+    else if (helper::GetType<T>() == "int32_t")
     {
         metadata->var_type = INT32;
         metadata->sizeof_var_type = sizeof(int32_t);
     }
-    else if(helper::GetType<T>() == "uint32_t")
+    else if (helper::GetType<T>() == "uint32_t")
     {
         metadata->var_type = UINT32;
         metadata->sizeof_var_type = sizeof(uint32_t);
     }
-    else if(helper::GetType<T>() == "int64_t")
+    else if (helper::GetType<T>() == "int64_t")
     {
-        metadata->var_type = INT64 ;
+        metadata->var_type = INT64;
         metadata->sizeof_var_type = sizeof(int64_t);
     }
-    else if(helper::GetType<T>() == "uint64_t")
+    else if (helper::GetType<T>() == "uint64_t")
     {
         metadata->var_type = UINT64;
         metadata->sizeof_var_type = sizeof(uint64_t);
     }
-    else if(helper::GetType<T>() == "float")
+    else if (helper::GetType<T>() == "float")
     {
         metadata->var_type = FLOAT;
         metadata->sizeof_var_type = sizeof(float);
     }
-    else if(helper::GetType<T>() == "double")
+    else if (helper::GetType<T>() == "double")
     {
         metadata->var_type = DOUBLE;
         metadata->sizeof_var_type = sizeof(double);
     }
-    else if(helper::GetType<T>() == "long double" )
+    else if (helper::GetType<T>() == "long double")
     {
         metadata->var_type = LONG_DOUBLE;
         metadata->sizeof_var_type = sizeof(long double);
     }
 
-
-    else if(helper::GetType<T>() == "float complex" )
+    else if (helper::GetType<T>() == "float complex")
     {
         metadata->var_type = FLOAT_COMPLEX;
         // metadata->sizeof_var_type = sizeof(float complex); //TODO
     }
-    else if(helper::GetType<T>() == "double complex" )
+    else if (helper::GetType<T>() == "double complex")
     {
         metadata->var_type = DOUBLE_COMPLEX;
         // metadata->sizeof_var_type = sizeof(double complex); //TODO
@@ -113,13 +114,13 @@ void parse_variable_type(Variable<T> &variable,const typename Variable<T>::Info 
 
 template <class T>
 void JuleaWriter::PutSyncCommon(Variable<T> &variable,
-                                   const typename Variable<T>::Info &blockInfo)
+                                const typename Variable<T>::Info &blockInfo)
 {
     // g_autoptr(JBatch) batch = NULL;
     // g_autoptr(JSemantics) semantics = NULL;
     gboolean use_batch = TRUE;
 
-    const gchar* name_space = m_Name.c_str();
+    const gchar *name_space = m_Name.c_str();
     uint data_size = 0;
 
     if (m_Verbosity == 5)
@@ -127,46 +128,56 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable,
         std::cout << "Julea Writer " << m_WriterRank << "     PutSync("
                   << variable.m_Name << ")\n";
     }
-    Metadata* metadata = g_slice_new(Metadata);
+    Metadata *metadata = g_slice_new(Metadata);
     metadata->name = strdup(variable.m_Name.c_str());
 
     metadata->shape_size = blockInfo.Shape.size();
-    // std::cout << "++ Julea Writer DEBUG PRINT blockInfo.Shape.size(): " << blockInfo.Shape.size() << std::endl;
-    if(blockInfo.Shape.size() > 0)
+    // std::cout << "++ Julea Writer DEBUG PRINT blockInfo.Shape.size(): " <<
+    // blockInfo.Shape.size() << std::endl;
+    if (blockInfo.Shape.size() > 0)
     {
-        // metadata->shape = g_slice_new(sizeof(metadata->shape) * metadata->shape_size);
-        metadata->shape = (unsigned long *) g_slice_alloc(sizeof(metadata->shape) * metadata->shape_size);
+        // metadata->shape = g_slice_new(sizeof(metadata->shape) *
+        // metadata->shape_size);
+        metadata->shape = (unsigned long *)g_slice_alloc(
+            sizeof(metadata->shape) * metadata->shape_size);
         *metadata->shape = blockInfo.Shape[0];
     }
     metadata->start_size = blockInfo.Start.size();
-    // std::cout << "++ Julea Writer DEBUG PRINT blockInfo.Start.size(): " << blockInfo.Start.size() << std::endl;
-    if(blockInfo.Start.size() > 0)
+    // std::cout << "++ Julea Writer DEBUG PRINT blockInfo.Start.size(): " <<
+    // blockInfo.Start.size() << std::endl;
+    if (blockInfo.Start.size() > 0)
     {
         // metadata->start = g_slice_new(unsigned long);
-        metadata->start = (unsigned long *) g_slice_alloc(sizeof(metadata->start) * metadata->start_size);
+        metadata->start = (unsigned long *)g_slice_alloc(
+            sizeof(metadata->start) * metadata->start_size);
         *metadata->start = blockInfo.Start[0];
     }
     metadata->count_size = blockInfo.Count.size();
-    // std::cout << "++ Julea Writer DEBUG PRINT blockInfo.Count.size(): " << blockInfo.Count.size() << std::endl;
-    if(blockInfo.Count.size() > 0)
+    // std::cout << "++ Julea Writer DEBUG PRINT blockInfo.Count.size(): " <<
+    // blockInfo.Count.size() << std::endl;
+    if (blockInfo.Count.size() > 0)
     {
-        metadata->count = (unsigned long *) g_slice_alloc(sizeof(metadata->count) * metadata->count_size);
+        metadata->count = (unsigned long *)g_slice_alloc(
+            sizeof(metadata->count) * metadata->count_size);
         *metadata->count = blockInfo.Count[0];
     }
     metadata->memory_start_size = blockInfo.MemoryStart.size();
-    if(blockInfo.MemoryStart.size() > 0)
+    if (blockInfo.MemoryStart.size() > 0)
     {
-        metadata->memory_start = (unsigned long *) g_slice_alloc(sizeof(metadata->memory_start) * metadata->memory_start_size);
+        metadata->memory_start = (unsigned long *)g_slice_alloc(
+            sizeof(metadata->memory_start) * metadata->memory_start_size);
         *metadata->memory_start = blockInfo.MemoryStart[0];
     }
     metadata->memory_count_size = blockInfo.MemoryCount.size();
-    if(blockInfo.MemoryCount.size() > 0)
+    if (blockInfo.MemoryCount.size() > 0)
     {
-        metadata->memory_count = (unsigned long *) g_slice_alloc(sizeof(metadata->memory_count) * metadata->memory_count_size);
+        metadata->memory_count = (unsigned long *)g_slice_alloc(
+            sizeof(metadata->memory_count) * metadata->memory_count_size);
         *metadata->memory_count = blockInfo.MemoryCount[0];
     }
 
-    // metadata->test_header = 42;     //additional test member for transition of adios client logic to engine
+    // metadata->test_header = 42;     //additional test member for transition
+    // of adios client logic to engine
 
     metadata->steps_start = blockInfo.StepsStart;
     metadata->steps_count = blockInfo.StepsCount;
@@ -178,11 +189,11 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable,
 
     parse_variable_type(variable, blockInfo, metadata);
 
-    //TODO: implement min, max, curr
+    // TODO: implement min, max, curr
 
     /* compute data_size; dimension entries !> 0 are ignored */
-    int number_elements = 1; //FIXME: how to initialise?
-    for(int i = 0; i < blockInfo.Count.size(); i++)
+    int number_elements = 1; // FIXME: how to initialise?
+    for (int i = 0; i < blockInfo.Count.size(); i++)
     {
         if (blockInfo.Count[i] > 0)
         {
@@ -193,9 +204,10 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable,
 
     // metadata->data_size = sizeof(helper::GetType<T>()) * number_elements;
     metadata->data_size = metadata->sizeof_var_type * number_elements;
-    // std::cout << "size of type: " << sizeof(helper::GetType<T>()) << std::endl;
-    // std::cout << "size of type: " << metadata->sizeof_var_type << std::endl;
-    // std::cout << "data_size: " << metadata->data_size << std::endl;
+    // std::cout << "size of type: " << sizeof(helper::GetType<T>()) <<
+    // std::endl; std::cout << "size of type: " << metadata->sizeof_var_type <<
+    // std::endl; std::cout << "data_size: " << metadata->data_size <<
+    // std::endl;
 
     // metadata->deferred_counter = variable.m_DeferredCounter;
     metadata->is_value = blockInfo.IsValue;
@@ -212,12 +224,13 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable,
     // }
 
     // std::cout << "Data type: " << variable.m_Type << std::endl;
-    //FIXME: resizeresult
+    // FIXME: resizeresult
 
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
-    PutVariableToJulea(m_JuleaInfo->name_space, metadata, blockInfo.Data, batch);
+    PutVariableToJulea(m_JuleaInfo->name_space, metadata, blockInfo.Data,
+                       batch);
 
     if (m_Verbosity == 5)
     {
@@ -232,8 +245,9 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable,
 template <class T>
 void JuleaWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
 {
-    //std::cout << "JULEA ENGINE: PutDeferredCommon" << std::endl;
-    //std::cout << "You successfully reached the JULEA engine with the DEFERRED mode "<< std::endl;
+    // std::cout << "JULEA ENGINE: PutDeferredCommon" << std::endl;
+    // std::cout << "You successfully reached the JULEA engine with the DEFERRED
+    // mode "<< std::endl;
     // variable.SetBlockInfo(data, CurrentStep());
 
     if (m_Verbosity == 5)
@@ -243,10 +257,10 @@ void JuleaWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
     }
     m_DeferredVariables.insert(variable.m_Name);
 
-    //FIXME: adapt name!
-    //DESIGN: is it necessary/useful to do this?
+    // FIXME: adapt name!
+    // DESIGN: is it necessary/useful to do this?
     m_DeferredVariablesDataSize += static_cast<size_t>(
-        1.05 * helper::PayloadSize(variable.m_Data,variable.m_Count) +
+        1.05 * helper::PayloadSize(variable.m_Data, variable.m_Count) +
         4 * GetBPIndexSizeInData(variable.m_Name, variable.m_Count));
 
     m_NeedPerformPuts = true;

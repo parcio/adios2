@@ -21,9 +21,9 @@
 #include "adios2/toolkit/format/bp3/BP3Serializer.h"
 #include "adios2/toolkit/transportman/TransportMan.h" //transport::TransportsMan
 
-#include <julea.h>
-#include <glib.h>
 #include <complex.h>
+#include <glib.h>
+#include <julea.h>
 
 namespace adios2
 {
@@ -51,7 +51,7 @@ public:
      * @param hostLanguage
      */
     JuleaReader(IO &adios, const std::string &name, const Mode mode,
-                   MPI_Comm mpiComm);
+                MPI_Comm mpiComm);
 
     ~JuleaReader();
     // StepStatus BeginStep(StepMode mode = StepMode::NextAvailable,
@@ -63,9 +63,9 @@ public:
     void PerformGets() final;
 
 private:
-    JuleaInfo* m_JuleaInfo;
-    int m_Verbosity = 5; //TODO: changed to 5 for debugging
-    int m_ReaderRank; // my rank in the readers' comm
+    JuleaInfo *m_JuleaInfo;
+    int m_Verbosity = 5; // TODO: changed to 5 for debugging
+    int m_ReaderRank;    // my rank in the readers' comm
 
     // step info should be received from the writer side in BeginStep()
     size_t m_CurrentStep = -1;
@@ -98,19 +98,19 @@ private:
     /** contains collective metadata buffer, only used by rank 0 */
     BufferSTL m_Metadata;
 
-    //HELP! how do I actually get the compiler to accept MetadataSet as a type?
-    /** contains bp1 format metadata indices*/ //DESIGN: needed?
+    // HELP! how do I actually get the compiler to accept MetadataSet as a type?
+    /** contains bp1 format metadata indices*/ // DESIGN: needed?
     format::BP3Base::MetadataSet m_MetadataSet;
 
-    // format::BP3Deserializer m_BP3Deserializer;  //HELP! is this really a good idea?
+    // format::BP3Deserializer m_BP3Deserializer;  //HELP! is this really a good
+    // idea?
 
-    //DESIGN
+    // DESIGN
     /** Manage BP data files Transports from IO AddTransport */
     // transportman::TransportMan m_FileDataManager; //FIXME: compiler?!
 
     /** Manages the optional collective metadata files */
     // transportman::TransportMan m_FileMetadataManager; FIXME: compiler?!
-
 
     void Init() final; ///< called from constructor, gets the selected Skeleton
                        /// transport method from settings
@@ -120,9 +120,8 @@ private:
     /** Parses transports and parameters from IO AddTransport */
     void InitTransports() final;
 
-
     // template <class T>
-    void InitVariables();   //needs to be final? HELP
+    void InitVariables(); // needs to be final? HELP
 
 // #define declare_type(T)                                                        \
 //     void DoGetSync(Variable<T> &, T *) final;                                  \
@@ -151,8 +150,8 @@ private:
     // void AggregateReadData();
 
     /**
-     * DESIGN: is this function needed here? is there something one would want to do different
-     * with a variable coming from JULEA?
+     * DESIGN: is this function needed here? is there something one would want
+     * to do different with a variable coming from JULEA?
      *
      * Sets read block information from the available metadata information
      * @param variable
@@ -162,15 +161,15 @@ private:
     void SetVariableBlockInfo(core::Variable<T> &variable,
                               typename core::Variable<T>::Info &blockInfo);
 
-// #define declare_type(T)                                                        \
+    // #define declare_type(T)                                                        \
 //     std::map<size_t, std::vector<typename Variable<T>::Info>>                  \
 //     DoAllStepsBlocksInfo(const Variable<T> &variable) const final;             \
 //                                                                                \
 //     std::vector<typename Variable<T>::Info> DoBlocksInfo(                      \
 //         const Variable<T> &variable, const size_t step) const final;
 
-//     ADIOS2_FOREACH_TYPE_1ARG(declare_type)
-// #undef declare_type
+    //     ADIOS2_FOREACH_TYPE_1ARG(declare_type)
+    // #undef declare_type
 };
 
 } // end namespace engine

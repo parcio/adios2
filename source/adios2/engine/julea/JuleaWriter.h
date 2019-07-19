@@ -8,7 +8,7 @@
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
-//FIXME: Why is it ...MPIWRITER...? But not ...MPIREADER?
+// FIXME: Why is it ...MPIWRITER...? But not ...MPIREADER?
 #ifndef ADIOS2_ENGINE_JULEAMPIWRITER_H_
 #define ADIOS2_ENGINE_JULEAMPIWRITER_H_
 
@@ -19,9 +19,9 @@
 #include "adios2/toolkit/format/bp3/BP3Serializer.h"
 #include "adios2/toolkit/transportman/TransportMan.h" //transport::TransportsMan
 
-#include <julea.h>
-#include <glib.h>
 #include <complex.h>
+#include <glib.h>
+#include <julea.h>
 
 // #include "julea.h"
 
@@ -47,11 +47,11 @@ public:
      * @param debugMode
      */
     JuleaWriter(IO &adios, const std::string &name, const Mode mode,
-                   MPI_Comm mpiComm);
+                MPI_Comm mpiComm);
 
-    ~JuleaWriter(); //was =default -> meaning?
+    ~JuleaWriter(); // was =default -> meaning?
 
-    //TODO: why is there no set StepMode in the Write engine?
+    // TODO: why is there no set StepMode in the Write engine?
     StepStatus BeginStep(StepMode mode,
                          const float timeoutSeconds = -1.0) final;
     size_t CurrentStep() const final;
@@ -60,18 +60,17 @@ public:
     void Flush(const int transportIndex = -1) final;
 
 private:
-    JuleaInfo* m_JuleaInfo;
+    JuleaInfo *m_JuleaInfo;
 
-    int m_Verbosity = 5;        // changed for debugging info from 0 to 5
-    int m_WriterRank;           // my rank in the writers' comm
-    size_t m_CurrentStep = -1;  // steps start from 0
+    int m_Verbosity = 5;       // changed for debugging info from 0 to 5
+    int m_WriterRank;          // my rank in the writers' comm
+    size_t m_CurrentStep = -1; // steps start from 0
 
     /** EndStep must call PerformPuts if necessary */
-    bool m_NeedPerformPuts = false; //DESIGN: suggested in SkeletonWriter
+    bool m_NeedPerformPuts = false; // DESIGN: suggested in SkeletonWriter
 
     /** TODO: needed? */
-    bool m_Flushed = false; //DESIGN: used in HDF5Writer
-
+    bool m_Flushed = false; // DESIGN: used in HDF5Writer
 
     /**  --- DESIGN: the following is similar to BP3Writer and BP3Base --- */
 
@@ -91,7 +90,7 @@ private:
     /** attributes are serialized only once, this set contains the names of ones
      * already serialized.
      */
-    std::unordered_set<std::string> m_SerializedAttributes; //TODO: needed?
+    std::unordered_set<std::string> m_SerializedAttributes; // TODO: needed?
 
     /** tracks the overall size of deferred variables */
     size_t m_DeferredVariablesDataSize = 0;
@@ -105,7 +104,7 @@ private:
     /** contains collective metadata buffer, only used by rank 0 */
     BufferSTL m_Metadata;
 
-    //DESIGN
+    // DESIGN
     /** Manage BP data files Transports from IO AddTransport */
     // transportman::TransportMan m_FileDataManager; //FIXME: compiler?!
 
@@ -120,7 +119,6 @@ private:
     void InitTransports() final;
 
     void InitVariables();
-
 
 #define declare_type(T)                                                        \
     void DoPutSync(Variable<T> &, const T *) final;                            \
@@ -170,7 +168,6 @@ private:
      */
     void PutAttributes(core::IO &io);
 
-
     /**
      * Sets buffer's positions to zero and fill buffer with zero char
      * @param bufferSTL buffer to be reset
@@ -213,7 +210,6 @@ private:
      *  2: need a transport flush
      */
     ResizeResult ResizeBuffer(const size_t dataIn, const std::string hint);
-
 };
 
 } // end namespace engine
