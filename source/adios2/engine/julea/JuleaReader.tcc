@@ -92,12 +92,12 @@ void JuleaReader::GetSyncCommon(Variable<T> &variable, T *data)
     GetVarMetadataFromKV(m_JuleaInfo->name_space, metadata->name, metadata, m_JuleaInfo->semantics); //FIXME
 
     GetVarDataFromJulea(name_space, metadata->name,  metadata->data_size, (void*)(data), batch);
-    std::cout << "++ Julea Reader DEBUG PRINT data_size: " << metadata->data_size << std::endl;    //FIXME
+    // std::cout << "++ Julea Reader DEBUG PRINT data_size: " << metadata->data_size << std::endl;    //FIXME
 
-    for(int i = 0; i < 10; i++)
-    {
-        std::cout << "Data: " << data[i] << std::endl;
-    }
+    // for(int i = 0; i < 10; i++)
+    // {
+    //     std::cout << "Data: " << data[i] << std::endl;
+    // }
 
     //FIXME: additional metadata infos as "IsReadAsJoined" need to be stored in ADIOS
 

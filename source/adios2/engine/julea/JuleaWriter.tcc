@@ -15,7 +15,9 @@
 
 #include <iostream>
 #include <fstream>
+#include <memory>
 #include <string>
+#include <utility>
 
 namespace adios2
 {
@@ -113,8 +115,8 @@ template <class T>
 void JuleaWriter::PutSyncCommon(Variable<T> &variable,
                                    const typename Variable<T>::Info &blockInfo)
 {
-    g_autoptr(JBatch) batch = NULL;
-    g_autoptr(JSemantics) semantics = NULL;
+    // g_autoptr(JBatch) batch = NULL;
+    // g_autoptr(JSemantics) semantics = NULL;
     gboolean use_batch = TRUE;
 
     const gchar* name_space = m_Name.c_str();
@@ -196,8 +198,6 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable,
     std::cout << "data_size: " << metadata->data_size << std::endl;
 
     // metadata->deferred_counter = variable.m_DeferredCounter;
-
-
     metadata->is_value = blockInfo.IsValue;
     metadata->is_single_value = variable.m_SingleValue;
     metadata->is_constant_dims = variable.IsConstantDims();
@@ -214,11 +214,9 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable,
     // std::cout << "Data type: " << variable.m_Type << std::endl;
     //FIXME: resizeresult
 
-    semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    // batch = j_batch_new(semantics);
-    batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
 
-    // j_adios_put_variable(m_JuleaInfo->name_space, metadata, blockInfo.Data, batch, use_batch);
     PutVariableToJulea(m_JuleaInfo->name_space, metadata, blockInfo.Data, batch);
 
     if (m_Verbosity == 5)
