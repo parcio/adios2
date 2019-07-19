@@ -320,6 +320,10 @@ void JuleaWriter::DoClose(const int transportIndex)
         std::cout << "Julea Writer " << m_WriterRank << " Close(" << m_Name
                   << ")\n";
     }
+    // m_JuleaInfo->semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+
+    g_free(m_JuleaInfo->name_space);
+    g_slice_free(JuleaInfo, m_JuleaInfo);
 }
 
 /**TODO

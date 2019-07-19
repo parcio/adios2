@@ -112,12 +112,20 @@ void JuleaReader::GetSyncCommon(Variable<T> &variable, T *data)
     // FIXME: additional metadata infos as "IsReadAsJoined" need to be stored in
     // ADIOS
 
+    //FIXME: check whether everything is set by InitVariables and this get function or if there are still metadata struct members ignored
+
     variable.m_Data = data;
     if (m_Verbosity == 5)
     {
         std::cout << "Julea Reader " << m_ReaderRank << "     GetSync("
                   << variable.m_Name << ")\n";
     }
+    g_free(name_space);
+    g_free(metadata->name);
+    g_slice_free(unsigned long, metadata->shape);
+    g_slice_free(unsigned long, metadata->start);
+    g_slice_free(unsigned long, metadata->count);
+    g_slice_free(Metadata, metadata);
 }
 
 template <class T>

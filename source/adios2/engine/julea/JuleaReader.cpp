@@ -545,6 +545,8 @@ void JuleaReader::DoClose(const int transportIndex)
         std::cout << "Julea Reader " << m_ReaderRank << " Close(" << m_Name
                   << ")\n";
     }
+    g_free(m_JuleaInfo->name_space);
+    g_slice_free(JuleaInfo, m_JuleaInfo);
 }
 
 // #define declare_type(T)                                                        \
