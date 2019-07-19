@@ -131,7 +131,7 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable,
     metadata->name = strdup(variable.m_Name.c_str());
 
     metadata->shape_size = blockInfo.Shape.size();
-    std::cout << "++ Julea Writer DEBUG PRINT blockInfo.Shape.size(): " << blockInfo.Shape.size() << std::endl;
+    // std::cout << "++ Julea Writer DEBUG PRINT blockInfo.Shape.size(): " << blockInfo.Shape.size() << std::endl;
     if(blockInfo.Shape.size() > 0)
     {
         // metadata->shape = g_slice_new(sizeof(metadata->shape) * metadata->shape_size);
@@ -139,7 +139,7 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable,
         *metadata->shape = blockInfo.Shape[0];
     }
     metadata->start_size = blockInfo.Start.size();
-    std::cout << "++ Julea Writer DEBUG PRINT blockInfo.Start.size(): " << blockInfo.Start.size() << std::endl;
+    // std::cout << "++ Julea Writer DEBUG PRINT blockInfo.Start.size(): " << blockInfo.Start.size() << std::endl;
     if(blockInfo.Start.size() > 0)
     {
         // metadata->start = g_slice_new(unsigned long);
@@ -147,7 +147,7 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable,
         *metadata->start = blockInfo.Start[0];
     }
     metadata->count_size = blockInfo.Count.size();
-    std::cout << "++ Julea Writer DEBUG PRINT blockInfo.Count.size(): " << blockInfo.Count.size() << std::endl;
+    // std::cout << "++ Julea Writer DEBUG PRINT blockInfo.Count.size(): " << blockInfo.Count.size() << std::endl;
     if(blockInfo.Count.size() > 0)
     {
         metadata->count = (unsigned long *) g_slice_alloc(sizeof(metadata->count) * metadata->count_size);
@@ -194,8 +194,8 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable,
     // metadata->data_size = sizeof(helper::GetType<T>()) * number_elements;
     metadata->data_size = metadata->sizeof_var_type * number_elements;
     // std::cout << "size of type: " << sizeof(helper::GetType<T>()) << std::endl;
-    std::cout << "size of type: " << metadata->sizeof_var_type << std::endl;
-    std::cout << "data_size: " << metadata->data_size << std::endl;
+    // std::cout << "size of type: " << metadata->sizeof_var_type << std::endl;
+    // std::cout << "data_size: " << metadata->data_size << std::endl;
 
     // metadata->deferred_counter = variable.m_DeferredCounter;
     metadata->is_value = blockInfo.IsValue;

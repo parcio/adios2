@@ -45,15 +45,16 @@ void GetVarMetadataFromKV(char *name_space, char *var_name, Metadata *metadata,
                           JSemantics *semantics);
 
 /* get attributes from kv store; hopefully soon from SMD backend */
-void j_adios_get_all_attr_names_from_kv(char *name_space, char ***names,
-                                        int **types, unsigned int count_names,
+void GetAllAttrNamesFromKV(char *name_space, char ***names,
+                                        int **types, unsigned int *count_names,
                                         JSemantics *semantics);
-void j_adios_get_attr_metadata_from_kv(char *name_space, char *var_name,
+void GetAttrMetadataFromKV(char *name_space, char *var_name,
                                        AttributeMetadata *attr_metadata,
                                        JSemantics *semantics);
 
-void j_adios_delete_variable(char *name_space, char *var_name, JBatch *batch);
-void j_adios_delete_attribute(char *name_space, char *attr_name, JBatch *batch);
+/* delete variable data as well as metadata */
+void DeleteVariable(char *name_space, char *var_name, JBatch *batch);
+void DeleteAttribute(char *name_space, char *attr_name, JBatch *batch);
 
 } // end namespace engine
 } // end namespace core

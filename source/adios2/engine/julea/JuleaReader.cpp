@@ -306,12 +306,10 @@ void JuleaReader::InitVariables()
     unsigned int count_names = 0;
     int size = 0;
 
-    std::cout << "++ Julea Reader DEBUG PRINT: 1" << std::endl;
-
     //TODO: fix memory leak
     GetAllVarNamesFromKV(m_JuleaInfo->name_space, &names, &types, &count_names, m_JuleaInfo->semantics);
 
-    std::cout << "++ Julea Reader DEBUG PRINT: count_names " << count_names << std::endl;
+    // std::cout << "++ Julea Reader DEBUG PRINT: count_names " << count_names << std::endl;
 
     for(unsigned int i = 0; i < count_names; i++)
     {
@@ -335,9 +333,9 @@ void JuleaReader::InitVariables()
         GetVarMetadataFromKV(m_JuleaInfo->name_space, names[i], metadata, m_JuleaInfo->semantics);
 
         // std::cout << "JuleaReader metadata address: " << (void*) metadata << std::endl;
-        std::cout << "++ Julea Reader DEBUG PRINT: shape_size: " << metadata->shape_size << std::endl;
-        std::cout << "++ Julea Reader DEBUG PRINT: start_size: " << metadata->start_size << std::endl;
-        std::cout << "++ Julea Reader DEBUG PRINT: count_size: " << metadata->count_size << std::endl;
+        // std::cout << "++ Julea Reader DEBUG PRINT: shape_size: " << metadata->shape_size << std::endl;
+        // std::cout << "++ Julea Reader DEBUG PRINT: start_size: " << metadata->start_size << std::endl;
+        // std::cout << "++ Julea Reader DEBUG PRINT: count_size: " << metadata->count_size << std::endl;
 
         //why add shape + shape_size?
         //without adding:
@@ -348,15 +346,9 @@ void JuleaReader::InitVariables()
 
         // Dims shape2 (metadata->shape, metadata->shape_size); //what would this do?
 
-        std::cout << "++ Julea Reader DEBUG PRINT: 2 " << std::endl;
-        std::cout << "++ Julea Reader DEBUG PRINT: 3 " << std::endl;
-        std::cout << "++ Julea Reader DEBUG PRINT: 4 " << std::endl;
-
         bool constantdims;
 
-
-        metadata->start_size = 0; //FIXME: why is start_size = 13744632839234567870
-
+        // metadata->start_size = 0; //FIXME: why is start_size = 13744632839234567870
         if(metadata->shape_size > 0)
         {
             // shape.front() = *metadata->shape;
@@ -375,8 +367,6 @@ void JuleaReader::InitVariables()
             // count.front() = *metadata->count;
             // std::cout << "++ Julea Reader DEBUG PRINT: count" << std::endl;
         }
-        std::cout << "++ Julea Reader DEBUG PRINT: 5 " << std::endl;
-
         constantdims = metadata->is_constant_dims;
         // constantdims = true;
 
@@ -398,7 +388,6 @@ void JuleaReader::InitVariables()
 // #undef make_case
 //         } // end switch
 
-        std::cout << "++ Julea Reader DEBUG PRINT: 6 " << std::endl;
         switch(types[i])
         {
             // case COMPOUND:
@@ -456,6 +445,7 @@ void JuleaReader::InitVariables()
         g_slice_free(unsigned long, metadata->shape);
         g_slice_free(unsigned long, metadata->shape);
         g_slice_free(unsigned long, metadata->shape);
+        g_slice_free(char, *names); //FIXME
     }
     if (m_Verbosity == 5)
     {

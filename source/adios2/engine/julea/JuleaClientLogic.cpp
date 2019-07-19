@@ -54,8 +54,8 @@ void var_metadata_to_bson(Metadata *metadata, bson_t *bson_meta_data)
         g_assert_true(
             bson_append_int64(bson_meta_data, key, -1, metadata->shape[i]));
     }
-    std::cout << "var_metadata_to_bson: bson_meta_data->len "
-              << bson_meta_data->len << std::endl;
+    // std::cout << "var_metadata_to_bson: bson_meta_data->len "
+              // << bson_meta_data->len << std::endl;
 
     g_assert_true(bson_append_int64(bson_meta_data, "start_size", -1,
                                     metadata->start_size));
@@ -66,8 +66,6 @@ void var_metadata_to_bson(Metadata *metadata, bson_t *bson_meta_data)
             bson_append_int64(bson_meta_data, key, -1, metadata->start[i]));
     }
 
-    std::cout << "var_metadata_to_bson: bson_meta_data->len "
-              << bson_meta_data->len << std::endl;
     g_assert_true(bson_append_int64(bson_meta_data, "count_size", -1,
                                     metadata->count_size));
     for (guint i = 0; i < metadata->count_size; i++)
@@ -77,8 +75,6 @@ void var_metadata_to_bson(Metadata *metadata, bson_t *bson_meta_data)
             bson_append_int64(bson_meta_data, key, -1, metadata->count[i]));
     }
 
-    std::cout << "var_metadata_to_bson: bson_meta_data->len "
-              << bson_meta_data->len << std::endl;
     g_assert_true(bson_append_int64(bson_meta_data, "memory_start_size", -1,
                                     metadata->memory_start_size));
     for (guint i = 0; i < metadata->memory_start_size; i++)
@@ -97,8 +93,6 @@ void var_metadata_to_bson(Metadata *metadata, bson_t *bson_meta_data)
                                         metadata->memory_count[i]));
     }
 
-    std::cout << "var_metadata_to_bson: bson_meta_data->len "
-              << bson_meta_data->len << std::endl;
     g_assert_true(bson_append_int64(bson_meta_data, "steps_start", -1,
                                     metadata->steps_start));
     g_assert_true(bson_append_int64(bson_meta_data, "steps_count", -1,
@@ -137,8 +131,6 @@ void var_metadata_to_bson(Metadata *metadata, bson_t *bson_meta_data)
     g_assert_true(bson_append_bool(bson_meta_data, "is_first_streaming_step",
                                    -1, metadata->is_first_streaming_step));
 
-    std::cout << "var_metadata_to_bson: bson_meta_data->len "
-              << bson_meta_data->len << std::endl;
     /* now comes the part for "min_value" of type T in C++ */
     if (metadata->var_type == STRING) // FIXME data types
     {
@@ -232,8 +224,6 @@ void var_metadata_to_bson(Metadata *metadata, bson_t *bson_meta_data)
     {
         // TODO: implement
     }
-    std::cout << "var_metadata_to_bson: bson_meta_data->len "
-              << bson_meta_data->len << std::endl;
     g_free(key);
 }
 
@@ -330,7 +320,7 @@ void PutVariableToJulea(char *name_space, Metadata *metadata,
     }
     else
     {
-        printf("NOW ENGINE: ---* Julea Adios Client: Variable %s already in kv "
+        printf("++ Julea Client Logic: Variable %s already in kv "
                "store. \n",
                metadata->name);
         // TODO: update variable -> is there anything else necessary to do?
@@ -364,7 +354,7 @@ void PutVariableToJulea(char *name_space, Metadata *metadata,
 
     if (bytes_written == metadata->data_size)
     {
-        printf("NOW ENGINE: ---* Julea Adios Client: Data written for variable "
+        printf("++ Julea Client Logic: Data written for variable "
                "'%s' \n",
                metadata->name);
     }
@@ -373,10 +363,10 @@ void PutVariableToJulea(char *name_space, Metadata *metadata,
         printf("WARNING: only %ld bytes written instead of %d bytes! \n",
                bytes_written, metadata->data_size);
     }
-    free(string_metadata_kv);
-    free(string_data_object);
+    g_free(string_metadata_kv);
+    g_free(string_data_object);
 
-    printf("NOW ENGINE: ---* Julea Adios Client: Put Variable \n");
+    printf("++ Julea Client Logic: Put Variable \n");
 }
 
 /**
@@ -441,7 +431,7 @@ void PutAttributeToJulea(char *name_space, AttributeMetadata *attr_metadata,
     {
         bson_names = bson_new_from_data((const uint8_t *)names_buf, value_len);
     }
-    g_free(names_buf);
+    // g_free(names_buf);
 
     /* check if attribute name is already in kv store */
     if (!bson_iter_init_find(&b_iter, bson_names, attr_metadata->name))
@@ -452,7 +442,7 @@ void PutAttributeToJulea(char *name_space, AttributeMetadata *attr_metadata,
     }
     else
     {
-        printf("NOW ENGINE: ---* Julea Adios Client: Variable %s already in kv "
+        printf("++ Julea Client Logic: Variable %s already in kv "
                "store. \n",
                attr_metadata->name);
     }
@@ -468,7 +458,7 @@ void PutAttributeToJulea(char *name_space, AttributeMetadata *attr_metadata,
 
     if (bytes_written == attr_metadata->data_size)
     {
-        printf("NOW ENGINE: ---* Julea Adios Client: Data written for "
+        printf("++ Julea Client Logic: Data written for "
                "attribute '%s' \n",
                attr_metadata->name);
     }
@@ -481,7 +471,7 @@ void PutAttributeToJulea(char *name_space, AttributeMetadata *attr_metadata,
     g_free(string_metadata_kv);
     g_free(string_data_object);
 
-    printf("NOW ENGINE: ---* Julea Adios Client: Put Attribute \n");
+    printf("++ Julea Client Logic: Put Attribute \n");
 }
 
 /**
@@ -505,13 +495,13 @@ void GetAllVarNamesFromKV(char *name_space, char ***names, int **types,
     bson_iter_t b_iter;
     guint32 value_len = 0;
 
-    g_autoptr(JKV) kv_object = NULL;
-    gpointer names_buf = NULL;
+    // g_autoptr(JKV) kv_object = NULL;
+    void* names_buf = NULL;
 
-    JBatch *batch = j_batch_new(semantics);
+    auto batch = j_batch_new(semantics);
     // printf("-- JADIOS DEBUG PRINT: get_all_var_names_from_kv \n");
 
-    kv_object = j_kv_new("variable_names", name_space);
+    auto kv_object = j_kv_new("variable_names", name_space);
 
     j_kv_get(kv_object, &names_buf, &value_len, batch);
     j_batch_execute(batch);
@@ -561,20 +551,20 @@ void GetAllVarNamesFromKV(char *name_space, char ***names, int **types,
 void GetVarMetadataFromKV(char *name_space, char *var_name, Metadata *metadata,
                           JSemantics *semantics)
 {
-    JBatch *batch;
-    gchar *string_metadata_kv;
+    // JBatch *batch;
+    // gchar *string_metadata_kv;
     gchar *key;
     // bson_t* bson_metadata;
     bson_t bson_metadata;
     bson_iter_t b_iter;
     guint32 value_len = 0;
 
-    g_autoptr(JKV) kv_object = NULL;
-    gpointer meta_data_buf = NULL;
-    batch = j_batch_new(semantics);
+    // g_autoptr(JKV) kv_object = NULL;
+    void* meta_data_buf = NULL;
+    auto batch = j_batch_new(semantics);
 
-    string_metadata_kv = g_strdup_printf("variables_%s", name_space);
-    kv_object = j_kv_new(string_metadata_kv, var_name);
+    auto string_metadata_kv = g_strdup_printf("variables_%s", name_space);
+    auto kv_object = j_kv_new(string_metadata_kv, var_name);
     // bson_metadata = bson_new();
 
     j_kv_get(kv_object, &meta_data_buf, &value_len, batch);
@@ -594,7 +584,7 @@ void GetVarMetadataFromKV(char *name_space, char *var_name, Metadata *metadata,
     // if(bson_iter_init(&b_iter, bson_metadata))
     if (bson_iter_init(&b_iter, &bson_metadata))
     {
-        std::cout << "Bson iterator is valid" << std::endl;
+        std::cout << "++ Julea Client Logic: Bson iterator is valid" << std::endl;
     }
     else
     {
@@ -855,9 +845,9 @@ void GetVarMetadataFromKV(char *name_space, char *var_name, Metadata *metadata,
                 bson_iter_key(&b_iter), metadata->name);
         }
     }
-    g_free(string_metadata_kv);
-    g_free(key);
-    printf("NOW ENGINE: ---* Julea Adios Client: Get Variable Metadata \n");
+    free(string_metadata_kv);
+    free(key);
+    printf("++ Julea Client Logic: Get Variable Metadata \n");
 }
 
 /**
@@ -871,37 +861,49 @@ void GetVarMetadataFromKV(char *name_space, char *var_name, Metadata *metadata,
  * \param [w] count_names number of names to retrieve
  * \param [r] semantics   semantics to be used
  */
-void j_adios_get_all_attr_names_from_kv(char *name_space, char ***names,
-                                        int **types, unsigned int count_names,
+void GetAllAttrNamesFromKV(char *name_space, char ***names,
+                                        int **types, unsigned int *count_names,
                                         JSemantics *semantics)
 {
     bson_t *bson_names;
-    bson_iter_t *b_iter = NULL;
+    bson_iter_t b_iter;
     guint32 value_len = 0;
 
-    g_autoptr(JKV) kv_object = NULL;
+    // g_autoptr(JKV) kv_object = NULL;
+    void* names_buf = NULL;
 
-    JBatch *batch = j_batch_new(semantics);
+    auto batch = j_batch_new(semantics);
 
-    kv_object = j_kv_new("attribute_names", name_space);
-    bson_names = bson_new();
+    auto kv_object = j_kv_new("attribute_names", name_space);
+    j_kv_get(kv_object, &names_buf, &value_len, batch);
+    j_batch_execute(batch);
 
-    value_len = strlen(name_space);
-    // j_kv_get(kv_object, (void*) bson_names, &value_len, batch); FIXME
-    count_names = bson_count_keys(bson_names);
-
-    *names = (char **)g_slice_alloc(count_names * sizeof(char *));
-    *types = (int *)g_slice_alloc(count_names * sizeof(int));
-    bson_iter_init(b_iter, bson_names);
-
-    for (unsigned int i = 0; i < count_names; i++)
+    if (value_len == 0)
     {
-        if (!bson_iter_next(b_iter))
+        // bson_names = bson_new();
+        printf("WARNING: The attribute names key-value store is empty! \n");
+        *count_names = 0;
+    }
+    else
+    {
+        bson_names = bson_new_from_data((const uint8_t *)names_buf, value_len);
+    }
+
+    // j_kv_get(kv_object, (void*) bson_names, &value_len, batch); FIXME
+    *count_names = bson_count_keys(bson_names);
+
+    *names = (char **)g_slice_alloc(*count_names * sizeof(char *));
+    *types = (int *)g_slice_alloc(*count_names * sizeof(int));
+    bson_iter_init(&b_iter, bson_names);
+
+    for (unsigned int i = 0; i < *count_names; i++)
+    {
+        if (!bson_iter_next(&b_iter))
         {
             printf("ERROR: count of names does not match \n");
         }
-        (*names)[i] = g_strdup(bson_iter_key(b_iter));
-        (*types)[i] = bson_iter_int32(b_iter);
+        (*names)[i] = g_strdup(bson_iter_key(&b_iter));
+        (*types)[i] = bson_iter_int32(&b_iter);
     }
 }
 
@@ -916,50 +918,62 @@ void j_adios_get_all_attr_names_from_kv(char *name_space, char ***names,
  * information struct; needs to be allocated
  * \param [r] semantics  	semantics to be used
  */
-void j_adios_get_attr_metadata_from_kv(char *name_space, char *attr_name,
+void GetAttrMetadataFromKV(char *name_space, char *attr_name,
                                        AttributeMetadata *attr_metadata,
                                        JSemantics *semantics)
 {
-    JBatch *batch;
-    gchar *string_metadata_kv;
-    bson_t *bson_metadata;
-    bson_iter_t *b_iter = NULL;
+    // JBatch *batch;
+    // gchar *string_metadata_kv;
+    bson_t bson_metadata;
+    bson_iter_t b_iter;
     guint32 value_len = 0;
 
-    g_autoptr(JKV) kv_object = NULL;
-    batch = j_batch_new(semantics);
+    // g_autoptr(JKV) kv_object = NULL;
+    void* meta_data_buf = NULL;
+    auto batch = j_batch_new(semantics);
 
-    string_metadata_kv = g_strdup_printf("attributes_%s", name_space);
-    kv_object = j_kv_new(string_metadata_kv, attr_name);
-    bson_metadata = bson_new();
+    auto string_metadata_kv = g_strdup_printf("attributes_%s", name_space);
+    auto kv_object = j_kv_new(string_metadata_kv, attr_name);
+    // auto bson_metadata = bson_new();
 
-    value_len = strlen(attr_name);
-    // j_kv_get(kv_object, (void*) bson_metadata, &value_len, batch); FIXME
-    bson_iter_init(b_iter, bson_metadata);
+    j_kv_get(kv_object, &meta_data_buf, &value_len, batch);
+    j_batch_execute(batch);
 
-    while (bson_iter_next(b_iter))
+    if (value_len == 0)
     {
-        if (g_strcmp0(bson_iter_key(b_iter), "attr_type") == 0)
+        // bson_names = bson_new();
+        printf("WARNING: The attribute key-value store is empty! \n");
+    }
+    else
+    {
+        bson_init_static(&bson_metadata, (uint8_t *)meta_data_buf, value_len);
+    }
+
+    bson_iter_init(&b_iter, &bson_metadata);
+
+    while (bson_iter_next(&b_iter))
+    {
+        if (g_strcmp0(bson_iter_key(&b_iter), "attr_type") == 0)
         {
-            attr_metadata->attr_type = (variable_type)bson_iter_int32(b_iter);
+            attr_metadata->attr_type = (variable_type)bson_iter_int32(&b_iter);
         }
-        else if (g_strcmp0(bson_iter_key(b_iter), "number_elements") == 0)
+        else if (g_strcmp0(bson_iter_key(&b_iter), "number_elements") == 0)
         {
-            attr_metadata->number_elements = bson_iter_int64(b_iter);
+            attr_metadata->number_elements = bson_iter_int64(&b_iter);
         }
-        else if (g_strcmp0(bson_iter_key(b_iter), "is_single_value") == 0)
+        else if (g_strcmp0(bson_iter_key(&b_iter), "is_single_value") == 0)
         {
-            attr_metadata->is_single_value = (bool)bson_iter_bool(b_iter);
+            attr_metadata->is_single_value = (bool)bson_iter_bool(&b_iter);
         }
-        else if (g_strcmp0(bson_iter_key(b_iter), "data_size") == 0)
+        else if (g_strcmp0(bson_iter_key(&b_iter), "data_size") == 0)
         {
-            attr_metadata->data_size = bson_iter_int64(b_iter);
+            attr_metadata->data_size = bson_iter_int64(&b_iter);
         }
         else
         {
             printf(
                 "Unknown key '%s' when retrieving metadata for attribute %s\n",
-                bson_iter_key(b_iter), attr_metadata->name);
+                bson_iter_key(&b_iter), attr_metadata->name);
         }
     }
 
@@ -980,22 +994,20 @@ void j_adios_get_attr_metadata_from_kv(char *name_space, char *attr_name,
 void GetVarDataFromJulea(char *name_space, char *variable_name,
                          unsigned int length, void *data_pointer, JBatch *batch)
 {
-    gchar *string_data_object;
-    guint64 bytes_read = 0; // nb = bytes written; see benchmark
-    g_autoptr(JObject) data_object = NULL;
+    guint64 bytes_read = 0;
 
-    string_data_object =
+    auto string_data_object =
         g_strdup_printf("%s_variables_%s", name_space, variable_name);
-    data_object = j_object_new(string_data_object, variable_name);
+    auto data_object = j_object_new(string_data_object, variable_name);
 
     j_object_read(data_object, data_pointer, length, 0, &bytes_read, batch);
 
     j_batch_execute(batch);
-    printf("NOW ENGINE: ---* Julea Adios Client: Batch execute \n");
+    printf("++ Julea Client Logic: Batch execute \n");
 
     if (bytes_read == length)
     {
-        printf("NOW ENGINE: ---* Julea Adios Client: Read data for variable "
+        printf("++ Julea Client Logic: Read data for variable "
                "'%s' \n",
                variable_name);
     }
@@ -1022,17 +1034,16 @@ void GetAttrDataFromJulea(char *name_space, char *attribute_name,
                           unsigned int length, void *data_pointer,
                           JBatch *batch)
 {
-    guint64 bytes_read = 0; // nb = bytes written; see benchmark
-    g_autoptr(JObject) data_object = NULL;
-    gchar *string_data_object;
-    string_data_object =
+    guint64 bytes_read = 0;
+
+    auto string_data_object =
         g_strdup_printf("%s_attributes_%s", name_space, attribute_name);
 
-    data_object = j_object_new(string_data_object, attribute_name);
+    auto data_object = j_object_new(string_data_object, attribute_name);
     j_object_read(data_object, data_pointer, length, 0, &bytes_read, batch);
     if (bytes_read == length)
     {
-        printf("NOW ENGINE: ---* Julea Adios Client: Read data for variable "
+        printf("++ Julea Client Logic: Read data for variable "
                "'%s' \n",
                attribute_name);
     }
@@ -1043,9 +1054,9 @@ void GetAttrDataFromJulea(char *name_space, char *attribute_name,
     }
 
     j_batch_execute(batch); // DESIGN: where should this be? how often?
-    printf("NOW ENGINE: ---* Julea Adios Client: Batch execute \n");
+    printf("++ Julea Client Logic: Batch execute \n");
 
-    free(string_data_object);
+    g_free(string_data_object);
 }
 
 /**
@@ -1055,22 +1066,15 @@ void GetAttrDataFromJulea(char *name_space, char *attribute_name,
  * \param [r] metadata   [description]
  * \param [r] batch      [description]
  */
-void j_adios_delete_variable(char *name_space, char *var_name, JBatch *batch)
+void DeleteVariable(char *name_space, char *var_name, JBatch *batch)
 {
-    g_autoptr(JKV) kv_object_metadata = NULL;
-    g_autoptr(JKV) kv_object_names = NULL;
-    g_autoptr(JObject) data_object = NULL;
-
-    gchar *string_metadata_kv;
-    gchar *string_data_object;
-
-    string_data_object =
+    auto string_data_object =
         g_strdup_printf("%s_variables_%s", name_space, var_name);
-    string_metadata_kv = g_strdup_printf("variables_%s", name_space);
+    auto string_metadata_kv = g_strdup_printf("variables_%s", name_space);
 
-    data_object = j_object_new(string_data_object, var_name);
-    kv_object_metadata = j_kv_new(string_metadata_kv, var_name);
-    kv_object_names = j_kv_new("variable_names", name_space);
+    auto data_object = j_object_new(string_data_object, var_name);
+    auto kv_object_metadata = j_kv_new(string_metadata_kv, var_name);
+    auto kv_object_names = j_kv_new("variable_names", name_space);
 
     j_object_delete(data_object, batch);
     j_kv_delete(kv_object_metadata, batch);
@@ -1091,22 +1095,15 @@ void j_adios_delete_variable(char *name_space, char *var_name, JBatch *batch)
  * \param [r] metadata   [description]
  * \param [r] batch      [description]
  */
-void j_adios_delete_attribute(char *name_space, char *var_name, JBatch *batch)
+void DeleteAttribute(char *name_space, char *var_name, JBatch *batch)
 {
-    g_autoptr(JKV) kv_object_metadata = NULL;
-    g_autoptr(JKV) kv_object_names = NULL;
-    g_autoptr(JObject) data_object = NULL;
-
-    gchar *string_metadata_kv;
-    gchar *string_data_object;
-
-    string_data_object =
+    auto string_data_object =
         g_strdup_printf("%s_attributes_%s", name_space, var_name);
-    string_metadata_kv = g_strdup_printf("attributes_%s", name_space);
+    auto string_metadata_kv = g_strdup_printf("attributes_%s", name_space);
 
-    data_object = j_object_new(string_data_object, var_name);
-    kv_object_metadata = j_kv_new(string_metadata_kv, var_name);
-    kv_object_names = j_kv_new("attribute_names", name_space);
+    auto data_object = j_object_new(string_data_object, var_name);
+    auto kv_object_metadata = j_kv_new(string_metadata_kv, var_name);
+    auto kv_object_names = j_kv_new("attribute_names", name_space);
 
     j_object_delete(data_object, batch);
     j_kv_delete(kv_object_metadata, batch);
