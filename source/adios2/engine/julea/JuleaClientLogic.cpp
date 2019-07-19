@@ -369,6 +369,7 @@ void PutVariableToJulea(char *name_space, Metadata *metadata,
     j_kv_unref(kv_object_names);
     j_kv_unref(kv_object_metadata);
     j_object_unref(data_object);
+    j_batch_unref(batch_2);
     bson_destroy(bson_names);
     bson_destroy(bson_meta_data);
 
@@ -478,6 +479,7 @@ void PutAttributeToJulea(char *name_space, AttributeMetadata *attr_metadata,
     j_kv_unref(kv_object_metadata);
     j_kv_unref(kv_object_names);
     j_object_unref(data_object);
+    j_batch_unref(batch_2);
     bson_destroy(bson_names);
     bson_destroy(bson_meta_data);
 
@@ -551,6 +553,7 @@ void GetAllVarNamesFromKV(char *name_space, char ***names, int **types,
     	bson_destroy(bson_names);
     }
     j_kv_unref(kv_object);
+    j_batch_unref(batch);
 }
 
 /**
@@ -869,6 +872,7 @@ void GetVarMetadataFromKV(char *name_space, char *var_name, Metadata *metadata,
     	bson_destroy(&bson_metadata);
     }
     j_kv_unref(kv_object);
+    j_batch_unref(batch);
     printf("++ Julea Client Logic: Get Variable Metadata \n");
 }
 
@@ -929,6 +933,7 @@ void GetAllAttrNamesFromKV(char *name_space, char ***names, int **types,
     {
     	bson_destroy(bson_names);
     }
+    j_batch_unref(batch);
 }
 
 /**
@@ -999,6 +1004,7 @@ void GetAttrMetadataFromKV(char *name_space, char *attr_name,
 
     g_free(string_metadata_kv);
     j_kv_unref(kv_object);
+    j_batch_unref(batch);
     bson_destroy(&bson_metadata);
     printf("---* Julea Adios Client: Get Attribute Metadata \n");
 }

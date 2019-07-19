@@ -240,6 +240,7 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable,
     // g_free((void*)name_space);
     g_free(metadata->name);
     g_slice_free(Metadata, metadata);
+    j_batch_unref(batch);
     // g_slice_free(unsigned long, metadata->shape); //FIXME free only if size > 0
     // g_slice_free(unsigned long, metadata->start);
     // g_slice_free(unsigned long, metadata->count);

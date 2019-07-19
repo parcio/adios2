@@ -552,6 +552,7 @@ void JuleaWriter::PutAttributes(core::IO &io)
 #undef declare_type
 
         j_batch_execute(batch);
+        j_batch_unref(batch);
     }
 }
 

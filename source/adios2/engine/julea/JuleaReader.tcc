@@ -59,6 +59,7 @@ void JuleaReader::GetSyncCommon(Variable<std::string> &variable,
         std::cout << "Julea Reader " << m_ReaderRank << "     GetSync("
                   << variable.m_Name << ")\n";
     }
+    j_batch_unref(batch);
 }
 
 // inline needed? is in skeleton-engine
@@ -126,6 +127,7 @@ void JuleaReader::GetSyncCommon(Variable<T> &variable, T *data)
     g_slice_free(unsigned long, metadata->start);
     g_slice_free(unsigned long, metadata->count);
     g_slice_free(Metadata, metadata);
+    j_batch_unref(batch);
 }
 
 template <class T>
