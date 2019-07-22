@@ -158,19 +158,18 @@ void JuleaWriter::PerformPuts()
                       << "compound variable type not supported \n";
         }
 // KILLME! Who would want a template in a makro in a function?!
-        //FIXME: change to PutSyncCommon(variable,data);
-        //FIXME: still working without for loop over blockinfo?
+// FIXME: change to PutSyncCommon(variable,data);
+// FIXME: still working without for loop over blockinfo?
 #define declare_template_instantiation(T)                                      \
     else if (type == helper::GetType<T>())                                     \
     {                                                                          \
         Variable<T> &variable = FindVariable<T>(                               \
             variableName, "in call to PerformPuts, EndStep or Close");         \
                                                                                \
-            PutSyncCommon(variable, variable.m_Data);                          \
+        PutSyncCommon(variable, variable.m_Data);                              \
     }
         ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
-
     }
     m_DeferredVariables.clear();
     m_NeedPerformPuts = false;
@@ -307,7 +306,6 @@ void JuleaWriter::InitVariables()
 // #undef declare_type
 // ADIOS2_FOREACH_TYPE_1ARG(declare_type)
 
-
 /**TODO
  * [declare_type description]
  * @param  T [description]
@@ -325,7 +323,6 @@ void JuleaWriter::InitVariables()
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
 // ADIOS2_FOREACH_TYPE_1ARG(declare_type)
-
 
 /**TODO
  * [JuleaWriter::DoClose description]

@@ -548,9 +548,9 @@ void GetAllVarNamesFromKV(char *name_space, char ***names, int **types,
         // %s\n", (*names)[i]); printf("-- JADIOS DEBUG PRINT: types DEBUG
         // PRINT: %d\n", (*types)[i]);
     }
-    if(value_len > 0)
+    if (value_len > 0)
     {
-    	bson_destroy(bson_names);
+        bson_destroy(bson_names);
     }
     j_kv_unref(kv_object);
     j_batch_unref(batch);
@@ -867,9 +867,9 @@ void GetVarMetadataFromKV(char *name_space, char *var_name, Metadata *metadata,
     }
     g_free(string_metadata_kv);
     g_free(key);
-    if(value_len > 0)
+    if (value_len > 0)
     {
-    	bson_destroy(&bson_metadata);
+        bson_destroy(&bson_metadata);
     }
     j_kv_unref(kv_object);
     j_batch_unref(batch);
@@ -929,9 +929,9 @@ void GetAllAttrNamesFromKV(char *name_space, char ***names, int **types,
         (*types)[i] = bson_iter_int32(&b_iter);
     }
     j_kv_unref(kv_object);
-    if(value_len > 0)
+    if (value_len > 0)
     {
-    	bson_destroy(bson_names);
+        bson_destroy(bson_names);
     }
     j_batch_unref(batch);
 }

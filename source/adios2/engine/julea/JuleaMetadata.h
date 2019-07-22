@@ -46,6 +46,7 @@ union value_type
     int8_t integer_8;
     uint8_t u_integer_8;
     int16_t integer_16;
+    int16_t *integer_16_ptr;
     uint16_t u_integer_16;
     int32_t integer_32;
     uint32_t u_integer_32;

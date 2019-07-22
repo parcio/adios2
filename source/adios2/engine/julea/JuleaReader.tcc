@@ -113,7 +113,8 @@ void JuleaReader::GetSyncCommon(Variable<T> &variable, T *data)
     // FIXME: additional metadata infos as "IsReadAsJoined" need to be stored in
     // ADIOS
 
-    //FIXME: check whether everything is set by InitVariables and this get function or if there are still metadata struct members ignored
+    // FIXME: check whether everything is set by InitVariables and this get
+    // function or if there are still metadata struct members ignored
 
     variable.m_Data = data;
     if (m_Verbosity == 5)
