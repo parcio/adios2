@@ -134,9 +134,9 @@ private:
      * @param variable
      * @param values
      */
-    template <class T>
-    void PutSyncCommon(Variable<T> &variable,
-                       const typename Variable<T>::Info &blockInfo);
+    // template <class T>
+    // void PutSyncCommon(Variable<T> &variable,
+    //                    const typename Variable<T>::Info &blockInfo);
 
     /**
      * Probably this is more useful than the version with the Info struct as param

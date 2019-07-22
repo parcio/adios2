@@ -158,20 +158,19 @@ void JuleaWriter::PerformPuts()
                       << "compound variable type not supported \n";
         }
 // KILLME! Who would want a template in a makro in a function?!
+        //FIXME: change to PutSyncCommon(variable,data);
+        //FIXME: still working without for loop over blockinfo?
 #define declare_template_instantiation(T)                                      \
     else if (type == helper::GetType<T>())                                     \
     {                                                                          \
         Variable<T> &variable = FindVariable<T>(                               \
             variableName, "in call to PerformPuts, EndStep or Close");         \
                                                                                \
-        for (const auto &blockInfo : variable.m_BlocksInfo)                    \
-        {                                                                      \
-            PutSyncCommon(variable, blockInfo);                                \
-        }                                                                      \
-        variable.m_BlocksInfo.clear();                                         \
+            PutSyncCommon(variable, variable.m_Data);                          \
     }
         ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
+
     }
     m_DeferredVariables.clear();
     m_NeedPerformPuts = false;
@@ -294,11 +293,30 @@ void JuleaWriter::InitVariables()
  * @param  T [description]
  * @return   [description]
  */
+// #define declare_type(T)                                                        \
+//     void JuleaWriter::DoPutSync(Variable<T> &variable, const T *data)          \
+//     {                                                                          \
+//         PutSyncCommon(variable, variable.SetBlockInfo(data, CurrentStep()));   \
+//         variable.m_BlocksInfo.clear();                                         \
+//     }                                                                          \
+//     void JuleaWriter::DoPutDeferred(Variable<T> &variable, const T *data)      \
+//     {                                                                          \
+//         PutDeferredCommon(variable, data);                                     \
+//     }
+// ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
+// #undef declare_type
+// ADIOS2_FOREACH_TYPE_1ARG(declare_type)
+
+
+/**TODO
+ * [declare_type description]
+ * @param  T [description]
+ * @return   [description]
+ */
 #define declare_type(T)                                                        \
     void JuleaWriter::DoPutSync(Variable<T> &variable, const T *data)          \
     {                                                                          \
-        PutSyncCommon(variable, variable.SetBlockInfo(data, CurrentStep()));   \
-        variable.m_BlocksInfo.clear();                                         \
+        PutSyncCommon(variable, data);                                         \
     }                                                                          \
     void JuleaWriter::DoPutDeferred(Variable<T> &variable, const T *data)      \
     {                                                                          \
@@ -307,6 +325,7 @@ void JuleaWriter::InitVariables()
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
 // ADIOS2_FOREACH_TYPE_1ARG(declare_type)
+
 
 /**TODO
  * [JuleaWriter::DoClose description]

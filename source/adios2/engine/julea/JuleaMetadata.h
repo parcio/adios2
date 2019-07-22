@@ -97,6 +97,8 @@ struct Metadata
     value_type max_value;
     value_type curr_value;
 
+    value_type *min_value_ptr;
+
     unsigned int sizeof_var_type; // store the actual size of the variable type
     unsigned int data_size;
     // unsigned int deferred_counter; //VariableBase.h TODO: implement!
