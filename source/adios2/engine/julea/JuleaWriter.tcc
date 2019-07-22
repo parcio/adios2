@@ -12,6 +12,7 @@
 #define ADIOS2_ENGINE_JULEAWRITER_TCC_
 
 #include "JuleaWriter.h"
+// #include "JuleaFormatWriter.h"
 
 #include <adios2_c.h>
 #include <fstream>

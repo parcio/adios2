@@ -130,6 +130,7 @@ if(ADIOS2_HAVE_JULEA_GONDOLIN)
       engine/julea/JuleaWriter.tcc
       #engine/julea/JuleaClientLogic.h
       engine/julea/JuleaClientLogic.cpp
+      engine/julea/JuleaFormatWriter.cpp
       #engine/julea/JuleaMetadata.h
   )
   target_include_directories(adios2 PRIVATE
