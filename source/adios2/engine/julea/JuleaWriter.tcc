@@ -27,117 +27,6 @@ namespace core
 namespace engine
 {
 
-#define JULEA_VALUE_TYPE(MACRO)                                                \
-    MACRO(integer_8)                                                           \
-    MACRO(u_integer_8)                                                         \
-    MACRO(integer_16)                                                          \
-    MACRO(u_integer_16)                                                        \
-    MACRO(integer_32)                                                          \
-    MACRO(u_integer_32)                                                        \
-    MACRO(integer_64)                                                          \
-    MACRO(u_integer_64)                                                        \
-    MACRO(real_float)                                                          \
-    MACRO(real_double)                                                         \
-    MACRO(lreal_double)
-
-#define JULEA_TEST_TYPE(MACRO)                                                 \
-    MACRO(char)                                                                \
-    MACRO(signed char)                                                         \
-    MACRO(unsigned char)                                                       \
-    MACRO(short)                                                               \
-    MACRO(unsigned short)                                                      \
-    MACRO(int)                                                                 \
-    MACRO(unsigned int)                                                        \
-    MACRO(long int)                                                            \
-    MACRO(long long int)                                                       \
-    MACRO(unsigned long int)                                                   \
-    MACRO(unsigned long long int)                                              \
-    MACRO(float)                                                               \
-    MACRO(double)                                                              \
-    MACRO(long double)
-
-template <class T>
-void TryingEverything(Variable<T> &variable, Metadata *metadata)
-{
-    // const std::string type(variable->m_Type);
-    // if (type == "compound")
-    // {
-    //     not supported
-    // }
-// #define define_julea_test_type(T)                                              \
-//     else if (type == adios2::helper::GetType<T>())
-//     { \
-//      metadata->min_value.integer_16 = 42; \
-//     }\
-//     JULEA_TEST_TYPE(define_julea_test_type)
-// #undef define_julea_test_type
-
-// #define define_value_type(V)                                                   \
-//     else if (type == "int16_t") \
-//     { \
-//         metadata->min_value.V = variable.Min();  \
-//     }
-//     JULEA_VALUE_TYPE(define_value_type)
-// #undef define_value_type
-
-    // #define define_julea_test_type(T)                                      \
-//     else if (type == adios2::helper::GetType<T>())                             \
-//     {                                                                          \
-//         metadata->min_value = 42; \
-//     #define define_value_type(V)                                          \
-//             metadata->min_value.V = 42; \
-//         JULEA_VALUE_TYPE(define_value_type)
-    //     #undef define_value_type
-    //     }
-    //     JULEA_TEST_TYPE(define_julea_test_type)
-    // #undef define_julea_test_type
-//     #define define_julea_test_type(T)                                                   \
-//     if (helper::GetType<T>() == "int8_t")                                      \
-//     {                                                                          \
-//         metadata->var_type = INT8;                                             \
-//         metadata->sizeof_var_type = sizeof(int8_t);                            \
-//         metadata->min_value.integer_8 = reinterpret_cast<int> variable.Min();                                \
-//     }                                                                          \
-//     JULEA_TEST_TYPE(define_julea_test_type)
-// #undef define_julea_test_type
-
-//     const adios2::core::VariableBase *variableBase =
-//             reinterpret_cast<const adios2::core::VariableBase *>(variable);
-//         const std::string type(variableBase->m_Type);
-
-//     #define julea_declare_template_instantiation(T)                                      \
-//     else if (type == adios2::helper::GetType<T>())                             \
-//     {                                                                          \
-//         T *minT = reinterpret_cast<T *>(min);                                  \
-//         const adios2::core::Variable<T> *variableT =                           \
-//             dynamic_cast<const adios2::core::Variable<T> *>(variableBase);     \
-//         *minT = variableT->m_Min;                                              \
-//     }
-//         JULEA_TEST_TYPE(julea_declare_template_instantiation)
-// #undef julea_declare_template_instantiation
-}
-
-template <class T>
-void ParseMinMax(Variable<T> &variable, Metadata *metadata)
-{
-
-//TODO: try sprintf magic : getType + something = new value_type union member
-#define define_value_type(V)                                                   \
-    if (helper::GetType<T>() == "int8_t")                                      \
-    {                                                                          \
-        metadata->var_type = INT8;                                             \
-        metadata->sizeof_var_type = sizeof(int8_t);                            \
-        metadata->min_value.V = variable.Min();                                \
-    }                                                                          \
-    else if (helper::GetType<T>() == "uint8_t")                                \
-    {                                                                          \
-        metadata->var_type = UINT8;                                            \
-        metadata->sizeof_var_type = sizeof(uint8_t);                           \
-        metadata->min_value.V = variable.Min();                                \
-    }
-    JULEA_VALUE_TYPE(define_value_type)
-#undef define_value_type
-}
 
 /**
  * Parsing the variable types to enum defined in JULEA's Adios Client.
@@ -224,6 +113,8 @@ void parse_variable_type(Variable<T> &variable,
         // metadata->sizeof_var_type = sizeof(double complex); //TODO
     }
 }
+
+
 
 template <class T>
 void parse_variable_type(Variable<T> &variable, const T *data,
@@ -332,6 +223,73 @@ void parse_variable_type(Variable<T> &variable, const T *data,
         // metadata->sizeof_var_type = sizeof(double complex); //TODO
     }
 }
+
+template <>
+void parse_variable_type<int8_t>(Variable<int8_t> &variable, const int8_t *data,
+                         Metadata *metadata)
+{
+        std::cout << "++ Julea Writer DEBUG PRINT 1.1: " << std::endl;
+        metadata->var_type = INT8;
+        metadata->sizeof_var_type = sizeof(int8_t);
+        metadata->min_value.integer_8 = variable.Min();
+        std::cout << "parse_variable_type int8_t: min = " << variable.Min() << std::endl;
+}
+
+template <>
+void parse_variable_type<int16_t>(Variable<int16_t> &variable, const int16_t *data,
+                         Metadata *metadata)
+{
+        std::cout << "++ Julea Writer DEBUG PRINT 1.1: " << std::endl;
+        metadata->var_type = INT16;
+        metadata->sizeof_var_type = sizeof(int16_t);
+        metadata->min_value.integer_8 = variable.Min();
+        std::cout << "parse_variable_type int8_t: min = " << variable.Min() << std::endl;
+}
+
+
+template <>
+void parse_variable_type<int32_t>(Variable<int32_t> &variable, const int32_t *data,
+                         Metadata *metadata)
+{
+        std::cout << "++ Julea Writer DEBUG PRINT 1.1: " << std::endl;
+        metadata->var_type = INT32;
+        metadata->sizeof_var_type = sizeof(int32_t);
+        metadata->min_value.integer_8 = variable.Min();
+        std::cout << "parse_variable_type int8_t: min = " << variable.Min() << std::endl;
+}
+
+template <>
+void parse_variable_type<int64_t>(Variable<int64_t> &variable, const int64_t *data,
+                         Metadata *metadata)
+{
+        std::cout << "++ Julea Writer DEBUG PRINT 1.1: " << std::endl;
+        metadata->var_type = INT64;
+        metadata->sizeof_var_type = sizeof(int64_t);
+        metadata->min_value.integer_8 = variable.Min();
+        std::cout << "parse_variable_type int8_t: min = " << variable.Min() << std::endl;
+}
+
+
+template <>
+void parse_variable_type<float>(Variable<float> &variable, const float *data,
+                         Metadata *metadata)
+{
+        std::cout << "++ Julea Writer DEBUG PRINT 1.2: " << std::endl;
+        metadata->var_type = UINT8;
+        metadata->sizeof_var_type = sizeof(uint8_t);
+        metadata->min_value.real_float = variable.Min();
+        std::cout << "parse_variable_type float: min = " << variable.Min() << std::endl;
+}
+
+
+// template <class T>
+// void parse_variable_type(Variable<INT64> &variable, const T *data,
+//                          Metadata *metadata)
+// {
+//     std::cout << "Try specialized templates... " << std::endl;
+// }
+
+
 
 // TODO: necessary function?
 // template <class T>
@@ -565,19 +523,25 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable, const T *data)
     metadata->available_steps_start = variable.m_AvailableStepsStart;
     metadata->available_steps_count = variable.m_AvailableStepsCount;
 
+    /* compute data_size; dimension entries !> 0 are ignored ?!*/
+    number_elements = adios2::helper::GetTotalSize(variable.m_Count);
+    metadata->data_size = variable.m_ElementSize * number_elements;
+
+
     // // TODO: implement min, max, curr
     adios2::helper::GetMinMax(data, number_elements, min, max);
     variable.m_Min = min;
     variable.m_Max = max;
 
+    std::cout << "variable: " << variable.m_Name << " min: " << min
+              << std::endl;
+    std::cout << "variable: " << variable.m_Name << " max: " << max
+              << std::endl;
     // parse_variable_type(variable, blockInfo, metadata);
-    // parse_variable_type(variable, data, metadata);
+    parse_variable_type(variable, data, metadata);
     // ParseMinMax(variable, metadata); //FIXME
     // TryingEverything(variable,metadata);
 
-    /* compute data_size; dimension entries !> 0 are ignored ?!*/
-    number_elements = adios2::helper::GetTotalSize(variable.m_Count);
-    metadata->data_size = variable.m_ElementSize * number_elements;
 
     metadata->min_value.real_float = 42.0;
     metadata->min_value.integer_16 = 42;
@@ -593,42 +557,6 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 
     std::cout << "data_size: " << metadata->data_size << std::endl;
 
-    adios2_variable *var2;
-    // adios2::core::Variable<T> var3;
-    try
-    {
-        //     adios2::helper::CheckForNullptr(variable,
-        //                                     "for adios2_variable, in call "
-        //                                     "to adios2_variable_min");
-        //     adios2::helper::CheckForNullptr(
-        //         min, "for void* min, in call to adios2_variable_min");
-
-        const adios2::core::VariableBase *variableBase =
-            reinterpret_cast<const adios2::core::VariableBase *>(var2);
-        const std::string type(variableBase->m_Type);
-
-        //         if (type == "compound")
-        //         {
-        //             // not supported
-        //         }
-        // #define declare_template_instantiation(T) \
-//     else if (type == adios2::helper::GetType<T>()) \
-//     { \
-//         T *minT = reinterpret_cast<T *>(min); \
-//         const adios2::core::Variable<T> *variableT = \
-//             dynamic_cast<const adios2::core::Variable<T>
-        //             *>(variableBase);     \
-//         *minT = variableT->m_Min; \
-//     }
-        //         ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
-        // #undef declare_template_instantiation
-        //         return adios2_error_none;
-    }
-    catch (...)
-    {
-        //         return static_cast<adios2_error>(
-        //             adios2::helper::ExceptionToError("adios2_variable_min"));
-    }
 
     // // metadata->deferred_counter = variable.m_DeferredCounter;
     // metadata->is_value = blockInfo.IsValue;
