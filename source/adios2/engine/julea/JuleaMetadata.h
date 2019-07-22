@@ -73,14 +73,14 @@ struct Metadata
     unsigned long *shape;
     unsigned long *start;
     unsigned long *count;
-    unsigned long *memory_start; // TODO
-    unsigned long *memory_count; // TODO
+    unsigned long *memory_start; // TODO -> only for inline engine?
+    unsigned long *memory_count; // TODO -> only for inline engine?
 
     unsigned long shape_size;
     unsigned long start_size;
     unsigned long count_size;
-    unsigned long memory_start_size; // TODO
-    unsigned long memory_count_size; // TODO
+    unsigned long memory_start_size; // TODO -> only for inline engine?
+    unsigned long memory_count_size; // TODO -> only for inline engine?
     // unsigned long test_header; //TODO
 
     size_t steps_start;

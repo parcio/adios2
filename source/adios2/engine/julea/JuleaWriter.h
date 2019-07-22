@@ -120,14 +120,16 @@ private:
 
     void InitVariables();
 
+//FIXME: const T* BlockInfo oder const T * values?
 #define declare_type(T)                                                        \
-    void DoPutSync(Variable<T> &, const T *) final;                            \
-    void DoPutDeferred(Variable<T> &, const T *) final;
+    void DoPutSync(Variable<T> &variable, const T *) final;                            \
+    void DoPutDeferred(Variable<T> &variable, const T *) final;
     // ADIOS2_FOREACH_TYPE_1ARG(declare_type)
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
 
     /**
+     * TODO: why has skeleton engine Info struct as param when this is only used by inline engine?
      * Common function for primitive PutSync, puts variables in buffer
      * @param variable
      * @param values
@@ -135,6 +137,12 @@ private:
     template <class T>
     void PutSyncCommon(Variable<T> &variable,
                        const typename Variable<T>::Info &blockInfo);
+
+    /**
+     * Probably this is more useful than the version with the Info struct as param
+     */
+    template <class T>
+    void PutSyncCommon(Variable<T> &variable, const T *values);
 
     template <class T>
     void PutDeferredCommon(Variable<T> &variable, const T *values);

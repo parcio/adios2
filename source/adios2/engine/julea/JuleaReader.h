@@ -140,8 +140,8 @@ private:
     template <class T>
     void GetDeferredCommon(Variable<T> &variable, T *data);
 
-    template <class T>
-    void ReadVariableBlocks(Variable<T> &variable);
+    // template <class T>
+    // void ReadVariableBlocks(Variable<T> &variable); //TODO:needed?
 
     void DoClose(const int transportIndex = -1);
 
