@@ -132,6 +132,8 @@ if(ADIOS2_HAVE_JULEA_GONDOLIN)
       #engine/julea/JuleaWriter.h
       engine/julea/JuleaWriter.cpp
       engine/julea/JuleaWriter.tcc
+      toolkit/interop/julea/JuleaSerializer.cpp
+      toolkit/interop/julea/JuleaSerializer.tcc
   )
   target_include_directories(adios2 PRIVATE
     /home/elentari/Documents/julea/include
