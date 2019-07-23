@@ -21,31 +21,31 @@ namespace core
 namespace engine
 {
 
-// template <class T>
-// void parse_variable_type(Variable<T> &variable,
-//                          const typename Variable<T>::Info &blockInfo,
-//                          Metadata *metadata);
-// template <class T>
-// void parse_variable_type(Variable<T> &variable, const T *data,
-//                          Metadata *metadata);
+template <class T>
+void parse_variable_type(Variable<T> &variable,
+                         const typename Variable<T>::Info &blockInfo,
+                         Metadata *metadata);
+template <class T>
+void parse_variable_type(Variable<T> &variable, const T *data,
+                         Metadata *metadata);
 
-// template <>
-// void parse_variable_type<int8_t>(Variable<int8_t> &variable, const int8_t *data,
-//                          Metadata *metadata);
-// template <>
-// void parse_variable_type<int16_t>(Variable<int16_t> &variable, const int16_t *data,
-//                          Metadata *metadata);
-// template <>
-// void parse_variable_type<int32_t>(Variable<int32_t> &variable, const int32_t *data,
-//                          Metadata *metadata);
-// template <>
-// void parse_variable_type<int64_t>(Variable<int64_t> &variable, const int64_t *data,
-//                          Metadata *metadata);
-// template <>
-// void parse_variable_type<float>(Variable<float> &variable, const float *data,
-//                          Metadata *metadata);
+template <>
+void parse_variable_type<int8_t>(Variable<int8_t> &variable, const int8_t *data,
+                         Metadata *metadata);
+template <>
+void parse_variable_type<int16_t>(Variable<int16_t> &variable, const int16_t *data,
+                         Metadata *metadata);
+template <>
+void parse_variable_type<int32_t>(Variable<int32_t> &variable, const int32_t *data,
+                         Metadata *metadata);
+template <>
+void parse_variable_type<int64_t>(Variable<int64_t> &variable, const int64_t *data,
+                         Metadata *metadata);
+template <>
+void parse_variable_type<float>(Variable<float> &variable, const float *data,
+                         Metadata *metadata);
 } // end namespace engine
 } // end namespace core
 } // end namespace adios2
 
-#endif /* ADIOS2_ENGINE_JULEACLIENTLOGIC_H_ */
+#endif /* ADIOS2_ENGINE_JULEAFORMATWRITER_H_ */

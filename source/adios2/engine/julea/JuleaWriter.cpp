@@ -12,6 +12,7 @@
 #include "JuleaWriter.tcc"
 
 #include "JuleaClientLogic.h"
+// #include "JuleaFormatWriter.h"
 
 #include "adios2/core/IO.h"
 #include "adios2/helper/adiosFunctions.h"

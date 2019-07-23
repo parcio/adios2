@@ -4,7 +4,7 @@
  *
  * JULEA engine using the JULEA storage framework to handle lower I/O.
  *
- *  Created on: Nov 14, 2018
+ *  Created on: Jul 16, 2019
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
@@ -12,6 +12,7 @@
 #define ADIOS2_ENGINE_JULEAMETADATA_H_
 
 #include <julea.h>
+#include <complex.h>
 
 namespace adios2
 {
@@ -19,6 +20,18 @@ namespace core
 {
 namespace engine
 {
+
+#ifdef __cplusplus
+typedef std::complex<float> cfloat;
+#else
+typedef float _Complex cfloat;
+#endif
+
+#ifdef __cplusplus
+typedef std::complex<double> cdouble;
+#else
+typedef double _Complex cdouble;
+#endif
 
 /* ADIOS Types in ADIOS2-2.4.0 */
 enum variable_type
@@ -42,11 +55,10 @@ typedef enum variable_type variable_type;
 
 union value_type
 {
-    char *string; // TODO: needed?
+    // char *string; // TODO: needed? what would be the "minimum" of a string
     int8_t integer_8;
     uint8_t u_integer_8;
     int16_t integer_16;
-    int16_t *integer_16_ptr;
     uint16_t u_integer_16;
     int32_t integer_32;
     uint32_t u_integer_32;
@@ -54,9 +66,11 @@ union value_type
     uint64_t u_integer_64;
     float real_float;
     double real_double;
-    long double lreal_double;
-    // float complex float_complex;     //not yet implemented in ADIOS2
-    // double complex double_complex;   //not yet implemented in ADIOS2
+    long double long_real_double;
+    // float _Complex float_complex;
+    cfloat float_complex;
+    // double _Complex double_complex;
+    cdouble double_complex;
 };
 typedef union value_type value_type;
 
@@ -94,9 +108,9 @@ struct Metadata
 
     variable_type var_type;
 
-    value_type min_value;
-    value_type max_value;
-    value_type curr_value;
+    value_type min_value;           // not for strings
+    value_type max_value;           // not for strings
+    value_type curr_value;          // not for strings
 
     value_type *min_value_ptr;
 
