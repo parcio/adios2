@@ -25,9 +25,8 @@ namespace interop
 template <class T>
 void JuleaSerializer::Write(core::Variable<T> &variable, const T *values)
 {
-//
+    //
 }
-
 
 } // end namespace interop
 } // end namespace adios

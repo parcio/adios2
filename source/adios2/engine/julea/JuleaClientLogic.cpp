@@ -114,8 +114,9 @@ void var_metadata_to_bson(Metadata *metadata, bson_t *bson_meta_data)
     g_assert_true(bson_append_int64(bson_meta_data, "data_size", -1,
                                     metadata->data_size));
 
-    g_assert_true(
-        bson_append_bool(bson_meta_data, "is_value", -1, metadata->is_value));
+    // g_assert_true(
+    //     bson_append_bool(bson_meta_data, "is_value", -1,
+    //     metadata->is_value));
     g_assert_true(bson_append_bool(bson_meta_data, "is_single_value", -1,
                                    metadata->is_single_value));
     g_assert_true(bson_append_bool(bson_meta_data, "is_single_value", -1,
@@ -285,7 +286,7 @@ void attr_metadata_to_bson(AttributeMetadata *attr_metadata,
  * true for synchronous I/O
  */
 void PutVariableToJulea(char *name_space, Metadata *metadata,
-                        void *data_pointer, JBatch *batch)
+                        const void *data_pointer, JBatch *batch)
 {
     guint64 bytes_written = 0;
     guint32 value_len = 0;
@@ -748,10 +749,10 @@ void GetVarMetadataFromKV(char *name_space, char *var_name, Metadata *metadata,
             metadata->data_size = bson_iter_int64(&b_iter);
         }
         /* boolean */
-        else if (g_strcmp0(bson_iter_key(&b_iter), "is_value") == 0)
-        {
-            metadata->is_value = (bool)bson_iter_bool(&b_iter);
-        }
+        // else if (g_strcmp0(bson_iter_key(&b_iter), "is_value") == 0)
+        // {
+        //     metadata->is_value = (bool)bson_iter_bool(&b_iter);
+        // }
         else if (g_strcmp0(bson_iter_key(&b_iter), "is_single_value") == 0)
         {
             metadata->is_single_value = (bool)bson_iter_bool(&b_iter);

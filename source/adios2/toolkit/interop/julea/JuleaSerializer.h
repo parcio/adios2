@@ -32,7 +32,7 @@ class JuleaSerializer
 
 public:
     /**
-     * Unique constructor for HDF5 file
+     * Unique constructor
      * @param debugMode true: extra exception checks
      */
     JuleaSerializer(const bool debugMode);
@@ -49,6 +49,10 @@ public:
 
     void Close();
 
+    void PrintMiniPenguin();
+    void PrintPenguinFamily();
+    void PrintLargePenguin();
+
     unsigned int m_CurrentAdiosStep = 0;
 
 private:
@@ -61,8 +65,8 @@ private:
 
 // Explicit declaration of the public template methods
 #define declare_template_instantiation(T)                                      \
-    extern template void JuleaSerializer::Write(core::Variable<T> &variable,        \
-                                           const T *value);
+    extern template void JuleaSerializer::Write(core::Variable<T> &variable,   \
+                                                const T *value);
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
 

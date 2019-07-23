@@ -26,7 +26,7 @@ namespace engine
 
 /* performs data put AND metadata put*/
 void PutVariableToJulea(char *name_space, Metadata *metadata,
-                        void *data_pointer, JBatch *batch);
+                        const void *data_pointer, JBatch *batch);
 void PutAttributeToJulea(char *name_space, AttributeMetadata *attr_metadata,
                          void *data_pointer, JBatch *batch);
 

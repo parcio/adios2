@@ -33,7 +33,7 @@ namespace engine
 
 JuleaWriter::JuleaWriter(IO &io, const std::string &name, const Mode mode,
                          MPI_Comm mpiComm)
-: Engine("JuleaWriter", io, name, mode, mpiComm)
+: Engine("JuleaWriter", io, name, mode, mpiComm), m_Julea(io.m_DebugMode)
 {
     // std::cout << "JULEA ENGINE: Constructor" << std::endl;
     // m_BP3Serializer(mpiComm, m_DebugMode),
@@ -216,6 +216,7 @@ void JuleaWriter::Init()
         << std::endl;
 
     // TODO: which order?
+    m_Julea.Init();
     j_init();
     m_JuleaInfo = g_slice_new(JuleaInfo);
     m_JuleaInfo->semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);

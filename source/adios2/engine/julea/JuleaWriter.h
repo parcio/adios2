@@ -17,6 +17,7 @@
 #include "adios2/core/Engine.h"
 #include "adios2/toolkit/format/bp3/BP3.h" //BP3Serializer
 #include "adios2/toolkit/format/bp3/BP3Serializer.h"
+#include "adios2/toolkit/interop/julea/JuleaSerializer.h"
 #include "adios2/toolkit/transportman/TransportMan.h" //transport::TransportsMan
 
 #include <complex.h>
@@ -61,6 +62,7 @@ public:
 
 private:
     JuleaInfo *m_JuleaInfo;
+    interop::JuleaSerializer m_Julea;
 
     int m_Verbosity = 5;       // changed for debugging info from 0 to 5
     int m_WriterRank;          // my rank in the writers' comm
@@ -135,9 +137,9 @@ private:
      * @param variable
      * @param values
      */
-    // template <class T>
-    // void PutSyncCommon(Variable<T> &variable,
-    //                    const typename Variable<T>::Info &blockInfo);
+    template <class T>
+    void PutSyncCommon(Variable<T> &variable,
+                       const typename Variable<T>::Info &blockInfo);
 
     /**
      * Probably this is more useful than the version with the Info struct as

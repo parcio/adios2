@@ -11,8 +11,8 @@
 #ifndef ADIOS2_ENGINE_JULEAMETADATA_H_
 #define ADIOS2_ENGINE_JULEAMETADATA_H_
 
-#include <julea.h>
 #include <complex.h>
+#include <julea.h>
 
 namespace adios2
 {
@@ -101,9 +101,9 @@ struct Metadata
 
     variable_type var_type;
 
-    value_type min_value;           // not for strings
-    value_type max_value;           // not for strings
-    value_type curr_value;          // not for strings
+    value_type min_value;  // not for strings
+    value_type max_value;  // not for strings
+    value_type curr_value; // not for strings
 
     value_type *min_value_ptr;
 
@@ -111,7 +111,7 @@ struct Metadata
     unsigned int data_size;
     // unsigned int deferred_counter; //VariableBase.h TODO: implement!
 
-    bool is_value;
+    // bool is_value;               //only in Info struct for inline engine
     bool is_single_value;         // VariableBase.h TODO
     bool is_constant_dims;        // VariableBase.h TODO? //protected
     bool is_read_as_joined;       // VariableBase.h TODO

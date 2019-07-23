@@ -26,46 +26,52 @@ namespace adios2
 namespace interop
 {
 
-
 JuleaSerializer::JuleaSerializer(const bool debugMode) : m_DebugMode(debugMode)
 {
-
 }
 
-void JuleaSerializer::ParseParameters(core::IO &io)
+void JuleaSerializer::PrintMiniPenguin()
 {
-
+    std::cout << "   (o_ \n   (/)_ \n" << std::endl;
 }
+
+void JuleaSerializer::PrintPenguinFamily()
+{
+    std::cout << "           (o_ \n   (o_     //\\ \n   (/)_    V_/_ "
+              << std::endl;
+}
+
+void JuleaSerializer::PrintLargePenguin()
+{
+    std::cout
+        << "      .___. \n     /     \\ \n    | O _ O | \n    /  \\_/  \\ \n  .' / \
+    \\ `. \n / _|       |_ \\ \n(_/ |       | \\_) \n    \\       / \n   __\\_>-<_/__ \
+         \n   ~;/     \\;~"
+        << std::endl;
+}
+
+void JuleaSerializer::ParseParameters(core::IO &io) {}
 
 void JuleaSerializer::Init()
 {
+    std::cout << "\n----------------------- JULEA SERIALIZER "
+                 "-------------------------"
+              << std::endl;
+
+    PrintPenguinFamily();
+
+    std::cout << "Init JuleaSerializer " << std::endl;
 }
 
-void JuleaSerializer::WriteAdiosSteps()
-{
-
-}
-
+void JuleaSerializer::WriteAdiosSteps() {}
 
 // read from all time steps
-void JuleaSerializer::ReadAllVariables(core::IO &io)
-{
-
-}
-
+void JuleaSerializer::ReadAllVariables(core::IO &io) {}
 
 // read variables from the input timestep
-void JuleaSerializer::ReadVariables(unsigned int ts, core::IO &io)
-{
+void JuleaSerializer::ReadVariables(unsigned int ts, core::IO &io) {}
 
-}
-
-
-void JuleaSerializer::Close()
-{
-
-}
-
+void JuleaSerializer::Close() {}
 
 #define declare_template_instantiation(T)                                      \
     template void JuleaSerializer::Write(core::Variable<T> &, const T *);

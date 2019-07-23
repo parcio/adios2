@@ -12,6 +12,7 @@
 #define ADIOS2_ENGINE_JULEAFORMATWRITER_H_
 
 #include "JuleaMetadata.h"
+#include "JuleaWriter.h"
 // #include <julea.h>
 
 namespace adios2
@@ -22,28 +23,37 @@ namespace engine
 {
 
 template <class T>
-void parse_variable_type(Variable<T> &variable,
-                         const typename Variable<T>::Info &blockInfo,
-                         Metadata *metadata);
+void ParseVariable(Variable<T> &variable, const T *data, Metadata *metadata);
+
+// #define declare_template_instantiation(T)                                      \
+//     extern template void ParseVariable(Variable<T> &variable, const T *data, \
+//                    Metadata *metadata);              \
+// ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
+// #undef declare_template_instantiation
+
 template <class T>
-void parse_variable_type(Variable<T> &variable, const T *data,
-                         Metadata *metadata);
+void ParseVariableType(Variable<T> &variable,
+                       const typename Variable<T>::Info &blockInfo,
+                       Metadata *metadata);
+template <class T>
+void ParseVariableType(Variable<T> &variable, const T *data,
+                       Metadata *metadata);
 
 template <>
-void parse_variable_type<int8_t>(Variable<int8_t> &variable, const int8_t *data,
-                         Metadata *metadata);
+void ParseVariableType<int8_t>(Variable<int8_t> &variable, const int8_t *data,
+                               Metadata *metadata);
 template <>
-void parse_variable_type<int16_t>(Variable<int16_t> &variable, const int16_t *data,
-                         Metadata *metadata);
+void ParseVariableType<int16_t>(Variable<int16_t> &variable,
+                                const int16_t *data, Metadata *metadata);
 template <>
-void parse_variable_type<int32_t>(Variable<int32_t> &variable, const int32_t *data,
-                         Metadata *metadata);
+void ParseVariableType<int32_t>(Variable<int32_t> &variable,
+                                const int32_t *data, Metadata *metadata);
 template <>
-void parse_variable_type<int64_t>(Variable<int64_t> &variable, const int64_t *data,
-                         Metadata *metadata);
+void ParseVariableType<int64_t>(Variable<int64_t> &variable,
+                                const int64_t *data, Metadata *metadata);
 template <>
-void parse_variable_type<float>(Variable<float> &variable, const float *data,
-                         Metadata *metadata);
+void ParseVariableType<float>(Variable<float> &variable, const float *data,
+                              Metadata *metadata);
 } // end namespace engine
 } // end namespace core
 } // end namespace adios2
