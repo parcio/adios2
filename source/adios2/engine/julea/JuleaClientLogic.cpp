@@ -216,11 +216,11 @@ void var_metadata_to_bson(Metadata *metadata, bson_t *bson_meta_data)
     {
         // TODO: implement
     }
-    else if (metadata->var_type == FLOAT_COMPLEX)
+    else if (metadata->var_type == COMPLEX_FLOAT)
     {
         // TODO: implement
     }
-    else if (metadata->var_type == DOUBLE_COMPLEX)
+    else if (metadata->var_type == COMPLEX_DOUBLE)
     {
         // TODO: implement
     }

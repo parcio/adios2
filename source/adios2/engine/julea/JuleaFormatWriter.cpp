@@ -106,12 +106,12 @@ void parse_variable_type(Variable<T> &variable,
 
     else if (helper::GetType<T>() == "float complex")
     {
-        metadata->var_type = FLOAT_COMPLEX;
+        metadata->var_type = COMPLEX_FLOAT;
         // metadata->sizeof_var_type = sizeof(float complex); //TODO
     }
     else if (helper::GetType<T>() == "double complex")
     {
-        metadata->var_type = DOUBLE_COMPLEX;
+        metadata->var_type = COMPLEX_DOUBLE;
         // metadata->sizeof_var_type = sizeof(double complex); //TODO
     }
 }
@@ -216,12 +216,12 @@ void parse_variable_type(Variable<T> &variable, const T *data,
 
     else if (helper::GetType<T>() == "float complex")
     {
-        metadata->var_type = FLOAT_COMPLEX;
+        metadata->var_type = COMPLEX_FLOAT;
         // metadata->sizeof_var_type = sizeof(float complex); //TODO
     }
     else if (helper::GetType<T>() == "double complex")
     {
-        metadata->var_type = DOUBLE_COMPLEX;
+        metadata->var_type = COMPLEX_DOUBLE;
         // metadata->sizeof_var_type = sizeof(double complex); //TODO
     }
 }
@@ -356,7 +356,7 @@ void parse_variable_type<long double>(Variable<long double> &variable, const lon
         std::cout << "++ Julea Writer DEBUG PRINT 1.2: " << std::endl;
         metadata->var_type = LONG_DOUBLE;
         metadata->sizeof_var_type = sizeof(long double);
-        metadata->min_value.long_real_double = variable.Min();
+        metadata->min_value.real_long_double = variable.Min();
         std::cout << "parse_variable_type long double: min = " << variable.Min() << std::endl;
 }
 
@@ -365,9 +365,9 @@ void parse_variable_type<std::complex<float>>(Variable<std::complex<float>> &var
                          Metadata *metadata)
 {
         std::cout << "++ Julea Writer DEBUG PRINT 1.2: " << std::endl;
-        metadata->var_type = FLOAT_COMPLEX;
+        metadata->var_type = COMPLEX_FLOAT;
         metadata->sizeof_var_type = sizeof(std::complex<float>);
-        metadata->min_value.float_complex = variable.Min();
+        metadata->min_value.complex_float = variable.Min();
         std::cout << "parse_variable_type std::complex<float>: min = " << variable.Min() << std::endl;
 }
 
@@ -376,9 +376,9 @@ void parse_variable_type<std::complex<double>>(Variable<std::complex<double>> &v
                          Metadata *metadata)
 {
         std::cout << "++ Julea Writer DEBUG PRINT 1.2: " << std::endl;
-        metadata->var_type = DOUBLE_COMPLEX;
+        metadata->var_type = COMPLEX_DOUBLE;
         metadata->sizeof_var_type = sizeof(std::complex<double>);
-        metadata->min_value.double_complex = variable.Min();
+        metadata->min_value.complex_double = variable.Min();
         std::cout << "parse_variable_type std::complex<double>: min = " << variable.Min() << std::endl;
 }
 

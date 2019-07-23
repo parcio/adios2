@@ -44,8 +44,8 @@ enum variable_type
     FLOAT,
     DOUBLE,
     LONG_DOUBLE,
-    FLOAT_COMPLEX,
-    DOUBLE_COMPLEX
+    COMPLEX_FLOAT,
+    COMPLEX_DOUBLE
 };
 typedef enum variable_type variable_type;
 
@@ -62,11 +62,9 @@ union value_type
     uint64_t u_integer_64;
     float real_float;
     double real_double;
-    long double long_real_double;
-    // float _Complex float_complex;
-    cfloat float_complex;
-    // double _Complex double_complex;
-    cdouble double_complex;
+    long double real_long_double;
+    cfloat complex_float;
+    cdouble complex_double;
 };
 typedef union value_type value_type;
 
@@ -92,7 +90,6 @@ struct Metadata
     unsigned long count_size;
     unsigned long memory_start_size; // TODO -> only for inline engine?
     unsigned long memory_count_size; // TODO -> only for inline engine?
-    // unsigned long test_header; //TODO
 
     size_t steps_start;
     size_t steps_count;

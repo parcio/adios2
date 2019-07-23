@@ -503,11 +503,11 @@ void parse_attribute_type(std::string type, AttributeMetadata *attr_metadata)
     }
     // else if(type == "floast complex")
     // {
-    //     attr_metadata->attr_type = FLOAT_COMPLEX;
+    //     attr_metadata->attr_type = COMPLEX_FLOAT;
     // }
     // else if(type == "double complex")
     // {
-    //     attr_metadata->attr_type = DOUBLE_COMPLEX;
+    //     attr_metadata->attr_type = COMPLEX_DOUBLE;
     // }
 }
 
