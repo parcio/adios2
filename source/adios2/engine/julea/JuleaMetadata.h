@@ -23,13 +23,9 @@ namespace engine
 
 #ifdef __cplusplus
 typedef std::complex<float> cfloat;
-#else
-typedef float _Complex cfloat;
-#endif
-
-#ifdef __cplusplus
 typedef std::complex<double> cdouble;
 #else
+typedef float _Complex cfloat;
 typedef double _Complex cdouble;
 #endif
 
