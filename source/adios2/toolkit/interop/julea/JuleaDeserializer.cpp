@@ -2,16 +2,14 @@
  * Distributed under the OSI-approved Apache License, Version 2.0.  See
  * accompanying file Copyright.txt for details.
  *
- * JuleaSerializer.cpp
+ * JuleaDeserializer.cpp
  *
- *  Created on: July 23, 2019
+ *  Created on: July 24, 2019
  *      Author: Kira Duwe
  */
 
-#include "JuleaSerializer.h"
-#include "JuleaSerializer.tcc"
-#include "adios2/common/ADIOSMPI.h"
-#include "adios2/helper/adiosFunctions.h" // IsRowMajor
+#include "JuleaDeserializer.h"
+#include "JuleaDeserializer.tcc"
 
 #include <complex>
 #include <ios>
@@ -19,6 +17,8 @@
 #include <stdexcept>
 #include <vector>
 
+#include "adios2/common/ADIOSMPI.h"
+#include "adios2/helper/adiosFunctions.h" // IsRowMajor
 #include <cstring>                        // strlen
 
 namespace adios2
@@ -26,22 +26,22 @@ namespace adios2
 namespace interop
 {
 
-JuleaSerializer::JuleaSerializer(const bool debugMode) : m_DebugMode(debugMode)
+JuleaDeserializer::JuleaDeserializer(const bool debugMode) : m_DebugMode(debugMode)
 {
 }
 
-void JuleaSerializer::PrintMiniPenguin()
+void JuleaDeserializer::PrintMiniPenguin()
 {
     std::cout << "   (o_ \n   (/)_ \n" << std::endl;
 }
 
-void JuleaSerializer::PrintPenguinFamily()
+void JuleaDeserializer::PrintPenguinFamily()
 {
     std::cout << "           (o_ \n   (o_     //\\ \n   (/)_    V_/_ "
               << std::endl;
 }
 
-void JuleaSerializer::PrintLargePenguin()
+void JuleaDeserializer::PrintLargePenguin()
 {
     std::cout
         << "      .___. \n     /     \\ \n    | O _ O | \n    /  \\_/  \\ \n  .' / \
@@ -50,9 +50,9 @@ void JuleaSerializer::PrintLargePenguin()
         << std::endl;
 }
 
-void JuleaSerializer::ParseParameters(core::IO &io) {}
+void JuleaDeserializer::ParseParameters(core::IO &io) {}
 
-void JuleaSerializer::Init()
+void JuleaDeserializer::Init()
 {
     std::cout << "\n----------------------- JULEA SERIALIZER "
                  "-------------------------"
@@ -60,28 +60,21 @@ void JuleaSerializer::Init()
 
     PrintPenguinFamily();
 
-    std::cout << "Init JuleaSerializer " << std::endl;
+    std::cout << "Init JuleaDeserializer " << std::endl;
 }
 
-void JuleaSerializer::WriteAdiosSteps() {}
+// void JuleaDeserializer::WriteAdiosSteps() {}
 
 // read from all time steps
-void JuleaSerializer::ReadAllVariables(core::IO &io) {}
+void JuleaDeserializer::ReadAllVariables(core::IO &io) {}
 
 // read variables from the input timestep
-void JuleaSerializer::ReadVariables(unsigned int ts, core::IO &io) {}
+void JuleaDeserializer::ReadVariables(unsigned int ts, core::IO &io) {}
 
-void JuleaSerializer::Close() {}
-
-#define declare_template_instantiation(T)                                      \
-    template void JuleaSerializer::Write(core::Variable<T> &, const T *);
-
-ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
-#undef declare_template_instantiation
-
+void JuleaDeserializer::Close() {}
 
 #define declare_template_instantiation(T)                                      \
-    template void JuleaSerializer::ParseVariable(core::Variable<T> &, const T *data, Metadata *metadata);
+    template void JuleaDeserializer::Read(core::Variable<T> &, const T *);
 
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation

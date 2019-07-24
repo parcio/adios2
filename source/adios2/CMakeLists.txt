@@ -190,8 +190,11 @@ if(ADIOS2_HAVE_JULEA_MINASTIRITH)
       engine/julea/JuleaWriter.tcc
       engine/julea/JuleaClientLogic.cpp
       engine/julea/JuleaFormatWriter.cpp
+      # toolkit/interop/julea/JuleaMetadata.h
       toolkit/interop/julea/JuleaSerializer.cpp
       toolkit/interop/julea/JuleaSerializer.tcc
+      toolkit/interop/julea/JuleaDeserializer.cpp
+      toolkit/interop/julea/JuleaDeserializer.tcc
   )
   target_include_directories(adios2 PRIVATE
   /home/kira/Dokumente/julea/include
