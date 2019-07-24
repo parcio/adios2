@@ -15,6 +15,7 @@
 
 #include <string>
 
+#include "adios2/engine/julea/JuleaMetadata.h" //FIXME: move to interop namespace!
 #include "adios2/common/ADIOSMacros.h"
 #include "adios2/common/ADIOSTypes.h"
 #include "adios2/core/IO.h" // for CreateVar
@@ -46,6 +47,9 @@ public:
 
     template <class T>
     void Write(core::Variable<T> &variable, const T *values);
+
+    template <class T>
+    void ParseVariable(core::Variable<T> &variable, const T *data, engine::Metadata *metadata);
 
     void Close();
 

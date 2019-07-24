@@ -28,6 +28,15 @@ void JuleaSerializer::Write(core::Variable<T> &variable, const T *values)
     //
 }
 
+
+/* parse variable information to metadata struct to store in JULEA */
+template <class T>
+void JuleaSerializer::ParseVariable(core::Variable<T> &variable, const T *data, Metadata
+	 *metadata)
+{
+    //
+}
+
 } // end namespace interop
 } // end namespace adios
 

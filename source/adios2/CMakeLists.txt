@@ -184,16 +184,14 @@ endif()
 
 if(ADIOS2_HAVE_JULEA_MINASTIRITH)
   target_sources(adios2 PRIVATE
-      #engine/julea/JuleaReader.h
       engine/julea/JuleaReader.cpp
       engine/julea/JuleaReader.tcc
-      #engine/julea/JuleaWriter.h
       engine/julea/JuleaWriter.cpp
       engine/julea/JuleaWriter.tcc
-      #engine/julea/JuleaClientLogic.h
       engine/julea/JuleaClientLogic.cpp
       engine/julea/JuleaFormatWriter.cpp
-      #engine/julea/JuleaMetadata.h
+      toolkit/interop/julea/JuleaSerializer.cpp
+      toolkit/interop/julea/JuleaSerializer.tcc
   )
   target_include_directories(adios2 PRIVATE
   /home/kira/Dokumente/julea/include
