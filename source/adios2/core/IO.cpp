@@ -68,13 +68,17 @@
 
 
 #ifdef ADIOS2_HAVE_JULEA_GONDOLIN // external dependencies
-#include "adios2/engine/julea/JuleaReader.h"
-#include "adios2/engine/julea/JuleaWriter.h"
+#include "adios2/engine/julea-smd-kv/JuleaReader.h"
+#include "adios2/engine/julea-smd-kv/JuleaWriter.h"
+// #include "adios2/engine/julea-db/JuleaDBReader.h"
+// #include "adios2/engine/julea-db/JuleaDBWriter.h"
 #endif
 
 #ifdef ADIOS2_HAVE_JULEA_MINASTIRITH // external dependencies
-#include "adios2/engine/julea/JuleaReader.h"
-#include "adios2/engine/julea/JuleaWriter.h"
+#include "adios2/engine/julea-smd-kv/JuleaReader.h"
+#include "adios2/engine/julea-smd-kv/JuleaWriter.h"
+// #include "adios2/engine/julea-db/JuleaDBReader.h"
+// #include "adios2/engine/julea-db/JuleaDBWriter.h"
 #endif
 
 namespace adios2
@@ -648,7 +652,7 @@ Engine &IO::Open(const std::string &name, const Mode mode,
             engine = std::make_shared<engine::NullCoreWriter>(*this, name, mode,
                                                               mpiComm);
     }
-    else if (engineTypeLC == "julea")
+    else if (engineTypeLC == "julea-smd-kv")
     {
         if (mode == Mode::Read)
             engine = std::make_shared<engine::JuleaReader>(*this, name, mode,
@@ -657,6 +661,15 @@ Engine &IO::Open(const std::string &name, const Mode mode,
             engine = std::make_shared<engine::JuleaWriter>(*this, name, mode,
                                                               mpiComm);
     }
+    // else if (engineTypeLC == "julea-db")
+    // {
+    //     if (mode == Mode::Read)
+    //         engine = std::make_shared<engine::JuleaDBReader>(*this, name, mode,
+    //                                                           mpiComm);
+    //     else
+    //         engine = std::make_shared<engine::JuleaDBWriter>(*this, name, mode,
+    //                                                           mpiComm);
+    // }
     else
     {
         if (m_DebugMode)

@@ -184,12 +184,19 @@ endif()
 
 if(ADIOS2_HAVE_JULEA_MINASTIRITH)
   target_sources(adios2 PRIVATE
-      engine/julea/JuleaReader.cpp
-      engine/julea/JuleaReader.tcc
-      engine/julea/JuleaWriter.cpp
-      engine/julea/JuleaWriter.tcc
-      engine/julea/JuleaClientLogic.cpp
-      engine/julea/JuleaFormatWriter.cpp
+      engine/julea-smd-kv/JuleaReader.cpp
+      engine/julea-smd-kv/JuleaReader.tcc
+      engine/julea-smd-kv/JuleaWriter.cpp
+      engine/julea-smd-kv/JuleaWriter.tcc
+      engine/julea-smd-kv/JuleaClientLogic.cpp
+      engine/julea-smd-kv/JuleaFormatWriter.cpp
+
+      #engine/julea-db/JuleaReader.cpp
+      #engine/julea-db/JuleaReader.tcc
+      #engine/julea-db/JuleaWriter.cpp
+      #engine/julea-db/JuleaWriter.tcc
+      #engine/julea-db/JuleaClientLogic.cpp
+      #engine/julea-db/JuleaFormatWriter.cpp
       # toolkit/interop/julea/JuleaMetadata.h
       toolkit/interop/julea/JuleaSerializer.cpp
       toolkit/interop/julea/JuleaSerializer.tcc
