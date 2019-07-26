@@ -191,6 +191,11 @@ if(ADIOS2_HAVE_JULEA_MINASTIRITH)
       engine/julea-smd-kv/JuleaClientLogic.cpp
       engine/julea-smd-kv/JuleaFormatWriter.cpp
 
+      engine/julea-test/JuleaTestReader.cpp
+      engine/julea-test/JuleaTestReader.tcc
+      engine/julea-test/JuleaTestWriter.cpp
+      engine/julea-test/JuleaTestWriter.tcc
+
       #engine/julea-db/JuleaReader.cpp
       #engine/julea-db/JuleaReader.tcc
       #engine/julea-db/JuleaWriter.cpp
@@ -227,6 +232,7 @@ if(ADIOS2_HAVE_JULEA_MINASTIRITH)
   #/home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/lib
   )
 endif()
+
 
 # if(ADIOS2_HAVE_JULEA_VINYAMAR)
 #   target_sources(adios2 PRIVATE

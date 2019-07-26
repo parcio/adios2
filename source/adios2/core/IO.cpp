@@ -77,6 +77,8 @@
 #ifdef ADIOS2_HAVE_JULEA_MINASTIRITH // external dependencies
 #include "adios2/engine/julea-smd-kv/JuleaReader.h"
 #include "adios2/engine/julea-smd-kv/JuleaWriter.h"
+#include "adios2/engine/julea-test/JuleaTestReader.h"
+#include "adios2/engine/julea-test/JuleaTestWriter.h"
 // #include "adios2/engine/julea-db/JuleaDBReader.h"
 // #include "adios2/engine/julea-db/JuleaDBWriter.h"
 #endif
@@ -659,6 +661,15 @@ Engine &IO::Open(const std::string &name, const Mode mode,
                                                               mpiComm);
         else
             engine = std::make_shared<engine::JuleaWriter>(*this, name, mode,
+                                                              mpiComm);
+    }
+    else if (engineTypeLC == "julea-test")
+    {
+        if (mode == Mode::Read)
+            engine = std::make_shared<engine::JuleaTestReader>(*this, name, mode,
+                                                              mpiComm);
+        else
+            engine = std::make_shared<engine::JuleaTestWriter>(*this, name, mode,
                                                               mpiComm);
     }
     // else if (engineTypeLC == "julea-db")

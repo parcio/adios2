@@ -4,14 +4,12 @@
  *
  * JULEA engine using the JULEA storage framework to handle lower I/O.
  *
- *  Created on: Nov 14, 2018
+ *  Created on: Jul 26, 2019
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
-#ifndef ADIOS2_ENGINE_JULEAWRITER_H_
-#define ADIOS2_ENGINE_JULEAWRITER_H_
-
-#include "JuleaMetadata.h"
+#ifndef ADIOS2_ENGINE_JULEATESTWRITER_H_
+#define ADIOS2_ENGINE_JULEATESTWRITER_H_
 
 #include "adios2/core/Engine.h"
 #include "adios2/toolkit/format/bp3/BP3.h" //BP3Serializer
@@ -34,7 +32,7 @@ namespace core
 namespace engine
 {
 
-class JuleaWriter : public Engine
+class JuleaTestWriter : public Engine
 {
 
 public:
@@ -46,10 +44,10 @@ public:
      * @param method
      * @param debugMode
      */
-    JuleaWriter(IO &adios, const std::string &name, const Mode mode,
+    JuleaTestWriter(IO &adios, const std::string &name, const Mode mode,
                 MPI_Comm mpiComm);
 
-    ~JuleaWriter(); // was =default -> meaning?
+    ~JuleaTestWriter(); // was =default -> meaning?
 
     // TODO: why is there no set StepMode in the Write engine?
     StepStatus BeginStep(StepMode mode,
@@ -60,8 +58,7 @@ public:
     void Flush(const int transportIndex = -1) final;
 
 private:
-    JuleaInfo *m_JuleaInfo;
-    interop::JuleaSerializer m_Julea;
+    // JuleaInfo *m_JuleaInfo;
 
     int m_Verbosity = 5;       // changed for debugging info from 0 to 5
     int m_WriterRank;          // my rank in the writers' comm
@@ -99,18 +96,6 @@ private:
     /** statistics verbosity, only 0 is supported */
     unsigned int m_StatsLevel = 0;
 
-    /** contains data buffer for this rank */
-    BufferSTL m_Data;
-
-    /** contains collective metadata buffer, only used by rank 0 */
-    BufferSTL m_Metadata;
-
-    // DESIGN
-    /** Manage BP data files Transports from IO AddTransport */
-    // transportman::TransportMan m_FileDataManager; //FIXME: compiler?!
-
-    /** Manages the optional collective metadata files */
-    // transportman::TransportMan m_FileMetadataManager; FIXME: compiler?!
 
     void Init() final;
 
@@ -178,53 +163,10 @@ private:
      * @param io [description]
      */
     void PutAttributes(core::IO &io);
-
-    /**
-     * Sets buffer's positions to zero and fill buffer with zero char
-     * @param bufferSTL buffer to be reset
-     * @param resetAbsolutePosition true: both bufferSTL.m_Position and
-     * bufferSTL.m_AbsolutePosition set to 0,   false(default): only
-     * bufferSTL.m_Position
-     * is set to zero,
-     */
-    void ResetBuffer(BufferSTL &bufferSTL,
-                     const bool resetAbsolutePosition = false,
-                     const bool zeroInitialize = true);
-
-    /**
-     * DESIGN
-     * Returns the estimated variable index size. Used by ResizeBuffer public
-     * function
-     * @param variableName input
-     * @param count input variable local dimensions
-     */
-    size_t GetBPIndexSizeInData(const std::string &variableName,
-                                const Dims &count) const noexcept;
-    /** Return type of the CheckAllocation function. */
-    enum class ResizeResult
-    {
-        Failure,   //!< FAILURE, caught a std::bad_alloc
-        Unchanged, //!< UNCHANGED, no need to resize (sufficient capacity)
-        Success,   //!< SUCCESS, resize was successful
-        Flush      //!< FLUSH, need to flush to transports for current variable
-    };
-
-    /**
-     * DESIGN
-     * Resizes the data buffer to hold new dataIn size
-     * @param dataIn input size for new data
-     * @param hint for exception handling
-     * @return
-     * -1: allocation failed,
-     *  0: no allocation needed,
-     *  1: reallocation is sucessful
-     *  2: need a transport flush
-     */
-    ResizeResult ResizeBuffer(const size_t dataIn, const std::string hint);
 };
 
 } // end namespace engine
 } // end namespace core
 } // end namespace adios2
 
-#endif /* ADIOS2_ENGINE_JULEAMPIWRITER_H_ */
+#endif /* ADIOS2_ENGINE_JULEATESTWRITER_H_ */
