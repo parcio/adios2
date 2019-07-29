@@ -46,11 +46,19 @@ void JuleaTestWriter::PutSyncCommon(Variable<T> &variable,
 template <class T>
 void JuleaTestWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 {
-
-    /* ParseVariableType */
-    /* GetMinMax */
-    /* PutVariableToJulea*/
-
+    // create and initialize metadata struct
+    // parse variable to metadata struct
+    // parse variable type
+    // get min max
+    // put metadata to julea
+        // kv get variable_names kv
+        //
+    // put data to julea
+    //
+        // bson new
+        // var metadata to bson
+        // kv put
+        // object write
     if (m_Verbosity == 5)
     {
         std::cout << "Julea Test Writer " << m_WriterRank << "     PutSync("
@@ -61,13 +69,14 @@ void JuleaTestWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 template <class T>
 void JuleaTestWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
 {
-    /* ParseVariableType */
-    /* GetMinMax */
-    /* PutVariableToJulea*/
+    // Parse variable type
+    // get min max
+    // put metadata to julea
+    // put data to julea
+    // add deferred variable
 
-    /* m_DeferredVariables.insert(variable.m_Name) */
-
-    /* m_NeedPerformPuts = true; */
+    // m_DeferredVariables.insert(variable.m_Name)
+    // m_NeedPerformPuts = true;
 
     if (m_Verbosity == 5)
     {

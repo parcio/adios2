@@ -80,7 +80,7 @@ private:
     size_t m_FlushStepsCount = 1;
 
     /** manages all communication tasks in aggregation */
-    aggregator::MPIChain m_Aggregator;
+    // aggregator::MPIChain m_Aggregator;
 
     /** tracks Put and Get variables in deferred mode */
     std::set<std::string> m_DeferredVariables;

@@ -159,7 +159,6 @@ void JuleaTestWriter::PerformPuts()
     m_DeferredVariables.clear();
     m_NeedPerformPuts = false;
 }
-// ADIOS2_FOREACH_TYPE_1ARG(declare_template_instantiation)
 
 /**
  * TODO

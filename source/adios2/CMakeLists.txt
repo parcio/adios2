@@ -122,12 +122,19 @@ endif()
 #options for all machines I need to compile this on
 if(ADIOS2_HAVE_JULEA_GONDOLIN)
   target_sources(adios2 PRIVATE
-      engine/julea-smd-kv/JuleaReader.cpp
-      engine/julea-smd-kv/JuleaReader.tcc
-      engine/julea-smd-kv/JuleaWriter.cpp
-      engine/julea-smd-kv/JuleaWriter.tcc
-      engine/julea-smd-kv/JuleaClientLogic.cpp
-      engine/julea-smd-kv/JuleaFormatWriter.cpp
+      engine/julea-kv/JuleaReader.cpp
+      engine/julea-kv/JuleaReader.tcc
+      engine/julea-kv/JuleaWriter.cpp
+      engine/julea-kv/JuleaWriter.tcc
+      engine/julea-kv/JuleaClientLogic.cpp
+      engine/julea-kv/JuleaFormatWriter.cpp
+
+      engine/julea-original/JuleaReader.cpp
+      engine/julea-original/JuleaReader.tcc
+      engine/julea-original/JuleaWriter.cpp
+      engine/julea-original/JuleaWriter.tcc
+      engine/julea-original/JuleaClientLogic.cpp
+      engine/julea-original/JuleaFormatWriter.cpp
 
       engine/julea-test/JuleaTestReader.cpp
       engine/julea-test/JuleaTestReader.tcc
@@ -143,12 +150,19 @@ if(ADIOS2_HAVE_JULEA_GONDOLIN)
     /home/elentari/Documents/julea/include
     /home/elentari/Documents/julea/build/include
     /home/elentari/Documents/dependencies/
-    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-vkknhrxkirz2rercghai22rreonhkwv3/lib
-    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-vkknhrxkirz2rercghai22rreonhkwv3/include/glib-2.0
-    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-vkknhrxkirz2rercghai22rreonhkwv3/lib/glib-2.0/include
-    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/lib
-    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/include/libbson-1.0
-    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/lib/libbson-1)
+    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.4.0/glib-2.56.3-3gh3dnjmtz3kp5weg4pqht6ihswwyrxv/lib
+    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.4.0/glib-2.56.3-3gh3dnjmtz3kp5weg4pqht6ihswwyrxv/include/glib-2.0
+    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.4.0/glib-2.56.3-3gh3dnjmtz3kp5weg4pqht6ihswwyrxv/lib/glib-2.0/include
+
+    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.4.0/libbson-1.9.1-a477qnt3mrkzovo4xdhky7fqvuswywpu/lib
+    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.4.0/libbson-1.9.1-a477qnt3mrkzovo4xdhky7fqvuswywpu/include/libbson-1.0
+    #/home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-vkknhrxkirz2rercghai22rreonhkwv3/lib
+    #/home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-vkknhrxkirz2rercghai22rreonhkwv3/include/glib-2.0
+    #/home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-vkknhrxkirz2rercghai22rreonhkwv3/lib/glib-2.0/include
+    #/home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/lib
+    #/home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/include/libbson-1.0
+    #/home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/lib/libbson-1
+    )
   target_link_libraries(adios2 PRIVATE
      # /home/elentari/Documents/julea/build/lib/
       /home/elentari/Documents/julea/build/lib/libjulea.so
