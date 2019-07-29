@@ -264,7 +264,7 @@ void PutVariableDataToJulea(Variable<T> &variable, const T *data, const char *na
     j_object_create(dataObject, batch);
     j_object_write(dataObject, data, dataSize, 0, &bytesWritten, batch);
 
-    j_batch_execute(batch); // Writing data
+    j_batch_execute(batch);
     if (bytesWritten == dataSize)
     {
         std::cout << "++ Julea Client Logic: Data written for variable " << varName << std::endl;
@@ -281,9 +281,73 @@ void PutVariableDataToJulea(Variable<T> &variable, const T *data, const char *na
 }
 
 template <class T>
-void PutVariableMetadataToJulea(Variable<T> &variable, const bson_t *bson_meta_data, const char *name_space)
+void PutVariableMetadataToJulea(Variable<T> &variable, const bson_t *bsonMetaData, const char *nameSpace)
 {
+    // guint64 bytesWritten = 0;
+    guint32 valueLen = 0;
 
+    bson_iter_t bIter;
+    bson_t *bsonNames;
+
+    void *namesBuf = NULL;
+    void *metaDataBuf = NULL;
+
+    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
+    auto batch2 = j_batch_new(semantics);
+
+    auto varName = strdup(variable.m_Name.c_str());
+
+    // auto batch_2 = j_batch_new(j_batch_get_semantics(batch));
+
+    /* names_kv = kv holding all variable names */
+    auto kvObjectNames = j_kv_new("variable_names", nameSpace);
+    j_kv_get(kvObjectNames, &namesBuf, &valueLen, batch);
+    j_batch_execute(batch);
+
+    if (valueLen == 0)
+    {
+        bsonNames = bson_new();
+    }
+    else
+    {
+        bsonNames = bson_new_from_data((const uint8_t *)namesBuf, valueLen);
+    }
+
+    /* Check if variable name is already in kv store */
+    if (!bson_iter_init_find(&bIter, bsonNames, varName))
+    {
+        std::cout << "Init b_iter successfull " << std::endl;
+        // bson_append_int32(bsonNames, varName, -1, bsonMetaData->var_type); //FIXME: var_type?!
+    }
+    else
+    {
+        std::cout << "++ Julea Client Logic: Variable " << varName << " already in kv store. " << std::endl;
+        // TODO: update variable -> is there anything else necessary to do?
+    }
+
+    /* Write metadata struct to kv store*/
+    auto stringMetadataKV = g_strdup_printf("variables_%s", nameSpace);
+    auto kvObjectMetadata = j_kv_new(stringMetadataKV, varName);
+
+    metaDataBuf =
+        g_memdup(bson_get_data(bsonMetaData), bsonMetaData->len);
+    namesBuf = g_memdup(bson_get_data(bsonNames), bsonNames->len);
+
+    j_kv_put(kvObjectMetadata, metaDataBuf, bsonMetaData->len, g_free,
+             batch2);
+    j_kv_put(kvObjectNames, namesBuf, bsonNames->len, g_free, batch2);
+
+    j_batch_execute(batch2); // Writing metadata
+
+    g_free(stringMetadataKV);
+    j_kv_unref(kvObjectNames);
+    j_kv_unref(kvObjectMetadata);
+    j_batch_unref(batch);
+    j_batch_unref(batch2);
+    bson_destroy(bsonNames);
+
+    std::cout << "++ Julea Client Logic: Put Variable " << std::endl;
 }
 
 #define declare_template_instantiation(T)                                      \
