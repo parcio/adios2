@@ -210,27 +210,7 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable, const T *data)
     PutVariableMetadataToJulea(variable, bson_meta_data, m_JuleaInfo->name_space);
 
     PutVariableDataToJulea(variable, data, m_JuleaInfo->name_space);
-    // auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    // auto batch = j_batch_new(semantics);
 
-    // PutVariableToJulea(m_JuleaInfo->name_space, metadata, data, batch);
-
-    if (m_Verbosity == 5)
-    {
-        std::cout << "Julea Writer " << m_WriterRank << "     PutSync("
-                  << variable.m_Name << ")\n";
-    }
-    std::cout << " ============================================ " << std::endl;
-    // // g_free((void*)name_space);
-
-    // TODO: delete instead of g_free
-    // g_free(metadata->name);
-    // g_slice_free(Metadata, metadata);
-    // j_batch_unref(batch);
-
-    // g_slice_free(unsigned long, metadata->shape); //FIXME free only if size >
-    // 0 g_slice_free(unsigned long, metadata->start); g_slice_free(unsigned
-    // long, metadata->count);
     if (m_Verbosity == 5)
     {
         std::cout << "Julea Writer " << m_WriterRank << "     PutSync("
