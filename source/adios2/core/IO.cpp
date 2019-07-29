@@ -70,6 +70,8 @@
 #ifdef ADIOS2_HAVE_JULEA_GONDOLIN // external dependencies
 #include "adios2/engine/julea-smd-kv/JuleaReader.h"
 #include "adios2/engine/julea-smd-kv/JuleaWriter.h"
+#include "adios2/engine/julea-test/JuleaTestReader.h"
+#include "adios2/engine/julea-test/JuleaTestWriter.h"
 // #include "adios2/engine/julea-db/JuleaDBReader.h"
 // #include "adios2/engine/julea-db/JuleaDBWriter.h"
 #endif
