@@ -217,36 +217,6 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 
     ParseVariableToBSON(variable, data);
 
-    adios2::helper::GetMinMax(data, number_elements, min, max);
-    variable.m_Min = min;
-    variable.m_Max = max;
-
-    ParseVarTypeToBSON(variable, data, metadata);
-    std::cout << "number_elements: " << number_elements << std::endl;
-    std::cout << "m_ElementSize: " << variable.m_ElementSize << std::endl;
-    std::cout << "variable: " << variable.m_Name << " min: " << min
-              << std::endl;
-    std::cout << "variable: " << variable.m_Name << " max: " << max
-              << std::endl;
-    std::cout << "data_size: " << metadata->data_size << std::endl;
-
-    // metadata->deferred_counter = variable.m_DeferredCounter;
-    // metadata->is_value = blockInfo.IsValue;
-    metadata->is_single_value = variable.m_SingleValue;
-    metadata->is_constant_dims = variable.IsConstantDims();
-    metadata->is_read_as_joined = variable.m_ReadAsJoined;
-    metadata->is_read_as_local_value = variable.m_ReadAsLocalValue;
-    metadata->is_random_access = variable.m_RandomAccess;
-    metadata->is_first_streaming_step = variable.m_FirstStreamingStep;
-
-    // // for(int i = 0; i < 10; i++)
-    // // {
-    // //     std::cout << "blockInfo.Data: " << blockInfo.Data[i] << std::endl;
-    // // }
-
-    // // std::cout << "Data type: " << variable.m_Type << std::endl;
-    // // FIXME: resizeresult
-
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 

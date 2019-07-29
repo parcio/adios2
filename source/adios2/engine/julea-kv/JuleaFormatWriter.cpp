@@ -100,15 +100,10 @@ void ParseVariableToBSON(Variable<T> &variable, const T *data)
     bson_append_int64(bson_meta_data, "available_steps_count", -1,
                       variable.m_AvailableStepsCount);
 
-
-    // bson_append_int64(bson_meta_data, "var_type", -1, metadata->var_type); //FIXME
-    // bson_append_int64(bson_meta_data, "var_type", -1, adios2::helper::GetType(variable));
-
      /* compute data_size; dimension entries !> 0 are ignored ?!*/
     number_elements = adios2::helper::GetTotalSize(variable.m_Count);
     data_size = variable.m_ElementSize * number_elements;
     bson_append_int64(bson_meta_data, "data_size", -1, data_size);
-    //  metadata->name = strdup(variable.m_Name.c_str());
 
     adios2::helper::GetMinMax(data, number_elements, min, max);
     variable.m_Min = min;
@@ -116,29 +111,22 @@ void ParseVariableToBSON(Variable<T> &variable, const T *data)
 
     // ParseVarTypeToBSON(variable, data, metadata);
     ParseVarTypeToBSON(variable, data, bson_meta_data);
-     std::cout << "number_elements: " << number_elements << std::endl;
-     std::cout << "m_ElementSize: " << variable.m_ElementSize <<
-     std::endl;
-     std::cout << "variable: " << variable.m_Name << " min: " << min
-               << std::endl;
-     std::cout << "variable: " << variable.m_Name << " max: " << max
-               << std::endl;
-     // std::cout << "data_size: " << metadata->data_size << std::endl;
+     // std::cout << "number_elements: " << number_elements << std::endl;
+     // std::cout << "m_ElementSize: " << variable.m_ElementSize <<
+     // std::endl;
+     // std::cout << "variable: " << variable.m_Name << " min: " << min
+     //           << std::endl;
+     // std::cout << "variable: " << variable.m_Name << " max: " << max
+     //           << std::endl;
 
-    //  // metadata->deferred_counter = variable.m_DeferredCounter;
-    //  // metadata->is_value = blockInfo.IsValue;
+    //  metadata->deferred_counter = variable.m_DeferredCounter; //FIXME: needed?
+    //  metadata->is_value = blockInfo.IsValue;
     bson_append_int64(bson_meta_data, "is_single_value", -1, variable.m_SingleValue);
     bson_append_int64(bson_meta_data, "is_constant_dims", -1, variable.IsConstantDims());
     bson_append_int64(bson_meta_data, "is_read_as_joined", -1, variable.m_ReadAsJoined);
     bson_append_int64(bson_meta_data, "is_read_as_local_value", -1, variable.m_ReadAsLocalValue);
     bson_append_int64(bson_meta_data, "is_random_access", -1, variable.m_RandomAccess);
     bson_append_int64(bson_meta_data, "is_first_streaming_step", -1, variable.m_FirstStreamingStep);
-     // metadata->is_single_value = variable.m_SingleValue;
-     // metadata->is_constant_dims = variable.IsConstantDims();
-     // metadata->is_read_as_joined = variable.m_ReadAsJoined;
-     // metadata->is_read_as_local_value = variable.m_ReadAsLocalValue;
-     // metadata->is_random_access = variable.m_RandomAccess;
-     // metadata->is_first_streaming_step = variable.m_FirstStreamingStep;
 }
 
 template <class T>
@@ -228,91 +216,6 @@ void ParseVariableToMetadataStruct(Variable<T> &variable, const T *data,
     metadata->is_first_streaming_step = variable.m_FirstStreamingStep;
 }
 
-/**
- * Parsing the variable types to enum defined in JULEA's Adios Client.
- * TODO: is this function necessary when Info struct is only used by inline
- * engine?
- */
-template <class T>
-void ParseVarTypeToBSON(Variable<T> &variable,
-                       const typename Variable<T>::Info &blockInfo,
-                       Metadata *metadata)
-{
-    // if (helper::GetType<T>() == "string")
-    // {
-    //     metadata->var_type = STRING;
-    //     // metadata->min_value.string = blockInfo.Min;
-    // }
-    // else if (helper::GetType<T>() == "int8_t")
-    // {
-    //     metadata->var_type = INT8;
-    //     metadata->sizeof_var_type = sizeof(int8_t);
-    // }
-    // else if (helper::GetType<T>() == "uint8_t")
-    // {
-    //     metadata->var_type = UINT8;
-    //     metadata->sizeof_var_type = sizeof(uint8_t);
-    // }
-    // else if (helper::GetType<T>() == "int16_t")
-    // {
-    //     metadata->var_type = INT16;
-    //     metadata->sizeof_var_type = sizeof(int16_t);
-    //     // metadata->min_value = (short) variable.m_Min;
-    //     // metadata->min_value.shorter = static_cast<short>(variable.m_Min);
-    //     // metadata->min_value.shorter = reinterpret_cast<T>(variable.m_Min);
-    // }
-    // else if (helper::GetType<T>() == "uint16_t")
-    // {
-    //     metadata->var_type = UINT16;
-    //     metadata->sizeof_var_type = sizeof(uint16_t);
-    // }
-    // else if (helper::GetType<T>() == "int32_t")
-    // {
-    //     metadata->var_type = INT32;
-    //     metadata->sizeof_var_type = sizeof(int32_t);
-    // }
-    // else if (helper::GetType<T>() == "uint32_t")
-    // {
-    //     metadata->var_type = UINT32;
-    //     metadata->sizeof_var_type = sizeof(uint32_t);
-    // }
-    // else if (helper::GetType<T>() == "int64_t")
-    // {
-    //     metadata->var_type = INT64;
-    //     metadata->sizeof_var_type = sizeof(int64_t);
-    // }
-    // else if (helper::GetType<T>() == "uint64_t")
-    // {
-    //     metadata->var_type = UINT64;
-    //     metadata->sizeof_var_type = sizeof(uint64_t);
-    // }
-    // else if (helper::GetType<T>() == "float")
-    // {
-    //     metadata->var_type = FLOAT;
-    //     metadata->sizeof_var_type = sizeof(float);
-    // }
-    // else if (helper::GetType<T>() == "double")
-    // {
-    //     metadata->var_type = DOUBLE;
-    //     metadata->sizeof_var_type = sizeof(double);
-    // }
-    // else if (helper::GetType<T>() == "long double")
-    // {
-    //     metadata->var_type = LONG_DOUBLE;
-    //     metadata->sizeof_var_type = sizeof(long double);
-    // }
-
-    // else if (helper::GetType<T>() == "float complex")
-    // {
-    //     metadata->var_type = COMPLEX_FLOAT;
-    //     // metadata->sizeof_var_type = sizeof(float complex); //TODO
-    // }
-    // else if (helper::GetType<T>() == "double complex")
-    // {
-    //     metadata->var_type = COMPLEX_DOUBLE;
-    //     // metadata->sizeof_var_type = sizeof(double complex); //TODO
-    // }
-}
 
 template <class T>
 void ParseVarTypeToBSON(Variable<T> &variable, const T *data, Metadata *metadata)

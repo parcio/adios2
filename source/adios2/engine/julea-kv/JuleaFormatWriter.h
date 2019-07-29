@@ -29,13 +29,6 @@ template <class T>
 void ParseVariableToBSON(Variable<T> &variable, const T *data);
 
 
-#define declare_template_instantiation(T)                                      \
-    extern template void ParseVariableToMetadataStruct(Variable<T> &variable, const T *data, \
-                   Metadata *metadata);              \
-    extern template void ParseVariableToBSON(Variable<T> &variable, const T *data);              \
-ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
-#undef declare_template_instantiation
-
 template <class T>
 void ParseVarTypeToBSON(Variable<T> &variable,
                        const typename Variable<T>::Info &blockInfo,
@@ -47,38 +40,12 @@ template <class T>
 void ParseVarTypeToBSON(Variable<T> &variable, const T *data,
                        bson_t *bson_meta_data);
 
-// template <>
-// void ParseVariableType<int8_t>(Variable<int8_t> &variable, const int8_t *data,
-//                                Metadata *metadata);
-// template <>
-// void ParseVariableType<int16_t>(Variable<int16_t> &variable,
-//                                 const int16_t *data, Metadata *metadata);
-// template <>
-// void ParseVariableType<int32_t>(Variable<int32_t> &variable,
-//                                 const int32_t *data, Metadata *metadata);
-// template <>
-// void ParseVariableType<int64_t>(Variable<int64_t> &variable,
-//                                 const int64_t *data, Metadata *metadata);
-// template <>
-// void ParseVariableType<float>(Variable<float> &variable, const float *data,
-//                               Metadata *metadata);
-
-// template <>
-// void ParseVariableType<int8_t>(Variable<int8_t> &variable, const int8_t *data,
-//                                 bson_t *bson_meta_data);
-// template <>
-// void ParseVariableType<int16_t>(Variable<int16_t> &variable,
-//                                 const int16_t *data,  bson_t *bson_meta_data);
-// template <>
-// void ParseVariableType<int32_t>(Variable<int32_t> &variable,
-//                                 const int32_t *data,  bson_t *bson_meta_data);
-// template <>
-// void ParseVariableType<int64_t>(Variable<int64_t> &variable,
-//                                 const int64_t *data,  bson_t *bson_meta_data);
-// template <>
-// void ParseVariableType<float>(Variable<float> &variable, const float *data,
-//                                bson_t *bson_meta_data);
-
+#define declare_template_instantiation(T)                                      \
+    extern template void ParseVariableToMetadataStruct(Variable<T> &variable, const T *data, \
+                   Metadata *metadata);              \
+    extern template void ParseVariableToBSON(Variable<T> &variable, const T *data);              \
+ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
+#undef declare_template_instantiation
 } // end namespace engine
 } // end namespace core
 } // end namespace adios2
