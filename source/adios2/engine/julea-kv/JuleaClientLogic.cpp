@@ -245,6 +245,55 @@ void attr_metadata_to_bson(AttributeMetadata *attr_metadata,
                                    attr_metadata->is_single_value));
 }
 
+template <class T>
+void PutVariableDataToJulea(Variable<T> &variable, const T *data, const char *nameSpace)
+{
+    guint64 bytesWritten = 0;
+    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
+
+    auto varName = strdup(variable.m_Name.c_str());
+    auto numberElements = adios2::helper::GetTotalSize(variable.m_Count);
+    auto dataSize = variable.m_ElementSize * numberElements;
+
+    /* Write data pointer to object store*/
+    auto stringDataObject =
+        g_strdup_printf("%s_variables_%s", nameSpace, varName);
+    auto dataObject = j_object_new(stringDataObject, varName);
+
+    j_object_create(dataObject, batch);
+    j_object_write(dataObject, data, dataSize, 0, &bytesWritten, batch);
+
+    j_batch_execute(batch); // Writing data
+    if (bytesWritten == dataSize)
+    {
+        std::cout << "++ Julea Client Logic: Data written for variable " << varName << std::endl;
+    }
+    else
+    {
+        std::cout<< "WARNING: only " << bytesWritten << " bytes written instead of " << dataSize << " bytes! " << std::endl;
+    }
+    g_free(stringDataObject);
+    j_object_unref(dataObject);
+    j_batch_unref(batch);
+
+    std::cout << "++ Julea Client Logic: Put Variable " << std::endl;
+}
+
+template <class T>
+void PutVariableMetadataToJulea(Variable<T> &variable, const bson_t *bson_meta_data, const char *name_space)
+{
+
+}
+
+#define declare_template_instantiation(T)                                      \
+    template void PutVariableDataToJulea(Variable<T> &variable, const T *data, const char *name_space);              \
+    template void PutVariableMetadataToJulea(Variable<T> &variable, const bson_t *bson_meta_data, const char *name_space);        \
+
+ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
+#undef declare_template_instantiation
+
+
 /**
  * Init
  * TODO:

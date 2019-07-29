@@ -12,6 +12,7 @@
 #define ADIOS2_ENGINE_JULEAWRITER_TCC_
 
 #include "JuleaFormatWriter.h"
+#include "JuleaClientLogic.h"
 #include "JuleaWriter.h"
 
 #include <adios2_c.h>
@@ -199,28 +200,20 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable,
 template <class T>
 void JuleaWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 {
-    T min;
-    T max;
+    auto bson_meta_data = bson_new();
 
-    uint data_size = 0;
-    size_t number_elements = 0;
-    const char *name_space = m_Name.c_str();
+    SetMinMax(variable, data);
 
-    if (m_Verbosity == 5)
-    {
-        std::cout << "Julea Writer " << m_WriterRank << "     PutSync("
-                  << variable.m_Name << ")\n";
-    }
-    Metadata *metadata = g_slice_new(Metadata);
-    // Metadata *metadata = new Metadata(*metadata); //FIXME
-    // ParseVariableToMetadataStruct(variable, data, metadata);
+    ParseVariableToBSON(variable, bson_meta_data);
+    ParseVarTypeToBSON(variable, data, bson_meta_data);
 
-    ParseVariableToBSON(variable, data);
+    PutVariableMetadataToJulea(variable, bson_meta_data, m_JuleaInfo->name_space);
 
-    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    auto batch = j_batch_new(semantics);
+    PutVariableDataToJulea(variable, data, m_JuleaInfo->name_space);
+    // auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    // auto batch = j_batch_new(semantics);
 
-    PutVariableToJulea(m_JuleaInfo->name_space, metadata, data, batch);
+    // PutVariableToJulea(m_JuleaInfo->name_space, metadata, data, batch);
 
     if (m_Verbosity == 5)
     {
@@ -231,13 +224,18 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable, const T *data)
     // // g_free((void*)name_space);
 
     // TODO: delete instead of g_free
-    g_free(metadata->name);
-    g_slice_free(Metadata, metadata);
-    j_batch_unref(batch);
+    // g_free(metadata->name);
+    // g_slice_free(Metadata, metadata);
+    // j_batch_unref(batch);
 
     // g_slice_free(unsigned long, metadata->shape); //FIXME free only if size >
     // 0 g_slice_free(unsigned long, metadata->start); g_slice_free(unsigned
     // long, metadata->count);
+    if (m_Verbosity == 5)
+    {
+        std::cout << "Julea Writer " << m_WriterRank << "     PutSync("
+                  << variable.m_Name << ")\n";
+    }
 }
 
 template <class T>

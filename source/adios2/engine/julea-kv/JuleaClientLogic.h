@@ -12,6 +12,8 @@
 #define ADIOS2_ENGINE_JULEACLIENTLOGIC_H_
 
 #include "JuleaMetadata.h"
+#include "JuleaWriter.h"
+
 // #include <julea.h>
 
 namespace adios2
@@ -23,6 +25,12 @@ namespace engine
 
 // void j_adios_init(JuleaInfo* julea_info); //DESIGN: param needed?
 // void j_adios_finish(void);
+
+template <class T>
+void PutVariableDataToJulea(Variable<T> &variable, const T *data, const char *name_space);
+
+template <class T>
+void PutVariableMetadataToJulea(Variable<T> &variable, const bson_t *bson_meta_data, const char *name_space);
 
 /* performs data put AND metadata put*/
 void PutVariableToJulea(char *name_space, Metadata *metadata,
@@ -55,6 +63,13 @@ void GetAttrMetadataFromKV(char *name_space, char *var_name,
 void DeleteVariable(char *name_space, char *var_name, JBatch *batch);
 void DeleteAttribute(char *name_space, char *attr_name, JBatch *batch);
 
+
+
+#define declare_template_instantiation(T)                                      \
+    extern template void PutVariableDataToJulea(Variable<T> &variable, const T *data, const char *name_space); \
+    extern template void PutVariableMetadataToJulea(Variable<T> &variable, const bson_t *bson_meta_data, const char *name_space);     \
+ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
+#undef declare_template_instantiation
 } // end namespace engine
 } // end namespace core
 } // end namespace adios2
