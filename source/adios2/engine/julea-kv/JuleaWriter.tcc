@@ -214,7 +214,8 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable, const T *data)
     Metadata *metadata = g_slice_new(Metadata);
     // Metadata *metadata = new Metadata(*metadata); //FIXME
 
-    // ParseVariable(variable, data, metadata);
+    ParseVariableMetadata(variable, data, metadata);
+    ParseVariable(variable, data);
 
     adios2::helper::GetMinMax(data, number_elements, min, max);
     variable.m_Min = min;

@@ -129,12 +129,12 @@ if(ADIOS2_HAVE_JULEA_GONDOLIN)
       engine/julea-kv/JuleaClientLogic.cpp
       engine/julea-kv/JuleaFormatWriter.cpp
 
-      engine/julea-original/JuleaReader.cpp
-      engine/julea-original/JuleaReader.tcc
-      engine/julea-original/JuleaWriter.cpp
-      engine/julea-original/JuleaWriter.tcc
-      engine/julea-original/JuleaClientLogic.cpp
-      engine/julea-original/JuleaFormatWriter.cpp
+      # engine/julea-original/JuleaReader.cpp
+      # engine/julea-original/JuleaReader.tcc
+      # engine/julea-original/JuleaWriter.cpp
+      # engine/julea-original/JuleaWriter.tcc
+      # engine/julea-original/JuleaClientLogic.cpp
+      # engine/julea-original/JuleaFormatWriter.cpp
 
       engine/julea-test/JuleaTestReader.cpp
       engine/julea-test/JuleaTestReader.tcc
