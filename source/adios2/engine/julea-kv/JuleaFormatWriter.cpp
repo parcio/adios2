@@ -32,7 +32,7 @@ namespace engine
 // template void ParseVariable<int>(Variable<int> &variable, const int *data,
 // Metadata *metadata);
 template <class T>
-void ParseVariable(Variable<T> &variable, const T *data)
+void ParseVariableToBSON(Variable<T> &variable, const T *data)
 {
     std::cout << "Test" << std::endl;
     T min;
@@ -114,8 +114,8 @@ void ParseVariable(Variable<T> &variable, const T *data)
     variable.m_Min = min;
     variable.m_Max = max;
 
-    // ParseVariableType(variable, data, metadata);
-    ParseVariableType(variable, data, bson_meta_data);
+    // ParseVarTypeToBSON(variable, data, metadata);
+    ParseVarTypeToBSON(variable, data, bson_meta_data);
      std::cout << "number_elements: " << number_elements << std::endl;
      std::cout << "m_ElementSize: " << variable.m_ElementSize <<
      std::endl;
@@ -127,16 +127,22 @@ void ParseVariable(Variable<T> &variable, const T *data)
 
     //  // metadata->deferred_counter = variable.m_DeferredCounter;
     //  // metadata->is_value = blockInfo.IsValue;
-    //  metadata->is_single_value = variable.m_SingleValue;
-    //  metadata->is_constant_dims = variable.IsConstantDims();
-    //  metadata->is_read_as_joined = variable.m_ReadAsJoined;
-    //  metadata->is_read_as_local_value = variable.m_ReadAsLocalValue;
-    //  metadata->is_random_access = variable.m_RandomAccess;
-    //  metadata->is_first_streaming_step = variable.m_FirstStreamingStep;
+    bson_append_int64(bson_meta_data, "is_single_value", -1, variable.m_SingleValue);
+    bson_append_int64(bson_meta_data, "is_constant_dims", -1, variable.IsConstantDims());
+    bson_append_int64(bson_meta_data, "is_read_as_joined", -1, variable.m_ReadAsJoined);
+    bson_append_int64(bson_meta_data, "is_read_as_local_value", -1, variable.m_ReadAsLocalValue);
+    bson_append_int64(bson_meta_data, "is_random_access", -1, variable.m_RandomAccess);
+    bson_append_int64(bson_meta_data, "is_first_streaming_step", -1, variable.m_FirstStreamingStep);
+     // metadata->is_single_value = variable.m_SingleValue;
+     // metadata->is_constant_dims = variable.IsConstantDims();
+     // metadata->is_read_as_joined = variable.m_ReadAsJoined;
+     // metadata->is_read_as_local_value = variable.m_ReadAsLocalValue;
+     // metadata->is_random_access = variable.m_RandomAccess;
+     // metadata->is_first_streaming_step = variable.m_FirstStreamingStep;
 }
 
 template <class T>
-void ParseVariableMetadata(Variable<T> &variable, const T *data,
+void ParseVariableToMetadataStruct(Variable<T> &variable, const T *data,
                            Metadata *metadata)
 {
     std::cout << "Test" << std::endl;
@@ -203,7 +209,7 @@ void ParseVariableMetadata(Variable<T> &variable, const T *data,
     variable.m_Min = min;
     variable.m_Max = max;
 
-    ParseVariableType(variable, data, metadata);
+    ParseVarTypeToBSON(variable, data, metadata);
     std::cout << "number_elements: " << number_elements << std::endl;
     std::cout << "m_ElementSize: " << variable.m_ElementSize << std::endl;
     std::cout << "variable: " << variable.m_Name << " min: " << min
@@ -228,7 +234,7 @@ void ParseVariableMetadata(Variable<T> &variable, const T *data,
  * engine?
  */
 template <class T>
-void ParseVariableType(Variable<T> &variable,
+void ParseVarTypeToBSON(Variable<T> &variable,
                        const typename Variable<T>::Info &blockInfo,
                        Metadata *metadata)
 {
@@ -309,7 +315,7 @@ void ParseVariableType(Variable<T> &variable,
 }
 
 template <class T>
-void ParseVariableType(Variable<T> &variable, const T *data, Metadata *metadata)
+void ParseVarTypeToBSON(Variable<T> &variable, const T *data, Metadata *metadata)
 {
 
     // if (helper::GetType<T>() == "string")
@@ -332,108 +338,175 @@ void ParseVariableType(Variable<T> &variable, const T *data, Metadata *metadata)
 }
 
 template <>
-void ParseVariableType<std::string>(Variable<std::string> &variable,
+void ParseVarTypeToBSON<std::string>(Variable<std::string> &variable,
                                     const std::string *data, Metadata *metadata)
 {
 }
 
 template <>
-void ParseVariableType<int8_t>(Variable<int8_t> &variable,
+void ParseVarTypeToBSON<int8_t>(Variable<int8_t> &variable,
                                     const int8_t *data, Metadata *metadata)
 {
+    metadata->var_type = INT8;
+    metadata->sizeof_var_type = sizeof(int8_t);
+    metadata->min_value.integer_8 = variable.Min();
+    metadata->max_value.integer_8 = variable.Max();
+    metadata->curr_value.integer_8 = variable.m_Value;
+    std::cout << "ParseVarTypeToBSON int8_t: min = " << variable.Min()
+              << std::endl;
 }
 
 template <>
-void ParseVariableType<uint8_t>(Variable<uint8_t> &variable,
+void ParseVarTypeToBSON<uint8_t>(Variable<uint8_t> &variable,
                                     const uint8_t *data, Metadata *metadata)
 {
+    metadata->var_type = UINT8;
+    metadata->sizeof_var_type = sizeof(uint8_t);
+    metadata->min_value.u_integer_8 = variable.Min();
+    metadata->max_value.u_integer_8 = variable.Max();
+    metadata->curr_value.u_integer_8 = variable.m_Value;
 }
 
 template <>
-void ParseVariableType<int16_t>(Variable<int16_t> &variable,
+void ParseVarTypeToBSON<int16_t>(Variable<int16_t> &variable,
                                     const int16_t *data, Metadata *metadata)
 {
+    metadata->var_type = INT16;
+    metadata->sizeof_var_type = sizeof(int16_t);
+    metadata->min_value.integer_16 = variable.Min();
+    metadata->max_value.integer_16 = variable.Max();
+    metadata->curr_value.integer_16 = variable.m_Value;
 }
 
 template <>
-void ParseVariableType<uint16_t>(Variable<uint16_t> &variable,
+void ParseVarTypeToBSON<uint16_t>(Variable<uint16_t> &variable,
                                     const uint16_t *data, Metadata *metadata)
 {
+    metadata->var_type = UINT16;
+    metadata->sizeof_var_type = sizeof(uint16_t);
+    metadata->min_value.u_integer_16 = variable.Min();
+    metadata->max_value.u_integer_16 = variable.Max();
+    metadata->curr_value.u_integer_16 = variable.m_Value;
 }
 
 template <>
-void ParseVariableType<int32_t>(Variable<int32_t> &variable,
+void ParseVarTypeToBSON<int32_t>(Variable<int32_t> &variable,
                                     const int32_t *data, Metadata *metadata)
 {
+    metadata->var_type = INT32;
+    metadata->sizeof_var_type = sizeof(int32_t);
+    metadata->min_value.integer_32 = variable.Min();
+    metadata->max_value.integer_32 = variable.Max();
+    metadata->curr_value.integer_32 = variable.m_Value;
 }
 
 template <>
-void ParseVariableType<uint32_t>(Variable<uint32_t> &variable,
+void ParseVarTypeToBSON<uint32_t>(Variable<uint32_t> &variable,
                                     const uint32_t *data, Metadata *metadata)
 {
+    metadata->var_type = UINT32;
+    metadata->sizeof_var_type = sizeof(uint32_t);
+    metadata->min_value.u_integer_32 = variable.Min();
+    metadata->max_value.u_integer_32 = variable.Max();
+    metadata->curr_value.u_integer_32 = variable.m_Value;
 }
 
 template <>
-void ParseVariableType<int64_t>(Variable<int64_t> &variable,
+void ParseVarTypeToBSON<int64_t>(Variable<int64_t> &variable,
                                     const int64_t *data, Metadata *metadata)
 {
+    metadata->var_type = INT64;
+    metadata->sizeof_var_type = sizeof(int64_t);
+    metadata->min_value.integer_64 = variable.Min();
+    metadata->max_value.integer_64 = variable.Max();
+    metadata->curr_value.integer_64 = variable.m_Value;
 }
 
 template <>
-void ParseVariableType<uint64_t>(Variable<uint64_t> &variable,
+void ParseVarTypeToBSON<uint64_t>(Variable<uint64_t> &variable,
                                     const uint64_t *data, Metadata *metadata)
 {
+    metadata->var_type = UINT64;
+    metadata->sizeof_var_type = sizeof(uint64_t);
+    metadata->min_value.u_integer_64 = variable.Min();
+    metadata->max_value.u_integer_64 = variable.Max();
+    metadata->curr_value.u_integer_64 = variable.m_Value;
 }
 
 template <>
-void ParseVariableType<float>(Variable<float> &variable,
+void ParseVarTypeToBSON<float>(Variable<float> &variable,
                                     const float *data, Metadata *metadata)
 {
+    metadata->var_type = FLOAT;
+    metadata->sizeof_var_type = sizeof(float);
+    metadata->min_value.real_float = variable.Min();
+    metadata->max_value.real_float = variable.Max();
+    metadata->curr_value.real_float = variable.m_Value;
 }
 
 template <>
-void ParseVariableType<double>(Variable<double> &variable,
+void ParseVarTypeToBSON<double>(Variable<double> &variable,
                                     const double *data, Metadata *metadata)
 {
+    metadata->var_type = DOUBLE;
+    metadata->sizeof_var_type = sizeof(double);
+    metadata->min_value.real_double = variable.Min();
+    metadata->max_value.real_double = variable.Max();
+    metadata->curr_value.real_double = variable.m_Value;
 }
 
 template <>
-void ParseVariableType<long double>(Variable<long double> &variable,
+void ParseVarTypeToBSON<long double>(Variable<long double> &variable,
                                     const long double *data, Metadata *metadata)
 {
+    metadata->var_type = LONG_DOUBLE;
+    metadata->sizeof_var_type = sizeof(long double);
+    metadata->min_value.real_long_double = variable.Min();
+    metadata->max_value.real_long_double = variable.Max();
+    metadata->curr_value.real_long_double = variable.m_Value;
 }
 
 template <>
-void ParseVariableType<std::complex<float>>(
+void ParseVarTypeToBSON<std::complex<float>>(
     Variable<std::complex<float>> &variable, const std::complex<float> *data,
      Metadata *metadata)
 {
+    metadata->var_type = COMPLEX_FLOAT;
+    metadata->sizeof_var_type = sizeof(std::complex<float>);
+    metadata->min_value.complex_float = variable.Min();
+    metadata->max_value.complex_float = variable.Max();
+    metadata->curr_value.complex_float = variable.m_Value;
 }
 
 template <>
-void ParseVariableType<std::complex<double>>(
+void ParseVarTypeToBSON<std::complex<double>>(
     Variable<std::complex<double>> &variable, const std::complex<double> *data,
      Metadata *metadata)
 {
+    metadata->var_type = COMPLEX_DOUBLE;
+    metadata->sizeof_var_type = sizeof(std::complex<double>);
+    metadata->min_value.complex_double = variable.Min();
+    metadata->max_value.complex_double = variable.Max();
+    metadata->curr_value.complex_double = variable.m_Value;
 }
 
 
 
 
 template <>
-void ParseVariableType<std::string>(Variable<std::string> &variable,
+void ParseVarTypeToBSON<std::string>(Variable<std::string> &variable,
                                     const std::string *data, bson_t *bson_meta_data)
 {
     // metadata->var_type = STRING;
     // metadata->sizeof_var_type = sizeof(std::string);
     // metadata->min_value->string = variable.Min().; //what would be the use of
     // a string minimum?
-    std::cout << "ParseVariableType int8_t: min = " << variable.Min()
+    std::cout << "ParseVarTypeToBSON int8_t: min = " << variable.Min()
               << std::endl;
 }
 
 template <>
-void ParseVariableType<int8_t>(Variable<int8_t> &variable, const int8_t *data,
+void ParseVarTypeToBSON<int8_t>(Variable<int8_t> &variable, const int8_t *data,
                                bson_t *bson_meta_data)
 {
     bson_append_int32(bson_meta_data, "var_type", -1, INT8);
@@ -441,181 +514,155 @@ void ParseVariableType<int8_t>(Variable<int8_t> &variable, const int8_t *data,
     bson_append_int32(bson_meta_data, "max_value", -1, variable.Max());
     bson_append_int32(bson_meta_data, "curr_value", -1, variable.m_Value);
 
-    // metadata->var_type = INT8;
-    // metadata->sizeof_var_type = sizeof(int8_t);
-    // metadata->min_value.integer_8 = variable.Min();
-    // metadata->max_value.integer_8 = variable.Max();
-    // metadata->curr_value.integer_8 = variable.m_Value;
-    std::cout << "ParseVariableType int8_t: min = " << variable.Min()
+    std::cout << "ParseVarTypeToBSON int8_t: min = " << variable.Min()
               << std::endl;
 }
 
 template <>
-void ParseVariableType<uint8_t>(Variable<uint8_t> &variable,
+void ParseVarTypeToBSON<uint8_t>(Variable<uint8_t> &variable,
                                 const uint8_t *data, bson_t *bson_meta_data)
 {
     bson_append_int32(bson_meta_data, "var_type", -1, UINT8);
     bson_append_int32(bson_meta_data, "min_value", -1, variable.Min());
     bson_append_int32(bson_meta_data, "max_value", -1, variable.Max());
     bson_append_int32(bson_meta_data, "curr_value", -1, variable.m_Value);
-    // metadata->var_type = UINT8;
-    // metadata->sizeof_var_type = sizeof(uint8_t);
-    // metadata->min_value.u_integer_8 = variable.Min();
-    // metadata->max_value.u_integer_8 = variable.Max();
-    // metadata->curr_value.u_integer_8 = variable.m_Value;
-    std::cout << "ParseVariableType uint8_t: min = " << variable.Min()
+
+    std::cout << "ParseVarTypeToBSON uint8_t: min = " << variable.Min()
               << std::endl;
 }
 
 template <>
-void ParseVariableType<int16_t>(Variable<int16_t> &variable,
+void ParseVarTypeToBSON<int16_t>(Variable<int16_t> &variable,
                                 const int16_t *data, bson_t *bson_meta_data)
 {
-    // metadata->var_type = INT16;
-    // metadata->sizeof_var_type = sizeof(int16_t);
-    // metadata->min_value.integer_16 = variable.Min();
-    // metadata->max_value.integer_16 = variable.Max();
-    // metadata->curr_value.integer_16 = variable.m_Value;
-    std::cout << "ParseVariableType int16_t: min = " << variable.Min()
+    bson_append_int32(bson_meta_data, "var_type", -1, INT16);
+    bson_append_int32(bson_meta_data, "min_value", -1, variable.Min());
+    bson_append_int32(bson_meta_data, "max_value", -1, variable.Max());
+    bson_append_int32(bson_meta_data, "curr_value", -1, variable.m_Value);
+    std::cout << "ParseVarTypeToBSON int16_t: min = " << variable.Min()
               << std::endl;
 }
 
 template <>
-void ParseVariableType<uint16_t>(Variable<uint16_t> &variable,
+void ParseVarTypeToBSON<uint16_t>(Variable<uint16_t> &variable,
                                  const uint16_t *data, bson_t *bson_meta_data)
 {
-    // metadata->var_type = UINT16;
-    // metadata->sizeof_var_type = sizeof(uint16_t);
-    // metadata->min_value.u_integer_16 = variable.Min();
-    // metadata->max_value.u_integer_16 = variable.Max();
-    // metadata->curr_value.u_integer_16 = variable.m_Value;
-    std::cout << "ParseVariableType uint16_t: min = " << variable.Min()
+    bson_append_int32(bson_meta_data, "var_type", -1, UINT16);
+    bson_append_int32(bson_meta_data, "min_value", -1, variable.Min());
+    bson_append_int32(bson_meta_data, "max_value", -1, variable.Max());
+    bson_append_int32(bson_meta_data, "curr_value", -1, variable.m_Value);
+    std::cout << "ParseVarTypeToBSON uint16_t: min = " << variable.Min()
               << std::endl;
 }
 
 template <>
-void ParseVariableType<int32_t>(Variable<int32_t> &variable,
+void ParseVarTypeToBSON<int32_t>(Variable<int32_t> &variable,
                                 const int32_t *data, bson_t *bson_meta_data)
 {
-    // metadata->var_type = INT32;
-    // metadata->sizeof_var_type = sizeof(int32_t);
-    // metadata->min_value.integer_32 = variable.Min();
-    // metadata->max_value.integer_32 = variable.Max();
-    // metadata->curr_value.integer_32 = variable.m_Value;
-    std::cout << "ParseVariableType int32_t: min = " << variable.Min()
+    bson_append_int32(bson_meta_data, "var_type", -1, INT32);
+    bson_append_int32(bson_meta_data, "min_value", -1, variable.Min());
+    bson_append_int32(bson_meta_data, "max_value", -1, variable.Max());
+    bson_append_int32(bson_meta_data, "curr_value", -1, variable.m_Value);
+    std::cout << "ParseVarTypeToBSON int32_t: min = " << variable.Min()
               << std::endl;
 }
 
 template <>
-void ParseVariableType<uint32_t>(Variable<uint32_t> &variable,
+void ParseVarTypeToBSON<uint32_t>(Variable<uint32_t> &variable,
                                  const uint32_t *data, bson_t *bson_meta_data)
 {
-    // metadata->var_type = UINT32;
-    // metadata->sizeof_var_type = sizeof(uint32_t);
-    // metadata->min_value.u_integer_32 = variable.Min();
-    // metadata->max_value.u_integer_32 = variable.Max();
-    // metadata->curr_value.u_integer_32 = variable.m_Value;
-    std::cout << "ParseVariableType uint32_t: min = " << variable.Min()
+    bson_append_int32(bson_meta_data, "var_type", -1, UINT32); //FIXME: does int32 suffice?
+    bson_append_int32(bson_meta_data, "min_value", -1, variable.Min());
+    bson_append_int32(bson_meta_data, "max_value", -1, variable.Max());
+    bson_append_int32(bson_meta_data, "curr_value", -1, variable.m_Value);
+    std::cout << "ParseVarTypeToBSON uint32_t: min = " << variable.Min()
               << std::endl;
 }
 
 template <>
-void ParseVariableType<int64_t>(Variable<int64_t> &variable,
+void ParseVarTypeToBSON<int64_t>(Variable<int64_t> &variable,
                                 const int64_t *data, bson_t *bson_meta_data)
 {
-    // metadata->var_type = INT64;
-    // metadata->sizeof_var_type = sizeof(int64_t);
-    // metadata->min_value.integer_64 = variable.Min();
-    // metadata->max_value.integer_64 = variable.Max();
-    // metadata->curr_value.integer_64 = variable.m_Value;
-    std::cout << "ParseVariableType int64_t: min = " << variable.Min()
+    bson_append_int64(bson_meta_data, "var_type", -1, INT64);
+    bson_append_int64(bson_meta_data, "min_value", -1, variable.Min());
+    bson_append_int64(bson_meta_data, "max_value", -1, variable.Max());
+    bson_append_int64(bson_meta_data, "curr_value", -1, variable.m_Value);
+    std::cout << "ParseVarTypeToBSON int64_t: min = " << variable.Min()
               << std::endl;
 }
 
 template <>
-void ParseVariableType<uint64_t>(Variable<uint64_t> &variable,
+void ParseVarTypeToBSON<uint64_t>(Variable<uint64_t> &variable,
                                  const uint64_t *data, bson_t *bson_meta_data)
 {
-    // metadata->var_type = UINT64;
-    // metadata->sizeof_var_type = sizeof(uint64_t);
-    // metadata->min_value.u_integer_64 = variable.Min();
-    // metadata->max_value.u_integer_64 = variable.Max();
-    // metadata->curr_value.u_integer_64 = variable.m_Value;
-    std::cout << "ParseVariableType uint64_t: min = " << variable.Min()
+    bson_append_int64(bson_meta_data, "var_type", -1, UINT64);
+    bson_append_int64(bson_meta_data, "min_value", -1, variable.Min());
+    bson_append_int64(bson_meta_data, "max_value", -1, variable.Max());
+    bson_append_int64(bson_meta_data, "curr_value", -1, variable.m_Value);
+    std::cout << "ParseVarTypeToBSON uint64_t: min = " << variable.Min()
               << std::endl;
 }
 
 template <>
-void ParseVariableType<float>(Variable<float> &variable, const float *data,
+void ParseVarTypeToBSON<float>(Variable<float> &variable, const float *data,
                               bson_t *bson_meta_data)
 {
-    // metadata->var_type = UINT8;
-    // metadata->sizeof_var_type = sizeof(uint8_t);
-    // metadata->min_value.real_float = variable.Min();
-    // metadata->max_value.real_float = variable.Max();
-    // metadata->curr_value.real_float = variable.m_Value;
-    std::cout << "ParseVariableType float: min = " << variable.Min()
+    bson_append_double(bson_meta_data, "var_type", -1, FLOAT);
+    bson_append_double(bson_meta_data, "min_value", -1, variable.Min());
+    bson_append_double(bson_meta_data, "max_value", -1, variable.Max());
+    bson_append_double(bson_meta_data, "curr_value", -1, variable.m_Value);
+    std::cout << "ParseVarTypeToBSON float: min = " << variable.Min()
               << std::endl;
 }
 
 template <>
-void ParseVariableType<double>(Variable<double> &variable, const double *data,
+void ParseVarTypeToBSON<double>(Variable<double> &variable, const double *data,
                               bson_t *bson_meta_data)
 {
-    // metadata->var_type = DOUBLE;
-    // metadata->sizeof_var_type = sizeof(double);
-    // metadata->min_value.real_double = variable.Min();
-    // metadata->max_value.real_double = variable.Max();
-    // metadata->curr_value.real_double = variable.m_Value;
-    std::cout << "ParseVariableType double: min = " << variable.Min()
+    bson_append_double(bson_meta_data, "var_type", -1, DOUBLE);
+    bson_append_double(bson_meta_data, "min_value", -1, variable.Min());
+    bson_append_double(bson_meta_data, "max_value", -1, variable.Max());
+    bson_append_double(bson_meta_data, "curr_value", -1, variable.m_Value);
+    std::cout << "ParseVarTypeToBSON double: min = " << variable.Min()
               << std::endl;
 }
 
 template <>
-void ParseVariableType<long double>(Variable<long double> &variable,
+void ParseVarTypeToBSON<long double>(Variable<long double> &variable,
                                     const long double *data, bson_t *bson_meta_data)
 {
-    // metadata->var_type = LONG_DOUBLE;
-    // metadata->sizeof_var_type = sizeof(long double);
-    // metadata->min_value.real_long_double = variable.Min();
-    // metadata->max_value.real_long_double = variable.Max();
-    // metadata->curr_value.real_long_double = variable.m_Value;
-    std::cout << "ParseVariableType long double: min = " << variable.Min()
+    //FIXME: implement!
+    //how to store long double in bson file?
+    std::cout << "ParseVarTypeToBSON long double: min = " << variable.Min()
               << std::endl;
 }
 
 template <>
-void ParseVariableType<std::complex<float>>(
+void ParseVarTypeToBSON<std::complex<float>>(
     Variable<std::complex<float>> &variable, const std::complex<float> *data,
     bson_t *bson_meta_data)
 {
-    // metadata->var_type = COMPLEX_FLOAT;
-    // metadata->sizeof_var_type = sizeof(std::complex<float>);
-    // metadata->min_value.complex_float = variable.Min();
-    // metadata->max_value.complex_float = variable.Max();
-    // metadata->curr_value.complex_float = variable.m_Value;
-    std::cout << "ParseVariableType std::complex<float>: min = "
+    //FIXME: implement!
+    //use two doubles? one for imaginary, one for real part?
+    std::cout << "ParseVarTypeToBSON std::complex<float>: min = "
               << variable.Min() << std::endl;
 }
 
 template <>
-void ParseVariableType<std::complex<double>>(
+void ParseVarTypeToBSON<std::complex<double>>(
     Variable<std::complex<double>> &variable, const std::complex<double> *data,
     bson_t *bson_meta_data)
 {
-    // metadata->var_type = COMPLEX_DOUBLE;
-    // metadata->sizeof_var_type = sizeof(std::complex<double>);
-    // metadata->min_value.complex_double = variable.Min();
-    // metadata->max_value.complex_double = variable.Max();
-    // metadata->curr_value.complex_double = variable.m_Value;
-    std::cout << "ParseVariableType std::complex<double>: min = "
+    //FIXME: implement!
+    //use two doubles? one for imaginary, one for real part?
+    std::cout << "ParseVarTypeToBSON std::complex<double>: min = "
               << variable.Min() << std::endl;
 }
 
 #define declare_template_instantiation(T)                                      \
-    template void ParseVariableMetadata(core::Variable<T> &, const T *data,    \
+    template void ParseVariableToMetadataStruct(core::Variable<T> &, const T *data,    \
                                         Metadata *metadata);                   \
-    template void ParseVariable(core::Variable<T> &, const T *data);
+    template void ParseVariableToBSON(core::Variable<T> &, const T *data);
 
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation

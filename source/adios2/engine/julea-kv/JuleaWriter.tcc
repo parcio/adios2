@@ -213,15 +213,15 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable, const T *data)
     }
     Metadata *metadata = g_slice_new(Metadata);
     // Metadata *metadata = new Metadata(*metadata); //FIXME
+    // ParseVariableToMetadataStruct(variable, data, metadata);
 
-    ParseVariableMetadata(variable, data, metadata);
-    ParseVariable(variable, data);
+    ParseVariableToBSON(variable, data);
 
     adios2::helper::GetMinMax(data, number_elements, min, max);
     variable.m_Min = min;
     variable.m_Max = max;
 
-    ParseVariableType(variable, data, metadata);
+    ParseVarTypeToBSON(variable, data, metadata);
     std::cout << "number_elements: " << number_elements << std::endl;
     std::cout << "m_ElementSize: " << variable.m_ElementSize << std::endl;
     std::cout << "variable: " << variable.m_Name << " min: " << min

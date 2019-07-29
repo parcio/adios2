@@ -23,28 +23,28 @@ namespace engine
 {
 
 template <class T>
-void ParseVariableMetadata(Variable<T> &variable, const T *data, Metadata *metadata);
+void ParseVariableToMetadataStruct(Variable<T> &variable, const T *data, Metadata *metadata);
 
 template <class T>
-void ParseVariable(Variable<T> &variable, const T *data);
+void ParseVariableToBSON(Variable<T> &variable, const T *data);
 
 
 #define declare_template_instantiation(T)                                      \
-    extern template void ParseVariableMetadata(Variable<T> &variable, const T *data, \
+    extern template void ParseVariableToMetadataStruct(Variable<T> &variable, const T *data, \
                    Metadata *metadata);              \
-    extern template void ParseVariable(Variable<T> &variable, const T *data);              \
+    extern template void ParseVariableToBSON(Variable<T> &variable, const T *data);              \
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
 
 template <class T>
-void ParseVariableType(Variable<T> &variable,
+void ParseVarTypeToBSON(Variable<T> &variable,
                        const typename Variable<T>::Info &blockInfo,
                        Metadata *metadata);
 template <class T>
-void ParseVariableType(Variable<T> &variable, const T *data,
+void ParseVarTypeToBSON(Variable<T> &variable, const T *data,
                        Metadata *metadata);
 template <class T>
-void ParseVariableType(Variable<T> &variable, const T *data,
+void ParseVarTypeToBSON(Variable<T> &variable, const T *data,
                        bson_t *bson_meta_data);
 
 // template <>
