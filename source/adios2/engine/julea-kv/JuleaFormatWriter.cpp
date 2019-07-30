@@ -132,7 +132,7 @@ void ParseVarTypeToBSON<std::string>(Variable<std::string> &variable,
                                      const std::string *data,
                                      bson_t *bson_meta_data)
 {
-    //FIXME: set min, max for string?
+    // FIXME: set min, max for string?
     bson_append_int32(bson_meta_data, "var_type", -1, STRING);
     // bson_append_int32(bson_meta_data, "min_value", -1, variable.Min());
     // bson_append_int32(bson_meta_data, "max_value", -1, variable.Max());
@@ -299,9 +299,9 @@ void ParseVarTypeToBSON<std::complex<double>>(
 }
 
 #define declare_template_instantiation(T)                                      \
-    template void SetMinMax(Variable<T> &variable, const T *data);              \
+    template void SetMinMax(Variable<T> &variable, const T *data);             \
     template void ParseVariableToBSON(core::Variable<T> &,                     \
-                                      bson_t *bson_meta_data);                 \
+                                      bson_t *bson_meta_data);
 
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation

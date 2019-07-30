@@ -116,7 +116,9 @@ void ParseVariableToMetadataStruct(Variable<T> &variable, const T *data,
 }
 
 template <class T>
-void ParseVariableToMetadataStruct(Variable<T> &variable, const typename Variable<T>::Info &blockInfo, Metadata *metadata)
+void ParseVariableToMetadataStruct(Variable<T> &variable,
+                                   const typename Variable<T>::Info &blockInfo,
+                                   Metadata *metadata)
 {
     metadata->name = strdup(variable.m_Name.c_str());
 
@@ -183,19 +185,19 @@ void ParseVariableToMetadataStruct(Variable<T> &variable, const typename Variabl
     size_t numberElements = adios2::helper::GetTotalSize(variable.m_Count);
     metadata->data_size = variable.m_ElementSize * numberElements;
 
-    // metadata->is_value = blockInfo.IsValue;//TODO: currently not part of metadata struct
-    //TODO: operations vector
-    //TODO: bufferP
-    //TODO: buffer vector
-    //TODO: selection type
+    // metadata->is_value = blockInfo.IsValue;//TODO: currently not part of
+    // metadata struct
+    // TODO: operations vector
+    // TODO: bufferP
+    // TODO: buffer vector
+    // TODO: selection type
 }
 
 template <class T>
-void ParseVariableToBSON(const typename Variable<T>::Info &blockInfo, bson_t *bson_meta_data)
+void ParseVariableToBSON(const typename Variable<T>::Info &blockInfo,
+                         bson_t *bson_meta_data)
 {
-
 }
-
 
 template <class T>
 void ParseVarTypeToBSON(Variable<T> &variable, const T *data,

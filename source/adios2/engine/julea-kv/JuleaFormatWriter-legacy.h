@@ -48,7 +48,9 @@ void ParseVarTypeToBSON(Variable<T> &variable,
     extern template void ParseVariableToMetadataStruct(                        \
         Variable<T> &variable, const typename Variable<T>::Info &blockInfo,    \
         Metadata *metadata);                                                   \
-    extern template void ParseVariableToBSON(Variable<T> &variable,const typename Variable<T>::Info &blockInfo, bson_t *bson_meta_data);              \
+    extern template void ParseVariableToBSON(                                  \
+        Variable<T> &variable, const typename Variable<T>::Info &blockInfo,    \
+        bson_t *bson_meta_data);                                               \
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
 
