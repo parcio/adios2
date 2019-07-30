@@ -34,16 +34,16 @@ template <class T>
 void JuleaWriter::PutSyncCommon(Variable<T> &variable,
                                 const typename Variable<T>::Info &blockInfo)
 {
-    // auto bson_meta_data = bson_new();
-    // Metadata *metadata = g_slice_new(Metadata);
+    auto bson_meta_data = bson_new();
+    Metadata *metadata = g_slice_new(Metadata);
 
-    // SetMinMax(variable, blockInfo.Data);
+    SetMinMax(variable, blockInfo.Data);
 
-    // ParseVariableToMetadataStruct(variable, blockInfo, metadata);
-    // ParseVarTypeToBSON(variable, blockInfo, metadata);
+    ParseVariableToMetadataStruct(variable, blockInfo, metadata);
+    ParseVarTypeToBSON(variable, blockInfo, metadata);
 
-    // PutVariableMetadataToJulea(variable, bson_meta_data, m_JuleaInfo->name_space);
-    // PutVariableDataToJulea(variable, blockInfo.Data, m_JuleaInfo->name_space);
+    PutVariableMetadataToJulea(variable, bson_meta_data, m_JuleaInfo->name_space);
+    PutVariableDataToJulea(variable, blockInfo.Data, m_JuleaInfo->name_space);
 
     if (m_Verbosity == 5)
     {
