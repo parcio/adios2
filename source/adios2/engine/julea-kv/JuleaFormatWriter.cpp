@@ -218,16 +218,6 @@ void ParseVariableToMetadataStruct(Variable<T> &variable, const T *data,
 template <class T>
 void ParseVariableToMetadataStruct(Variable<T> &variable, const typename Variable<T>::Info &blockInfo, Metadata *metadata)
 {
-    // g_autoptr(JBatch) batch = NULL;
-    // g_autoptr(JSemantics) semantics = NULL;
-    gboolean use_batch = TRUE;
-
-    const gchar *name_space = variable.m_Name.c_str();
-    uint data_size = 0;
-    size_t number_elements = 0;
-
-
-    // Metadata *metadata = g_slice_new(Metadata);
     metadata->name = strdup(variable.m_Name.c_str());
 
     metadata->shape_size = blockInfo.Shape.size();
@@ -270,10 +260,6 @@ void ParseVariableToMetadataStruct(Variable<T> &variable, const typename Variabl
     metadata->steps_start = blockInfo.StepsStart;
     metadata->steps_count = blockInfo.StepsCount;
     metadata->block_id = blockInfo.BlockID;
-    // metadata->index_start = variable.m_IndexStart;
-    // metadata->element_size = variable.m_ElementSize;
-    // metadata->available_steps_start = variable.m_AvailableStepsStart;
-    // metadata->available_steps_count = variable.m_AvailableStepsCount;
 
     ParseVariableType(variable, blockInfo, metadata);
 
@@ -281,29 +267,9 @@ void ParseVariableToMetadataStruct(Variable<T> &variable, const typename Variabl
     std::cout << "valuesSize" << valuesSize << std::endl;
     T min, max;
     adios2::helper::GetMinMax(blockInfo.Data, valuesSize, min, max);
-    std::cout << "variable: " << variable.m_Name << " min: " << min
-              << std::endl;
-    std::cout << "variable: " << variable.m_Name << " max: " << max
-              << std::endl;
 
-    // variable.m_Min = min;
     blockInfo.Min = min;
-    // variable.m_Max = max;
     blockInfo.Max = max;
-
-    // std::cout << "variable: " << variable.m_Name << " min: " <<
-    blockInfo.Min << std::endl;
-    std::cout << "variable: " << variable.m_Name << " min: " << variable.Min()
-              << std::endl;
-    std::cout << "variable: " << variable.m_Name << " min: " << variable.m_Min
-              << std::endl;
-
-    // std::cout << "variable: " << variable.m_Name << " max: " <<
-    blockInfo.Max << std::endl;
-    std::cout << "variable: " << variable.m_Name << " max: " << variable.Max()
-              << std::endl;
-    std::cout << "variable: " << variable.m_Name << " max: " << variable.m_Max
-              << std::endl;
 
     std::cout << " -------------------------------------------- " << std::endl;
     std::cout << " BlockInfo Min and Max " << std::endl;
@@ -312,36 +278,16 @@ void ParseVariableToMetadataStruct(Variable<T> &variable, const typename Variabl
               << std::endl;
     std::cout << "variable: " << variable.m_Name << " max: " << blockInfo.Max
               << std::endl;
-    variable.MinMax(0);
-    std::cout << "variable: " << variable.m_Name << " min: " << blockInfo.Min
-              << std::endl;
-    std::cout << "variable: " << variable.m_Name << " max: " << blockInfo.Max
-              << std::endl;
 
     /* compute data_size; dimension entries !> 0 are ignored */
-    number_elements = adios2::helper::GetTotalSize(variable.m_Count);
-    metadata->data_size = variable.m_ElementSize * number_elements;
+    size_t numberElements = adios2::helper::GetTotalSize(variable.m_Count);
+    metadata->data_size = variable.m_ElementSize * numberElements;
 
-    // metadata->data_size = sizeof(helper::GetType<T>()) * number_elements;
-    // metadata->data_size = metadata->sizeof_var_type * number_elements;
-
-    // metadata->deferred_counter = variable.m_DeferredCounter;
-    // metadata->is_value = blockInfo.IsValue;
-    metadata->is_single_value = variable.m_SingleValue;
-    metadata->is_constant_dims = variable.IsConstantDims();
-    metadata->is_read_as_joined = variable.m_ReadAsJoined;
-    metadata->is_read_as_local_value = variable.m_ReadAsLocalValue;
-    metadata->is_random_access = variable.m_RandomAccess;
-    metadata->is_first_streaming_step = variable.m_FirstStreamingStep;
-
-    // g_free((void*)name_space);
-    g_free(metadata->name);
-    // g_slice_free(Metadata, metadata);
-    // j_batch_unref(batch);
-    // FIXME free only if size > 0
-    // g_slice_free(unsigned long, metadata->shape);
-    // g_slice_free(unsigned long, metadata->start);
-    // g_slice_free(unsigned long, metadata->count);
+    // metadata->is_value = blockInfo.IsValue;//TODO: currently not part of metadata struct
+    //TODO: operations vector
+    //TODO: bufferP
+    //TODO: buffer vector
+    //TODO: selection type
 }
 
 template <class T>
