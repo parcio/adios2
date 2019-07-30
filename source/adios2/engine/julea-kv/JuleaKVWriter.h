@@ -34,7 +34,7 @@ namespace core
 namespace engine
 {
 
-class JuleaWriter : public Engine
+class JuleaKVWriter : public Engine
 {
 
 public:
@@ -46,10 +46,10 @@ public:
      * @param method
      * @param debugMode
      */
-    JuleaWriter(IO &adios, const std::string &name, const Mode mode,
+    JuleaKVWriter(IO &adios, const std::string &name, const Mode mode,
                 MPI_Comm mpiComm);
 
-    ~JuleaWriter(); // was =default -> meaning?
+    ~JuleaKVWriter(); // was =default -> meaning?
 
     // TODO: why is there no set StepMode in the Write engine?
     StepStatus BeginStep(StepMode mode,
@@ -129,6 +129,11 @@ private:
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
 
+
+#define declare_template_instantiation(T)                                      \
+    TestFunction(Variable<T> &variable, const T *data);      \
+    ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
+#undef declare_template_instantiation
     /**
      * TODO: why has skeleton engine Info struct as param when this is only used
      * by inline engine? Common function for primitive PutSync, puts variables

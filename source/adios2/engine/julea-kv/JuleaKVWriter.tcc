@@ -13,7 +13,7 @@
 
 #include "JuleaFormatWriter.h"
 #include "JuleaClientLogic.h"
-#include "JuleaWriter.h"
+#include "JuleaKVWriter.h"
 
 #include <adios2_c.h>
 #include <fstream>
@@ -29,21 +29,34 @@ namespace core
 namespace engine
 {
 
+template <class T>
+void TestFunction(Variable<T> &variable, const T *data)
+{
+    T min;
+    T max;
+
+    auto number_elements = adios2::helper::GetTotalSize(variable.m_Count);
+    adios2::helper::GetMinMax(data, number_elements, min, max);
+    variable.m_Min = min;
+    variable.m_Max = max;
+    nochEinKomischerTest(variable);
+}
+
 // TODO: necessary function?
 template <class T>
-void JuleaWriter::PutSyncCommon(Variable<T> &variable,
+void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
                                 const typename Variable<T>::Info &blockInfo)
 {
     auto bson_meta_data = bson_new();
     Metadata *metadata = g_slice_new(Metadata);
 
-    SetMinMax(variable, blockInfo.Data);
+    // SetMinMax(variable, blockInfo.Data);
 
-    ParseVariableToMetadataStruct(variable, blockInfo, metadata);
-    ParseVarTypeToBSON(variable, blockInfo, metadata);
+    // ParseVariableToMetadataStruct(variable, blockInfo, metadata);
+    // ParseVarTypeToBSON(variable, blockInfo, metadata);
 
-    PutVariableMetadataToJulea(variable, bson_meta_data, m_JuleaInfo->name_space);
-    PutVariableDataToJulea(variable, blockInfo.Data, m_JuleaInfo->name_space);
+    // PutVariableMetadataToJulea(variable, bson_meta_data, m_JuleaInfo->name_space);
+    // PutVariableDataToJulea(variable, blockInfo.Data, m_JuleaInfo->name_space);
 
     if (m_Verbosity == 5)
     {
@@ -51,38 +64,28 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable,
                   << variable.m_Name << ")\n";
     }
 
+    // abstruserTest42(metadata);
+    abstruserTest42(variable);
+    nochEinKomischerTest(variable);
 
-    // ParseVariableType(variable, blockInfo, metadata);
+    ParseVariableType(variable, blockInfo, metadata);
 
-    // for(int i = 0; i < 10; i++)
-    // {
-    //     std::cout << "blockInfo.Data: " << blockInfo.Data[i] << std::endl;
-    // }
-
-    // std::cout << "Data type: " << variable.m_Type << std::endl;
-    // FIXME: resizeresult
-
-    // free(metadata->name);
-    // g_slice_free(Metadata, metadata);
-    // FIXME free only if size > 0
-    // g_slice_free(unsigned long, metadata->shape);
-    // g_slice_free(unsigned long, metadata->start);
-    // g_slice_free(unsigned long, metadata->count);
+    //TODO: free memory
 }
 
 template <class T>
-void JuleaWriter::PutSyncCommon(Variable<T> &variable, const T *data)
+void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 {
     auto bson_meta_data = bson_new();
 
-    SetMinMax(variable, data);
+    // SetMinMax(variable, data);
 
-    ParseVariableToBSON(variable, bson_meta_data);
-    ParseVarTypeToBSON(variable, data, bson_meta_data);
+    // ParseVariableToBSON(variable, bson_meta_data);
+    // ParseVarTypeToBSON(variable, data, bson_meta_data);
 
-    PutVariableMetadataToJulea(variable, bson_meta_data, m_JuleaInfo->name_space);
+    // PutVariableMetadataToJulea(variable, bson_meta_data, m_JuleaInfo->name_space);
 
-    PutVariableDataToJulea(variable, data, m_JuleaInfo->name_space);
+    // PutVariableDataToJulea(variable, data, m_JuleaInfo->name_space);
 
     if (m_Verbosity == 5)
     {
@@ -92,7 +95,7 @@ void JuleaWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 }
 
 template <class T>
-void JuleaWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
+void JuleaKVWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
 {
     // std::cout << "JULEA ENGINE: PutDeferredCommon" << std::endl;
     // std::cout << "You successfully reached the JULEA engine with the DEFERRED

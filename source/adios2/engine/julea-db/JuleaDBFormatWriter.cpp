@@ -125,7 +125,7 @@ void ParseVariable(Variable<T> &variable, const T *data, Metadata *metadata)
  * engine?
  */
 template <class T>
-void ParseVariableType(Variable<T> &variable,
+void ParseVariableType53(Variable<T> &variable,
                        const typename Variable<T>::Info &blockInfo,
                        Metadata *metadata)
 {

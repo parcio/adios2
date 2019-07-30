@@ -12,7 +12,7 @@
 #define ADIOS2_ENGINE_JULEAFORMATWRITER_H_
 
 #include "JuleaMetadata.h"
-#include "JuleaWriter.h"
+#include "JuleaKVWriter.h"
 // #include <julea.h>
 
 namespace adios2
@@ -21,6 +21,10 @@ namespace core
 {
 namespace engine
 {
+class JuleaKVTest : public Engine
+{
+
+public:
 
 template <class T>
 void SetMinMax(Variable<T> &variable, const T *data);
@@ -33,11 +37,12 @@ void ParseVarTypeToBSON(Variable<T> &variable, const T *data,
                         bson_t *bson_meta_data);
 
 #define declare_template_instantiation(T)                                      \
-    extern template void SetMinMax(Variable<T> &variable, const T *data);      \
+   	SetMinMax(Variable<T> &variable, const T *data);      \
     extern template void ParseVariableToBSON(Variable<T> &variable,            \
                                              bson_t *bson_meta_data);          \
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
+};
 
 } // end namespace engine
 } // end namespace core

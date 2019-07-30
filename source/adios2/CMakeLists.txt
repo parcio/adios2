@@ -124,10 +124,11 @@ if(ADIOS2_HAVE_JULEA_GONDOLIN)
   target_sources(adios2 PRIVATE
       engine/julea-kv/JuleaReader.cpp
       engine/julea-kv/JuleaReader.tcc
-      engine/julea-kv/JuleaWriter.cpp
-      engine/julea-kv/JuleaWriter.tcc
+      engine/julea-kv/JuleaKVWriter.cpp
+      engine/julea-kv/JuleaKVWriter.tcc
       engine/julea-kv/JuleaClientLogic.cpp
       engine/julea-kv/JuleaFormatWriter.cpp
+      engine/julea-kv/JuleaFormatWriter-legacy.cpp
 
       # engine/julea-original/JuleaReader.cpp
       # engine/julea-original/JuleaReader.tcc

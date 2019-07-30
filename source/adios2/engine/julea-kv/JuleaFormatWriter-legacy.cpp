@@ -12,7 +12,7 @@
 #define ADIOS2_ENGINE_JULEAFORMATWRITER_LEGACY_
 
 #include "JuleaFormatWriter-legacy.h"
-#include "JuleaWriter.h"
+#include "JuleaKVWriter.h"
 
 // #include <adios2_c.h>
 #include <bson.h>

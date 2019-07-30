@@ -12,7 +12,7 @@
 #define ADIOS2_ENGINE_JULEAFORMATWRITER_LEGACY_H_
 
 #include "JuleaMetadata.h"
-#include "JuleaWriter.h"
+#include "JuleaKVWriter.h"
 // #include <julea.h>
 
 namespace adios2

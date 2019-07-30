@@ -8,8 +8,8 @@
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
-#include "JuleaWriter.h"
-#include "JuleaWriter.tcc"
+#include "JuleaKVWriter.h"
+#include "JuleaKVWriter.tcc"
 
 #include "JuleaClientLogic.h"
 // #include "JuleaFormatWriter.h"
@@ -31,14 +31,14 @@ namespace core
 namespace engine
 {
 
-JuleaWriter::JuleaWriter(IO &io, const std::string &name, const Mode mode,
+JuleaKVWriter::JuleaKVWriter(IO &io, const std::string &name, const Mode mode,
                          MPI_Comm mpiComm)
-: Engine("JuleaWriter", io, name, mode, mpiComm), m_Julea(io.m_DebugMode)
+: Engine("JuleaKVWriter", io, name, mode, mpiComm), m_Julea(io.m_DebugMode)
 {
     // std::cout << "JULEA ENGINE: Constructor" << std::endl;
     // m_BP3Serializer(mpiComm, m_DebugMode),
     // m_FileDataManager(mpiComm, m_DebugMode),
-    // m_EndMessage = " in call to JuleaWriter " + m_Name + " Open\n";
+    // m_EndMessage = " in call to JuleaKVWriter " + m_Name + " Open\n";
     MPI_Comm_rank(mpiComm, &m_WriterRank);
     Init();
     if (m_Verbosity == 5)
@@ -48,7 +48,7 @@ JuleaWriter::JuleaWriter(IO &io, const std::string &name, const Mode mode,
     }
 }
 
-JuleaWriter::~JuleaWriter()
+JuleaKVWriter::~JuleaKVWriter()
 {
     // DoClose();
     // if (m_Verbosity == 5)
@@ -61,12 +61,12 @@ JuleaWriter::~JuleaWriter()
 
 /**
  * TODO
- * [JuleaWriter::BeginStep description]
+ * [JuleaKVWriter::BeginStep description]
  * @param  mode           [description]
  * @param  timeoutSeconds [description]
  * @return                [description]
  */
-StepStatus JuleaWriter::BeginStep(StepMode mode, const float timeoutSeconds)
+StepStatus JuleaKVWriter::BeginStep(StepMode mode, const float timeoutSeconds)
 {
     // std::cout << "JULEA ENGINE: BeginStep" << std::endl;
     m_CurrentStep++; // 0 is the first step
@@ -85,7 +85,7 @@ StepStatus JuleaWriter::BeginStep(StepMode mode, const float timeoutSeconds)
  * [JuleaWriter::CurrentStep description]
  * @return [description]
  */
-size_t JuleaWriter::CurrentStep() const
+size_t JuleaKVWriter::CurrentStep() const
 {
     // std::cout << "JULEA ENGINE: CurrentStep" << std::endl;
     if (m_Verbosity == 5)
@@ -100,7 +100,7 @@ size_t JuleaWriter::CurrentStep() const
  * TODO
  * [JuleaWriter::EndStep description]
  */
-void JuleaWriter::EndStep()
+void JuleaKVWriter::EndStep()
 {
     // std::cout << "JULEA ENGINE: EndStep" << std::endl;
     if (m_NeedPerformPuts)
@@ -124,7 +124,7 @@ void JuleaWriter::EndStep()
  * Called to guarantee that read/write are really executed and the results
  * available. [JuleaWriter::PerformPuts description]
  */
-void JuleaWriter::PerformPuts()
+void JuleaKVWriter::PerformPuts()
 {
     // std::cout << "JULEA ENGINE: PerformPuts" << std::endl;
     if (m_Verbosity == 5)
@@ -182,7 +182,7 @@ void JuleaWriter::PerformPuts()
  * [JuleaWriter::Flush description]
  * @param transportIndex [description]
  */
-void JuleaWriter::Flush(const int transportIndex)
+void JuleaKVWriter::Flush(const int transportIndex)
 {
     DoFlush(false, transportIndex);
     ResetBuffer(m_Data);
@@ -203,7 +203,7 @@ void JuleaWriter::Flush(const int transportIndex)
  * TODO
  * [JuleaWriter::Init description]
  */
-void JuleaWriter::Init()
+void JuleaKVWriter::Init()
 {
     std::cout << "\n*********************** JULEA ENGINE WRITER "
                  "*************************"
@@ -232,7 +232,7 @@ void JuleaWriter::Init()
 /**TODO
  * [JuleaWriter::InitParameters description]
  */
-void JuleaWriter::InitParameters()
+void JuleaKVWriter::InitParameters()
 {
     // std::cout << "JULEA ENGINE: Init Parameters" << std::endl;
     for (const auto &pair : m_IO.m_Parameters)
@@ -265,7 +265,7 @@ void JuleaWriter::InitParameters()
 /**TODO
  * [JuleaWriter::InitTransports description]
  */
-void JuleaWriter::InitTransports()
+void JuleaKVWriter::InitTransports()
 {
     // Nothing to process from m_IO.m_TransportsParameters
     // std::cout << "JULEA ENGINE: Init Transport" << std::endl;
@@ -278,7 +278,7 @@ void JuleaWriter::InitTransports()
 /**
  * [JuleaWriter::InitVariables description]
  */
-void JuleaWriter::InitVariables()
+void JuleaKVWriter::InitVariables()
 {
     // m_DeferredVariables.init() FIXME: how to init set of strings?
     // constructur? Nothing to process from m_IO.m_TransportsParameters
@@ -314,11 +314,11 @@ void JuleaWriter::InitVariables()
  * @return   [description]
  */
 #define declare_type(T)                                                        \
-    void JuleaWriter::DoPutSync(Variable<T> &variable, const T *data)          \
+    void JuleaKVWriter::DoPutSync(Variable<T> &variable, const T *data)          \
     {                                                                          \
         PutSyncCommon(variable, data);                                         \
     }                                                                          \
-    void JuleaWriter::DoPutDeferred(Variable<T> &variable, const T *data)      \
+    void JuleaKVWriter::DoPutDeferred(Variable<T> &variable, const T *data)      \
     {                                                                          \
         PutDeferredCommon(variable, data);                                     \
     }
@@ -330,7 +330,7 @@ ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
  * [JuleaWriter::DoClose description]
  * @param transportIndex [description]
  */
-void JuleaWriter::DoClose(const int transportIndex)
+void JuleaKVWriter::DoClose(const int transportIndex)
 {
     // std::cout << "JULEA ENGINE: Do close" << std::endl;
     if (m_Verbosity == 5)
@@ -349,7 +349,7 @@ void JuleaWriter::DoClose(const int transportIndex)
  * @param isFinal        [description]
  * @param transportIndex [description]
  */
-void JuleaWriter::DoFlush(const bool isFinal, const int transportIndex)
+void JuleaKVWriter::DoFlush(const bool isFinal, const int transportIndex)
 {
     // if (m_BP3Serializer.m_Aggregator.m_IsActive)
     // {
@@ -371,7 +371,7 @@ void JuleaWriter::DoFlush(const bool isFinal, const int transportIndex)
  * @param isFinal        [description]
  * @param transportIndex [description]
  */
-void JuleaWriter::WriteData(const bool isFinal, const int transportIndex)
+void JuleaKVWriter::WriteData(const bool isFinal, const int transportIndex)
 {
     Metadata *metadata;
     // TODO: parse variable from buffer to metadata struct members
@@ -407,7 +407,7 @@ void JuleaWriter::WriteData(const bool isFinal, const int transportIndex)
  * @param isFinal        [description]
  * @param transportIndex [description]
  */
-void JuleaWriter::AggregateWriteData(const bool isFinal,
+void JuleaKVWriter::AggregateWriteData(const bool isFinal,
                                      const int transportIndex)
 {
     // DESIGN: check BP3Writer
@@ -516,7 +516,7 @@ void parse_attribute_type(std::string type, AttributeMetadata *attr_metadata)
  *  Put attributes held in passed IO. Called from EndStep()
  * @param io [description]
  */
-void JuleaWriter::PutAttributes(core::IO &io)
+void JuleaKVWriter::PutAttributes(core::IO &io)
 {
 
     const auto attributesDataMap = io.GetAttributesDataMap();
@@ -580,7 +580,7 @@ void JuleaWriter::PutAttributes(core::IO &io)
  * @param resetAbsolutePosition [description]
  * @param zeroInitialize        [description]
  */
-void JuleaWriter::ResetBuffer(BufferSTL &bufferSTL,
+void JuleaKVWriter::ResetBuffer(BufferSTL &bufferSTL,
                               const bool resetAbsolutePosition,
                               const bool zeroInitialize)
 {
@@ -603,7 +603,7 @@ void JuleaWriter::ResetBuffer(BufferSTL &bufferSTL,
  * @param variableName input
  * @param count input variable local dimensions
  */
-size_t JuleaWriter::GetBPIndexSizeInData(const std::string &variableName,
+size_t JuleaKVWriter::GetBPIndexSizeInData(const std::string &variableName,
                                          const Dims &count) const noexcept
 {
     size_t indexSize = 23; // header
