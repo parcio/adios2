@@ -31,7 +31,7 @@ int write_test(){
     /*** IO class object: settings and factory of Settings: Variables,
        * Parameters, Transports, and Execution: Engines */
     adios2::IO juleaIO = adios.DeclareIO("juleaIO");
-    juleaIO.SetEngine("julea");
+    juleaIO.SetEngine("julea-kv");
 
     /** global array: name, { shape (total dimensions) }, { start (local) },
     * { count (local) }, all are constant dimensions */
@@ -76,7 +76,7 @@ int read_test(){
     /*** IO class object: settings and factory of Settings: Variables,
     * Parameters, Transports, and Execution: Engines */
     adios2::IO juleaIO = adios.DeclareIO("juleaIO");
-    juleaIO.SetEngine("julea");
+    juleaIO.SetEngine("julea-kv");
 
     /** Engine derived class, spawned to start IO operations */
     adios2::Engine juleaReader = juleaIO.Open("test", adios2::Mode::Read );

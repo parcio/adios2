@@ -32,10 +32,25 @@ void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetadata,
                                 const char *name_space);
 
 template <class T>
+void PutVariableDataToJuleaSmall(Variable<T> &variable, const T *data,
+                            const char *name_space);
+
+template <class T>
+void PutVariableMetadataToJuleaSmall(Variable<T> &variable, bson_t *bsonMetadata,
+                                const char *name_space);
+
+template <class T>
 void PutAttributeDataToJulea(Attribute<T> &attribute, const T *data,
                              const char *nameSpace);
 template <class T>
 void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetadata,
+                                 const char *nameSpace);
+
+template <class T>
+void PutAttributeDataToJuleaSmall(Attribute<T> &attribute, const T *data,
+                             const char *nameSpace);
+template <class T>
+void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute, bson_t *bsonMetadata,
                                  const char *nameSpace);
 
 #define declare_template_instantiation(T)                                      \
