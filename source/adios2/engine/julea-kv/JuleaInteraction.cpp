@@ -92,7 +92,7 @@ void CheckIfAlreadyInKV(std::string kvName, std::string paramName,
     bson_destroy(bsonNames);
 }
 
-void WriteMetadataToJulea(std::string kvName, std::string paramName,
+void WriteMetadataToJuleaKV(std::string kvName, std::string paramName,
                           std::string nameSpace, bson_t *bsonNames,
                           bson_t *bsonMetaData, JKV *kvObjectNames)
 {
@@ -133,7 +133,7 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
     auto kvObjectNames = j_kv_new(kvNameC, nameSpace);
     CheckIfAlreadyInKV(kvNameC, attribute.m_Name, nameSpace, bsonNames,
                        kvObjectNames);
-    WriteMetadataToJulea(kvNameC, attribute.m_Name, nameSpace, bsonNames,
+    WriteMetadataToJuleaKV(kvNameC, attribute.m_Name, nameSpace, bsonNames,
                          bsonMetaData, kvObjectNames);
     // std::cout << "++ Julea Interaction: PutAttributeMetadataToJuleaSmall  "
     // << std::endl;
@@ -153,30 +153,28 @@ void PutVariableMetadataToJuleaSmall(Variable<T> &variable,
 
     CheckIfAlreadyInKV(kvNameC, variable.m_Name, nameSpace, bsonNames,
                        kvObjectNames);
-    WriteMetadataToJulea(kvNameC, variable.m_Name, nameSpace, bsonNames,
+    WriteMetadataToJuleaKV(kvNameC, variable.m_Name, nameSpace, bsonNames,
                          bsonMetaData, kvObjectNames);
 
     // std::cout << "++ Julea Interaction: PutVariableMetadataToJuleaSmall  " <<
     // std::endl;
 }
 
-/** -------------------------------------------------------------------------**/
-/** -------------- TESTING GENERIC FUNCTIONS END ----------------------------**/
-/** -------------------------------------------------------------------------**/
+/** ------------------------- DATA ------------------------------------------**/
 
-void WriteDataToJulea(std::string objName, std::string paramName, std::string nameSpace, int dataSize, const void* data)
+void WriteDataToJuleaObjectStore(std::string objName, std::string paramName,
+                      std::string nameSpace, unsigned int dataSize,
+                      const void *data)
 {
     guint64 bytesWritten = 0;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
     auto name = strdup(paramName.c_str());
-    // auto numberElements = adios2::helper::GetTotalSize(variable.m_Count);
-    // auto dataSize = variable.m_ElementSize * numberElements;
 
     /* Write data pointer to object store*/
     // auto stringDataObject =
-        // g_strdup_printf("%s_variables_%s", nameSpace, name);
+    // g_strdup_printf("%s_variables_%s", nameSpace, name);
     auto stringDataObject =
         g_strdup_printf("%s_%s_%s", nameSpace.c_str(), objName.c_str(), name);
     auto dataObject = j_object_new(stringDataObject, name);
@@ -187,8 +185,8 @@ void WriteDataToJulea(std::string objName, std::string paramName, std::string na
     j_batch_execute(batch);
     if (bytesWritten == dataSize)
     {
-        std::cout << "++ Julea Client Logic: Data written for variable "
-                  << name << std::endl;
+        std::cout << "++ Julea Client Logic: Data written for:  " << name
+                  << std::endl;
     }
     else
     {
@@ -199,59 +197,47 @@ void WriteDataToJulea(std::string objName, std::string paramName, std::string na
     g_free(stringDataObject);
     j_object_unref(dataObject);
     j_batch_unref(batch);
-
-    std::cout << "++ Julea Client Logic: Put Variable " << std::endl;
 }
 
 template <class T>
 void PutVariableDataToJuleaSmall(Variable<T> &variable, const T *data,
-                            const char *nameSpace)
+                                 const char *nameSpace)
 {
 
     std::string objName = "variables";
     auto numberElements = adios2::helper::GetTotalSize(variable.m_Count);
     auto dataSize = variable.m_ElementSize * numberElements;
-    // WriteDataToJulea(std::string objName, std::string paramName, std::string nameSpace, int dataSize, const void* data);
 
-    WriteDataToJulea(objName, variable.m_Name, nameSpace, dataSize, data);
-
-
-    // guint64 bytesWritten = 0;
-    // auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    // auto batch = j_batch_new(semantics);
-
-    // auto varName = strdup(variable.m_Name.c_str());
-    // auto numberElements = adios2::helper::GetTotalSize(variable.m_Count);
-    // auto dataSize = variable.m_ElementSize * numberElements;
-
-    // /* Write data pointer to object store*/
-    // auto stringDataObject =
-    //     g_strdup_printf("%s_variables_%s", nameSpace, varName);
-    // auto dataObject = j_object_new(stringDataObject, varName);
-
-    // j_object_create(dataObject, batch);
-    // j_object_write(dataObject, data, dataSize, 0, &bytesWritten, batch);
-
-    // j_batch_execute(batch);
-    // if (bytesWritten == dataSize)
-    // {
-    //     std::cout << "++ Julea Client Logic: Data written for variable "
-    //               << varName << std::endl;
-    // }
-    // else
-    // {
-    //     std::cout << "WARNING: only " << bytesWritten
-    //               << " bytes written instead of " << dataSize << " bytes! "
-    //               << std::endl;
-    // }
-    // g_free(stringDataObject);
-    // j_object_unref(dataObject);
-    // j_batch_unref(batch);
-
-    // std::cout << "++ Julea Client Logic: Put Variable " << std::endl;
+    WriteDataToJuleaObjectStore(objName, variable.m_Name, nameSpace, dataSize, data);
+    std::cout << "++ Julea Interaction: PutVariableDataToJuleaSmall"
+              << std::endl;
 }
 
+template <class T>
+void PutAttributeDataToJuleaSmall(Attribute<T> &attribute, const T *data,
+                                  const char *nameSpace)
+{
+    std::string objName = "attributes";
+    unsigned int dataSize = -1;
 
+    if (attribute.m_IsSingleValue)
+    {
+        // TODO: check if this is correct
+        dataSize = sizeof(attribute.m_DataSingleValue);
+    }
+    else
+    {
+        dataSize = attribute.m_DataArray.size();
+    }
+
+    WriteDataToJuleaObjectStore(objName, attribute.m_Name, nameSpace, dataSize, data);
+    std::cout << "++ Julea Interaction: PutAttributeDataToJuleaSmall"
+              << std::endl;
+}
+
+/** -------------------------------------------------------------------------**/
+/** -------------- TESTING GENERIC FUNCTIONS END ----------------------------**/
+/** -------------------------------------------------------------------------**/
 
 template <class T>
 void PutVariableDataToJulea(Variable<T> &variable, const T *data,
