@@ -128,10 +128,12 @@ typedef struct Metadata Metadata;
 struct AttributeMetadata
 {
     char *name;
-    variable_type attr_type;
+
     size_t number_elements;
     bool is_single_value;
-    guint data_size;
+
+    unsigned int data_size;
+    variable_type attr_type;
 };
 typedef struct AttributeMetadata AttributeMetadata;
 

@@ -28,6 +28,7 @@ void SetMinMax(Variable<T> &variable, const T *data);
 template <class T>
 void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata);
 
+/* also sets m_Min, m_Max, m_Value; therefore the data pointer needs to be passed */
 template <class T>
 void ParseVarTypeToBSON(Variable<T> &variable, const T *data,
                         bson_t *bsonMetadata);
@@ -36,8 +37,7 @@ template <class T>
 void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);
 
 template <class T>
-void ParseAttrTypeToBSON(Attribute<T> &attribute, const T *data,
-                        bson_t *bsonMetadata);
+void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);
 
 #define variable_template_instantiation(T)                                      \
    	SetMinMax(Variable<T> &variable, const T *data);      \
@@ -48,6 +48,7 @@ void ParseAttrTypeToBSON(Attribute<T> &attribute, const T *data,
 
 #define attribute_template_instantiation(T)                                      \
     extern template void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);\
+    extern template void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);\
     ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(attribute_template_instantiation)
 #undef attribute_template_instantiation
 

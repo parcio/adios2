@@ -633,12 +633,14 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
         if (attribute.m_IsSingleValue)                                         \
         {                                                                      \
             ParseAttributeToBSON(&attribute, bsonMetadata);                    \
+            ParseAttrTypeToBSON(&attribute, bsonMetadata);                    \
             PutAttributeDataToJulea(&attribute, &attribute.m_DataSingleValue,  \
                                     m_JuleaInfo->name_space);                  \
         }                                                                      \
         else                                                                   \
         {                                                                      \
             ParseAttributeToBSON(&attribute, bsonMetadata);                    \
+            ParseAttrTypeToBSON(&attribute, bsonMetadata);                    \
             PutAttributeDataToJulea(&attribute, &attribute.m_DataArray,        \
                                     m_JuleaInfo->name_space);                  \
         }                                                                      \
