@@ -32,7 +32,7 @@ namespace engine
 // TODO: necessary function?
 template <class T>
 void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
-                                const typename Variable<T>::Info &blockInfo)
+                                  const typename Variable<T>::Info &blockInfo)
 {
     auto bson_meta_data = bson_new();
     Metadata *metadata = g_slice_new(Metadata);
@@ -42,7 +42,8 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
     ParseVariableToMetadataStruct(variable, blockInfo, metadata);
     ParseVarTypeToBSON(variable, blockInfo, metadata);
 
-    PutVariableMetadataToJulea(variable, bson_meta_data, m_JuleaInfo->name_space);
+    PutVariableMetadataToJulea(variable, bson_meta_data,
+                               m_JuleaInfo->name_space);
     PutVariableDataToJulea(variable, blockInfo.Data, m_JuleaInfo->name_space);
 
     if (m_Verbosity == 5)
@@ -51,9 +52,10 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
                   << variable.m_Name << ")\n";
     }
 
-    // ParseVariableType(variable, blockInfo, metadata); //TODO: what needs to be done?
+    // ParseVariableType(variable, blockInfo, metadata); //TODO: what needs to
+    // be done?
 
-    //TODO: free memory
+    // TODO: free memory
 }
 
 template <class T>
@@ -66,7 +68,8 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
     ParseVariableToBSON(variable, bson_meta_data);
     ParseVarTypeToBSON(variable, data, bson_meta_data);
 
-    PutVariableMetadataToJulea(variable, bson_meta_data, m_JuleaInfo->name_space);
+    PutVariableMetadataToJulea(variable, bson_meta_data,
+                               m_JuleaInfo->name_space);
 
     PutVariableDataToJulea(variable, data, m_JuleaInfo->name_space);
 

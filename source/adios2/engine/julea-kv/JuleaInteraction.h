@@ -24,24 +24,24 @@ namespace engine
 {
 
 template <class T>
-void PutVariableDataToJulea(Variable<T> &variable, const T *data, const char *nameSpace);
+void PutVariableDataToJulea(Variable<T> &variable, const T *data, const char *name_space);
 
 template <class T>
-void PutVariableMetadataToJulea(Variable<T> &variable, const bson_t *bsonMetadata, const char *nameSpace);
-
+void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetadata, const char *name_space);
 
 template <class T>
 void PutAttributeDataToJulea(Attribute<T> &attribute, const T *data, const char *nameSpace);
-
 template <class T>
-void PutAttributeMetadataToJulea(Attribute<T> &attribute, const bson_t *bsonMetadata, const char *nameSpace);
+void PutAttributeMetadataToJulea(Attribute<T> &attribute,bson_t *bsonMetadata, const char *nameSpace);
 
 
 #define declare_template_instantiation(T)                                      \
-    extern template void PutVariableDataToJulea(Variable<T> &variable, const T *data, const char *nameSpace); \
-    extern template void PutVariableMetadataToJulea(Variable<T> &variable, const bson_t *bsonMetadata, const char *nameSpace);     \
+    extern template void PutVariableDataToJulea(Variable<T> &variable, const T *data, const char *name_space); \
+    extern template void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetadata, const char *name_space);     \
+    extern template void PutVariableMetadataToJuleaSmall(Variable<T> &variable, bson_t *bsonMetadata, const char *name_space);     \
     extern template void PutAttributeDataToJulea(Attribute<T> &attribute, const T *data, const char *nameSpace);\
-    extern template void PutAttributeDataToJulea(Attribute<T> &attribute, const bson_t *bsonMetadata, const char *nameSpace);\
+    extern template void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetadata, const char *nameSpace);\
+    extern template void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute, bson_t *bsonMetadata, const char *nameSpace);\
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
 } // end namespace engine

@@ -11,8 +11,8 @@
 #ifndef ADIOS2_ENGINE_JULEACLIENTLOGIC_H_
 #define ADIOS2_ENGINE_JULEACLIENTLOGIC_H_
 
-#include "JuleaMetadata.h"
 #include "JuleaKVWriter.h"
+#include "JuleaMetadata.h"
 
 // #include <julea.h>
 

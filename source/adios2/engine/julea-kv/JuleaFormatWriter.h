@@ -11,8 +11,8 @@
 #ifndef ADIOS2_ENGINE_JULEAFORMATWRITER_H_
 #define ADIOS2_ENGINE_JULEAFORMATWRITER_H_
 
-#include "JuleaMetadata.h"
 #include "JuleaKVWriter.h"
+#include "JuleaMetadata.h"
 // #include <julea.h>
 
 namespace adios2
@@ -23,34 +23,37 @@ namespace engine
 {
 
 template <class T>
-void SetMinMax(Variable<T> &variable, const T *data);
-
-template <class T>
-void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata);
-
-/* also sets m_Min, m_Max, m_Value; therefore the data pointer needs to be passed */
-template <class T>
-void ParseVarTypeToBSON(Variable<T> &variable, const T *data,
-                        bson_t *bsonMetadata);
-
-template <class T>
 void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);
 
 template <class T>
 void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);
 
-#define variable_template_instantiation(T)                                      \
-   	SetMinMax(Variable<T> &variable, const T *data);      \
-    extern template void ParseVariableToBSON(Variable<T> &variable,            \
-                                             bson_t *bsonMetadata);          \
-    ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
-#undef variable_template_instantiation
+template <class T>
+void SetMinMax(Variable<T> &variable, const T *data);
 
-#define attribute_template_instantiation(T)                                      \
-    extern template void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);\
-    extern template void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);\
+template <class T>
+void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata);
+
+/* also sets m_Min, m_Max, m_Value; therefore the data pointer needs to be
+ * passed */
+template <class T>
+void ParseVarTypeToBSON(Variable<T> &variable, const T *data,
+                        bson_t *bsonMetadata);
+
+#define attribute_template_instantiation(T)                                    \
+    extern template void ParseAttributeToBSON(Attribute<T> &attribute,         \
+                                              bson_t *bsonMetadata);           \
+    extern template void ParseAttrTypeToBSON(Attribute<T> &attribute,          \
+                                             bson_t *bsonMetadata);            \
     ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(attribute_template_instantiation)
 #undef attribute_template_instantiation
+
+#define variable_template_instantiation(T)                                     \
+    SetMinMax(Variable<T> &variable, const T *data);                           \
+    extern template void ParseVariableToBSON(Variable<T> &variable,            \
+                                             bson_t *bsonMetadata);            \
+    ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
+#undef variable_template_instantiation
 
 } // end namespace engine
 } // end namespace core

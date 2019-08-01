@@ -11,8 +11,8 @@
 #ifndef ADIOS2_ENGINE_JULEAFORMATWRITER_LEGACY_H_
 #define ADIOS2_ENGINE_JULEAFORMATWRITER_LEGACY_H_
 
-#include "JuleaMetadata.h"
 #include "JuleaKVWriter.h"
+#include "JuleaMetadata.h"
 // #include <julea.h>
 
 namespace adios2
@@ -21,6 +21,11 @@ namespace core
 {
 namespace engine
 {
+
+void PutAttributesOld(core::IO &io);
+
+void ParseAttrTypeToMetadata(std::string type,
+                             AttributeMetadata *attr_metadata);
 
 template <class T>
 void ParseVariableToMetadataStruct(Variable<T> &variable, const T *data,

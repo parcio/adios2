@@ -450,160 +450,15 @@ void JuleaKVWriter::AggregateWriteData(const bool isFinal,
 }
 
 /**
- * Parsing the attribute types to enum defined in JULEA's Adios Client.
- * Great that types are handled as string here...
- */
-void parse_attribute_type(std::string type, AttributeMetadata *attr_metadata)
-{
-
-    if (type == "string")
-    {
-        attr_metadata->attr_type = STRING;
-    }
-    if (type == "int8_t")
-    {
-        attr_metadata->attr_type = INT8;
-    }
-    if (type == "uint8_t")
-    {
-        attr_metadata->attr_type = UINT8;
-    }
-    if (type == "int16_t")
-    {
-        attr_metadata->attr_type = INT16;
-    }
-    if (type == "uint16_t")
-    {
-        attr_metadata->attr_type = UINT16;
-    }
-    if (type == "int32_t")
-    {
-        attr_metadata->attr_type = INT32;
-    }
-    if (type == "uint32_t")
-    {
-        attr_metadata->attr_type = UINT32;
-    }
-    if (type == "int64_t")
-    {
-        attr_metadata->attr_type = INT64;
-    }
-    if (type == "uint64_t")
-    {
-        attr_metadata->attr_type = UINT64;
-    }
-    else if (type == "float")
-    {
-        attr_metadata->attr_type = FLOAT;
-    }
-    else if (type == "double")
-    {
-        attr_metadata->attr_type = DOUBLE;
-    }
-    else if (type == "long double")
-    {
-        attr_metadata->attr_type = LONG_DOUBLE;
-    }
-    // else if(type == "floast complex")
-    // {
-    //     attr_metadata->attr_type = COMPLEX_FLOAT;
-    // }
-    // else if(type == "double complex")
-    // {
-    //     attr_metadata->attr_type = COMPLEX_DOUBLE;
-    // }
-}
-
-/**
- *  Put attributes held in passed IO. Called from EndStep()
- * @param io [description]
- */
-void JuleaKVWriter::PutAttributesOld(core::IO &io)
-{
-    const auto attributesDataMap = io.GetAttributesDataMap();
-
-    for (const auto &attributePair : attributesDataMap)
-    {
-        JBatch *batch;
-        AttributeMetadata *attr_metadata = NULL;
-
-        batch = j_batch_new(m_JuleaInfo->semantics);
-        const std::string type(attributePair.second.first);
-        const std::string name(attributePair.first);
-
-        attr_metadata->name = strdup(name.c_str());
-        attr_metadata->number_elements =
-            static_cast<uint32_t>(attributesDataMap.size());
-        parse_attribute_type(type, attr_metadata);
-        void *data;
-        // j_adios_put_attribute(m_JuleaInfo->name_space, attr_metadata,data,
-        // batch, true ); FIXME
-
-        // each attribute is only written to output once
-        // so filter out the ones already written
-        auto it = m_SerializedAttributes.find(attr_metadata->name);
-        if (it != m_SerializedAttributes.end())
-        {
-            continue;
-        }
-
-        if (type == "unknown")
-        {
-            std::cout << "Attribute type is 'unknown' " << std::endl;
-        }
-#define declare_type(T)                                                        \
-    else if (type == helper::GetType<T>())                                     \
-    {                                                                          \
-        core::Attribute<T> &attribute = *io.InquireAttribute<T>(name);         \
-        attr_metadata->is_single_value = attribute.m_IsSingleValue;            \
-        if (attribute.m_IsSingleValue)                                         \
-        {                                                                      \
-            PutAttributeToJulea(m_JuleaInfo->name_space, attr_metadata,        \
-                                &attribute.m_DataSingleValue, batch);          \
-        }                                                                      \
-        else                                                                   \
-        {                                                                      \
-            PutAttributeToJulea(m_JuleaInfo->name_space, attr_metadata,        \
-                                &attribute.m_DataArray, batch);                \
-        }                                                                      \
-    }
-        ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_type)
-#undef declare_type
-
-        j_batch_execute(batch);
-        j_batch_unref(batch);
-    }
-}
-
-/**
  *  Put attributes held in passed IO. Called from EndStep()
  * @param io [description]
  */
 void JuleaKVWriter::PutAttributes(core::IO &io)
 {
-    // ParseAttributeToBSON();
-    // ParseAttrTypeToBSON();
-    // PutAttributeMetadataToJulea();
-    // PutattributeDataToJulea();
-
     const auto attributesDataMap = io.GetAttributesDataMap();
 
     for (const auto &attributePair : attributesDataMap)
     {
-        // JBatch *batch;
-        // AttributeMetadata *attr_metadata = NULL;
-
-        // batch = j_batch_new(m_JuleaInfo->semantics);
-
-        // attr_metadata->name = strdup(name.c_str());
-        // attr_metadata->number_elements =
-        //     static_cast<uint32_t>(attributesDataMap.size());
-        // parse_attribute_type(type, attr_metadata);
-        // void *data;
-        // j_adios_put_attribute(m_JuleaInfo->name_space, attr_metadata,data,
-        // batch, true ); FIXME
-
-
         auto bsonMetadata = bson_new();
         const std::string type(attributePair.second.first);
         const std::string name(attributePair.first);
@@ -622,10 +477,6 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
         {
             std::cout << "Attribute type is 'unknown' " << std::endl;
         }
-
-        // Attribute<T> &attribute = io.InquireAttribute<T>(name);
-        // attr_metadata->is_single_value = attribute.m_IsSingleValue; \
-
 #define declare_type(T)                                                        \
     else if (type == helper::GetType<T>())                                     \
     {                                                                          \
@@ -633,23 +484,24 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
         if (attribute.m_IsSingleValue)                                         \
         {                                                                      \
             ParseAttributeToBSON(&attribute, bsonMetadata);                    \
-            ParseAttrTypeToBSON(&attribute, bsonMetadata);                    \
+            ParseAttrTypeToBSON(&attribute, bsonMetadata);                     \
+            PutAttributeMetadataToJulea(&attribute, bsonMetadata,              \
+                                        m_JuleaInfo->name_space);              \
             PutAttributeDataToJulea(&attribute, &attribute.m_DataSingleValue,  \
                                     m_JuleaInfo->name_space);                  \
         }                                                                      \
         else                                                                   \
         {                                                                      \
             ParseAttributeToBSON(&attribute, bsonMetadata);                    \
-            ParseAttrTypeToBSON(&attribute, bsonMetadata);                    \
+            ParseAttrTypeToBSON(&attribute, bsonMetadata);                     \
+            PutAttributeMetadataToJulea(&attribute, bsonMetadata,              \
+                                        m_JuleaInfo->name_space);              \
             PutAttributeDataToJulea(&attribute, &attribute.m_DataArray,        \
                                     m_JuleaInfo->name_space);                  \
         }                                                                      \
     }                                                                          \
     ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_type)
 #undef declare_type
-
-        //         j_batch_execute(batch);
-        //         j_batch_unref(batch);
     }
 }
 

@@ -14,7 +14,6 @@
 #include "JuleaFormatWriter.h"
 #include "JuleaKVWriter.h"
 
-// #include <adios2_c.h>
 #include <bson.h>
 #include <fstream>
 #include <iostream>
@@ -42,6 +41,87 @@ void SetMinMax(Variable<T> &variable, const T *data)
 }
 
 template <class T>
+void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
+{
+    // name is key in kv
+    unsigned int dataSize = -1;
+
+    bson_append_int64(bsonMetadata, "number_elements", -1,
+                      attribute.m_Elements);
+    bson_append_bool(bsonMetadata, "is_single_value", -1,
+                     attribute.m_IsSingleValue);
+    if (attribute.m_IsSingleValue)
+    {
+        // TODO: check if this is correct
+        dataSize = sizeof(attribute.m_DataSingleValue);
+    }
+    else
+    {
+        dataSize = attribute.m_DataArray.size();
+    }
+
+    bson_append_int64(bsonMetadata, "data_size", -1, dataSize);
+}
+
+template <class T>
+void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
+{
+    int type = -1;
+
+    if (helper::GetType<T>() == "string")
+    {
+        type = STRING;
+    }
+    else if (helper::GetType<T>() == "int8_t")
+    {
+        type = INT8;
+    }
+    else if (helper::GetType<T>() == "uint8_t")
+    {
+        type = UINT8;
+    }
+    else if (helper::GetType<T>() == "int16_t")
+    {
+        type = INT16;
+    }
+    else if (helper::GetType<T>() == "uint16_t")
+    {
+        type = UINT16;
+    }
+    else if (helper::GetType<T>() == "int32_t")
+    {
+        type = INT32;
+    }
+    else if (helper::GetType<T>() == "uint32_t")
+    {
+        type = UINT32;
+    }
+    else if (helper::GetType<T>() == "int64_t")
+    {
+        type = INT64;
+    }
+    else if (helper::GetType<T>() == "uint64_t")
+    {
+        type = UINT64;
+    }
+    else if (helper::GetType<T>() == "float")
+    {
+        type = FLOAT;
+    }
+    else if (helper::GetType<T>() == "double")
+    {
+        type = DOUBLE;
+    }
+    else if (helper::GetType<T>() == "long double")
+    {
+        type = LONG_DOUBLE;
+    }
+
+    bson_append_int32(bsonMetadata, "attr_type", -1, type);
+    std::cout << "ParseAttrTypeToBSON type :" << attribute.m_Type << std::endl;
+}
+
+template <class T>
 void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata)
 {
     std::cout << "Test" << std::endl;
@@ -52,16 +132,14 @@ void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata)
     size_t number_elements = 0;
     char *key;
 
-    bson_append_int64(bsonMetadata, "shape_size", -1,
-                      variable.m_Shape.size());
+    bson_append_int64(bsonMetadata, "shape_size", -1, variable.m_Shape.size());
     for (guint i = 0; i < variable.m_Shape.size(); i++)
     {
         key = g_strdup_printf("shape_%d", i);
 
         bson_append_int64(bsonMetadata, key, -1, variable.m_Shape[i]);
     }
-    bson_append_int64(bsonMetadata, "start_size", -1,
-                      variable.m_Start.size());
+    bson_append_int64(bsonMetadata, "start_size", -1, variable.m_Start.size());
     for (guint i = 0; i < variable.m_Start.size(); i++)
     {
         key = g_strdup_printf("start_%d", i);
@@ -69,8 +147,7 @@ void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata)
         bson_append_int64(bsonMetadata, key, -1, variable.m_Start[i]);
     }
 
-    bson_append_int64(bsonMetadata, "count_size", -1,
-                      variable.m_Count.size());
+    bson_append_int64(bsonMetadata, "count_size", -1, variable.m_Count.size());
     for (guint i = 0; i < variable.m_Count.size(); i++)
     {
         key = g_strdup_printf("count_%d", i);
@@ -99,8 +176,7 @@ void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata)
 
     bson_append_int64(bsonMetadata, "block_id", -1, variable.m_BlockID);
     bson_append_int64(bsonMetadata, "index_start", -1, variable.m_IndexStart);
-    bson_append_int64(bsonMetadata, "element_size", -1,
-                      variable.m_ElementSize);
+    bson_append_int64(bsonMetadata, "element_size", -1, variable.m_ElementSize);
     bson_append_int64(bsonMetadata, "available_steps_start", -1,
                       variable.m_AvailableStepsStart);
     bson_append_int64(bsonMetadata, "available_steps_count", -1,
@@ -125,87 +201,6 @@ void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata)
                       variable.m_RandomAccess);
     bson_append_int64(bsonMetadata, "is_first_streaming_step", -1,
                       variable.m_FirstStreamingStep);
-}
-
-template <class T>
-void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
-{
-  // name is key in kv
-  // attribute type
-  // number elements
-  // is single value
-  // data size
-  // bson_append_int64(bsonMetadata, "attr_type", -1,
-                                    // attr_metadata->attr_type);
-  bson_append_int64(bsonMetadata, "number_elements", -1,
-                                    attribute.m_Elements);
-  bson_append_bool(bsonMetadata, "is_single_value", -1,
-                                   attribute.m_IsSingleValue);
-
-  // number_elements = adios2::helper::GetTotalSize(variable.m_Count);
-    // data_size = variable.m_ElementSize * number_elements;
-  auto dataSize = attribute.m_Elements * 4;
-  bson_append_int64(bsonMetadata, "data_size", -1,
-                                    dataSize);
-}
-
-
-template <class T>
-void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
-{
-    int type = -1;
-
-    if (helper::GetType<T>() == "string")
-    {
-        type = STRING;
-    }
-    else if (helper::GetType<T>() == "int8_t")
-    {
-        type = INT8;
-    }
-    else if (helper::GetType<T>() == "uint8_t")
-    {
-       type = UINT8;
-    }
-    else if (helper::GetType<T>() == "int16_t")
-    {
-       type = INT16;
-    }
-    else if (helper::GetType<T>() == "uint16_t")
-    {
-       type = UINT16;
-    }
-    else if (helper::GetType<T>() == "int32_t")
-    {
-       type = INT32;
-    }
-    else if (helper::GetType<T>() == "uint32_t")
-    {
-       type = UINT32;
-    }
-    else if (helper::GetType<T>() == "int64_t")
-    {
-       type = INT64;
-    }
-    else if (helper::GetType<T>() == "uint64_t")
-    {
-       type = UINT64;
-    }
-    else if (helper::GetType<T>() == "float")
-    {
-       type = FLOAT;
-    }
-    else if (helper::GetType<T>() == "double")
-    {
-       type = DOUBLE;
-    }
-    else if (helper::GetType<T>() == "long double")
-    {
-       type = LONG_DOUBLE;
-    }
-
-    bson_append_int32(bsonMetadata, "var_type", -1, type);
-    std::cout << "ParseAttrTypeToBSON type :" << attribute.m_Type << std::endl;
 }
 
 template <>
@@ -379,28 +374,19 @@ void ParseVarTypeToBSON<std::complex<double>>(
               << variable.Min() << std::endl;
 }
 
-
-// template <>
-// void ParseAttrTypeToBSON<int8_t>(Attribute<int8_t> &attribute, const int8_t *data,
-//                                 bson_t *bsonMetadata)
-// {
-//     bson_append_int32(bsonMetadata, "var_type", -1, INT8);
-
-//     std::cout << "ParseAttrTypeToBSON int8_t:" << std::endl;
-// }
-
-
-#define variable_template_instantiation(T)                                      \
+#define variable_template_instantiation(T)                                     \
     template void SetMinMax(Variable<T> &variable, const T *data);             \
     template void ParseVariableToBSON(core::Variable<T> &,                     \
-                                      bson_t *bsonMetadata); \
+                                      bson_t *bsonMetadata);
 
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 
-#define attribute_template_instantiation(T)                                      \
-    template void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);\
-    template void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);\
+#define attribute_template_instantiation(T)                                    \
+    template void ParseAttributeToBSON(Attribute<T> &attribute,                \
+                                       bson_t *bsonMetadata);                  \
+    template void ParseAttrTypeToBSON(Attribute<T> &attribute,                 \
+                                      bson_t *bsonMetadata);
 
 ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(attribute_template_instantiation)
 #undef attribute_template_instantiation

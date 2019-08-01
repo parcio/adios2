@@ -47,7 +47,7 @@ public:
      * @param debugMode
      */
     JuleaKVWriter(IO &adios, const std::string &name, const Mode mode,
-                MPI_Comm mpiComm);
+                  MPI_Comm mpiComm);
 
     ~JuleaKVWriter(); // was =default -> meaning?
 
@@ -129,11 +129,6 @@ private:
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
 
-
-#define declare_template_instantiation(T)                                      \
-    TestFunction(Variable<T> &variable, const T *data);      \
-    ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
-#undef declare_template_instantiation
     /**
      * TODO: why has skeleton engine Info struct as param when this is only used
      * by inline engine? Common function for primitive PutSync, puts variables
@@ -182,12 +177,6 @@ private:
      * Put Attributes to file.
      * @param io [description]
      */
-    void PutAttributesOld(core::IO &io);
-
-        /**
-     * Put Attributes to file.
-     * @param io [description]
-     */
     void PutAttributes(core::IO &io);
 
     // /**
@@ -217,7 +206,8 @@ private:
     //     Failure,   //!< FAILURE, caught a std::bad_alloc
     //     Unchanged, //!< UNCHANGED, no need to resize (sufficient capacity)
     //     Success,   //!< SUCCESS, resize was successful
-    //     Flush      //!< FLUSH, need to flush to transports for current variable
+    //     Flush      //!< FLUSH, need to flush to transports for current
+    //     variable
     // };
 
     // /**

@@ -449,7 +449,7 @@ void PutAttributeToJulea(char *name_space, AttributeMetadata *attr_metadata,
     }
     else
     {
-        printf("++ Julea Client Logic: Variable %s already in kv "
+        printf("++ Julea Client Logic: Attribute %s already in kv "
                "store. \n",
                attr_metadata->name);
     }
