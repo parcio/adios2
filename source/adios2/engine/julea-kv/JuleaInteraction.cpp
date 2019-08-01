@@ -136,9 +136,49 @@ void PutVariableMetadataToJulea(Variable<T> &variable, const bson_t *bsonMetaDat
     std::cout << "++ Julea Client Logic: Put Variable " << std::endl;
 }
 
+template <class T>
+void PutAttributeDataToJulea(Attribute<T> &attribute, const T *data, const char *nameSpace)
+{
+    guint64 bytesWritten = 0;
+    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
+
+    auto attrName = strdup(attribute.m_Name.c_str());
+    // auto numberElements = adios2::helper::GetTotalSize(attribute.m_Count);
+    int dataSize = 0;
+    int numberElements = 0;
+    // auto dataSize = attribute.m_ElementSize * numberElements;
+
+    /* Write data pointer to object store*/
+    auto stringDataObject =
+        g_strdup_printf("%s_attributes_%s", nameSpace, attrName);
+    auto dataObject = j_object_new(stringDataObject, attrName);
+
+    j_object_create(dataObject, batch);
+    j_object_write(dataObject, data, dataSize, 0, &bytesWritten, batch);
+
+    j_batch_execute(batch);
+    if (bytesWritten == dataSize)
+    {
+        std::cout << "++ Julea Client Logic: Data written for attribute " << attrName << std::endl;
+    }
+    else
+    {
+        std::cout<< "WARNING: only " << bytesWritten << " bytes written instead of " << dataSize << " bytes! " << std::endl;
+    }
+    g_free(stringDataObject);
+    j_object_unref(dataObject);
+    j_batch_unref(batch);
+
+    std::cout << "++ Julea Client Logic: Put Variable " << std::endl;
+}
+
+
+
 #define declare_template_instantiation(T)                                      \
     template void PutVariableDataToJulea(Variable<T> &variable, const T *data, const char *name_space);              \
     template void PutVariableMetadataToJulea(Variable<T> &variable, const bson_t *bson_meta_data, const char *name_space);        \
+    template void PutAttributeDataToJulea(Attribute<T> &attribute, const T *data, const char *nameSpace);\
 
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation

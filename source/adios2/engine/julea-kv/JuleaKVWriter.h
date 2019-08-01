@@ -182,50 +182,56 @@ private:
      * Put Attributes to file.
      * @param io [description]
      */
+    void PutAttributesOld(core::IO &io);
+
+        /**
+     * Put Attributes to file.
+     * @param io [description]
+     */
     void PutAttributes(core::IO &io);
 
-    /**
-     * Sets buffer's positions to zero and fill buffer with zero char
-     * @param bufferSTL buffer to be reset
-     * @param resetAbsolutePosition true: both bufferSTL.m_Position and
-     * bufferSTL.m_AbsolutePosition set to 0,   false(default): only
-     * bufferSTL.m_Position
-     * is set to zero,
-     */
-    void ResetBuffer(BufferSTL &bufferSTL,
-                     const bool resetAbsolutePosition = false,
-                     const bool zeroInitialize = true);
+    // /**
+    //  * Sets buffer's positions to zero and fill buffer with zero char
+    //  * @param bufferSTL buffer to be reset
+    //  * @param resetAbsolutePosition true: both bufferSTL.m_Position and
+    //  * bufferSTL.m_AbsolutePosition set to 0,   false(default): only
+    //  * bufferSTL.m_Position
+    //  * is set to zero,
+    //  */
+    // void ResetBuffer(BufferSTL &bufferSTL,
+    //                  const bool resetAbsolutePosition = false,
+    //                  const bool zeroInitialize = true);
 
-    /**
-     * DESIGN
-     * Returns the estimated variable index size. Used by ResizeBuffer public
-     * function
-     * @param variableName input
-     * @param count input variable local dimensions
-     */
-    size_t GetBPIndexSizeInData(const std::string &variableName,
-                                const Dims &count) const noexcept;
-    /** Return type of the CheckAllocation function. */
-    enum class ResizeResult
-    {
-        Failure,   //!< FAILURE, caught a std::bad_alloc
-        Unchanged, //!< UNCHANGED, no need to resize (sufficient capacity)
-        Success,   //!< SUCCESS, resize was successful
-        Flush      //!< FLUSH, need to flush to transports for current variable
-    };
+    // /**
+    //  * DESIGN
+    //  * Returns the estimated variable index size. Used by ResizeBuffer public
+    //  * function
+    //  * @param variableName input
+    //  * @param count input variable local dimensions
+    //  */
+    // size_t GetBPIndexSizeInData(const std::string &variableName,
+    //                             const Dims &count) const noexcept;
+    // /** Return type of the CheckAllocation function. */
+    // enum class ResizeResult
+    // {
+    //     Failure,   //!< FAILURE, caught a std::bad_alloc
+    //     Unchanged, //!< UNCHANGED, no need to resize (sufficient capacity)
+    //     Success,   //!< SUCCESS, resize was successful
+    //     Flush      //!< FLUSH, need to flush to transports for current variable
+    // };
 
-    /**
-     * DESIGN
-     * Resizes the data buffer to hold new dataIn size
-     * @param dataIn input size for new data
-     * @param hint for exception handling
-     * @return
-     * -1: allocation failed,
-     *  0: no allocation needed,
-     *  1: reallocation is sucessful
-     *  2: need a transport flush
-     */
-    ResizeResult ResizeBuffer(const size_t dataIn, const std::string hint);
+    // /**
+    //  * DESIGN
+    //  * Resizes the data buffer to hold new dataIn size
+    //  * @param dataIn input size for new data
+    //  * @param hint for exception handling
+    //  * @return
+    //  * -1: allocation failed,
+    //  *  0: no allocation needed,
+    //  *  1: reallocation is sucessful
+    //  *  2: need a transport flush
+    //  */
+    // ResizeResult ResizeBuffer(const size_t dataIn, const std::string hint);
 };
 
 } // end namespace engine

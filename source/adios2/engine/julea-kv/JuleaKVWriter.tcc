@@ -94,9 +94,9 @@ void JuleaKVWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
 
     // FIXME: adapt name!
     // DESIGN: is it necessary/useful to do this?
-    m_DeferredVariablesDataSize += static_cast<size_t>(
-        1.05 * helper::PayloadSize(variable.m_Data, variable.m_Count) +
-        4 * GetBPIndexSizeInData(variable.m_Name, variable.m_Count));
+    // m_DeferredVariablesDataSize += static_cast<size_t>(
+    //     1.05 * helper::PayloadSize(variable.m_Data, variable.m_Count) +
+    //     4 * GetBPIndexSizeInData(variable.m_Name, variable.m_Count));
 
     m_NeedPerformPuts = true;
 }

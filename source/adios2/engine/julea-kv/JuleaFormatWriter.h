@@ -26,18 +26,30 @@ template <class T>
 void SetMinMax(Variable<T> &variable, const T *data);
 
 template <class T>
-void ParseVariableToBSON(Variable<T> &variable, bson_t *bson_meta_data);
+void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata);
 
 template <class T>
 void ParseVarTypeToBSON(Variable<T> &variable, const T *data,
-                        bson_t *bson_meta_data);
+                        bson_t *bsonMetadata);
 
-#define declare_template_instantiation(T)                                      \
+template <class T>
+void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);
+
+template <class T>
+void ParseAttrTypeToBSON(Attribute<T> &attribute, const T *data,
+                        bson_t *bsonMetadata);
+
+#define variable_template_instantiation(T)                                      \
    	SetMinMax(Variable<T> &variable, const T *data);      \
     extern template void ParseVariableToBSON(Variable<T> &variable,            \
-                                             bson_t *bson_meta_data);          \
-    ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
-#undef declare_template_instantiation
+                                             bson_t *bsonMetadata);          \
+    ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
+#undef variable_template_instantiation
+
+#define attribute_template_instantiation(T)                                      \
+    extern template void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);\
+    ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(attribute_template_instantiation)
+#undef attribute_template_instantiation
 
 } // end namespace engine
 } // end namespace core

@@ -24,14 +24,24 @@ namespace engine
 {
 
 template <class T>
-void PutVariableDataToJulea(Variable<T> &variable, const T *data, const char *name_space);
+void PutVariableDataToJulea(Variable<T> &variable, const T *data, const char *nameSpace);
 
 template <class T>
-void PutVariableMetadataToJulea(Variable<T> &variable, const bson_t *bson_meta_data, const char *name_space);
+void PutVariableMetadataToJulea(Variable<T> &variable, const bson_t *bsonMetadata, const char *nameSpace);
+
+
+template <class T>
+void PutAttributeDataToJulea(Attribute<T> &attribute, const T *data, const char *nameSpace);
+
+template <class T>
+void PutAttributeMetadataToJulea(Attribute<T> &attribute, const bson_t *bsonMetadata, const char *nameSpace);
+
 
 #define declare_template_instantiation(T)                                      \
-    extern template void PutVariableDataToJulea(Variable<T> &variable, const T *data, const char *name_space); \
-    extern template void PutVariableMetadataToJulea(Variable<T> &variable, const bson_t *bson_meta_data, const char *name_space);     \
+    extern template void PutVariableDataToJulea(Variable<T> &variable, const T *data, const char *nameSpace); \
+    extern template void PutVariableMetadataToJulea(Variable<T> &variable, const bson_t *bsonMetadata, const char *nameSpace);     \
+    extern template void PutAttributeDataToJulea(Attribute<T> &attribute, const T *data, const char *nameSpace);\
+    extern template void PutAttributeDataToJulea(Attribute<T> &attribute, const bson_t *bsonMetadata, const char *nameSpace);\
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
 } // end namespace engine
