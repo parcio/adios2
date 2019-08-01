@@ -11,7 +11,8 @@
 #include "JuleaKVWriter.h"
 #include "JuleaKVWriter.tcc"
 
-#include "JuleaClientLogic.h"
+#include "JuleaClientLogic-legacy.h"
+// #include "JuleaInteraction.h"
 // #include "JuleaFormatWriter.h"
 
 #include "adios2/core/IO.h"

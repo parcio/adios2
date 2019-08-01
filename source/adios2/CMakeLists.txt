@@ -126,7 +126,8 @@ if(ADIOS2_HAVE_JULEA_GONDOLIN)
       engine/julea-kv/JuleaReader.tcc
       engine/julea-kv/JuleaKVWriter.cpp
       engine/julea-kv/JuleaKVWriter.tcc
-      engine/julea-kv/JuleaClientLogic.cpp
+      engine/julea-kv/JuleaClientLogic-legacy.cpp
+      engine/julea-kv/JuleaInteraction.cpp
       engine/julea-kv/JuleaFormatWriter.cpp
       engine/julea-kv/JuleaFormatWriter-legacy.cpp
 

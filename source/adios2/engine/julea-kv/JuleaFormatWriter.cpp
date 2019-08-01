@@ -30,7 +30,7 @@ namespace engine
 {
 
 template <class T>
-void JuleaKVTest::SetMinMax(Variable<T> &variable, const T *data)
+void SetMinMax(Variable<T> &variable, const T *data)
 {
     T min;
     T max;
@@ -39,11 +39,10 @@ void JuleaKVTest::SetMinMax(Variable<T> &variable, const T *data)
     adios2::helper::GetMinMax(data, number_elements, min, max);
     variable.m_Min = min;
     variable.m_Max = max;
-    nochEinKomischerTest(variable);
 }
 
 template <class T>
-void JuleaKVTest::ParseVariableToBSON(Variable<T> &variable, bson_t *bson_meta_data)
+void ParseVariableToBSON(Variable<T> &variable, bson_t *bson_meta_data)
 {
     std::cout << "Test" << std::endl;
     T min;
@@ -129,7 +128,7 @@ void JuleaKVTest::ParseVariableToBSON(Variable<T> &variable, bson_t *bson_meta_d
 }
 
 template <>
-void JuleaKVTest::ParseVarTypeToBSON<std::string>(Variable<std::string> &variable,
+void ParseVarTypeToBSON<std::string>(Variable<std::string> &variable,
                                      const std::string *data,
                                      bson_t *bson_meta_data)
 {
@@ -144,7 +143,7 @@ void JuleaKVTest::ParseVarTypeToBSON<std::string>(Variable<std::string> &variabl
 }
 
 template <>
-void JuleaKVTest::ParseVarTypeToBSON<int8_t>(Variable<int8_t> &variable, const int8_t *data,
+void ParseVarTypeToBSON<int8_t>(Variable<int8_t> &variable, const int8_t *data,
                                 bson_t *bson_meta_data)
 {
     bson_append_int32(bson_meta_data, "var_type", -1, INT8);
@@ -157,7 +156,7 @@ void JuleaKVTest::ParseVarTypeToBSON<int8_t>(Variable<int8_t> &variable, const i
 }
 
 template <>
-void JuleaKVTest::ParseVarTypeToBSON<uint8_t>(Variable<uint8_t> &variable,
+void ParseVarTypeToBSON<uint8_t>(Variable<uint8_t> &variable,
                                  const uint8_t *data, bson_t *bson_meta_data)
 {
     bson_append_int32(bson_meta_data, "var_type", -1, UINT8);
@@ -170,7 +169,7 @@ void JuleaKVTest::ParseVarTypeToBSON<uint8_t>(Variable<uint8_t> &variable,
 }
 
 template <>
-void JuleaKVTest::ParseVarTypeToBSON<int16_t>(Variable<int16_t> &variable,
+void ParseVarTypeToBSON<int16_t>(Variable<int16_t> &variable,
                                  const int16_t *data, bson_t *bson_meta_data)
 {
     bson_append_int32(bson_meta_data, "var_type", -1, INT16);
@@ -182,7 +181,7 @@ void JuleaKVTest::ParseVarTypeToBSON<int16_t>(Variable<int16_t> &variable,
 }
 
 template <>
-void JuleaKVTest::ParseVarTypeToBSON<uint16_t>(Variable<uint16_t> &variable,
+void ParseVarTypeToBSON<uint16_t>(Variable<uint16_t> &variable,
                                   const uint16_t *data, bson_t *bson_meta_data)
 {
     bson_append_int32(bson_meta_data, "var_type", -1, UINT16);
@@ -194,7 +193,7 @@ void JuleaKVTest::ParseVarTypeToBSON<uint16_t>(Variable<uint16_t> &variable,
 }
 
 template <>
-void JuleaKVTest::ParseVarTypeToBSON<int32_t>(Variable<int32_t> &variable,
+void ParseVarTypeToBSON<int32_t>(Variable<int32_t> &variable,
                                  const int32_t *data, bson_t *bson_meta_data)
 {
     bson_append_int32(bson_meta_data, "var_type", -1, INT32);
@@ -206,7 +205,7 @@ void JuleaKVTest::ParseVarTypeToBSON<int32_t>(Variable<int32_t> &variable,
 }
 
 template <>
-void JuleaKVTest::ParseVarTypeToBSON<uint32_t>(Variable<uint32_t> &variable,
+void ParseVarTypeToBSON<uint32_t>(Variable<uint32_t> &variable,
                                   const uint32_t *data, bson_t *bson_meta_data)
 {
     bson_append_int32(bson_meta_data, "var_type", -1,
@@ -219,7 +218,7 @@ void JuleaKVTest::ParseVarTypeToBSON<uint32_t>(Variable<uint32_t> &variable,
 }
 
 template <>
-void JuleaKVTest::ParseVarTypeToBSON<int64_t>(Variable<int64_t> &variable,
+void ParseVarTypeToBSON<int64_t>(Variable<int64_t> &variable,
                                  const int64_t *data, bson_t *bson_meta_data)
 {
     bson_append_int64(bson_meta_data, "var_type", -1, INT64);
@@ -231,7 +230,7 @@ void JuleaKVTest::ParseVarTypeToBSON<int64_t>(Variable<int64_t> &variable,
 }
 
 template <>
-void JuleaKVTest::ParseVarTypeToBSON<uint64_t>(Variable<uint64_t> &variable,
+void ParseVarTypeToBSON<uint64_t>(Variable<uint64_t> &variable,
                                   const uint64_t *data, bson_t *bson_meta_data)
 {
     bson_append_int64(bson_meta_data, "var_type", -1, UINT64);
@@ -243,7 +242,7 @@ void JuleaKVTest::ParseVarTypeToBSON<uint64_t>(Variable<uint64_t> &variable,
 }
 
 template <>
-void JuleaKVTest::ParseVarTypeToBSON<float>(Variable<float> &variable, const float *data,
+void ParseVarTypeToBSON<float>(Variable<float> &variable, const float *data,
                                bson_t *bson_meta_data)
 {
     bson_append_double(bson_meta_data, "var_type", -1, FLOAT);
@@ -255,7 +254,7 @@ void JuleaKVTest::ParseVarTypeToBSON<float>(Variable<float> &variable, const flo
 }
 
 template <>
-void JuleaKVTest::ParseVarTypeToBSON<double>(Variable<double> &variable, const double *data,
+void ParseVarTypeToBSON<double>(Variable<double> &variable, const double *data,
                                 bson_t *bson_meta_data)
 {
     bson_append_double(bson_meta_data, "var_type", -1, DOUBLE);
@@ -267,7 +266,7 @@ void JuleaKVTest::ParseVarTypeToBSON<double>(Variable<double> &variable, const d
 }
 
 template <>
-void JuleaKVTest::ParseVarTypeToBSON<long double>(Variable<long double> &variable,
+void ParseVarTypeToBSON<long double>(Variable<long double> &variable,
                                      const long double *data,
                                      bson_t *bson_meta_data)
 {
@@ -278,7 +277,7 @@ void JuleaKVTest::ParseVarTypeToBSON<long double>(Variable<long double> &variabl
 }
 
 template <>
-void JuleaKVTest::ParseVarTypeToBSON<std::complex<float>>(
+void ParseVarTypeToBSON<std::complex<float>>(
     Variable<std::complex<float>> &variable, const std::complex<float> *data,
     bson_t *bson_meta_data)
 {
@@ -289,7 +288,7 @@ void JuleaKVTest::ParseVarTypeToBSON<std::complex<float>>(
 }
 
 template <>
-void JuleaKVTest::ParseVarTypeToBSON<std::complex<double>>(
+void ParseVarTypeToBSON<std::complex<double>>(
     Variable<std::complex<double>> &variable, const std::complex<double> *data,
     bson_t *bson_meta_data)
 {
@@ -299,13 +298,13 @@ void JuleaKVTest::ParseVarTypeToBSON<std::complex<double>>(
               << variable.Min() << std::endl;
 }
 
-// #define declare_template_instantiation(T)                                      \
-//     template void JuleaKVTest::SetMinMax(Variable<T> &variable, const T *data);             \
-//     template void JuleaKVTest::ParseVariableToBSON(core::Variable<T> &,                     \
-//                                       bson_t *bson_meta_data);
+#define declare_template_instantiation(T)                                      \
+    template void SetMinMax(Variable<T> &variable, const T *data);             \
+    template void ParseVariableToBSON(core::Variable<T> &,                     \
+                                      bson_t *bson_meta_data);
 
-// ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
-// #undef declare_template_instantiation
+ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
+#undef declare_template_instantiation
 
 } // end namespace engine
 } // end namespace core

@@ -12,7 +12,7 @@
 #define ADIOS2_ENGINE_JULEAWRITER_TCC_
 
 #include "JuleaFormatWriter.h"
-#include "JuleaClientLogic.h"
+#include "JuleaInteraction.h"
 #include "JuleaKVWriter.h"
 
 #include <adios2_c.h>
@@ -29,19 +29,6 @@ namespace core
 namespace engine
 {
 
-template <class T>
-void TestFunction(Variable<T> &variable, const T *data)
-{
-    T min;
-    T max;
-
-    auto number_elements = adios2::helper::GetTotalSize(variable.m_Count);
-    adios2::helper::GetMinMax(data, number_elements, min, max);
-    variable.m_Min = min;
-    variable.m_Max = max;
-    nochEinKomischerTest(variable);
-}
-
 // TODO: necessary function?
 template <class T>
 void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
@@ -50,13 +37,13 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
     auto bson_meta_data = bson_new();
     Metadata *metadata = g_slice_new(Metadata);
 
-    // SetMinMax(variable, blockInfo.Data);
+    SetMinMax(variable, blockInfo.Data);
 
-    // ParseVariableToMetadataStruct(variable, blockInfo, metadata);
-    // ParseVarTypeToBSON(variable, blockInfo, metadata);
+    ParseVariableToMetadataStruct(variable, blockInfo, metadata);
+    ParseVarTypeToBSON(variable, blockInfo, metadata);
 
-    // PutVariableMetadataToJulea(variable, bson_meta_data, m_JuleaInfo->name_space);
-    // PutVariableDataToJulea(variable, blockInfo.Data, m_JuleaInfo->name_space);
+    PutVariableMetadataToJulea(variable, bson_meta_data, m_JuleaInfo->name_space);
+    PutVariableDataToJulea(variable, blockInfo.Data, m_JuleaInfo->name_space);
 
     if (m_Verbosity == 5)
     {
@@ -64,11 +51,7 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
                   << variable.m_Name << ")\n";
     }
 
-    // abstruserTest42(metadata);
-    abstruserTest42(variable);
-    nochEinKomischerTest(variable);
-
-    ParseVariableType(variable, blockInfo, metadata);
+    // ParseVariableType(variable, blockInfo, metadata); //TODO: what needs to be done?
 
     //TODO: free memory
 }
@@ -78,14 +61,14 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 {
     auto bson_meta_data = bson_new();
 
-    // SetMinMax(variable, data);
+    SetMinMax(variable, data);
 
-    // ParseVariableToBSON(variable, bson_meta_data);
-    // ParseVarTypeToBSON(variable, data, bson_meta_data);
+    ParseVariableToBSON(variable, bson_meta_data);
+    ParseVarTypeToBSON(variable, data, bson_meta_data);
 
-    // PutVariableMetadataToJulea(variable, bson_meta_data, m_JuleaInfo->name_space);
+    PutVariableMetadataToJulea(variable, bson_meta_data, m_JuleaInfo->name_space);
 
-    // PutVariableDataToJulea(variable, data, m_JuleaInfo->name_space);
+    PutVariableDataToJulea(variable, data, m_JuleaInfo->name_space);
 
     if (m_Verbosity == 5)
     {

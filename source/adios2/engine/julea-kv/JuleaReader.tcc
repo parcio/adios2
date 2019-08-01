@@ -11,7 +11,7 @@
 #ifndef ADIOS2_ENGINE_JULEAREADER_TCC_
 #define ADIOS2_ENGINE_JULEAREADER_TCC_
 
-#include "JuleaClientLogic.h"
+#include "JuleaClientLogic-legacy.h"
 #include "JuleaReader.h"
 
 #include <iostream>

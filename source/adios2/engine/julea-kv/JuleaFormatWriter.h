@@ -21,10 +21,6 @@ namespace core
 {
 namespace engine
 {
-class JuleaKVTest : public Engine
-{
-
-public:
 
 template <class T>
 void SetMinMax(Variable<T> &variable, const T *data);
@@ -42,7 +38,6 @@ void ParseVarTypeToBSON(Variable<T> &variable, const T *data,
                                              bson_t *bson_meta_data);          \
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
-};
 
 } // end namespace engine
 } // end namespace core

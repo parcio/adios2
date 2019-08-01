@@ -11,7 +11,7 @@
 #include "JuleaReader.h"
 #include "JuleaReader.tcc"
 
-#include "JuleaClientLogic.h"
+#include "JuleaClientLogic-legacy.h"
 
 #include "adios2/helper/adiosFunctions.h" // CSVToVector
 
