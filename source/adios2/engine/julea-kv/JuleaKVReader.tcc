@@ -12,7 +12,9 @@
 #define ADIOS2_ENGINE_JULEAREADER_TCC_
 
 #include "JuleaClientLogic-legacy.h"
-#include "JuleaReader.h"
+#include "JuleaFormatReader.h"
+#include "JuleaInteractionReader.h"
+#include "JuleaKVReader.h"
 
 #include <iostream>
 // #include <fstream>
@@ -26,7 +28,7 @@ namespace engine
 {
 
 template <>
-void JuleaReader::GetSyncCommon(Variable<std::string> &variable,
+void JuleaKVReader::GetSyncCommon(Variable<std::string> &variable,
                                 std::string *data)
 {
     g_autoptr(JBatch) batch = NULL;
@@ -64,7 +66,7 @@ void JuleaReader::GetSyncCommon(Variable<std::string> &variable,
 
 // inline needed? is in skeleton-engine
 template <class T>
-void JuleaReader::GetSyncCommon(Variable<T> &variable, T *data)
+void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
 {
     gchar **names;
     int *types;
@@ -132,7 +134,7 @@ void JuleaReader::GetSyncCommon(Variable<T> &variable, T *data)
 }
 
 template <class T>
-void JuleaReader::GetDeferredCommon(Variable<T> &variable, T *data)
+void JuleaKVReader::GetDeferredCommon(Variable<T> &variable, T *data)
 {
     // std::cout << "JULEA ENGINE: GetDeferredCommon" << std::endl;
     // returns immediately

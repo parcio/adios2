@@ -8,11 +8,11 @@
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
-#ifndef ADIOS2_ENGINE_JULEAWRITER_TCC_
-#define ADIOS2_ENGINE_JULEAWRITER_TCC_
+#ifndef ADIOS2_ENGINE_JULEAKVWRITER_TCC_
+#define ADIOS2_ENGINE_JULEAKVWRITER_TCC_
 
 #include "JuleaFormatWriter.h"
-#include "JuleaInteraction.h"
+#include "JuleaInteractionWriter.h"
 #include "JuleaKVWriter.h"
 
 #include <adios2_c.h>
@@ -108,4 +108,4 @@ void JuleaKVWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
 } // end namespace core
 } // end namespace adios2
 
-#endif /* ADIOS2_ENGINE_SKELETONWRITER_TCC_ */
+#endif /* ADIOS2_ENGINE_JULEAKVWRITER_TCC_ */

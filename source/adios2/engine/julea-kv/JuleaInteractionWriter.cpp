@@ -8,7 +8,7 @@
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
-#include "JuleaInteraction.h"
+#include "JuleaInteractionWriter.h"
 #include "JuleaMetadata.h"
 
 #include <julea-config.h>

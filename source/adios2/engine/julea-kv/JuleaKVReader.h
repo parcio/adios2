@@ -36,7 +36,7 @@ namespace engine
 using DataMap =
     std::unordered_map<std::string, std::pair<std::string, unsigned int>>;
 
-class JuleaReader : public Engine
+class JuleaKVReader : public Engine
 {
 public:
     /**
@@ -50,10 +50,10 @@ public:
      * @param debugMode
      * @param hostLanguage
      */
-    JuleaReader(IO &adios, const std::string &name, const Mode mode,
+    JuleaKVReader(IO &adios, const std::string &name, const Mode mode,
                 MPI_Comm mpiComm);
 
-    ~JuleaReader();
+    ~JuleaKVReader();
     // StepStatus BeginStep(StepMode mode = StepMode::NextAvailable,
     //                      const float timeoutSeconds = -1.0) final;
     StepStatus BeginStep(StepMode mode = StepMode::Read,

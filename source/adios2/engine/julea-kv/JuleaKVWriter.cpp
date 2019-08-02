@@ -14,7 +14,7 @@
 #include "JuleaClientLogic-legacy.h" //TODO: replace with new functionality
 
 #include "JuleaFormatWriter.h"
-#include "JuleaInteraction.h"
+#include "JuleaInteractionWriter.h"
 
 #include "adios2/core/IO.h"
 #include "adios2/helper/adiosFunctions.h"

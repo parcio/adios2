@@ -8,8 +8,8 @@
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
-#ifndef ADIOS2_ENGINE_JULEAWRITER_H_
-#define ADIOS2_ENGINE_JULEAWRITER_H_
+#ifndef ADIOS2_ENGINE_JULEAKVWRITER_H_
+#define ADIOS2_ENGINE_JULEAKVWRITER_H_
 
 #include "JuleaMetadata.h"
 
@@ -228,4 +228,4 @@ private:
 } // end namespace core
 } // end namespace adios2
 
-#endif /* ADIOS2_ENGINE_JULEAMPIWRITER_H_ */
+#endif /* ADIOS2_ENGINE_JULEAKVWRITER_H_ */

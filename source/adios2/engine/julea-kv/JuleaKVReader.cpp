@@ -8,8 +8,8 @@
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
-#include "JuleaReader.h"
-#include "JuleaReader.tcc"
+#include "JuleaKVReader.h"
+#include "JuleaKVReader.tcc"
 
 #include "JuleaClientLogic-legacy.h"
 
@@ -29,7 +29,7 @@ namespace engine
 // : Engine("JuleaReader", io, name, mode, mpiComm),
 //   m_BP3Deserializer(mpiComm, m_DebugMode)
 
-JuleaReader::JuleaReader(IO &io, const std::string &name, const Mode mode,
+JuleaKVReader::JuleaKVReader(IO &io, const std::string &name, const Mode mode,
                          MPI_Comm mpiComm)
 : Engine("JuleaReader", io, name, mode, mpiComm)
 
@@ -47,7 +47,7 @@ JuleaReader::JuleaReader(IO &io, const std::string &name, const Mode mode,
     // DataMap variables = io.GetAvailableVariables();
 }
 
-JuleaReader::~JuleaReader()
+JuleaKVReader::~JuleaKVReader()
 {
     /* m_Skeleton deconstructor does close and finalize */
     if (m_Verbosity == 5)
@@ -57,7 +57,7 @@ JuleaReader::~JuleaReader()
     }
 }
 
-StepStatus JuleaReader::BeginStep(const StepMode mode,
+StepStatus JuleaKVReader::BeginStep(const StepMode mode,
                                   const float timeoutSeconds)
 {
     if (m_DebugMode)
@@ -126,7 +126,7 @@ StepStatus JuleaReader::BeginStep(const StepMode mode,
     return StepStatus::OK;
 }
 
-size_t JuleaReader::CurrentStep() const
+size_t JuleaKVReader::CurrentStep() const
 {
     // std::cout << "JULEA ENGINE: CurrentStep" << std::endl;
     if (m_Verbosity == 5)
@@ -137,7 +137,7 @@ size_t JuleaReader::CurrentStep() const
     return m_CurrentStep;
 }
 
-void JuleaReader::EndStep()
+void JuleaKVReader::EndStep()
 {
     // EndStep should call PerformGets() if there are unserved GetDeferred()
     // requests
@@ -177,7 +177,7 @@ void JuleaReader::EndStep()
     PerformGets similar to BP-Engine
 
  */
-void JuleaReader::PerformGets()
+void JuleaKVReader::PerformGets()
 {
     if (m_Verbosity == 5)
     {
@@ -224,11 +224,11 @@ void JuleaReader::PerformGets()
 // PRIVATE
 
 #define declare_type(T)                                                        \
-    void JuleaReader::DoGetSync(Variable<T> &variable, T *data)                \
+    void JuleaKVReader::DoGetSync(Variable<T> &variable, T *data)                \
     {                                                                          \
         GetSyncCommon(variable, data);                                         \
     }                                                                          \
-    void JuleaReader::DoGetDeferred(Variable<T> &variable, T *data)            \
+    void JuleaKVReader::DoGetDeferred(Variable<T> &variable, T *data)            \
     {                                                                          \
         GetDeferredCommon(variable, data);                                     \
     }
@@ -236,7 +236,7 @@ void JuleaReader::PerformGets()
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
 
-void JuleaReader::Init()
+void JuleaKVReader::Init()
 {
     std::cout << "\n*********************** JULEA ENGINE READER "
                  "*************************"
@@ -301,7 +301,7 @@ void JuleaReader::Init()
  * variable with the according parameters.
  */
 // template <class T>
-void JuleaReader::InitVariables()
+void JuleaKVReader::InitVariables()
 {
     gchar **names;
     int *types;
@@ -478,7 +478,7 @@ void JuleaReader::InitVariables()
     }
 }
 
-void JuleaReader::InitParameters()
+void JuleaKVReader::InitParameters()
 {
     // for (const auto &pair : m_IO.m_Parameters)
     // {
@@ -508,7 +508,7 @@ void JuleaReader::InitParameters()
     // }
 }
 
-void JuleaReader::InitTransports()
+void JuleaKVReader::InitTransports()
 {
     // FIXME
     // DESIGN
@@ -538,7 +538,7 @@ void JuleaReader::InitTransports()
     }
 }
 
-void JuleaReader::DoClose(const int transportIndex)
+void JuleaKVReader::DoClose(const int transportIndex)
 {
     if (m_Verbosity == 5)
     {

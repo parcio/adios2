@@ -70,7 +70,7 @@
 #ifdef ADIOS2_HAVE_JULEA_GONDOLIN // external dependencies
 // #include "adios2/engine/julea-original/JuleaReader.h"
 // #include "adios2/engine/julea-original/JuleaWriter.h"
-#include "adios2/engine/julea-kv/JuleaReader.h"
+#include "adios2/engine/julea-kv/JuleaKVReader.h"
 #include "adios2/engine/julea-kv/JuleaKVWriter.h"
 #include "adios2/engine/julea-test/JuleaTestReader.h"
 #include "adios2/engine/julea-test/JuleaTestWriter.h"
@@ -670,7 +670,7 @@ Engine &IO::Open(const std::string &name, const Mode mode,
     else if (engineTypeLC == "julea-kv")
     {
         if (mode == Mode::Read)
-            engine = std::make_shared<engine::JuleaReader>(*this, name, mode,
+            engine = std::make_shared<engine::JuleaKVReader>(*this, name, mode,
                                                               mpiComm);
         else
             engine = std::make_shared<engine::JuleaKVWriter>(*this, name, mode,
