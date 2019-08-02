@@ -490,13 +490,15 @@ void JuleaKVReader::Init()
 // template <class T>
 void JuleaKVReader::InitVariables()
 {
-    // gchar **names;
-    // int *types;
+    bson_iter_t b_iter;
+    bson_t *bsonNames;
+    std::string varName;
+    std::string nameSpace = m_JuleaInfo->nameSpace;
     unsigned int varCount = 0;
     // int size = 0;
-    bson_t *bsonNames;
 
-    GetAllVariableNamesFromJulea(m_JuleaInfo->nameSpace, bsonNames, &varCount);
+    GetNamesBSONFromJulea(nameSpace, bsonNames, &varCount);
+    bson_iter_init(&b_iter, bsonNames);
 
     // // TODO: fix memory leak
     // GetAllVarNamesFromKV(m_JuleaInfo->nameSpace, &names, &types, &count_names,
@@ -506,18 +508,104 @@ void JuleaKVReader::InitVariables()
     std::cout << "++ Julea Reader DEBUG PRINT: varCount " << varCount
     << std::endl;
 
-
-    for (unsigned int i = 0; i < varCount; i++)
+    /* probably not very efficient */
+    while (bson_iter_next(&b_iter))
     {
-        ExtractVarNameFromNamesBSON(m_JuleaInfo->nameSpace, bsonNames, &varCount);
+        bson_t *bsonMetadata;
+
+        varName = g_strdup(bson_iter_key(&b_iter));
+
+        GetVariableBSONFromJulea(nameSpace, varName, bsonMetadata);
+
+        Dims shape;
+        Dims start;
+        Dims count;
+        bool constantDims;
+        int type;
+
+        ExtractVariableFromBSON(nameSpace, varName, bsonMetadata, type, shape, start, count, constantDims);
+
+        switch (type)
+        {
+        // case COMPOUND:
+        //     //TODO
+        //     break;
+        // case UNKNOWN:
+        //     //TODO
+        //     break;
+        case STRING:
+            m_IO.DefineVariable<std::string>(varName, shape, start, count,
+                                             constantDims);
+            break;
+        case INT8:
+            m_IO.DefineVariable<int8_t>(varName, shape, start, count,
+                                        constantDims);
+            break;
+        case UINT8:
+            m_IO.DefineVariable<uint8_t>(varName, shape, start, count,
+                                         constantDims);
+            break;
+        }
+
+    }
+
+    // for (unsigned int i = 0; i < varCount; i++)
+    // {
+    //     bson_t *bsonMetadata;
+    //     Dims shape;
+    //     Dims start;
+    //     Dims count;
+    //     bool constantDims;
+    //     int type;
+    //     // T variable;
+    //     // ExtractVarNameFromNamesBSON(m_JuleaInfo->nameSpace, bsonNames, &varCount, i);
+    //     if (!bson_iter_next(&b_iter))
+    //     {
+    //         printf("ERROR: count of names does not match \n");
+    //     }
+    //    varName = g_strdup(bson_iter_key(&b_iter));
+    //    // GetVariableMetadataFromJulea()
+
+    //    GetVariableBSONFromJulea(nameSpace, varName, bsonMetadata);
+    //    ExtractVariableFromBSON(nameSpace, varName, bsonMetadata, type, shape, start, count, constantDims);
+
+    //     switch (type)
+    //     {
+    //     // case COMPOUND:
+    //     //     //TODO
+    //     //     break;
+    //     // case UNKNOWN:
+    //     //     //TODO
+    //     //     break;
+    //     case STRING:
+    //         m_IO.DefineVariable<std::string>(varName, shape, start, count,
+    //                                          constantdims);
+    //         break;
+    //     case INT8:
+    //         m_IO.DefineVariable<int8_t>(varName, shape, start, count,
+    //                                     constantdims);
+    //         break;
+    //     case UINT8:
+    //         m_IO.DefineVariable<uint8_t>(varName, shape, start, count,
+    //                                      constantdims);
+    //         break;
+    //     }
+    // }
+
+    //     (*types)[i] = bson_iter_int32(&b_iter);
+    //     // printf("-- JADIOS DEBUG PRINT: get_all_var_names_from_kv DEBUG PRINT:
+    //     // %s\n", (*names)[i]); printf("-- JADIOS DEBUG PRINT: types DEBUG
+    //     // PRINT: %d\n", (*types)[i]);
+
+
 //         GetVarMetadataFromJulea();
 //         ParseVariableFromBSON();
 //         ParseVarTypeFromBSON();
 
 //         DefineVariables();
-//         Dims shape;
-//         Dims start;
-//         Dims count;
+        // Dims shape;
+        // Dims start;
+        // Dims count;
 
 //         Metadata *metadata = g_slice_new(Metadata);
 //         metadata->shape = g_slice_new(unsigned long);
@@ -669,7 +757,7 @@ void JuleaKVReader::InitVariables()
 //         g_slice_free(unsigned long, metadata->shape);
 //         g_slice_free(unsigned long, metadata->shape);
 //         g_slice_free(char, *names); // FIXME
-    }
+    // }
 //     if (m_Verbosity == 5)
 //     {
 //         std::cout << "Julea Reader " << m_ReaderRank << " InitVariables()\n";

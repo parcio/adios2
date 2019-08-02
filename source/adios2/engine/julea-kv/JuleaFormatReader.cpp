@@ -28,6 +28,79 @@ namespace core
 namespace engine
 {
 
+void ExtractVariableFromBSON(const std::string nameSpace, const std::string varName, bson_t *bsonMetadata, int type, Dims shape, Dims start, Dims count,bool constantDims)
+{
+    bson_iter_t b_iter;
+
+    if (bson_iter_init(&b_iter, bsonMetadata))
+    {
+        std::cout << "++ Julea Client Logic: Bson iterator is valid"
+                  << std::endl;
+    }
+    else
+    {
+        std::cout << "ERROR: Bson iterator is not valid!" << std::endl;
+    }
+
+    /* probably not very efficient */
+    while (bson_iter_next(&b_iter))
+    {
+
+        if (bson_iter_key(&b_iter) == "shape_size")
+        {
+            auto shapeSize = bson_iter_int64(&b_iter);
+            if(shapeSize > 0)
+            {
+                for (guint i = 0; i < shapeSize; i++)
+                {
+                    bson_iter_next(&b_iter);
+                    key = g_strdup_printf("shape_%d", i);
+                    if (g_strcmp0(bson_iter_key(&b_iter), key) == 0)
+                    {
+                        metadata->shape[i] = bson_iter_int64(&b_iter);
+                    }
+                }
+            }
+        }
+        if (g_strcmp0(bson_iter_key(&b_iter), "shape_size") == 0)
+        {
+            metadata->shape_size = bson_iter_int64(&b_iter);
+            // printf("-- JADIOS DEBUG PRINT: shape_size = %ld \n",
+            // metadata->shape_size);
+            if (metadata->shape_size > 0)
+            {
+                for (guint i = 0; i < metadata->shape_size; i++)
+                {
+                    bson_iter_next(&b_iter);
+                    key = g_strdup_printf("shape_%d", i);
+                    if (g_strcmp0(bson_iter_key(&b_iter), key) == 0)
+                    {
+                        metadata->shape[i] = bson_iter_int64(&b_iter);
+                    }
+                }
+            }
+        }
+        else if (g_strcmp0(bson_iter_key(&b_iter), "start_size") == 0)
+        {
+            metadata->start_size = bson_iter_int64(&b_iter);
+            // printf("-- JADIOS DEBUG PRINT: start_size = %ld \n",
+            // metadata->start_size);
+
+            if (metadata->start_size > 0)
+            {
+                for (guint i = 0; i < metadata->start_size; i++)
+                {
+                    bson_iter_next(&b_iter);
+                    key = g_strdup_printf("start_%d", i);
+                    if (g_strcmp0(bson_iter_key(&b_iter), key) == 0)
+                    {
+                        metadata->start[i] = bson_iter_int64(&b_iter);
+                    }
+                }
+            }
+        }
+    } // end while
+}
 // template <class T>
 // void SetMinMax(Variable<T> &variable, const T *data)
 // {
