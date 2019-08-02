@@ -34,7 +34,7 @@ template <class T>
 void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
                                   const typename Variable<T>::Info &blockInfo)
 {
-    auto bson_meta_data = bson_new();
+    auto bsonMetadata = bson_new();
     Metadata *metadata = g_slice_new(Metadata);
 
     SetMinMax(variable, blockInfo.Data);
@@ -42,7 +42,7 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
     ParseVariableToMetadataStruct(variable, blockInfo, metadata);
     ParseVarTypeToBSON(variable, blockInfo, metadata);
 
-    PutVariableMetadataToJulea(variable, bson_meta_data,
+    PutVariableMetadataToJulea(variable, bsonMetadata,
                                m_JuleaInfo->nameSpace);
     PutVariableDataToJulea(variable, blockInfo.Data, m_JuleaInfo->nameSpace);
 
@@ -69,7 +69,7 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
     ParseVarTypeToBSON(variable, data, bson_meta_data);
 
     PutVariableMetadataToJuleaSmall(variable, bson_meta_data,
-                               m_JuleaInfo->nameSpace);
+                                    m_JuleaInfo->nameSpace);
 
     PutVariableDataToJuleaSmall(variable, data, m_JuleaInfo->nameSpace);
 

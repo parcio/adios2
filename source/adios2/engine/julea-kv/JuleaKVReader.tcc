@@ -29,7 +29,7 @@ namespace engine
 
 template <>
 void JuleaKVReader::GetSyncCommon(Variable<std::string> &variable,
-                                std::string *data)
+                                  std::string *data)
 {
     g_autoptr(JBatch) batch = NULL;
     g_autoptr(JSemantics) semantics;
@@ -96,7 +96,8 @@ void JuleaKVReader::GetSyncCommon(Variable<std::string> &variable,
 //     // {
 //     //     std::cout << "Data before: " <<  float_data[i] << std::endl;
 //     // }
-//     /* all the additional metadata which is not used in InitVariables has to be
+//     /* all the additional metadata which is not used in InitVariables has to
+//     be
 //      * read again */
 
 //     GetVarMetadataFromKV(m_JuleaInfo->name_space, metadata->name, metadata,
@@ -112,7 +113,8 @@ void JuleaKVReader::GetSyncCommon(Variable<std::string> &variable,
 //     //     std::cout << "Data: " << data[i] << std::endl;
 //     // }
 
-//     // FIXME: additional metadata infos as "IsReadAsJoined" need to be stored in
+//     // FIXME: additional metadata infos as "IsReadAsJoined" need to be stored
+//     in
 //     // ADIOS
 
 //     // FIXME: check whether everything is set by InitVariables and this get
@@ -141,13 +143,23 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
     /* all the additional metadata which is not used in InitVariables has to be
      * read again */
 
+    auto bsonNames = bson_new();
+    auto bsonMetadata = bson_new();
+    auto nameSpace = m_JuleaInfo->nameSpace;
+    unsigned int varCount = 0;
+
     // GetVariableMetadataFromJulea();
     // GetVariableDataFromJulea();
+
+    GetNamesBSONFromJulea(nameSpace, bsonNames, &varCount);
+
+    GetVariableBSONFromJulea(nameSpace,variable.m_Name, bsonMetadata);
 
     // ParseVariableFromBSON();
     // ParseVarTypeFromBSON();
 
-/* ---------------------------------------------------------------------------- */
+    /* ----------------------------------------------------------------------------
+     */
     // gchar **names;
     // int *types;
     // unsigned int count_names = 0;
@@ -171,7 +183,6 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
     //           << " Reached Get Sync Common (T, T)" << std::endl;
     // std::cout << "Julea Reader " << m_ReaderRank << " Namespace of variable "
     //           << m_Name << std::endl;
-
 
     // GetVarMetadataFromKV(m_JuleaInfo->name_space, metadata->name, metadata,
     //                      m_JuleaInfo->semantics); // FIXME

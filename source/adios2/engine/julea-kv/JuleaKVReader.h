@@ -51,7 +51,7 @@ public:
      * @param hostLanguage
      */
     JuleaKVReader(IO &adios, const std::string &name, const Mode mode,
-                MPI_Comm mpiComm);
+                  MPI_Comm mpiComm);
 
     ~JuleaKVReader();
     // StepStatus BeginStep(StepMode mode = StepMode::NextAvailable,

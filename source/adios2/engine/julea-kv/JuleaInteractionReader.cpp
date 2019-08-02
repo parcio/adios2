@@ -35,15 +35,19 @@ namespace engine
 /** -------------- TESTING GENERIC FUNCTIONS --------------------------------**/
 /** -------------------------------------------------------------------------**/
 // template <class T>
-// void GetAllVariableNamesFromJulea(Variable<T> &variable, bson_t *bsonMetadata,
+// void GetAllVariableNamesFromJulea(Variable<T> &variable, bson_t
+// *bsonMetadata,
 //                                  std::string nameSpace)
 
-// void ExtractVariableFromBSON(const std::string nameSpace, const std::string varName, bson_t *bsonMetadata, int type, Dims shape, Dims start, Dims count,bool constantDims)
+// void ExtractVariableFromBSON(const std::string nameSpace, const std::string
+// varName, bson_t *bsonMetadata, int type, Dims shape, Dims start, Dims
+// count,bool constantDims)
 // {
 
 // }
 
-// void GetVariableBSONFromJulea(const std::string nameSpace, const std::string varName, bson_t *bsonMetadata)
+// void GetVariableBSONFromJulea(const std::string nameSpace, const std::string
+// varName, bson_t *bsonMetadata)
 // {
 // 	// JBatch *batch;
 //     // gchar *string_metadata_kv;
@@ -58,8 +62,9 @@ namespace engine
 //     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
 //     auto batch = j_batch_new(semantics);
 
-//     auto string_metadata_kv = g_strdup_printf("variables_%s", nameSpace.c_str());
-//     auto kv_object = j_kv_new(string_metadata_kv, varName.c_str());
+//     auto string_metadata_kv = g_strdup_printf("variables_%s",
+//     nameSpace.c_str()); auto kv_object = j_kv_new(string_metadata_kv,
+//     varName.c_str());
 //     // bson_metadata = bson_new();
 
 //     j_kv_get(kv_object, &meta_data_buf, &value_len, batch);
@@ -89,10 +94,10 @@ namespace engine
 
 // }
 
-
-void GetNamesBSONFromJulea(const std::string nameSpace, bson_t *bsonNames, unsigned int *varCount)
+void GetNamesBSONFromJulea(const std::string nameSpace, bson_t *bsonNames,
+                           unsigned int *varCount)
 {
-	// bson_t *bson_names;
+    // bson_t *bson_names;
     // bson_iter_t b_iter;
     guint32 value_len = 0;
 
@@ -116,7 +121,8 @@ void GetNamesBSONFromJulea(const std::string nameSpace, bson_t *bsonNames, unsig
     }
     else
     {
-        // bson_names = bson_new_from_data((const uint8_t *)names_buf, value_len);
+        // bson_names = bson_new_from_data((const uint8_t *)names_buf,
+        // value_len);
         bsonNames = bson_new_from_data((const uint8_t *)names_buf, value_len);
     }
 
@@ -135,7 +141,8 @@ void GetNamesBSONFromJulea(const std::string nameSpace, bson_t *bsonNames, unsig
     //     }
     //     (*names)[i] = g_strdup(bson_iter_key(&b_iter));
     //     (*types)[i] = bson_iter_int32(&b_iter);
-    //     // printf("-- JADIOS DEBUG PRINT: get_all_var_names_from_kv DEBUG PRINT:
+    //     // printf("-- JADIOS DEBUG PRINT: get_all_var_names_from_kv DEBUG
+    //     PRINT:
     //     // %s\n", (*names)[i]); printf("-- JADIOS DEBUG PRINT: types DEBUG
     //     // PRINT: %d\n", (*types)[i]);
     // }
@@ -147,9 +154,10 @@ void GetNamesBSONFromJulea(const std::string nameSpace, bson_t *bsonNames, unsig
     j_batch_unref(batch);
 }
 
-void GetVariableBSONFromJulea(const std::string nameSpace, const std::string varName, bson_t *bsonMetadata )
+void GetVariableBSONFromJulea(const std::string nameSpace,
+                              const std::string varName, bson_t *bsonMetadata)
 {
-	 // JBatch *batch;
+    // JBatch *batch;
     // gchar *string_metadata_kv;
     // gchar *key;
     // bson_t* bson_metadata;
@@ -162,7 +170,8 @@ void GetVariableBSONFromJulea(const std::string nameSpace, const std::string var
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
-    auto string_metadata_kv = g_strdup_printf("variables_%s", nameSpace.c_str());
+    auto string_metadata_kv =
+        g_strdup_printf("variables_%s", nameSpace.c_str());
     auto kv_object = j_kv_new(string_metadata_kv, varName.c_str());
     // bson_metadata = bson_new();
 
@@ -178,26 +187,24 @@ void GetVariableBSONFromJulea(const std::string nameSpace, const std::string var
     {
         bson_init_static(bsonMetadata, (uint8_t *)meta_data_buf, value_len);
     }
-
 }
-
 
 /** ------------------------- DATA ------------------------------------------**/
 
-
-
 #define declare_template_instantiation(T)                                      \
-    template void GetVariableDataFromJulea(                               \
-        Variable<T> &variable, const T *data, const std::string nameSpace);         \
-    template void GetVariableMetadataFromJulea(                           \
-        Variable<T> &variable, bson_t *bsonMetadata,const std::string nameSpace);  \
-    template void GetAllAttributeNamesFromJulea(                              \
-        Attribute<T> &attribute, const T *data, const std::string nameSpace);        \
-    template void GetAttributeDataFromJulea(                              \
-        Attribute<T> &attribute, const T *data, const std::string nameSpace);        \
-    template void GetAttributeMetadataFromJulea(                          \
-        Attribute<T> &attribute, bson_t *bsonMetadata, const std::string nameSpace); \
-ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
+    template void GetVariableDataFromJulea(                                    \
+        Variable<T> &variable, const T *data, const std::string nameSpace);    \
+    template void GetVariableMetadataFromJulea(Variable<T> &variable,          \
+                                               bson_t *bsonMetadata,           \
+                                               const std::string nameSpace);   \
+    template void GetAllAttributeNamesFromJulea(                               \
+        Attribute<T> &attribute, const T *data, const std::string nameSpace);  \
+    template void GetAttributeDataFromJulea(                                   \
+        Attribute<T> &attribute, const T *data, const std::string nameSpace);  \
+    template void GetAttributeMetadataFromJulea(Attribute<T> &attribute,       \
+                                                bson_t *bsonMetadata,          \
+                                                const std::string nameSpace);  \
+    ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
 
 } // end namespace engine

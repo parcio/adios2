@@ -28,9 +28,13 @@ namespace core
 namespace engine
 {
 
-void ExtractVariableFromBSON(const std::string nameSpace, const std::string varName, bson_t *bsonMetadata, int type, Dims shape, Dims start, Dims count,bool constantDims)
+void ExtractVariableFromBSON(const std::string nameSpace,
+                             const std::string varName, bson_t *bsonMetadata,
+                             int type, Dims shape, Dims start, Dims count,
+                             bool constantDims)
 {
     bson_iter_t b_iter;
+    gchar *key;
 
     if (bson_iter_init(&b_iter, bsonMetadata))
     {
@@ -49,7 +53,7 @@ void ExtractVariableFromBSON(const std::string nameSpace, const std::string varN
         if (bson_iter_key(&b_iter) == "shape_size")
         {
             auto shapeSize = bson_iter_int64(&b_iter);
-            if(shapeSize > 0)
+            if (shapeSize > 0)
             {
                 for (guint i = 0; i < shapeSize; i++)
                 {
@@ -57,46 +61,54 @@ void ExtractVariableFromBSON(const std::string nameSpace, const std::string varN
                     key = g_strdup_printf("shape_%d", i);
                     if (g_strcmp0(bson_iter_key(&b_iter), key) == 0)
                     {
-                        metadata->shape[i] = bson_iter_int64(&b_iter);
+                        // shape[i] = bson_iter_int64(&b_iter);
+                        shape.front() = bson_iter_int64(&b_iter);
                     }
                 }
             }
         }
-        if (g_strcmp0(bson_iter_key(&b_iter), "shape_size") == 0)
+        else if (bson_iter_key(&b_iter) == "start_size")
         {
-            metadata->shape_size = bson_iter_int64(&b_iter);
-            // printf("-- JADIOS DEBUG PRINT: shape_size = %ld \n",
-            // metadata->shape_size);
-            if (metadata->shape_size > 0)
-            {
-                for (guint i = 0; i < metadata->shape_size; i++)
-                {
-                    bson_iter_next(&b_iter);
-                    key = g_strdup_printf("shape_%d", i);
-                    if (g_strcmp0(bson_iter_key(&b_iter), key) == 0)
-                    {
-                        metadata->shape[i] = bson_iter_int64(&b_iter);
-                    }
-                }
-            }
-        }
-        else if (g_strcmp0(bson_iter_key(&b_iter), "start_size") == 0)
-        {
-            metadata->start_size = bson_iter_int64(&b_iter);
+            auto startSize = bson_iter_int64(&b_iter);
             // printf("-- JADIOS DEBUG PRINT: start_size = %ld \n",
             // metadata->start_size);
 
-            if (metadata->start_size > 0)
+            if (startSize > 0)
             {
-                for (guint i = 0; i < metadata->start_size; i++)
+                for (guint i = 0; i < startSize; i++)
                 {
                     bson_iter_next(&b_iter);
                     key = g_strdup_printf("start_%d", i);
                     if (g_strcmp0(bson_iter_key(&b_iter), key) == 0)
                     {
-                        metadata->start[i] = bson_iter_int64(&b_iter);
+                        start[i] = bson_iter_int64(&b_iter);
                     }
                 }
+            }
+        }
+        else if (bson_iter_key(&b_iter) == "count_size")
+        {
+            auto countSize = bson_iter_int64(&b_iter);
+            // printf("-- JADIOS DEBUG PRINT: count_size = %ld \n",
+            // metadata->count_size);
+
+            if (countSize > 0)
+            {
+                for (guint i = 0; i < countSize; i++)
+                {
+                    bson_iter_next(&b_iter);
+                    key = g_strdup_printf("count_%d", i);
+                    if (g_strcmp0(bson_iter_key(&b_iter), key) == 0)
+                    {
+                        count[i] = bson_iter_int64(&b_iter);
+                        // printf("-- JADIOS DEBUG PRINT: count[%d] = %ld \n",i,
+                        // metadata->count[i]);
+                    }
+                }
+            }
+            else if (bson_iter_key(&b_iter) == "var_type")
+            {
+                type = (variable_type)bson_iter_int64(&b_iter);
             }
         }
     } // end while
@@ -135,8 +147,6 @@ void ExtractVariableFromBSON(const std::string nameSpace, const std::string varN
 
 //     bson_append_int64(bsonMetadata, "data_size", -1, dataSize);
 // }
-
-
 
 // #define variable_template_instantiation(T)                                     \
 //     template void SetMinMax(Variable<T> &variable, const T *data);             \

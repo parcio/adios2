@@ -22,7 +22,10 @@ namespace core
 namespace engine
 {
 
-void ExtractVariableFromBSON(const std::string nameSpace, const std::string varName, bson_t *bsonMetadata, int type, Dims shape, Dims start, Dims count,bool constantDims);
+void ExtractVariableFromBSON(const std::string nameSpace,
+                             const std::string varName, bson_t *bsonMetadata,
+                             int type, Dims shape, Dims start, Dims count,
+                             bool constantDims);
 
 void ParseVariableFromBSON();
 void ParseAttributeFromBSON();
@@ -38,7 +41,6 @@ void SetMinMax(Variable<T> &variable, const T *data);
 
 // template <class T>
 // void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);
-
 
 // template <class T>
 // void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata);

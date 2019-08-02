@@ -486,18 +486,18 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
             ParseAttributeToBSON(&attribute, bsonMetadata);                    \
             ParseAttrTypeToBSON(&attribute, bsonMetadata);                     \
             PutAttributeMetadataToJulea(&attribute, bsonMetadata,              \
-                                        m_JuleaInfo->nameSpace);              \
+                                        m_JuleaInfo->nameSpace);               \
             PutAttributeDataToJulea(&attribute, &attribute.m_DataSingleValue,  \
-                                    m_JuleaInfo->nameSpace);                  \
+                                    m_JuleaInfo->nameSpace);                   \
         }                                                                      \
         else                                                                   \
         {                                                                      \
             ParseAttributeToBSON(&attribute, bsonMetadata);                    \
             ParseAttrTypeToBSON(&attribute, bsonMetadata);                     \
             PutAttributeMetadataToJulea(&attribute, bsonMetadata,              \
-                                        m_JuleaInfo->nameSpace);              \
+                                        m_JuleaInfo->nameSpace);               \
             PutAttributeDataToJulea(&attribute, &attribute.m_DataArray,        \
-                                    m_JuleaInfo->nameSpace);                  \
+                                    m_JuleaInfo->nameSpace);                   \
         }                                                                      \
     }                                                                          \
     ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_type)
