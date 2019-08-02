@@ -28,10 +28,11 @@ namespace core
 namespace engine
 {
 
-void ExtractVariableFromBSON(const std::string nameSpace,
-                             const std::string varName, bson_t *bsonMetadata,
-                             int type, Dims shape, Dims start, Dims count,
-                             bool constantDims)
+void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
+                                        const std::string varName,
+                                        bson_t *bsonMetadata, int type,
+                                        Dims shape, Dims start, Dims count,
+                                        bool constantDims)
 {
     bson_iter_t b_iter;
     gchar *key;
@@ -59,10 +60,10 @@ void ExtractVariableFromBSON(const std::string nameSpace,
                 {
                     bson_iter_next(&b_iter);
                     key = g_strdup_printf("shape_%d", i);
-                    if (g_strcmp0(bson_iter_key(&b_iter), key) == 0)
+                    if (bson_iter_key(&b_iter) == key)
                     {
-                        // shape[i] = bson_iter_int64(&b_iter);
-                        shape.front() = bson_iter_int64(&b_iter);
+                        shape[i] = bson_iter_int64(&b_iter);
+                        // shape.front() = bson_iter_int64(&b_iter);
                     }
                 }
             }
@@ -71,7 +72,7 @@ void ExtractVariableFromBSON(const std::string nameSpace,
         {
             auto startSize = bson_iter_int64(&b_iter);
             // printf("-- JADIOS DEBUG PRINT: start_size = %ld \n",
-            // metadata->start_size);
+            // variable.m_start_size);
 
             if (startSize > 0)
             {
@@ -79,7 +80,7 @@ void ExtractVariableFromBSON(const std::string nameSpace,
                 {
                     bson_iter_next(&b_iter);
                     key = g_strdup_printf("start_%d", i);
-                    if (g_strcmp0(bson_iter_key(&b_iter), key) == 0)
+                    if (bson_iter_key(&b_iter) == key)
                     {
                         start[i] = bson_iter_int64(&b_iter);
                     }
@@ -90,7 +91,7 @@ void ExtractVariableFromBSON(const std::string nameSpace,
         {
             auto countSize = bson_iter_int64(&b_iter);
             // printf("-- JADIOS DEBUG PRINT: count_size = %ld \n",
-            // metadata->count_size);
+            // variable.m_count_size);
 
             if (countSize > 0)
             {
@@ -98,11 +99,11 @@ void ExtractVariableFromBSON(const std::string nameSpace,
                 {
                     bson_iter_next(&b_iter);
                     key = g_strdup_printf("count_%d", i);
-                    if (g_strcmp0(bson_iter_key(&b_iter), key) == 0)
+                    if (bson_iter_key(&b_iter) == key)
                     {
                         count[i] = bson_iter_int64(&b_iter);
                         // printf("-- JADIOS DEBUG PRINT: count[%d] = %ld \n",i,
-                        // metadata->count[i]);
+                        // variable.m_count[i]);
                     }
                 }
             }
@@ -113,8 +114,217 @@ void ExtractVariableFromBSON(const std::string nameSpace,
         }
     } // end while
 }
+
+template <class T>
+void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
+                           const std::string nameSpace)
+{
+    bson_iter_t b_iter;
+    gchar *key;
+    unsigned int size;
+
+    if (bson_iter_init(&b_iter, bsonMetadata))
+    {
+        std::cout << "++ Julea Client Logic: Bson iterator is valid"
+                  << std::endl;
+    }
+    else
+    {
+        std::cout << "ERROR: Bson iterator is not valid!" << std::endl;
+    }
+
+    /* probably not very efficient */
+    while (bson_iter_next(&b_iter))
+    {
+        if (bson_iter_key(&b_iter) == "memory_start_size")
+        {
+            size = bson_iter_int64(&b_iter);
+
+            if (size > 0)
+            {
+                for (guint i = 0; i < size; i++)
+                {
+                    bson_iter_next(&b_iter);
+                    key = g_strdup_printf("memory_start_%d", i);
+                    if (bson_iter_key(&b_iter) == key)
+                    {
+                        variable.m_MemoryStart[i] = bson_iter_int64(&b_iter);
+                    }
+                }
+            }
+        }
+        else if (bson_iter_key(&b_iter) == "memory_count_size")
+        {
+            size = bson_iter_int64(&b_iter);
+
+            if (size > 0)
+            {
+                for (guint i = 0; i < size; i++)
+                {
+                    bson_iter_next(&b_iter);
+                    key = g_strdup_printf("memory_count_%d", i);
+                    if (bson_iter_key(&b_iter) == key)
+                    {
+                        variable.m_MemoryCount[i] = bson_iter_int64(&b_iter);
+                    }
+                }
+            }
+        }
+        /* unsigned long */
+        else if (bson_iter_key(&b_iter) == "steps_start")
+        {
+            variable.m_StepsStart = bson_iter_int64(&b_iter);
+        }
+        else if (bson_iter_key(&b_iter) == "steps_count")
+        {
+            variable.m_StepsCount = bson_iter_int64(&b_iter);
+        }
+        else if (bson_iter_key(&b_iter) == "block_id")
+        {
+            variable.m_BlockID = bson_iter_int64(&b_iter);
+        }
+        else if (bson_iter_key(&b_iter) == "index_start")
+        {
+            variable.m_IndexStart = bson_iter_int64(&b_iter);
+        }
+        // else if (bson_iter_key(&b_iter) == "element_size")
+        // {
+        //     variable.m_ElementSize = bson_iter_int64(&b_iter); //TODO
+        //     elementSize read only?!
+        // }
+        else if (bson_iter_key(&b_iter) == "available_steps_start")
+        {
+            variable.m_AvailableStepsStart = bson_iter_int64(&b_iter);
+        }
+        else if (bson_iter_key(&b_iter) == "available_steps_count")
+        {
+            variable.m_AvailableStepsCount = bson_iter_int64(&b_iter);
+        }
+        /* boolean */
+        // else if (bson_iter_key(&b_iter) == "is_value")
+        // {
+        //     variable.m_is_value = (bool)bson_iter_bool(&b_iter);
+        // }
+        else if (bson_iter_key(&b_iter) == "is_single_value")
+        {
+            variable.m_SingleValue = (bool)bson_iter_bool(&b_iter);
+        }
+        else if (bson_iter_key(&b_iter) == "is_constant_dims")
+        {
+            bool constantDims = (bool)bson_iter_bool(&b_iter);
+
+            if (constantDims)
+            {
+                variable.SetConstantDims();
+            }
+        }
+        else if (bson_iter_key(&b_iter) == "is_read_as_joined")
+        {
+            variable.m_ReadAsJoined = (bool)bson_iter_bool(&b_iter);
+        }
+        else if (bson_iter_key(&b_iter) == "is_read_as_local_value")
+        {
+            variable.m_ReadAsLocalValue = (bool)bson_iter_bool(&b_iter);
+        }
+        else if (bson_iter_key(&b_iter) == "is_random_access")
+        {
+            variable.m_RandomAccess = (bool)bson_iter_bool(&b_iter);
+        }
+        else if (bson_iter_key(&b_iter) == "is_first_streaming_step")
+        {
+            variable.m_FirstStreamingStep = (bool)bson_iter_bool(&b_iter);
+        }
+        /* value_type*/
+        else if (bson_iter_key(&b_iter) == "min_value")
+        {
+            // if (variable.m_var_type == INT32)
+            // if (variable.GetType() == INT32)
+            // {
+            // variable.m_Min = bson_iter_int32(&b_iter);
+            variable.m_Min = 42;
+            // }
+            // else if (variable.m_var_type == INT64)
+            // {
+            //     variable.m_min_value.integer_64 = bson_iter_int64(&b_iter);
+            // }
+            // // else if(variable.m_var_type == UNSIGNED_LONG_LONG_INT) //FIXME
+            // // data type
+            // // {
+            // //  bson_iter_decimal128(&b_iter, (bson_decimal128_t*)
+            // // variable.m_min_value.ull_integer);
+            // // }
+            // else if (variable.m_var_type == FLOAT)
+            // {
+            //     variable.m_min_value.real_float = bson_iter_double(&b_iter);
+            // }
+            // else if (variable.m_var_type == DOUBLE)
+            // {
+            //     variable.m_min_value.real_double = bson_iter_double(&b_iter);
+            // }
+        }
+        // else if (bson_iter_key(&b_iter) == "max_value")
+        // {
+        //     if (variable.m_var_type == INT32)
+        //     {
+        //         variable.m_max_value.integer_32 = bson_iter_int32(&b_iter);
+        //     }
+        //     else if (variable.m_var_type == INT64)
+        //     {
+        //         variable.m_max_value.integer_64 = bson_iter_int64(&b_iter);
+        //     }
+        //     // else if(variable.m_var_type == UNSIGNED_LONG_LONG_INT)
+        //     // {
+        //     //  bson_iter_decimal128(&b_iter,(bson_decimal128_t*)
+        //     // variable.m_max_value.ull_integer);
+        //     // }
+        //     else if (variable.m_var_type == FLOAT)
+        //     {
+        //         variable.m_max_value.real_float =
+        //             (float)bson_iter_double(&b_iter);
+        //     }
+        //     else if (variable.m_var_type == DOUBLE)
+        //     {
+        //         variable.m_max_value.real_double = bson_iter_double(&b_iter);
+        //     }
+        // }
+        // else if (bson_iter_key(&b_iter) == "curr_value")
+        // {
+        //     if (variable.m_var_type == INT32)
+        //     {
+        //         variable.m_curr_value.integer_32 = bson_iter_int32(&b_iter);
+        //     }
+        //     else if (variable.m_var_type == INT64)
+        //     {
+        //         variable.m_curr_value.integer_64 = bson_iter_int64(&b_iter);
+        //     }
+        //     // else if(variable.m_var_type == UNSIGNED_LONG_LONG_INT)
+        //     // {
+        //     //  bson_iter_decimal128(&b_iter,(bson_decimal128_t*)
+        //     // variable.m_curr_value.ull_integer);
+        //     // }
+        //     else if (variable.m_var_type == FLOAT)
+        //     {
+        //         variable.m_curr_value.real_float =
+        //             (float)bson_iter_double(&b_iter);
+        //     }
+        //     else if (variable.m_var_type == DOUBLE)
+        //     {
+        //         variable.m_curr_value.real_double =
+        //         bson_iter_double(&b_iter);
+        //     }
+        // }
+        else
+        {
+            std::cout << "Unknown key " << bson_iter_key(&b_iter)
+                      << " when retrieving metadata for variable "
+                      << variable.m_Name << std::endl;
+        }
+
+    } // end while
+}
+
 // template <class T>
-// void SetMinMax(Variable<T> &variable, const T *data)
+// void SetMinMax(Variable<T> &var)
 // {
 //     T min;
 //     T max;
@@ -148,13 +358,185 @@ void ExtractVariableFromBSON(const std::string nameSpace,
 //     bson_append_int64(bsonMetadata, "data_size", -1, dataSize);
 // }
 
-// #define variable_template_instantiation(T)                                     \
-//     template void SetMinMax(Variable<T> &variable, const T *data);             \
-//     template void ParseVariableToBSON(core::Variable<T> &,                     \
-//                                       bson_t *bsonMetadata);
+template <>
+void ParseVarTypeFromBSON<std::string>(Variable<std::string> &variable,
+                                       bson_iter_t *b_iter)
+{
+    // FIXME: set min, max for string?
+    // bson_append_int32(bsonMetadata, "var_type", -1, STRING);
+    // bson_append_int32(bsonMetadata, "min_value", -1, variable.Min());
+    // bson_append_int32(bsonMetadata, "max_value", -1, variable.Max());
+    // bson_append_int32(bsonMetadata, "curr_value", -1, variable.m_Value);
 
-// ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
-// #undef variable_template_instantiation
+    std::cout << "ParseVarTypeFromBSON String: min = " << variable.Min()
+              << std::endl;
+}
+
+template <>
+void ParseVarTypeFromBSON<int8_t>(Variable<int8_t> &variable,
+                                  bson_iter_t *b_iter)
+{
+    variable.m_Min = bson_iter_int32(b_iter);
+    // bson_append_int32(bsonMetadata, "var_type", -1, INT8);
+    // bson_append_int32(bsonMetadata, "min_value", -1, variable.Min());
+    // bson_append_int32(bsonMetadata, "max_value", -1, variable.Max());
+    // bson_append_int32(bsonMetadata, "curr_value", -1, variable.m_Value);
+
+    std::cout << "ParseVarTypeFromBSON int8_t: min = " << variable.Min()
+              << std::endl;
+}
+
+template <>
+void ParseVarTypeFromBSON<uint8_t>(Variable<uint8_t> &variable,
+                                   bson_iter_t *b_iter)
+{
+    // bson_append_int32(bsonMetadata, "var_type", -1, UINT8);
+    // bson_append_int32(bsonMetadata, "min_value", -1, variable.Min());
+    // bson_append_int32(bsonMetadata, "max_value", -1, variable.Max());
+    // bson_append_int32(bsonMetadata, "curr_value", -1, variable.m_Value);
+
+    std::cout << "ParseVarTypeFromBSON uint8_t: min = " << variable.Min()
+              << std::endl;
+}
+
+template <>
+void ParseVarTypeFromBSON<int16_t>(Variable<int16_t> &variable,
+                                   bson_iter_t *b_iter)
+{
+    // bson_append_int32(bsonMetadata, "var_type", -1, INT16);
+    // bson_append_int32(bsonMetadata, "min_value", -1, variable.Min());
+    // bson_append_int32(bsonMetadata, "max_value", -1, variable.Max());
+    // bson_append_int32(bsonMetadata, "curr_value", -1, variable.m_Value);
+    std::cout << "ParseVarTypeFromBSON int16_t: min = " << variable.Min()
+              << std::endl;
+}
+
+template <>
+void ParseVarTypeFromBSON<uint16_t>(Variable<uint16_t> &variable,
+                                    bson_iter_t *b_iter)
+{
+    // bson_append_int32(bsonMetadata, "var_type", -1, UINT16);
+    // bson_append_int32(bsonMetadata, "min_value", -1, variable.Min());
+    // bson_append_int32(bsonMetadata, "max_value", -1, variable.Max());
+    // bson_append_int32(bsonMetadata, "curr_value", -1, variable.m_Value);
+    std::cout << "ParseVarTypeFromBSON uint16_t: min = " << variable.Min()
+              << std::endl;
+}
+
+template <>
+void ParseVarTypeFromBSON<int32_t>(Variable<int32_t> &variable,
+                                   bson_iter_t *b_iter)
+{
+    // bson_append_int32(bsonMetadata, "var_type", -1, INT32);
+    // bson_append_int32(bsonMetadata, "min_value", -1, variable.Min());
+    // bson_append_int32(bsonMetadata, "max_value", -1, variable.Max());
+    // bson_append_int32(bsonMetadata, "curr_value", -1, variable.m_Value);
+    std::cout << "ParseVarTypeFromBSON int32_t: min = " << variable.Min()
+              << std::endl;
+}
+
+template <>
+void ParseVarTypeFromBSON<uint32_t>(Variable<uint32_t> &variable,
+                                    bson_iter_t *b_iter)
+{
+    // bson_append_int32(bsonMetadata, "var_type", -1,
+    //                   UINT32); // FIXME: does int32 suffice?
+    // bson_append_int32(bsonMetadata, "min_value", -1, variable.Min());
+    // bson_append_int32(bsonMetadata, "max_value", -1, variable.Max());
+    // bson_append_int32(bsonMetadata, "curr_value", -1, variable.m_Value);
+    std::cout << "ParseVarTypeFromBSON uint32_t: min = " << variable.Min()
+              << std::endl;
+}
+
+template <>
+void ParseVarTypeFromBSON<int64_t>(Variable<int64_t> &variable,
+                                   bson_iter_t *b_iter)
+{
+    // bson_append_int64(bsonMetadata, "var_type", -1, INT64);
+    // bson_append_int64(bsonMetadata, "min_value", -1, variable.Min());
+    // bson_append_int64(bsonMetadata, "max_value", -1, variable.Max());
+    // bson_append_int64(bsonMetadata, "curr_value", -1, variable.m_Value);
+    std::cout << "ParseVarTypeFromBSON int64_t: min = " << variable.Min()
+              << std::endl;
+}
+
+template <>
+void ParseVarTypeFromBSON<uint64_t>(Variable<uint64_t> &variable,
+                                    bson_iter_t *b_iter)
+{
+    // bson_append_int64(bsonMetadata, "var_type", -1, UINT64);
+    // bson_append_int64(bsonMetadata, "min_value", -1, variable.Min());
+    // bson_append_int64(bsonMetadata, "max_value", -1, variable.Max());
+    // bson_append_int64(bsonMetadata, "curr_value", -1, variable.m_Value);
+    std::cout << "ParseVarTypeFromBSON uint64_t: min = " << variable.Min()
+              << std::endl;
+}
+
+template <>
+void ParseVarTypeFromBSON<float>(Variable<float> &variable,
+                                  bson_iter_t *b_iter)
+{
+    // bson_append_double(bsonMetadata, "var_type", -1, FLOAT);
+    // bson_append_double(bsonMetadata, "min_value", -1, variable.Min());
+    // bson_append_double(bsonMetadata, "max_value", -1, variable.Max());
+    // bson_append_double(bsonMetadata, "curr_value", -1, variable.m_Value);
+    std::cout << "ParseVarTypeFromBSON float: min = " << variable.Min()
+              << std::endl;
+}
+
+template <>
+void ParseVarTypeFromBSON<double>(Variable<double> &variable,
+                                  bson_iter_t *b_iter)
+{
+    // bson_append_double(bsonMetadata, "var_type", -1, DOUBLE);
+    // bson_append_double(bsonMetadata, "min_value", -1, variable.Min());
+    // bson_append_double(bsonMetadata, "max_value", -1, variable.Max());
+    // bson_append_double(bsonMetadata, "curr_value", -1, variable.m_Value);
+    std::cout << "ParseVarTypeFromBSON double: min = " << variable.Min()
+              << std::endl;
+}
+
+template <>
+void ParseVarTypeFromBSON<long double>(Variable<long double> &variable,
+                                       bson_iter_t *b_iter)
+{
+    // FIXME: implement!
+    // how to store long double in bson file?
+    std::cout << "ParseVarTypeFromBSON long double: min = " << variable.Min()
+              << std::endl;
+}
+
+template <>
+void ParseVarTypeFromBSON<std::complex<float>>(
+    Variable<std::complex<float>> &variable, bson_iter_t *b_iter)
+{
+    // FIXME: implement!
+    // use two doubles? one for imaginary, one for real part?
+    std::cout << "ParseVarTypeFromBSON std::complex<float>: min = "
+              << variable.Min() << std::endl;
+}
+
+template <>
+void ParseVarTypeFromBSON<std::complex<double>>(
+    Variable<std::complex<double>> &variable, bson_iter_t *b_iter)
+{
+    // FIXME: implement!
+    // use two doubles? one for imaginary, one for real part?
+    std::cout << "ParseVarTypeFromBSON std::complex<double>: min = "
+              << variable.Min() << std::endl;
+}
+
+// template void SetMinMax(Variable<T> &var);             \
+
+#define variable_template_instantiation(T)                                     \
+    template void ParseVariableFromBSON(core::Variable<T> &,                   \
+                                        bson_t *bsonMetadata,                  \
+                                        const std::string nameSpace);          \
+    template void ParseVarTypeFromBSON(Variable<T> &variable,                  \
+                                       bson_iter_t *b_iter);
+
+ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
+#undef variable_template_instantiation
 
 // #define attribute_template_instantiation(T)                                    \
 //     template void ParseAttributeToBSON(Attribute<T> &attribute,                \

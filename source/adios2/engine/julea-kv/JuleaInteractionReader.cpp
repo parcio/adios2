@@ -189,6 +189,28 @@ void GetVariableBSONFromJulea(const std::string nameSpace,
     }
 }
 
+template <class T>
+void GetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata,
+                                  const std::string nameSpace)
+{
+	auto bsonNames = bson_new();
+    // auto bsonMetadata = bson_new();
+    // auto nameSpace = m_JuleaInfo->nameSpace;
+    unsigned int varCount = 0;
+    int type;
+    Dims shape;
+    Dims start;
+    Dims count;
+    bool constantDims;
+
+    // GetVariableMetadataFromJulea();
+    // GetVariableDataFromJulea();
+
+    // GetNamesBSONFromJulea(nameSpace, bsonNames, &varCount);
+
+    // GetVariableBSONFromJulea(nameSpace,variable.m_Name, bsonMetadata);
+}
+
 /** ------------------------- DATA ------------------------------------------**/
 
 #define declare_template_instantiation(T)                                      \

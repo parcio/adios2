@@ -22,15 +22,20 @@ namespace core
 namespace engine
 {
 
-void ExtractVariableFromBSON(const std::string nameSpace,
+void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
                              const std::string varName, bson_t *bsonMetadata,
                              int type, Dims shape, Dims start, Dims count,
                              bool constantDims);
 
-void ParseVariableFromBSON();
+template <class T>
+void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace);
 void ParseAttributeFromBSON();
 
-void ParseVarTypeFromBSON();
+// void ParseVarTypeFromBSON();
+template <class T>
+void ParseVarTypeFromBSON(Variable<T> &variable,bson_iter_t *b_iter);
+
+
 void ParseAttrTypeFromBSON();
 
 template <class T>
@@ -59,12 +64,11 @@ void SetMinMax(Variable<T> &variable, const T *data);
 //     ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(attribute_template_instantiation)
 // #undef attribute_template_instantiation
 
-// #define variable_template_instantiation(T)                                     \
-//     SetMinMax(Variable<T> &variable, const T *data);                           \
-//     extern template void ParseVariableToBSON(Variable<T> &variable,            \
-//                                              bson_t *bsonMetadata);            \
-//     ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
-// #undef variable_template_instantiation
+#define variable_template_instantiation(T)                                     \
+   extern template void ParseVariableFromBSON(Variable<T> &variable,            \
+                                             bson_t *bsonMetadata,std::string nameSpace);            \
+    ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
+#undef variable_template_instantiation
 
 } // end namespace engine
 } // end namespace core

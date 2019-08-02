@@ -23,17 +23,15 @@ namespace core
 namespace engine
 {
 
-/* Variable Functions */
+/* TODO: private functions when in interop namespace */
 void GetNamesBSONFromJulea(const std::string nameSpace, bson_t *bsonNames,
                            unsigned int *varCount);
 
 void GetVariableBSONFromJulea(const std::string nameSpace,
                               const std::string varName, bson_t *bsonMetadata);
 
-// void ExtractVariableFromBSON(const std::string nameSpace, const std::string
-// varName, bson_t *bsonMetadata, int type, Dims shape, Dims start, Dims
-// count,bool constantDims);
 
+/* Variable Functions */
 template <class T>
 void GetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata,
                                   const std::string nameSpace);

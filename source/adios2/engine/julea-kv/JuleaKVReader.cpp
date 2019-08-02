@@ -526,7 +526,7 @@ void JuleaKVReader::InitVariables()
         bool constantDims;
         int type;
 
-        ExtractVariableFromBSON(nameSpace, varName, bsonMetadata, type, shape,
+        GetVariableMetadataForInitFromBSON(nameSpace, varName, bsonMetadata, type, shape,
                                 start, count, constantDims);
 
         switch (type)
