@@ -222,7 +222,7 @@ void JuleaKVWriter::Init()
     j_init();
     m_JuleaInfo = g_slice_new(JuleaInfo);
     m_JuleaInfo->semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    m_JuleaInfo->name_space = g_strdup(m_Name.c_str());
+    m_JuleaInfo->nameSpace = g_strdup(m_Name.c_str());
 
     // j_adios_init(m_JuleaInfo);
 
@@ -342,7 +342,7 @@ void JuleaKVWriter::DoClose(const int transportIndex)
     }
     // m_JuleaInfo->semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
 
-    g_free(m_JuleaInfo->name_space);
+    // g_free(m_JuleaInfo->nameSpace);
     g_slice_free(JuleaInfo, m_JuleaInfo);
 }
 
@@ -486,18 +486,18 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
             ParseAttributeToBSON(&attribute, bsonMetadata);                    \
             ParseAttrTypeToBSON(&attribute, bsonMetadata);                     \
             PutAttributeMetadataToJulea(&attribute, bsonMetadata,              \
-                                        m_JuleaInfo->name_space);              \
+                                        m_JuleaInfo->nameSpace);              \
             PutAttributeDataToJulea(&attribute, &attribute.m_DataSingleValue,  \
-                                    m_JuleaInfo->name_space);                  \
+                                    m_JuleaInfo->nameSpace);                  \
         }                                                                      \
         else                                                                   \
         {                                                                      \
             ParseAttributeToBSON(&attribute, bsonMetadata);                    \
             ParseAttrTypeToBSON(&attribute, bsonMetadata);                     \
             PutAttributeMetadataToJulea(&attribute, bsonMetadata,              \
-                                        m_JuleaInfo->name_space);              \
+                                        m_JuleaInfo->nameSpace);              \
             PutAttributeDataToJulea(&attribute, &attribute.m_DataArray,        \
-                                    m_JuleaInfo->name_space);                  \
+                                    m_JuleaInfo->nameSpace);                  \
         }                                                                      \
     }                                                                          \
     ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_type)

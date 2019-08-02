@@ -23,53 +23,55 @@ namespace core
 namespace engine
 {
 
+/* Variable Functions */
 template <class T>
 void PutVariableDataToJulea(Variable<T> &variable, const T *data,
-                            const char *name_space);
+                            const std::string nameSpace);
 
 template <class T>
 void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetadata,
-                                const char *name_space);
+                                const std::string nameSpace);
 
 template <class T>
 void PutVariableDataToJuleaSmall(Variable<T> &variable, const T *data,
-                            const char *name_space);
+                            const std::string nameSpace);
 
 template <class T>
 void PutVariableMetadataToJuleaSmall(Variable<T> &variable, bson_t *bsonMetadata,
-                                const char *name_space);
+                                const std::string nameSpace);
 
+/* Attribute Functions */
 template <class T>
 void PutAttributeDataToJulea(Attribute<T> &attribute, const T *data,
-                             const char *nameSpace);
+                             const std::string nameSpace);
 template <class T>
 void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetadata,
-                                 const char *nameSpace);
+                                 const std::string nameSpace);
 
 template <class T>
 void PutAttributeDataToJuleaSmall(Attribute<T> &attribute, const T *data,
-                             const char *nameSpace);
+                             const std::string nameSpace);
 template <class T>
 void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute, bson_t *bsonMetadata,
-                                 const char *nameSpace);
+                                 const std::string nameSpace);
 
 #define declare_template_instantiation(T)                                      \
     extern template void PutVariableDataToJulea(                               \
-        Variable<T> &variable, const T *data, const char *name_space);         \
+        Variable<T> &variable, const T *data, const std::string nameSpace);         \
     extern template void PutVariableDataToJuleaSmall(                          \
-        Variable<T> &variable, const T *data, const char *name_space);         \
+        Variable<T> &variable, const T *data, const std::string nameSpace);         \
     extern template void PutVariableMetadataToJulea(                           \
-        Variable<T> &variable, bson_t *bsonMetadata, const char *name_space);  \
+        Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace);  \
     extern template void PutVariableMetadataToJuleaSmall(                      \
-        Variable<T> &variable, bson_t *bsonMetadata, const char *name_space);  \
+        Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace);  \
     extern template void PutAttributeDataToJulea(                              \
-        Attribute<T> &attribute, const T *data, const char *nameSpace);        \
+        Attribute<T> &attribute, const T *data, const std::string nameSpace);        \
     extern template void PutAttributeDataToJuleaSmall(                         \
-        Attribute<T> &attribute, const T *data, const char *nameSpace);        \
+        Attribute<T> &attribute, const T *data, const std::string nameSpace);        \
     extern template void PutAttributeMetadataToJulea(                          \
-        Attribute<T> &attribute, bson_t *bsonMetadata, const char *nameSpace); \
+        Attribute<T> &attribute, bson_t *bsonMetadata, const std::string nameSpace); \
     extern template void PutAttributeMetadataToJuleaSmall(                     \
-        Attribute<T> &attribute, bson_t *bsonMetadata, const char *nameSpace); \
+        Attribute<T> &attribute, bson_t *bsonMetadata, const std::string nameSpace); \
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
 } // end namespace engine

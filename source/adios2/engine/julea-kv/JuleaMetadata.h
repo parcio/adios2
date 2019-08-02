@@ -140,7 +140,8 @@ typedef struct AttributeMetadata AttributeMetadata;
 struct JuleaInfo
 {
     JSemantics *semantics;
-    char *name_space;
+    // char *name_space;
+    std::string nameSpace;
 };
 typedef struct JuleaInfo JuleaInfo;
 

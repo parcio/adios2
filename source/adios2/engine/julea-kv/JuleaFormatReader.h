@@ -22,14 +22,22 @@ namespace core
 namespace engine
 {
 
+
+void ParseVariableFromBSON();
+void ParseAttributeFromBSON();
+
+void ParseVarTypeFromBSON();
+void ParseAttrTypeFromBSON();
+
+template <class T>
+void SetMinMax(Variable<T> &variable, const T *data);
+
 // template <class T>
 // void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);
 
 // template <class T>
 // void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);
 
-// template <class T>
-// void SetMinMax(Variable<T> &variable, const T *data);
 
 // template <class T>
 // void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata);

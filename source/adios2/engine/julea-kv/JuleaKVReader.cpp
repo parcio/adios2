@@ -12,6 +12,8 @@
 #include "JuleaKVReader.tcc"
 
 #include "JuleaClientLogic-legacy.h"
+#include "JuleaInteractionReader.h"
+#include "JuleaFormatReader.h"
 
 #include "adios2/helper/adiosFunctions.h" // CSVToVector
 
@@ -265,7 +267,7 @@ void JuleaKVReader::Init()
     j_init();
     m_JuleaInfo = g_slice_new(JuleaInfo);
     m_JuleaInfo->semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    m_JuleaInfo->name_space = g_strdup(m_Name.c_str());
+    m_JuleaInfo->nameSpace = g_strdup(m_Name.c_str());
     // j_adios_init(m_JuleaInfo);
 
     InitParameters();
@@ -295,6 +297,191 @@ void JuleaKVReader::Init()
     // InitBuffers(); DESIGN needed?
 }
 
+
+// /**
+//  * Initializes variables so that InquireVariable can find the variable in the IO
+//  * map. Since the m_Variables is private the only solution is to define each
+//  * variable with the according parameters.
+//  */
+// // template <class T>
+// void JuleaKVReader::InitVariables()
+// {
+//     gchar **names;
+//     int *types;
+//     unsigned int count_names = 0;
+//     int size = 0;
+
+//     // TODO: fix memory leak
+//     GetAllVarNamesFromKV(m_JuleaInfo->nameSpace, &names, &types, &count_names,
+//                          m_JuleaInfo->semantics);
+
+//     // std::cout << "++ Julea Reader DEBUG PRINT: count_names " << count_names
+//     // << std::endl;
+
+//     for (unsigned int i = 0; i < count_names; i++)
+//     {
+//         Dims shape;
+//         Dims start;
+//         Dims count;
+
+//         Metadata *metadata = g_slice_new(Metadata);
+//         metadata->shape = g_slice_new(unsigned long);
+//         metadata->start = g_slice_new(unsigned long);
+//         metadata->count = g_slice_new(unsigned long);
+
+//         // TODO: test init for checking whether retrieving from kv works
+//         // metadata->shape_size = 42;
+//         // metadata->start_size = 42;
+//         // metadata->count_size = 42;
+//         // metadata->steps_start = 42;
+//         // metadata->steps_count = 42;
+
+//         std::cout << "JuleaReader names: " << names[i] << std::endl;
+//         GetVarMetadataFromKV(m_JuleaInfo->nameSpace, names[i], metadata,
+//                              m_JuleaInfo->semantics);
+
+//         // std::cout << "JuleaReader metadata address: " << (void*) metadata <<
+//         // std::endl; std::cout << "++ Julea Reader DEBUG PRINT: shape_size: "
+//         // << metadata->shape_size << std::endl; std::cout << "++ Julea Reader
+//         // DEBUG PRINT: start_size: " << metadata->start_size << std::endl;
+//         // std::cout << "++ Julea Reader DEBUG PRINT: count_size: " <<
+//         // metadata->count_size << std::endl;
+
+//         // why add shape + shape_size?
+//         // without adding:
+//         // invalid conversion from ‘long unsigned int*’ to ‘std::vector<long
+//         // unsigned int>::size_type {aka long unsigned int}’
+//         Dims shape2(metadata->shape, metadata->shape + metadata->shape_size);
+//         Dims start2(metadata->start,
+//                     metadata->start); // FIXME: why is start size not correct?
+//         Dims count2(metadata->count, metadata->count + metadata->count_size);
+
+//         // Dims shape2 (metadata->shape, metadata->shape_size); //what would
+//         // this do?
+
+//         bool constantdims;
+
+//         // metadata->start_size = 0; //FIXME: why is start_size =
+//         // 13744632839234567870
+//         if (metadata->shape_size > 0)
+//         {
+//             // shape.front() = *metadata->shape;
+//             shape = shape2;
+//             // std::cout << "++ Julea Reader DEBUG PRINT: shape" << std::endl;
+//         }
+//         if (metadata->start_size > 0)
+//         {
+//             start = start2;
+//             // start.front() = *metadata->start;
+//             // std::cout << "++ Julea Reader DEBUG PRINT: start" << std::endl;
+//         }
+//         if (metadata->count_size > 0)
+//         {
+//             count = count2;
+//             // count.front() = *metadata->count;
+//             // std::cout << "++ Julea Reader DEBUG PRINT: count" << std::endl;
+//         }
+//         constantdims = metadata->is_constant_dims;
+//         // constantdims = true;
+
+//         /* ----------- alternative ----*/
+//         // needs parsing from types[] to DataTypes in BP3Base.h
+
+//         //         core::Variable<T> *variable = nullptr;
+
+//         //         switch(DataType)
+//         //         {
+//         // #define make_case(T) \
+// //     case (TypeTraits<T>::type_enum): \
+// //     { \
+// //         variable = m_IO.DefineVariable<T>( \
+// //            names[i], shape, start, count, constantdims); \
+// //         break; \
+// //     }
+//         //         ADIOS2_FOREACH_STDTYPE_1ARG(make_case)
+//         // #undef make_case
+//         //         } // end switch
+
+//         switch (types[i])
+//         {
+//         // case COMPOUND:
+//         //     //TODO
+//         //     break;
+//         // case UNKNOWN:
+//         //     //TODO
+//         //     break;
+//         case STRING:
+//             m_IO.DefineVariable<std::string>(names[i], shape, start, count,
+//                                              constantdims);
+//             break;
+//         case INT8:
+//             m_IO.DefineVariable<int8_t>(names[i], shape, start, count,
+//                                         constantdims);
+//             break;
+//         case UINT8:
+//             m_IO.DefineVariable<uint8_t>(names[i], shape, start, count,
+//                                          constantdims);
+//             break;
+//         case INT16:
+//             m_IO.DefineVariable<int16_t>(names[i], shape, start, count,
+//                                          constantdims);
+//             break;
+//         case UINT16:
+//             m_IO.DefineVariable<uint16_t>(names[i], shape, start, count,
+//                                           constantdims);
+//             break;
+//         case INT32:
+//             m_IO.DefineVariable<int32_t>(names[i], shape, start, count,
+//                                          constantdims);
+//             std::cout << "++ Julea Reader m_IO.DefineVariable() for: "
+//                       << names[i] << std::endl;
+//             break;
+//         case UINT32:
+//             m_IO.DefineVariable<uint32_t>(names[i], shape, start, count,
+//                                           constantdims);
+//             break;
+//         case INT64:
+//             m_IO.DefineVariable<int64_t>(names[i], shape, start, count,
+//                                          constantdims);
+//             break;
+//         case UINT64:
+//             m_IO.DefineVariable<uint64_t>(names[i], shape, start, count,
+//                                           constantdims);
+//             break;
+//         case FLOAT:
+//             m_IO.DefineVariable<float>(names[i], shape, start, count,
+//                                        constantdims);
+//             std::cout << "++ Julea Reader m_IO.DefineVariable() for: "
+//                       << names[i] << std::endl;
+//             break;
+//         case DOUBLE:
+//             m_IO.DefineVariable<double>(names[i], shape, start, count,
+//                                         constantdims);
+//             break;
+//         case LONG_DOUBLE:
+//             m_IO.DefineVariable<long double>(names[i], shape, start, count,
+//                                              constantdims);
+//             break;
+//             // case FLOAT_COMPLEX:
+//             //     //TODO
+//             //     break;
+//             // case DOUBLE_COMPLEX:
+//             //     //TODO
+//             //     break;
+//         }
+//         g_slice_free(Metadata, metadata);
+//         g_slice_free(unsigned long, metadata->shape);
+//         g_slice_free(unsigned long, metadata->shape);
+//         g_slice_free(unsigned long, metadata->shape);
+//         g_slice_free(char, *names); // FIXME
+//     }
+//     if (m_Verbosity == 5)
+//     {
+//         std::cout << "Julea Reader " << m_ReaderRank << " InitVariables()\n";
+//     }
+// }
+
+
 /**
  * Initializes variables so that InquireVariable can find the variable in the IO
  * map. Since the m_Variables is private the only solution is to define each
@@ -303,179 +490,190 @@ void JuleaKVReader::Init()
 // template <class T>
 void JuleaKVReader::InitVariables()
 {
-    gchar **names;
-    int *types;
-    unsigned int count_names = 0;
-    int size = 0;
+    // gchar **names;
+    // int *types;
+    unsigned int varCount = 0;
+    // int size = 0;
+    bson_t *bsonNames;
 
-    // TODO: fix memory leak
-    GetAllVarNamesFromKV(m_JuleaInfo->name_space, &names, &types, &count_names,
-                         m_JuleaInfo->semantics);
+    GetAllVariableNamesFromJulea(m_JuleaInfo->nameSpace, bsonNames, &varCount);
 
-    // std::cout << "++ Julea Reader DEBUG PRINT: count_names " << count_names
-    // << std::endl;
+    // // TODO: fix memory leak
+    // GetAllVarNamesFromKV(m_JuleaInfo->nameSpace, &names, &types, &count_names,
+    //                      m_JuleaInfo->semantics);
 
-    for (unsigned int i = 0; i < count_names; i++)
+
+    std::cout << "++ Julea Reader DEBUG PRINT: varCount " << varCount
+    << std::endl;
+
+
+    for (unsigned int i = 0; i < varCount; i++)
     {
-        Dims shape;
-        Dims start;
-        Dims count;
+        ExtractVarNameFromNamesBSON(m_JuleaInfo->nameSpace, bsonNames, &varCount);
+//         GetVarMetadataFromJulea();
+//         ParseVariableFromBSON();
+//         ParseVarTypeFromBSON();
 
-        Metadata *metadata = g_slice_new(Metadata);
-        metadata->shape = g_slice_new(unsigned long);
-        metadata->start = g_slice_new(unsigned long);
-        metadata->count = g_slice_new(unsigned long);
+//         DefineVariables();
+//         Dims shape;
+//         Dims start;
+//         Dims count;
 
-        // TODO: test init for checking whether retrieving from kv works
-        // metadata->shape_size = 42;
-        // metadata->start_size = 42;
-        // metadata->count_size = 42;
-        // metadata->steps_start = 42;
-        // metadata->steps_count = 42;
+//         Metadata *metadata = g_slice_new(Metadata);
+//         metadata->shape = g_slice_new(unsigned long);
+//         metadata->start = g_slice_new(unsigned long);
+//         metadata->count = g_slice_new(unsigned long);
 
-        std::cout << "JuleaReader names: " << names[i] << std::endl;
-        GetVarMetadataFromKV(m_JuleaInfo->name_space, names[i], metadata,
-                             m_JuleaInfo->semantics);
+//         // TODO: test init for checking whether retrieving from kv works
+//         // metadata->shape_size = 42;
+//         // metadata->start_size = 42;
+//         // metadata->count_size = 42;
+//         // metadata->steps_start = 42;
+//         // metadata->steps_count = 42;
 
-        // std::cout << "JuleaReader metadata address: " << (void*) metadata <<
-        // std::endl; std::cout << "++ Julea Reader DEBUG PRINT: shape_size: "
-        // << metadata->shape_size << std::endl; std::cout << "++ Julea Reader
-        // DEBUG PRINT: start_size: " << metadata->start_size << std::endl;
-        // std::cout << "++ Julea Reader DEBUG PRINT: count_size: " <<
-        // metadata->count_size << std::endl;
+//         std::cout << "JuleaReader names: " << names[i] << std::endl;
+//         GetVarMetadataFromKV(m_JuleaInfo->nameSpace, names[i], metadata,
+//                              m_JuleaInfo->semantics);
 
-        // why add shape + shape_size?
-        // without adding:
-        // invalid conversion from ‘long unsigned int*’ to ‘std::vector<long
-        // unsigned int>::size_type {aka long unsigned int}’
-        Dims shape2(metadata->shape, metadata->shape + metadata->shape_size);
-        Dims start2(metadata->start,
-                    metadata->start); // FIXME: why is start size not correct?
-        Dims count2(metadata->count, metadata->count + metadata->count_size);
+//         // std::cout << "JuleaReader metadata address: " << (void*) metadata <<
+//         // std::endl; std::cout << "++ Julea Reader DEBUG PRINT: shape_size: "
+//         // << metadata->shape_size << std::endl; std::cout << "++ Julea Reader
+//         // DEBUG PRINT: start_size: " << metadata->start_size << std::endl;
+//         // std::cout << "++ Julea Reader DEBUG PRINT: count_size: " <<
+//         // metadata->count_size << std::endl;
 
-        // Dims shape2 (metadata->shape, metadata->shape_size); //what would
-        // this do?
+//         // why add shape + shape_size?
+//         // without adding:
+//         // invalid conversion from ‘long unsigned int*’ to ‘std::vector<long
+//         // unsigned int>::size_type {aka long unsigned int}’
+//         Dims shape2(metadata->shape, metadata->shape + metadata->shape_size);
+//         Dims start2(metadata->start,
+//                     metadata->start); // FIXME: why is start size not correct?
+//         Dims count2(metadata->count, metadata->count + metadata->count_size);
 
-        bool constantdims;
+//         // Dims shape2 (metadata->shape, metadata->shape_size); //what would
+//         // this do?
 
-        // metadata->start_size = 0; //FIXME: why is start_size =
-        // 13744632839234567870
-        if (metadata->shape_size > 0)
-        {
-            // shape.front() = *metadata->shape;
-            shape = shape2;
-            // std::cout << "++ Julea Reader DEBUG PRINT: shape" << std::endl;
-        }
-        if (metadata->start_size > 0)
-        {
-            start = start2;
-            // start.front() = *metadata->start;
-            // std::cout << "++ Julea Reader DEBUG PRINT: start" << std::endl;
-        }
-        if (metadata->count_size > 0)
-        {
-            count = count2;
-            // count.front() = *metadata->count;
-            // std::cout << "++ Julea Reader DEBUG PRINT: count" << std::endl;
-        }
-        constantdims = metadata->is_constant_dims;
-        // constantdims = true;
+//         bool constantdims;
 
-        /* ----------- alternative ----*/
-        // needs parsing from types[] to DataTypes in BP3Base.h
+//         // metadata->start_size = 0; //FIXME: why is start_size =
+//         // 13744632839234567870
+//         if (metadata->shape_size > 0)
+//         {
+//             // shape.front() = *metadata->shape;
+//             shape = shape2;
+//             // std::cout << "++ Julea Reader DEBUG PRINT: shape" << std::endl;
+//         }
+//         if (metadata->start_size > 0)
+//         {
+//             start = start2;
+//             // start.front() = *metadata->start;
+//             // std::cout << "++ Julea Reader DEBUG PRINT: start" << std::endl;
+//         }
+//         if (metadata->count_size > 0)
+//         {
+//             count = count2;
+//             // count.front() = *metadata->count;
+//             // std::cout << "++ Julea Reader DEBUG PRINT: count" << std::endl;
+//         }
+//         constantdims = metadata->is_constant_dims;
+//         // constantdims = true;
 
-        //         core::Variable<T> *variable = nullptr;
+//         /* ----------- alternative ----*/
+//         // needs parsing from types[] to DataTypes in BP3Base.h
 
-        //         switch(DataType)
-        //         {
-        // #define make_case(T) \
-//     case (TypeTraits<T>::type_enum): \
-//     { \
-//         variable = m_IO.DefineVariable<T>( \
-//            names[i], shape, start, count, constantdims); \
-//         break; \
+//         //         core::Variable<T> *variable = nullptr;
+
+//         //         switch(DataType)
+//         //         {
+//         // #define make_case(T) \
+// //     case (TypeTraits<T>::type_enum): \
+// //     { \
+// //         variable = m_IO.DefineVariable<T>( \
+// //            names[i], shape, start, count, constantdims); \
+// //         break; \
+// //     }
+//         //         ADIOS2_FOREACH_STDTYPE_1ARG(make_case)
+//         // #undef make_case
+//         //         } // end switch
+
+//         switch (types[i])
+//         {
+//         // case COMPOUND:
+//         //     //TODO
+//         //     break;
+//         // case UNKNOWN:
+//         //     //TODO
+//         //     break;
+//         case STRING:
+//             m_IO.DefineVariable<std::string>(names[i], shape, start, count,
+//                                              constantdims);
+//             break;
+//         case INT8:
+//             m_IO.DefineVariable<int8_t>(names[i], shape, start, count,
+//                                         constantdims);
+//             break;
+//         case UINT8:
+//             m_IO.DefineVariable<uint8_t>(names[i], shape, start, count,
+//                                          constantdims);
+//             break;
+//         case INT16:
+//             m_IO.DefineVariable<int16_t>(names[i], shape, start, count,
+//                                          constantdims);
+//             break;
+//         case UINT16:
+//             m_IO.DefineVariable<uint16_t>(names[i], shape, start, count,
+//                                           constantdims);
+//             break;
+//         case INT32:
+//             m_IO.DefineVariable<int32_t>(names[i], shape, start, count,
+//                                          constantdims);
+//             std::cout << "++ Julea Reader m_IO.DefineVariable() for: "
+//                       << names[i] << std::endl;
+//             break;
+//         case UINT32:
+//             m_IO.DefineVariable<uint32_t>(names[i], shape, start, count,
+//                                           constantdims);
+//             break;
+//         case INT64:
+//             m_IO.DefineVariable<int64_t>(names[i], shape, start, count,
+//                                          constantdims);
+//             break;
+//         case UINT64:
+//             m_IO.DefineVariable<uint64_t>(names[i], shape, start, count,
+//                                           constantdims);
+//             break;
+//         case FLOAT:
+//             m_IO.DefineVariable<float>(names[i], shape, start, count,
+//                                        constantdims);
+//             std::cout << "++ Julea Reader m_IO.DefineVariable() for: "
+//                       << names[i] << std::endl;
+//             break;
+//         case DOUBLE:
+//             m_IO.DefineVariable<double>(names[i], shape, start, count,
+//                                         constantdims);
+//             break;
+//         case LONG_DOUBLE:
+//             m_IO.DefineVariable<long double>(names[i], shape, start, count,
+//                                              constantdims);
+//             break;
+//             // case FLOAT_COMPLEX:
+//             //     //TODO
+//             //     break;
+//             // case DOUBLE_COMPLEX:
+//             //     //TODO
+//             //     break;
+//         }
+//         g_slice_free(Metadata, metadata);
+//         g_slice_free(unsigned long, metadata->shape);
+//         g_slice_free(unsigned long, metadata->shape);
+//         g_slice_free(unsigned long, metadata->shape);
+//         g_slice_free(char, *names); // FIXME
+    }
+//     if (m_Verbosity == 5)
+//     {
+//         std::cout << "Julea Reader " << m_ReaderRank << " InitVariables()\n";
 //     }
-        //         ADIOS2_FOREACH_STDTYPE_1ARG(make_case)
-        // #undef make_case
-        //         } // end switch
-
-        switch (types[i])
-        {
-        // case COMPOUND:
-        //     //TODO
-        //     break;
-        // case UNKNOWN:
-        //     //TODO
-        //     break;
-        case STRING:
-            m_IO.DefineVariable<std::string>(names[i], shape, start, count,
-                                             constantdims);
-            break;
-        case INT8:
-            m_IO.DefineVariable<int8_t>(names[i], shape, start, count,
-                                        constantdims);
-            break;
-        case UINT8:
-            m_IO.DefineVariable<uint8_t>(names[i], shape, start, count,
-                                         constantdims);
-            break;
-        case INT16:
-            m_IO.DefineVariable<int16_t>(names[i], shape, start, count,
-                                         constantdims);
-            break;
-        case UINT16:
-            m_IO.DefineVariable<uint16_t>(names[i], shape, start, count,
-                                          constantdims);
-            break;
-        case INT32:
-            m_IO.DefineVariable<int32_t>(names[i], shape, start, count,
-                                         constantdims);
-            std::cout << "++ Julea Reader m_IO.DefineVariable() for: "
-                      << names[i] << std::endl;
-            break;
-        case UINT32:
-            m_IO.DefineVariable<uint32_t>(names[i], shape, start, count,
-                                          constantdims);
-            break;
-        case INT64:
-            m_IO.DefineVariable<int64_t>(names[i], shape, start, count,
-                                         constantdims);
-            break;
-        case UINT64:
-            m_IO.DefineVariable<uint64_t>(names[i], shape, start, count,
-                                          constantdims);
-            break;
-        case FLOAT:
-            m_IO.DefineVariable<float>(names[i], shape, start, count,
-                                       constantdims);
-            std::cout << "++ Julea Reader m_IO.DefineVariable() for: "
-                      << names[i] << std::endl;
-            break;
-        case DOUBLE:
-            m_IO.DefineVariable<double>(names[i], shape, start, count,
-                                        constantdims);
-            break;
-        case LONG_DOUBLE:
-            m_IO.DefineVariable<long double>(names[i], shape, start, count,
-                                             constantdims);
-            break;
-            // case FLOAT_COMPLEX:
-            //     //TODO
-            //     break;
-            // case DOUBLE_COMPLEX:
-            //     //TODO
-            //     break;
-        }
-        g_slice_free(Metadata, metadata);
-        g_slice_free(unsigned long, metadata->shape);
-        g_slice_free(unsigned long, metadata->shape);
-        g_slice_free(unsigned long, metadata->shape);
-        g_slice_free(char, *names); // FIXME
-    }
-    if (m_Verbosity == 5)
-    {
-        std::cout << "Julea Reader " << m_ReaderRank << " InitVariables()\n";
-    }
 }
 
 void JuleaKVReader::InitParameters()
@@ -545,7 +743,7 @@ void JuleaKVReader::DoClose(const int transportIndex)
         std::cout << "Julea Reader " << m_ReaderRank << " Close(" << m_Name
                   << ")\n";
     }
-    g_free(m_JuleaInfo->name_space);
+    // g_free(m_JuleaInfo->nameSpace);
     g_slice_free(JuleaInfo, m_JuleaInfo);
 }
 

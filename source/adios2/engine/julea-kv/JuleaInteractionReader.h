@@ -23,30 +23,45 @@ namespace core
 namespace engine
 {
 
-template <class T>
-void GetVariableDataFromJulea(Variable<T> &variable, const T *data,
-                            const char *name_space);
+/* Variable Functions */
+void GetAllVariableNamesFromJulea(const std::string nameSpace, bson_t *bsonNames, unsigned int *varCount);
+
+void ExtractVarNameFromNamesBSON(const std::string nameSpace, bson_t *bsonNames, unsigned int *varCount);
 
 template <class T>
 void GetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata,
-                                const char *name_space);
+                                const std::string nameSpace);
+
+template <class T>
+void GetVariableDataFromJulea(Variable<T> &variable, const T *data,
+                            const std::string nameSpace);
+
+/* Attribute Functions */
+template <class T>
+void GetAllAttributeNamesFromJulea(Variable<T> &variable, bson_t *bsonMetadata,
+                                 const std::string nameSpace);
+
+template <class T>
+void GetAttributeMetadataFromJulea(Attribute<T> &attribute, bson_t *bsonMetadata,
+                                 const std::string nameSpace);
 
 template <class T>
 void GetAttributeDataFromJulea(Attribute<T> &attribute, const T *data,
-                             const char *nameSpace);
-template <class T>
-void GetAttributeMetadataFromJulea(Attribute<T> &attribute, bson_t *bsonMetadata,
-                                 const char *nameSpace);
+                             const std::string nameSpace);
+
+    // extern template void GetAllVariableNamesFromJulea(const std::string nameSpace, unsigned int *varCount, bson_t *bsonNames);         \
 
 #define declare_template_instantiation(T)                                      \
     extern template void GetVariableDataFromJulea(                               \
-        Variable<T> &variable, const T *data, const char *name_space);         \
+        Variable<T> &variable, const T *data, const std::string nameSpace);         \
     extern template void GetVariableMetadataFromJulea(                           \
-        Variable<T> &variable, bson_t *bsonMetadata, const char *name_space);  \
+        Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace);  \
+    extern template void GetAllAttributeNamesFromJulea(                              \
+        Attribute<T> &attribute, const T *data, const std::string nameSpace);        \
     extern template void GetAttributeDataFromJulea(                              \
-        Attribute<T> &attribute, const T *data, const char *nameSpace);        \
+        Attribute<T> &attribute, const T *data, const std::string nameSpace);        \
     extern template void GetAttributeMetadataFromJulea(                          \
-        Attribute<T> &attribute, bson_t *bsonMetadata, const char *nameSpace); \
+        Attribute<T> &attribute, bson_t *bsonMetadata, const std::string nameSpace); \
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
 } // end namespace engine

@@ -64,46 +64,120 @@ void JuleaKVReader::GetSyncCommon(Variable<std::string> &variable,
     j_batch_unref(batch);
 }
 
+// // inline needed? is in skeleton-engine
+// template <class T>
+// void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
+// {
+//     gchar **names;
+//     int *types;
+//     unsigned int count_names = 0;
+//     int size = 0;
+
+//     g_autoptr(JBatch) batch = NULL;
+//     g_autoptr(JSemantics) semantics;
+
+//     gboolean use_batch = TRUE;
+//     semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+//     batch = j_batch_new(semantics);
+
+//     Metadata *metadata = g_slice_new(Metadata);
+//     metadata->shape = g_slice_new(unsigned long);
+//     metadata->start = g_slice_new(unsigned long);
+//     metadata->count = g_slice_new(unsigned long);
+//     metadata->name = g_strdup(variable.m_Name.c_str());
+//     gchar *name_space = strdup(m_Name.c_str());
+
+//     std::cout << "Julea Reader " << m_ReaderRank
+//               << " Reached Get Sync Common (T, T)" << std::endl;
+//     std::cout << "Julea Reader " << m_ReaderRank << " Namespace of variable "
+//               << m_Name << std::endl;
+
+//     // for(int i = 0; i < 10; i++)
+//     // {
+//     //     std::cout << "Data before: " <<  float_data[i] << std::endl;
+//     // }
+//     /* all the additional metadata which is not used in InitVariables has to be
+//      * read again */
+
+//     GetVarMetadataFromKV(m_JuleaInfo->name_space, metadata->name, metadata,
+//                          m_JuleaInfo->semantics); // FIXME
+
+//     GetVarDataFromJulea(name_space, metadata->name, metadata->data_size,
+//                         (void *)(data), batch);
+//     // std::cout << "++ Julea Reader DEBUG PRINT data_size: " <<
+//     // metadata->data_size << std::endl;    //FIXME
+
+//     // for(int i = 0; i < 10; i++)
+//     // {
+//     //     std::cout << "Data: " << data[i] << std::endl;
+//     // }
+
+//     // FIXME: additional metadata infos as "IsReadAsJoined" need to be stored in
+//     // ADIOS
+
+//     // FIXME: check whether everything is set by InitVariables and this get
+//     // function or if there are still metadata struct members ignored
+
+//     variable.m_Data = data;
+//     if (m_Verbosity == 5)
+//     {
+//         std::cout << "Julea Reader " << m_ReaderRank << "     GetSync("
+//                   << variable.m_Name << ")\n";
+//     }
+//     g_free(name_space);
+//     g_free(metadata->name);
+//     g_slice_free(unsigned long, metadata->shape);
+//     g_slice_free(unsigned long, metadata->start);
+//     g_slice_free(unsigned long, metadata->count);
+//     g_slice_free(Metadata, metadata);
+//     j_batch_unref(batch);
+// }
+
 // inline needed? is in skeleton-engine
 template <class T>
 void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
 {
-    gchar **names;
-    int *types;
-    unsigned int count_names = 0;
-    int size = 0;
 
-    g_autoptr(JBatch) batch = NULL;
-    g_autoptr(JSemantics) semantics;
-
-    gboolean use_batch = TRUE;
-    semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    batch = j_batch_new(semantics);
-
-    Metadata *metadata = g_slice_new(Metadata);
-    metadata->shape = g_slice_new(unsigned long);
-    metadata->start = g_slice_new(unsigned long);
-    metadata->count = g_slice_new(unsigned long);
-    metadata->name = g_strdup(variable.m_Name.c_str());
-    gchar *name_space = strdup(m_Name.c_str());
-
-    std::cout << "Julea Reader " << m_ReaderRank
-              << " Reached Get Sync Common (T, T)" << std::endl;
-    std::cout << "Julea Reader " << m_ReaderRank << " Namespace of variable "
-              << m_Name << std::endl;
-
-    // for(int i = 0; i < 10; i++)
-    // {
-    //     std::cout << "Data before: " <<  float_data[i] << std::endl;
-    // }
     /* all the additional metadata which is not used in InitVariables has to be
      * read again */
 
-    GetVarMetadataFromKV(m_JuleaInfo->name_space, metadata->name, metadata,
-                         m_JuleaInfo->semantics); // FIXME
+    // GetVariableMetadataFromJulea();
+    // GetVariableDataFromJulea();
 
-    GetVarDataFromJulea(name_space, metadata->name, metadata->data_size,
-                        (void *)(data), batch);
+    // ParseVariableFromBSON();
+    // ParseVarTypeFromBSON();
+
+/* ---------------------------------------------------------------------------- */
+    // gchar **names;
+    // int *types;
+    // unsigned int count_names = 0;
+    // int size = 0;
+
+    // g_autoptr(JBatch) batch = NULL;
+    // g_autoptr(JSemantics) semantics;
+
+    // gboolean use_batch = TRUE;
+    // semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    // batch = j_batch_new(semantics);
+
+    // Metadata *metadata = g_slice_new(Metadata);
+    // metadata->shape = g_slice_new(unsigned long);
+    // metadata->start = g_slice_new(unsigned long);
+    // metadata->count = g_slice_new(unsigned long);
+    // metadata->name = g_strdup(variable.m_Name.c_str());
+    // gchar *name_space = strdup(m_Name.c_str());
+
+    // std::cout << "Julea Reader " << m_ReaderRank
+    //           << " Reached Get Sync Common (T, T)" << std::endl;
+    // std::cout << "Julea Reader " << m_ReaderRank << " Namespace of variable "
+    //           << m_Name << std::endl;
+
+
+    // GetVarMetadataFromKV(m_JuleaInfo->name_space, metadata->name, metadata,
+    //                      m_JuleaInfo->semantics); // FIXME
+
+    // GetVarDataFromJulea(name_space, metadata->name, metadata->data_size,
+    //                     (void *)(data), batch);
     // std::cout << "++ Julea Reader DEBUG PRINT data_size: " <<
     // metadata->data_size << std::endl;    //FIXME
 
@@ -118,19 +192,19 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
     // FIXME: check whether everything is set by InitVariables and this get
     // function or if there are still metadata struct members ignored
 
-    variable.m_Data = data;
-    if (m_Verbosity == 5)
-    {
-        std::cout << "Julea Reader " << m_ReaderRank << "     GetSync("
-                  << variable.m_Name << ")\n";
-    }
-    g_free(name_space);
-    g_free(metadata->name);
-    g_slice_free(unsigned long, metadata->shape);
-    g_slice_free(unsigned long, metadata->start);
-    g_slice_free(unsigned long, metadata->count);
-    g_slice_free(Metadata, metadata);
-    j_batch_unref(batch);
+    // variable.m_Data = data;
+    // if (m_Verbosity == 5)
+    // {
+    //     std::cout << "Julea Reader " << m_ReaderRank << "     GetSync("
+    //               << variable.m_Name << ")\n";
+    // }
+    // g_free(name_space);
+    // g_free(metadata->name);
+    // g_slice_free(unsigned long, metadata->shape);
+    // g_slice_free(unsigned long, metadata->start);
+    // g_slice_free(unsigned long, metadata->count);
+    // g_slice_free(Metadata, metadata);
+    // j_batch_unref(batch);
 }
 
 template <class T>
