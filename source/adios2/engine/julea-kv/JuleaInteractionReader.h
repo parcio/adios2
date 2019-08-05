@@ -24,11 +24,11 @@ namespace engine
 {
 
 /* TODO: private functions when in interop namespace */
-void GetNamesBSONFromJulea(const std::string nameSpace, bson_t *bsonNames,
+void GetNamesBSONFromJulea(const std::string nameSpace, bson_t **bsonNames,
                            unsigned int *varCount);
 
 void GetVariableBSONFromJulea(const std::string nameSpace,
-                              const std::string varName, bson_t *bsonMetadata);
+                              const std::string varName, bson_t **bsonMetadata);
 
 
 /* Variable Functions */

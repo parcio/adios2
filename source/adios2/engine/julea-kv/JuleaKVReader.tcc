@@ -143,6 +143,11 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
     /* all the additional metadata which is not used in InitVariables has to be
      * read again */
 
+    std::cout << "Julea Reader " << m_ReaderRank
+              << " Reached Get Sync Common (T, T)" << std::endl;
+    std::cout << "Julea Reader " << m_ReaderRank << " Namespace of variable "
+              << m_Name << std::endl;
+
     // auto bsonNames = bson_new();
     auto bsonMetadata = bson_new();
     auto nameSpace = m_Name;
@@ -189,10 +194,6 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
     // metadata->name = g_strdup(variable.m_Name.c_str());
     // gchar *name_space = strdup(m_Name.c_str());
 
-    // std::cout << "Julea Reader " << m_ReaderRank
-    //           << " Reached Get Sync Common (T, T)" << std::endl;
-    // std::cout << "Julea Reader " << m_ReaderRank << " Namespace of variable "
-    //           << m_Name << std::endl;
 
     // GetVarMetadataFromKV(m_JuleaInfo->name_space, metadata->name, metadata,
     //                      m_JuleaInfo->semantics); // FIXME

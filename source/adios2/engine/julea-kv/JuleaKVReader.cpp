@@ -505,12 +505,14 @@ void JuleaKVReader::InitVariables()
     unsigned int varCount = 0;
     // int size = 0;
 
-    GetNamesBSONFromJulea(nameSpace, bsonNames, &varCount);
+    GetNamesBSONFromJulea(nameSpace, &bsonNames, &varCount);
     bson_iter_init(&b_iter, bsonNames);
+
+    std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
 
     // std::cout << "++ Julea Reader DEBUG PRINT: varCount " << varCount
     // << std::endl;
-
+    // std::cout << "-- JADIOS DEBUG --- PRINT 2 " << std::endl;
     /* probably not very efficient */
     while (bson_iter_next(&b_iter))
     {
@@ -518,7 +520,7 @@ void JuleaKVReader::InitVariables()
 
         varName = g_strdup(bson_iter_key(&b_iter));
 
-        GetVariableBSONFromJulea(nameSpace, varName, bsonMetadata);
+        GetVariableBSONFromJulea(nameSpace, varName, &bsonMetadata);
 
         Dims shape;
         Dims start;

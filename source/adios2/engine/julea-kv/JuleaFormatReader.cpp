@@ -36,10 +36,10 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
 {
     bson_iter_t b_iter;
     gchar *key;
-
+    std::cout << "-- GetVariableMetadataForInitFromBSON " << std::endl;
     if (bson_iter_init(&b_iter, bsonMetadata))
     {
-        std::cout << "++ Julea Client Logic: Bson iterator is valid"
+        std::cout << "++ Julea Format Reader: Bson iterator is valid"
                   << std::endl;
     }
     else

@@ -306,7 +306,7 @@ void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
     j_kv_get(kvObjectNames, &namesBuf, &valueLen, batch);
     j_batch_execute(batch);
 
-    std::cout << "-- valueLen = " << valueLen << std::endl;
+    std::cout << "-- namesKV: valueLen = " << valueLen << std::endl;
     if (valueLen == 0)
     {
         bsonNames = bson_new();
@@ -321,6 +321,8 @@ void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
     {
         std::cout << "Init b_iter successfull " << std::endl;
         bson_append_int32(bsonNames, varName, -1, 42);
+        std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
+
         // bson_append_int32(bsonNames, varName, -1, bsonMetaData->var_type);
         // //FIXME: var_type?!
     }
@@ -329,6 +331,7 @@ void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
         std::cout << "++ Julea Interaction Writer: Variable " << varName
                   << " already in kv store. " << std::endl;
         // TODO: update variable -> is there anything else necessary to do?
+        std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
     }
 
     /* Write metadata struct to kv store*/
