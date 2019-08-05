@@ -24,8 +24,8 @@ namespace engine
 
 void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
                              const std::string varName, bson_t *bsonMetadata,
-                             int type, Dims shape, Dims start, Dims count,
-                             bool constantDims);
+                             int *type, Dims *shape, Dims *start, Dims *count,
+                             bool *constantDims);
 
 template <class T>
 void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace);

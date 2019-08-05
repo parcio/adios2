@@ -30,13 +30,13 @@ namespace engine
 
 void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
                                         const std::string varName,
-                                        bson_t *bsonMetadata, int type,
-                                        Dims shape, Dims start, Dims count,
-                                        bool constantDims)
+                                        bson_t *bsonMetadata, int *type,
+                                        Dims *shape, Dims *start, Dims *count,
+                                        bool *constantDims)
 {
     bson_iter_t b_iter;
     gchar *key;
-    std::cout << "-- GetVariableMetadataForInitFromBSON " << std::endl;
+    std::cout << "------- GetVariableMetadataForInitFromBSON -----------" << std::endl;
     if (bson_iter_init(&b_iter, bsonMetadata))
     {
         std::cout << "++ Julea Format Reader: Bson iterator is valid"
@@ -51,26 +51,32 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
     while (bson_iter_next(&b_iter))
     {
 
-        if (bson_iter_key(&b_iter) == "shape_size")
+
+        if (g_strcmp0(bson_iter_key(&b_iter), "shape_size") == 0)
         {
             auto shapeSize = bson_iter_int64(&b_iter);
+            std::cout << "-- JADIOS DEBUG PRINT: shapeSize = " << shapeSize << std::endl;
             if (shapeSize > 0)
             {
                 for (guint i = 0; i < shapeSize; i++)
                 {
                     bson_iter_next(&b_iter);
                     key = g_strdup_printf("shape_%d", i);
-                    if (bson_iter_key(&b_iter) == key)
+                    // if (bson_iter_key(&b_iter) == key)
+                    if (g_strcmp0(bson_iter_key(&b_iter), key) == 0)
                     {
-                        shape[i] = bson_iter_int64(&b_iter);
-                        // shape.front() = bson_iter_int64(&b_iter);
+                        // (*shape)[i] = bson_iter_int64(&b_iter);
+                        (*shape).push_back(bson_iter_int64(&b_iter));
+
                     }
                 }
             }
         }
-        else if (bson_iter_key(&b_iter) == "start_size")
+        else if (g_strcmp0(bson_iter_key(&b_iter), "start_size") == 0)
+        // else if (bson_iter_key(&b_iter) == "start_size")
         {
             auto startSize = bson_iter_int64(&b_iter);
+            std::cout << "-- JADIOS DEBUG PRINT: startSize = " << startSize << std::endl;
             // printf("-- JADIOS DEBUG PRINT: start_size = %ld \n",
             // variable.m_start_size);
 
@@ -80,37 +86,55 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
                 {
                     bson_iter_next(&b_iter);
                     key = g_strdup_printf("start_%d", i);
-                    if (bson_iter_key(&b_iter) == key)
+                    if (g_strcmp0(bson_iter_key(&b_iter), key) == 0)
+                    // if (bson_iter_key(&b_iter) == key)
                     {
-                        start[i] = bson_iter_int64(&b_iter);
+                        // (*start)[i] = bson_iter_int64(&b_iter);
+                        (*start).push_back(bson_iter_int64(&b_iter));
                     }
                 }
             }
         }
-        else if (bson_iter_key(&b_iter) == "count_size")
+        else if (g_strcmp0(bson_iter_key(&b_iter), "count_size") == 0)
+        // else if (bson_iter_key(&b_iter) == "count_size")
+        // else if ((bson_iter_key(&b_iter)) == "count_size")
         {
             auto countSize = bson_iter_int64(&b_iter);
-            // printf("-- JADIOS DEBUG PRINT: count_size = %ld \n",
-            // variable.m_count_size);
 
             if (countSize > 0)
             {
+
                 for (guint i = 0; i < countSize; i++)
                 {
                     bson_iter_next(&b_iter);
                     key = g_strdup_printf("count_%d", i);
-                    if (bson_iter_key(&b_iter) == key)
+                    std::cout << "key = " << key << std::endl;
+                    if (g_strcmp0(bson_iter_key(&b_iter), key) == 0)
+                    // if (g_strcmp0(bson_iter_key(&b_iter),key)
                     {
-                        count[i] = bson_iter_int64(&b_iter);
-                        // printf("-- JADIOS DEBUG PRINT: count[%d] = %ld \n",i,
-                        // variable.m_count[i]);
+                        (*count).push_back (bson_iter_int64(&b_iter));
+                        std::cout << "count i: " << &count[i] << std::endl;
+                        std::cout << "Test in for loop: count[i] = " <<  bson_iter_int64(&b_iter) << std::endl;
                     }
                 }
             }
-            else if (bson_iter_key(&b_iter) == "var_type")
-            {
-                type = (variable_type)bson_iter_int64(&b_iter);
-            }
+        }
+        else if (g_strcmp0(bson_iter_key(&b_iter), "var_type") == 0)
+        // else if (bson_iter_key(&b_iter) == "var_type")
+        {
+                *type = bson_iter_int32(&b_iter);
+                std::cout << "TYPE = " << bson_iter_int32(&b_iter) << std::endl;
+                // std::cout << "type " << type << std::endl;
+                // std::cout << "*type " << *type << std::endl;
+                // *type = (variable_type)bson_iter_int32(&b_iter);
+                // std::cout << "type " << type << std::endl;
+                // std::cout << "*type " << *type << std::endl;
+
+        }
+        else if (g_strcmp0(bson_iter_key(&b_iter), "is_constant_dims") == 0)
+        // else if (bson_iter_key(&b_iter) == "is_constant_dims")
+        {
+                *constantDims = bson_iter_bool(&b_iter);
         }
     } // end while
 }

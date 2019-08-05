@@ -520,17 +520,26 @@ void JuleaKVReader::InitVariables()
 
         varName = g_strdup(bson_iter_key(&b_iter));
 
+        std::cout << "Variable name " << varName << std::endl;
+
         GetVariableBSONFromJulea(nameSpace, varName, &bsonMetadata);
 
         Dims shape;
         Dims start;
+        // Dims count = {};
         Dims count;
         bool constantDims;
         int type;
+        // std::cout << "type " << type << std::endl;
 
-        GetVariableMetadataForInitFromBSON(nameSpace, varName, bsonMetadata, type, shape,
-                                start, count, constantDims);
+        GetVariableMetadataForInitFromBSON(nameSpace, varName, bsonMetadata, &type, &shape,
+                                &start, &count, &constantDims);
 
+        std::cout << "type now = " << type << std::endl;
+        std::cout << "shape.size " << shape.size() << std::endl;
+        std::cout << "start.size " << start.size() << std::endl;
+        std::cout << "count.size " << count.size() << std::endl;
+        std::cout << "count: " << count[0] << std::endl;
         switch (type)
         {
         // case COMPOUND:

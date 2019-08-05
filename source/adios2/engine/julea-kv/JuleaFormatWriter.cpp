@@ -134,6 +134,10 @@ void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata)
     size_t number_elements = 0;
     char *key;
 
+    std::cout << "shape_size " << variable.m_Shape.size() << std::endl;
+    std::cout << "start_size " << variable.m_Start.size() << std::endl;
+    std::cout << "count_size " << variable.m_Count.size() << std::endl;
+
     bson_append_int64(bsonMetadata, "shape_size", -1, variable.m_Shape.size());
     for (guint i = 0; i < variable.m_Shape.size(); i++)
     {
@@ -155,6 +159,7 @@ void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata)
         key = g_strdup_printf("count_%d", i);
 
         bson_append_int64(bsonMetadata, key, -1, variable.m_Count[i]);
+    std::cout << "count " << i << variable.m_Count[i] << std::endl;
     }
 
     bson_append_int64(bsonMetadata, "memory_start_size", -1,
@@ -281,6 +286,7 @@ void ParseVarTypeToBSON<int32_t>(Variable<int32_t> &variable,
     bson_append_int32(bsonMetadata, "curr_value", -1, variable.m_Value);
     std::cout << "ParseVarTypeToBSON int32_t: min = " << variable.Min()
               << std::endl;
+    std::cout << "TYPE = " << INT32 << std::endl;
 }
 
 template <>
@@ -300,7 +306,7 @@ template <>
 void ParseVarTypeToBSON<int64_t>(Variable<int64_t> &variable,
                                  const int64_t *data, bson_t *bsonMetadata)
 {
-    bson_append_int64(bsonMetadata, "var_type", -1, INT64);
+    bson_append_int32(bsonMetadata, "var_type", -1, INT64);
     bson_append_int64(bsonMetadata, "min_value", -1, variable.Min());
     bson_append_int64(bsonMetadata, "max_value", -1, variable.Max());
     bson_append_int64(bsonMetadata, "curr_value", -1, variable.m_Value);
@@ -312,7 +318,7 @@ template <>
 void ParseVarTypeToBSON<uint64_t>(Variable<uint64_t> &variable,
                                   const uint64_t *data, bson_t *bsonMetadata)
 {
-    bson_append_int64(bsonMetadata, "var_type", -1, UINT64);
+    bson_append_int32(bsonMetadata, "var_type", -1, UINT64);
     bson_append_int64(bsonMetadata, "min_value", -1, variable.Min());
     bson_append_int64(bsonMetadata, "max_value", -1, variable.Max());
     bson_append_int64(bsonMetadata, "curr_value", -1, variable.m_Value);
@@ -324,19 +330,20 @@ template <>
 void ParseVarTypeToBSON<float>(Variable<float> &variable, const float *data,
                                bson_t *bsonMetadata)
 {
-    bson_append_double(bsonMetadata, "var_type", -1, FLOAT);
+    bson_append_int32(bsonMetadata, "var_type", -1, FLOAT);
     bson_append_double(bsonMetadata, "min_value", -1, variable.Min());
     bson_append_double(bsonMetadata, "max_value", -1, variable.Max());
     bson_append_double(bsonMetadata, "curr_value", -1, variable.m_Value);
     std::cout << "ParseVarTypeToBSON float: min = " << variable.Min()
               << std::endl;
+    std::cout << "TYPE = " << FLOAT << std::endl;
 }
 
 template <>
 void ParseVarTypeToBSON<double>(Variable<double> &variable, const double *data,
                                 bson_t *bsonMetadata)
 {
-    bson_append_double(bsonMetadata, "var_type", -1, DOUBLE);
+    bson_append_int32(bsonMetadata, "var_type", -1, DOUBLE);
     bson_append_double(bsonMetadata, "min_value", -1, variable.Min());
     bson_append_double(bsonMetadata, "max_value", -1, variable.Max());
     bson_append_double(bsonMetadata, "curr_value", -1, variable.m_Value);
