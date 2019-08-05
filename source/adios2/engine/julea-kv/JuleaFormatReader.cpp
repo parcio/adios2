@@ -50,8 +50,6 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
     /* probably not very efficient */
     while (bson_iter_next(&b_iter))
     {
-
-
         if (g_strcmp0(bson_iter_key(&b_iter), "shape_size") == 0)
         {
             auto shapeSize = bson_iter_int64(&b_iter);
@@ -62,10 +60,9 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
                 {
                     bson_iter_next(&b_iter);
                     key = g_strdup_printf("shape_%d", i);
-                    // if (bson_iter_key(&b_iter) == key)
+
                     if (g_strcmp0(bson_iter_key(&b_iter), key) == 0)
                     {
-                        // (*shape)[i] = bson_iter_int64(&b_iter);
                         (*shape).push_back(bson_iter_int64(&b_iter));
 
                     }
@@ -73,12 +70,9 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
             }
         }
         else if (g_strcmp0(bson_iter_key(&b_iter), "start_size") == 0)
-        // else if (bson_iter_key(&b_iter) == "start_size")
         {
             auto startSize = bson_iter_int64(&b_iter);
             std::cout << "-- JADIOS DEBUG PRINT: startSize = " << startSize << std::endl;
-            // printf("-- JADIOS DEBUG PRINT: start_size = %ld \n",
-            // variable.m_start_size);
 
             if (startSize > 0)
             {
@@ -86,18 +80,15 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
                 {
                     bson_iter_next(&b_iter);
                     key = g_strdup_printf("start_%d", i);
+
                     if (g_strcmp0(bson_iter_key(&b_iter), key) == 0)
-                    // if (bson_iter_key(&b_iter) == key)
                     {
-                        // (*start)[i] = bson_iter_int64(&b_iter);
                         (*start).push_back(bson_iter_int64(&b_iter));
                     }
                 }
             }
         }
         else if (g_strcmp0(bson_iter_key(&b_iter), "count_size") == 0)
-        // else if (bson_iter_key(&b_iter) == "count_size")
-        // else if ((bson_iter_key(&b_iter)) == "count_size")
         {
             auto countSize = bson_iter_int64(&b_iter);
 
@@ -108,31 +99,22 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
                 {
                     bson_iter_next(&b_iter);
                     key = g_strdup_printf("count_%d", i);
-                    std::cout << "key = " << key << std::endl;
+                    std::cout << "-- key = " << key << std::endl;
+
                     if (g_strcmp0(bson_iter_key(&b_iter), key) == 0)
-                    // if (g_strcmp0(bson_iter_key(&b_iter),key)
                     {
                         (*count).push_back (bson_iter_int64(&b_iter));
-                        std::cout << "count i: " << &count[i] << std::endl;
-                        std::cout << "Test in for loop: count[i] = " <<  bson_iter_int64(&b_iter) << std::endl;
+                        std::cout << "-- Test in for loop: count[i] = " <<  bson_iter_int64(&b_iter) << std::endl;
                     }
                 }
             }
         }
         else if (g_strcmp0(bson_iter_key(&b_iter), "var_type") == 0)
-        // else if (bson_iter_key(&b_iter) == "var_type")
         {
                 *type = bson_iter_int32(&b_iter);
-                std::cout << "TYPE = " << bson_iter_int32(&b_iter) << std::endl;
-                // std::cout << "type " << type << std::endl;
-                // std::cout << "*type " << *type << std::endl;
-                // *type = (variable_type)bson_iter_int32(&b_iter);
-                // std::cout << "type " << type << std::endl;
-                // std::cout << "*type " << *type << std::endl;
-
+                std::cout << "-- TYPE = " << bson_iter_int32(&b_iter) << std::endl;
         }
         else if (g_strcmp0(bson_iter_key(&b_iter), "is_constant_dims") == 0)
-        // else if (bson_iter_key(&b_iter) == "is_constant_dims")
         {
                 *constantDims = bson_iter_bool(&b_iter);
         }

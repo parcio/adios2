@@ -17,12 +17,13 @@
 
 int write_test(){
  /** Application variable */
-    std::vector<float> myFloats = {12345.6, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    std::vector<float> myFloats = {12345.6, 1, 2, 3, 4, 5, 6, 7, 8, -42.333};
     // std::vector<float> myFloats2 = {-6666.6, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     std::vector<int> myInts = {555, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    std::vector<int> myInts2 = {777, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    std::vector<int> myInts2 = {777, 42, 4242, 424242};
     const std::size_t Nx = myFloats.size();
     const std::size_t Nx2 = myInts.size();
+    const std::size_t Nx3 = myInts2.size();
 
     std::cout << "JuleaEngineTest Writing ... " << std::endl;
     /** ADIOS class factory of IO class objects, DebugON is recommended */
@@ -42,10 +43,10 @@ int write_test(){
     adios2::Variable<int> juleaInts = juleaIO.DefineVariable<int>(
         "juleaInts", {}, {}, {Nx2}, adios2::ConstantDims);
     adios2::Variable<int> juleaInts2 = juleaIO.DefineVariable<int>(
-        "juleaInts2", {}, {}, {Nx2}, adios2::ConstantDims);
+        "juleaInts2", {}, {}, {Nx3}, adios2::ConstantDims);
 
     /** Engine derived class, spawned to start IO operations */
-    adios2::Engine juleaWriter = juleaIO.Open("test", adios2::Mode::Write );
+    adios2::Engine juleaWriter = juleaIO.Open("testFile", adios2::Mode::Write );
 
     /** Write variable for buffering */
     juleaWriter.Put<float>(juleaFloats, myFloats.data(),adios2::Mode::Sync);
@@ -79,7 +80,7 @@ int read_test(){
     juleaIO.SetEngine("julea-kv");
 
     /** Engine derived class, spawned to start IO operations */
-    adios2::Engine juleaReader = juleaIO.Open("test", adios2::Mode::Read );
+    adios2::Engine juleaReader = juleaIO.Open("testFile", adios2::Mode::Read );
 
     // for(int i = 0; i <10; i++)
     // {

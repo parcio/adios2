@@ -500,8 +500,7 @@ void JuleaKVReader::InitVariables()
     bson_iter_t b_iter;
     bson_t *bsonNames;
     std::string varName;
-    // std::string nameSpace = m_JuleaInfo->nameSpace; //FIXME
-    std::string nameSpace = m_Name; //FIXME
+    std::string nameSpace = m_Name; //TODO: working everywhere?
     unsigned int varCount = 0;
     // int size = 0;
 
@@ -512,7 +511,6 @@ void JuleaKVReader::InitVariables()
 
     // std::cout << "++ Julea Reader DEBUG PRINT: varCount " << varCount
     // << std::endl;
-    // std::cout << "-- JADIOS DEBUG --- PRINT 2 " << std::endl;
     /* probably not very efficient */
     while (bson_iter_next(&b_iter))
     {
@@ -520,26 +518,24 @@ void JuleaKVReader::InitVariables()
 
         varName = g_strdup(bson_iter_key(&b_iter));
 
-        std::cout << "Variable name " << varName << std::endl;
+        std::cout << "-- Variable name " << varName << std::endl;
 
         GetVariableBSONFromJulea(nameSpace, varName, &bsonMetadata);
 
         Dims shape;
         Dims start;
-        // Dims count = {};
         Dims count;
         bool constantDims;
         int type;
-        // std::cout << "type " << type << std::endl;
 
         GetVariableMetadataForInitFromBSON(nameSpace, varName, bsonMetadata, &type, &shape,
                                 &start, &count, &constantDims);
 
-        std::cout << "type now = " << type << std::endl;
-        std::cout << "shape.size " << shape.size() << std::endl;
-        std::cout << "start.size " << start.size() << std::endl;
-        std::cout << "count.size " << count.size() << std::endl;
-        std::cout << "count: " << count[0] << std::endl;
+        // std::cout << "type now = " << type << std::endl;
+        // std::cout << "shape.size " << shape.size() << std::endl;
+        // std::cout << "start.size " << start.size() << std::endl;
+        // std::cout << "count.size " << count.size() << std::endl;
+        // std::cout << "count: " << count[0] << std::endl;
         switch (type)
         {
         // case COMPOUND:
