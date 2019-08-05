@@ -137,13 +137,13 @@ struct AttributeMetadata
 };
 typedef struct AttributeMetadata AttributeMetadata;
 
-struct JuleaInfo
-{
-    JSemantics *semantics;
-    // char *name_space;
-    std::string nameSpace;
-};
-typedef struct JuleaInfo JuleaInfo;
+// struct JuleaInfo
+// {
+//     JSemantics *semantics;
+//     // char *name_space;
+//     std::string nameSpace;
+// };
+// typedef struct JuleaInfo JuleaInfo;
 
 } // end namespace engine
 } // end namespace core

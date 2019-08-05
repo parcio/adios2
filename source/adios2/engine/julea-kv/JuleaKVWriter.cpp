@@ -218,31 +218,12 @@ void JuleaKVWriter::Init()
          \n   ~;/     \\;~"
         << std::endl;
 
+    std::cout << "JULEA WRITER: Namespace = " << m_Name << std::endl;
     // TODO: which order?
-    // m_Julea.Init();
-    m_JuleaSemantics = j_semantics_new (J_SEMANTICS_TEMPLATE_POSIX);
-    // m_JuleaInfo = {semantics, ""};
-    // m_JuleaInfo = {"J_SEMANTICS_TEMPLATE_POSIX", m_Name};
-    // std::string test(m_Name);
-    // JuleaInfo jInfo = {};
-    std::cout << "m_Name: " << m_Name << std::endl;
-    // JuleaInfo jInfo = {semantics,""};
+
+    m_JuleaSemantics = j_semantics_new (J_SEMANTICS_TEMPLATE_DEFAULT);
+
     j_init();
-    std::cout << "DEBUG PRINT AGAIN 1 ... " << std::endl;
-    // m_JuleaInfo = g_slice_new(JuleaInfo);
-    std::cout << "DEBUG PRINT AGAIN 2 ... " << std::endl;
-    // m_JuleaInfo->semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    std::cout << "DEBUG PRINT AGAIN 3 ... " << std::endl;
-    // m_JuleaInfo->nameSpace = g_strdup(m_Name.c_str());
-    // m_JuleaInfo->nameSpace = g_strdup(m_Name);
-    // m_JuleaInfo->nameSpace = test;
-    // m_JuleaInfo->nameSpace.assign(m_Name);
-    // jInfo.nameSpace = m_Name;
-    // m_JuleaInfo = &jInfo;
-    std::cout << "DEBUG PRINT AGAIN 4 ... " << std::endl;
-
-    // j_adios_init(m_JuleaInfo);
-
     InitParameters();
     InitTransports();
     InitVariables();
@@ -357,10 +338,7 @@ void JuleaKVWriter::DoClose(const int transportIndex)
         std::cout << "Julea Writer " << m_WriterRank << " Close(" << m_Name
                   << ")\n";
     }
-    // m_JuleaInfo->semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-
-    // g_free(m_JuleaInfo->nameSpace);
-    // g_slice_free(JuleaInfo, m_JuleaInfo);
+    //TODO: free semantics
 }
 
 /**TODO

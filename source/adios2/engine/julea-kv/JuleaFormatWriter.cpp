@@ -61,6 +61,7 @@ void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
     }
 
     bson_append_int64(bsonMetadata, "data_size", -1, dataSize);
+    std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
 }
 
 template <class T>
@@ -118,6 +119,7 @@ void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
     }
 
     bson_append_int32(bsonMetadata, "attr_type", -1, type);
+    std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
     std::cout << "ParseAttrTypeToBSON type :" << attribute.m_Type << std::endl;
 }
 
@@ -201,6 +203,7 @@ void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata)
                       variable.m_RandomAccess);
     bson_append_int64(bsonMetadata, "is_first_streaming_step", -1,
                       variable.m_FirstStreamingStep);
+    std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
 }
 
 template <>

@@ -80,7 +80,7 @@ void CheckIfAlreadyInKV(std::string kvName, std::string paramName,
     }
     else
     {
-        std::cout << "++ Julea Client Logic: Attribute " << name
+        std::cout << "++ Julea Interaction Writer: Attribute " << name
                   << " already in kv store. " << std::endl;
         // TODO: update variable -> is there anything else necessary to do?
     }
@@ -185,7 +185,7 @@ void WriteDataToJuleaObjectStore(std::string objName, std::string paramName,
     j_batch_execute(batch);
     if (bytesWritten == dataSize)
     {
-        std::cout << "++ Julea Client Logic: Data written for:  " << name
+        std::cout << "++ Julea Interaction Writer: Data written for:  " << name
                   << std::endl;
     }
     else
@@ -264,7 +264,7 @@ void PutVariableDataToJulea(Variable<T> &variable, const T *data,
     j_batch_execute(batch);
     if (bytesWritten == dataSize)
     {
-        std::cout << "++ Julea Client Logic: Data written for variable "
+        std::cout << "++ Julea Interaction Writer: Data written for variable "
                   << varName << std::endl;
     }
     else
@@ -277,7 +277,7 @@ void PutVariableDataToJulea(Variable<T> &variable, const T *data,
     j_object_unref(dataObject);
     j_batch_unref(batch);
 
-    std::cout << "++ Julea Client Logic: Put Variable " << std::endl;
+    std::cout << "++ Julea Interaction Writer: Put Variable " << std::endl;
 }
 
 template <class T>
@@ -306,6 +306,7 @@ void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
     j_kv_get(kvObjectNames, &namesBuf, &valueLen, batch);
     j_batch_execute(batch);
 
+    std::cout << "-- valueLen = " << valueLen << std::endl;
     if (valueLen == 0)
     {
         bsonNames = bson_new();
@@ -319,12 +320,13 @@ void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
     if (!bson_iter_init_find(&bIter, bsonNames, varName))
     {
         std::cout << "Init b_iter successfull " << std::endl;
+        bson_append_int32(bsonNames, varName, -1, 42);
         // bson_append_int32(bsonNames, varName, -1, bsonMetaData->var_type);
         // //FIXME: var_type?!
     }
     else
     {
-        std::cout << "++ Julea Client Logic: Variable " << varName
+        std::cout << "++ Julea Interaction Writer: Variable " << varName
                   << " already in kv store. " << std::endl;
         // TODO: update variable -> is there anything else necessary to do?
     }
@@ -348,7 +350,7 @@ void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
     j_batch_unref(batch2);
     bson_destroy(bsonNames);
 
-    std::cout << "++ Julea Client Logic: Put Variable " << std::endl;
+    std::cout << "++ Julea Interaction Writer: Put Variable " << std::endl;
 }
 
 /** ------------ ATTRIBUTES -------------------------------------------------**/
@@ -386,7 +388,7 @@ void PutAttributeDataToJulea(Attribute<T> &attribute, const T *data,
     j_batch_execute(batch);
     if (bytesWritten == dataSize)
     {
-        std::cout << "++ Julea Client Logic: Data written for attribute "
+        std::cout << "++ Julea Interaction Writer: Data written for attribute "
                   << attrName << std::endl;
     }
     else
@@ -399,7 +401,7 @@ void PutAttributeDataToJulea(Attribute<T> &attribute, const T *data,
     j_object_unref(dataObject);
     j_batch_unref(batch);
 
-    std::cout << "++ Julea Client Logic: Put Variable " << std::endl;
+    std::cout << "++ Julea Interaction Writer: Put Variable " << std::endl;
 }
 
 template <class T>
@@ -446,7 +448,7 @@ void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetaData,
     }
     else
     {
-        std::cout << "++ Julea Client Logic: Attribute " << attrName
+        std::cout << "++ Julea Interaction Writer: Attribute " << attrName
                   << " already in kv store. " << std::endl;
         // TODO: update variable -> is there anything else necessary to do?
     }
@@ -470,7 +472,7 @@ void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetaData,
     j_batch_unref(batch2);
     bson_destroy(bsonNames);
 
-    std::cout << "++ Julea Client Logic: Put Attribute " << std::endl;
+    std::cout << "++ Julea Interaction Writer: Put Attribute " << std::endl;
 }
 
 #define declare_template_instantiation(T)                                      \

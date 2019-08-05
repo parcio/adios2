@@ -160,12 +160,6 @@ if(ADIOS2_HAVE_JULEA_GONDOLIN)
 
     /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.4.0/libbson-1.9.1-a477qnt3mrkzovo4xdhky7fqvuswywpu/lib
     /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.4.0/libbson-1.9.1-a477qnt3mrkzovo4xdhky7fqvuswywpu/include/libbson-1.0
-    #/home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-vkknhrxkirz2rercghai22rreonhkwv3/lib
-    #/home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-vkknhrxkirz2rercghai22rreonhkwv3/include/glib-2.0
-    #/home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-vkknhrxkirz2rercghai22rreonhkwv3/lib/glib-2.0/include
-    #/home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/lib
-    #/home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/include/libbson-1.0
-    #/home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/lib/libbson-1
     )
   target_link_libraries(adios2 PRIVATE
      # /home/elentari/Documents/julea/build/lib/
@@ -242,20 +236,10 @@ if(ADIOS2_HAVE_JULEA_MINASTIRITH)
   /home/kira/Dokumente/julea/include
   /home/kira/Dokumente/julea/build/include
   /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-srdpm3t4lltp4qipbcikyfjfepc365p5/lib
-  # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-agygv3srpucrawreuxujsyz5g2x3nio4/lib
   /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-srdpm3t4lltp4qipbcikyfjfepc365p5/include/glib-2.0
-  # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-agygv3srpucrawreuxujsyz5g2x3nio4/include/glib-2.0
   /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-srdpm3t4lltp4qipbcikyfjfepc365p5/lib/glib-2.0/include
-  # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-agygv3srpucrawreuxujsyz5g2x3nio4/lib/glib-2.0/include
   /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/lib
   /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/include/libbson-1.0
-  # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/include/libbson-1.0
-  #
-  #
-  # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.2-lx5f3xdx43bqvr7tgnkdgni6yw5oxw5t/lib
-  # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.2-lx5f3xdx43bqvr7tgnkdgni6yw5oxw5t/include/glib-2.0
-  # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.2-lx5f3xdx43bqvr7tgnkdgni6yw5oxw5t/lib/glib-2.0/include
-  # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/include/libbson-1.0/
   )
   target_link_libraries(adios2 PRIVATE
   /home/kira/Dokumente/julea/build/lib/                     # does not suffice... to include here
@@ -264,9 +248,6 @@ if(ADIOS2_HAVE_JULEA_MINASTIRITH)
   /home/kira/Dokumente/julea/build/lib/libjulea-item.so
   /home/kira/Dokumente/julea/build/lib/libjulea-object.so
   /home/kira/Dokumente/julea/build/lib/libjulea-kv.so
-  # /home/kira/Dokumente/julea/build/lib/libjulea-smd.so
-  #/home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.2-lx5f3xdx43bqvr7tgnkdgni6yw5oxw5t/lib
-  #/home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/lib
   )
 endif()
 

@@ -249,6 +249,8 @@ void JuleaKVReader::Init()
     \\ `. \n / _|       |_ \\ \n(_/ |       | \\_) \n    \\       / \n   __\\_>-<_/__ \
          \n   ~;/     \\;~"
         << std::endl;
+    std::cout << "JULEA READER: Namespace = " << m_Name << std::endl;
+
     // if (m_DebugMode)
     // {
     //     if (m_OpenMode != Mode::Read)
@@ -265,12 +267,7 @@ void JuleaKVReader::Init()
 
     // TODO: which order?
     j_init();
-    // m_JuleaInfo = g_slice_new(JuleaInfo);
     m_JuleaSemantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    // m_JuleaInfo->nameSpace = g_strdup(m_Name.c_str());
-    // j_adios_init(m_JuleaInfo);
-    std::cout << "m_Name: " << m_Name << std::endl;
-
 
     InitParameters();
     InitTransports();

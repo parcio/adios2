@@ -61,17 +61,19 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
 template <class T>
 void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 {
-    auto bson_meta_data = bson_new();
+    auto bsonMetadata = bson_new();
 
     SetMinMax(variable, data);
 
-    ParseVariableToBSON(variable, bson_meta_data);
-    ParseVarTypeToBSON(variable, data, bson_meta_data);
+    ParseVariableToBSON(variable, bsonMetadata);
+    ParseVarTypeToBSON(variable, data, bsonMetadata);
 
-    PutVariableMetadataToJuleaSmall(variable, bson_meta_data,
+    PutVariableMetadataToJulea(variable, bsonMetadata,
                                     m_Name);
-
-    PutVariableDataToJuleaSmall(variable, data, m_Name);
+    // PutVariableMetadataToJuleaSmall(variable, bsonMetadata,
+                                    // m_Name);
+    PutVariableDataToJulea(variable, data, m_Name);
+    // PutVariableDataToJuleaSmall(variable, data, m_Name);
 
     if (m_Verbosity == 5)
     {

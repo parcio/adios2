@@ -41,9 +41,9 @@ void GetVariableDataFromJulea(Variable<T> &variable, const T *data,
                               const std::string nameSpace);
 
 /* Attribute Functions */
-template <class T>
-void GetAllAttributeNamesFromJulea(Variable<T> &variable, bson_t *bsonMetadata,
-                                   const std::string nameSpace);
+// template <class T>
+// void GetAllAttributeNamesFromJulea(Variable<T> &variable, bson_t *bsonMetadata,
+//                                    const std::string nameSpace);
 
 template <class T>
 void GetAttributeMetadataFromJulea(Attribute<T> &attribute,
@@ -55,6 +55,8 @@ void GetAttributeDataFromJulea(Attribute<T> &attribute, const T *data,
                                const std::string nameSpace);
 
 // extern template void GetAllVariableNamesFromJulea(const std::string nameSpace, unsigned int *varCount, bson_t *bsonNames);         \
+    extern template void GetAllAttributeNamesFromJulea(                        \
+        Attribute<T> &attribute, const T *data, const std::string nameSpace);  \
 
 #define declare_template_instantiation(T)                                      \
     extern template void GetVariableDataFromJulea(                             \
@@ -62,8 +64,6 @@ void GetAttributeDataFromJulea(Attribute<T> &attribute, const T *data,
     extern template void GetVariableMetadataFromJulea(                         \
         Variable<T> &variable, bson_t *bsonMetadata,                           \
         const std::string nameSpace);                                          \
-    extern template void GetAllAttributeNamesFromJulea(                        \
-        Attribute<T> &attribute, const T *data, const std::string nameSpace);  \
     extern template void GetAttributeDataFromJulea(                            \
         Attribute<T> &attribute, const T *data, const std::string nameSpace);  \
     extern template void GetAttributeMetadataFromJulea(                        \
