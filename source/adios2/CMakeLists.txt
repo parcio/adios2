@@ -210,25 +210,29 @@ endif()
 
 if(ADIOS2_HAVE_JULEA_MINASTIRITH)
   target_sources(adios2 PRIVATE
-      engine/julea-smd-kv/JuleaReader.cpp
-      engine/julea-smd-kv/JuleaReader.tcc
-      engine/julea-smd-kv/JuleaWriter.cpp
-      engine/julea-smd-kv/JuleaWriter.tcc
-      engine/julea-smd-kv/JuleaClientLogic.cpp
-      engine/julea-smd-kv/JuleaFormatWriter.cpp
+      engine/julea-kv/JuleaKVReader.cpp
+      engine/julea-kv/JuleaKVReader.tcc
+      engine/julea-kv/JuleaKVWriter.cpp
+      engine/julea-kv/JuleaKVWriter.tcc
+      engine/julea-kv/JuleaClientLogic-legacy.cpp
+      engine/julea-kv/JuleaInteractionWriter.cpp
+      engine/julea-kv/JuleaInteractionReader.cpp
+      engine/julea-kv/JuleaFormatWriter.cpp
+      engine/julea-kv/JuleaFormatReader.cpp
+      engine/julea-kv/JuleaFormatWriter-legacy.cpp
+
+      # engine/julea-original/JuleaReader.cpp
+      # engine/julea-original/JuleaReader.tcc
+      # engine/julea-original/JuleaWriter.cpp
+      # engine/julea-original/JuleaWriter.tcc
+      # engine/julea-original/JuleaClientLogic.cpp
+      # engine/julea-original/JuleaFormatWriter.cpp
 
       engine/julea-test/JuleaTestReader.cpp
       engine/julea-test/JuleaTestReader.tcc
       engine/julea-test/JuleaTestWriter.cpp
       engine/julea-test/JuleaTestWriter.tcc
 
-      #engine/julea-db/JuleaReader.cpp
-      #engine/julea-db/JuleaReader.tcc
-      #engine/julea-db/JuleaWriter.cpp
-      #engine/julea-db/JuleaWriter.tcc
-      #engine/julea-db/JuleaClientLogic.cpp
-      #engine/julea-db/JuleaFormatWriter.cpp
-      # toolkit/interop/julea/JuleaMetadata.h
       toolkit/interop/julea/JuleaSerializer.cpp
       toolkit/interop/julea/JuleaSerializer.tcc
       toolkit/interop/julea/JuleaDeserializer.cpp
@@ -237,10 +241,17 @@ if(ADIOS2_HAVE_JULEA_MINASTIRITH)
   target_include_directories(adios2 PRIVATE
   /home/kira/Dokumente/julea/include
   /home/kira/Dokumente/julea/build/include
-  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-agygv3srpucrawreuxujsyz5g2x3nio4/lib
-  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-agygv3srpucrawreuxujsyz5g2x3nio4/include/glib-2.0
-  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-agygv3srpucrawreuxujsyz5g2x3nio4/lib/glib-2.0/include
+  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-srdpm3t4lltp4qipbcikyfjfepc365p5/lib
+  # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-agygv3srpucrawreuxujsyz5g2x3nio4/lib
+  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-srdpm3t4lltp4qipbcikyfjfepc365p5/include/glib-2.0
+  # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-agygv3srpucrawreuxujsyz5g2x3nio4/include/glib-2.0
+  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-srdpm3t4lltp4qipbcikyfjfepc365p5/lib/glib-2.0/include
+  # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-agygv3srpucrawreuxujsyz5g2x3nio4/lib/glib-2.0/include
+  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/lib
   /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/include/libbson-1.0
+  # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/include/libbson-1.0
+  #
+  #
   # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.2-lx5f3xdx43bqvr7tgnkdgni6yw5oxw5t/lib
   # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.2-lx5f3xdx43bqvr7tgnkdgni6yw5oxw5t/include/glib-2.0
   # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.2-lx5f3xdx43bqvr7tgnkdgni6yw5oxw5t/lib/glib-2.0/include
