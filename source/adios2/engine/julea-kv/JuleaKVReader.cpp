@@ -265,10 +265,12 @@ void JuleaKVReader::Init()
 
     // TODO: which order?
     j_init();
-    m_JuleaInfo = g_slice_new(JuleaInfo);
-    m_JuleaInfo->semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    m_JuleaInfo->nameSpace = g_strdup(m_Name.c_str());
+    // m_JuleaInfo = g_slice_new(JuleaInfo);
+    m_JuleaSemantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    // m_JuleaInfo->nameSpace = g_strdup(m_Name.c_str());
     // j_adios_init(m_JuleaInfo);
+    std::cout << "m_Name: " << m_Name << std::endl;
+
 
     InitParameters();
     InitTransports();
@@ -501,7 +503,8 @@ void JuleaKVReader::InitVariables()
     bson_iter_t b_iter;
     bson_t *bsonNames;
     std::string varName;
-    std::string nameSpace = m_JuleaInfo->nameSpace;
+    // std::string nameSpace = m_JuleaInfo->nameSpace; //FIXME
+    std::string nameSpace = m_Name; //FIXME
     unsigned int varCount = 0;
     // int size = 0;
 
@@ -665,7 +668,7 @@ void JuleaKVReader::DoClose(const int transportIndex)
                   << ")\n";
     }
     // g_free(m_JuleaInfo->nameSpace);
-    g_slice_free(JuleaInfo, m_JuleaInfo);
+    // g_slice_free(JuleaInfo, m_JuleaInfo);
 }
 
 // #define declare_type(T)                                                        \

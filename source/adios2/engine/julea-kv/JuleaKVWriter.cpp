@@ -35,7 +35,8 @@ namespace engine
 
 JuleaKVWriter::JuleaKVWriter(IO &io, const std::string &name, const Mode mode,
                              MPI_Comm mpiComm)
-: Engine("JuleaKVWriter", io, name, mode, mpiComm), m_Julea(io.m_DebugMode)
+: Engine("JuleaKVWriter", io, name, mode, mpiComm)
+// : Engine("JuleaKVWriter", io, name, mode, mpiComm), m_Julea(io.m_DebugMode)
 {
     // std::cout << "JULEA ENGINE: Constructor" << std::endl;
     // m_BP3Serializer(mpiComm, m_DebugMode),
@@ -218,11 +219,27 @@ void JuleaKVWriter::Init()
         << std::endl;
 
     // TODO: which order?
-    m_Julea.Init();
+    // m_Julea.Init();
+    m_JuleaSemantics = j_semantics_new (J_SEMANTICS_TEMPLATE_POSIX);
+    // m_JuleaInfo = {semantics, ""};
+    // m_JuleaInfo = {"J_SEMANTICS_TEMPLATE_POSIX", m_Name};
+    // std::string test(m_Name);
+    // JuleaInfo jInfo = {};
+    std::cout << "m_Name: " << m_Name << std::endl;
+    // JuleaInfo jInfo = {semantics,""};
     j_init();
-    m_JuleaInfo = g_slice_new(JuleaInfo);
-    m_JuleaInfo->semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    m_JuleaInfo->nameSpace = g_strdup(m_Name.c_str());
+    std::cout << "DEBUG PRINT AGAIN 1 ... " << std::endl;
+    // m_JuleaInfo = g_slice_new(JuleaInfo);
+    std::cout << "DEBUG PRINT AGAIN 2 ... " << std::endl;
+    // m_JuleaInfo->semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    std::cout << "DEBUG PRINT AGAIN 3 ... " << std::endl;
+    // m_JuleaInfo->nameSpace = g_strdup(m_Name.c_str());
+    // m_JuleaInfo->nameSpace = g_strdup(m_Name);
+    // m_JuleaInfo->nameSpace = test;
+    // m_JuleaInfo->nameSpace.assign(m_Name);
+    // jInfo.nameSpace = m_Name;
+    // m_JuleaInfo = &jInfo;
+    std::cout << "DEBUG PRINT AGAIN 4 ... " << std::endl;
 
     // j_adios_init(m_JuleaInfo);
 
@@ -343,7 +360,7 @@ void JuleaKVWriter::DoClose(const int transportIndex)
     // m_JuleaInfo->semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
 
     // g_free(m_JuleaInfo->nameSpace);
-    g_slice_free(JuleaInfo, m_JuleaInfo);
+    // g_slice_free(JuleaInfo, m_JuleaInfo);
 }
 
 /**TODO
@@ -486,18 +503,18 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
             ParseAttributeToBSON(&attribute, bsonMetadata);                    \
             ParseAttrTypeToBSON(&attribute, bsonMetadata);                     \
             PutAttributeMetadataToJulea(&attribute, bsonMetadata,              \
-                                        m_JuleaInfo->nameSpace);               \
+                                        m_Name);               \
             PutAttributeDataToJulea(&attribute, &attribute.m_DataSingleValue,  \
-                                    m_JuleaInfo->nameSpace);                   \
+                                    m_Name);                   \
         }                                                                      \
         else                                                                   \
         {                                                                      \
             ParseAttributeToBSON(&attribute, bsonMetadata);                    \
             ParseAttrTypeToBSON(&attribute, bsonMetadata);                     \
             PutAttributeMetadataToJulea(&attribute, bsonMetadata,              \
-                                        m_JuleaInfo->nameSpace);               \
+                                        m_Name);               \
             PutAttributeDataToJulea(&attribute, &attribute.m_DataArray,        \
-                                    m_JuleaInfo->nameSpace);                   \
+                                    m_Name);                   \
         }                                                                      \
     }                                                                          \
     ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_type)

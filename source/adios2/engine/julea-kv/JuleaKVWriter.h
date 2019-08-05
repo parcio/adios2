@@ -60,8 +60,9 @@ public:
     void Flush(const int transportIndex = -1) final;
 
 private:
-    JuleaInfo *m_JuleaInfo;
-    interop::JuleaSerializer m_Julea;
+    // JuleaInfo *m_JuleaInfo;
+    // interop::JuleaSerializer m_Julea;
+    JSemantics *m_JuleaSemantics;
 
     int m_Verbosity = 5;       // changed for debugging info from 0 to 5
     int m_WriterRank;          // my rank in the writers' comm

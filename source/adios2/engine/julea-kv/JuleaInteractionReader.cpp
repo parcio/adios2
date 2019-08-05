@@ -195,7 +195,7 @@ void GetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata,
 {
 	auto bsonNames = bson_new();
     // auto bsonMetadata = bson_new();
-    // auto nameSpace = m_JuleaInfo->nameSpace;
+    // auto nameSpace = m_JuleaInfo->nameSpace; //FIXME
     unsigned int varCount = 0;
     int type;
     Dims shape;

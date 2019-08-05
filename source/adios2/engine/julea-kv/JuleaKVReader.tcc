@@ -145,7 +145,7 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
 
     // auto bsonNames = bson_new();
     auto bsonMetadata = bson_new();
-    auto nameSpace = m_JuleaInfo->nameSpace;
+    auto nameSpace = m_Name;
     // unsigned int varCount = 0;
     // int type;
     // Dims shape;

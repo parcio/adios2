@@ -63,7 +63,8 @@ public:
     void PerformGets() final;
 
 private:
-    JuleaInfo *m_JuleaInfo;
+    // JuleaInfo *m_JuleaInfo;
+    JSemantics *m_JuleaSemantics;
     int m_Verbosity = 5; // TODO: changed to 5 for debugging
     int m_ReaderRank;    // my rank in the readers' comm
 
