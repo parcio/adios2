@@ -169,10 +169,16 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
     //                          type, shape, start, count,
     //                          constantDims);
 
-    GetVariableMetadataFromJulea(variable, bsonMetadata, nameSpace); //not working
-    ParseVariableFromBSON(variable, bsonMetadata, nameSpace);   //working
-    // ParseVarTypeFromBSON();
+    /* this should gather the internal functions, see below*/
+    // GetVariableMetadataFromJulea(variable, bsonMetadata, nameSpace); //not working
 
+    GetVariableBSONFromJulea(nameSpace,variable.m_Name, &bsonMetadata);
+    ParseVariableFromBSON(variable, bsonMetadata, nameSpace);   //working
+
+    // GetVariableDataFromJulea(variable, &data, nameSpace);
+
+
+    // ParseVarTypeFromBSON();
     /* ----------------------------------------------------------------------------
      */
     // gchar **names;

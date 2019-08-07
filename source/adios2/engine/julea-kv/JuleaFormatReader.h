@@ -66,7 +66,7 @@ void SetMinMax(Variable<T> &variable, const T *data);
 
 #define variable_template_instantiation(T)                                     \
    extern template void ParseVariableFromBSON(Variable<T> &variable,            \
-                                             bson_t *bsonMetadata,std::string nameSpace);            \
+                                             bson_t *bsonMetadata, const std::string nameSpace);            \
     ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 

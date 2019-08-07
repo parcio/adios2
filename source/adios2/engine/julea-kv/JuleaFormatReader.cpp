@@ -131,7 +131,7 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
 
     if (bson_iter_init(&b_iter, bsonMetadata))
     {
-        std::cout << "++ Julea Client Logic: Bson iterator is valid"
+        std::cout << "++ Julea Format Reader: Bson iterator is valid"
                   << std::endl;
     }
     else
@@ -139,10 +139,13 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
         std::cout << "ERROR: Bson iterator is not valid!" << std::endl;
     }
 
+    //TODO: what to do with the of the keys? max_value etc
+
     /* probably not very efficient */
     while (bson_iter_next(&b_iter))
     {
-        if (bson_iter_key(&b_iter) == "memory_start_size")
+
+        if (g_strcmp0(bson_iter_key(&b_iter) , "memory_start_size") == 0)
         {
             size = bson_iter_int64(&b_iter);
 
@@ -152,14 +155,14 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
                 {
                     bson_iter_next(&b_iter);
                     key = g_strdup_printf("memory_start_%d", i);
-                    if (bson_iter_key(&b_iter) == key)
+                    if (g_strcmp0(bson_iter_key(&b_iter) , key) == 0)
                     {
                         variable.m_MemoryStart[i] = bson_iter_int64(&b_iter);
                     }
                 }
             }
         }
-        else if (bson_iter_key(&b_iter) == "memory_count_size")
+        else if (g_strcmp0(bson_iter_key(&b_iter) , "memory_count_size") == 0)
         {
             size = bson_iter_int64(&b_iter);
 
@@ -169,7 +172,7 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
                 {
                     bson_iter_next(&b_iter);
                     key = g_strdup_printf("memory_count_%d", i);
-                    if (bson_iter_key(&b_iter) == key)
+                    if (g_strcmp0(bson_iter_key(&b_iter) , key) == 0)
                     {
                         variable.m_MemoryCount[i] = bson_iter_int64(&b_iter);
                     }
@@ -177,45 +180,45 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
             }
         }
         /* unsigned long */
-        else if (bson_iter_key(&b_iter) == "steps_start")
+        else if (g_strcmp0(bson_iter_key(&b_iter) , "steps_start") == 0)
         {
             variable.m_StepsStart = bson_iter_int64(&b_iter);
         }
-        else if (bson_iter_key(&b_iter) == "steps_count")
+        else if (g_strcmp0(bson_iter_key(&b_iter) , "steps_count") == 0)
         {
             variable.m_StepsCount = bson_iter_int64(&b_iter);
         }
-        else if (bson_iter_key(&b_iter) == "block_id")
+        else if (g_strcmp0(bson_iter_key(&b_iter) , "block_id") == 0)
         {
             variable.m_BlockID = bson_iter_int64(&b_iter);
         }
-        else if (bson_iter_key(&b_iter) == "index_start")
+        else if (g_strcmp0(bson_iter_key(&b_iter) , "index_start") == 0)
         {
             variable.m_IndexStart = bson_iter_int64(&b_iter);
         }
-        // else if (bson_iter_key(&b_iter) == "element_size")
+        // else if (g_strcmp0(bson_iter_key(&b_iter) , "element_size" == 0))
         // {
         //     variable.m_ElementSize = bson_iter_int64(&b_iter); //TODO
         //     elementSize read only?!
         // }
-        else if (bson_iter_key(&b_iter) == "available_steps_start")
+        else if (g_strcmp0(bson_iter_key(&b_iter) , "available_steps_start") == 0)
         {
             variable.m_AvailableStepsStart = bson_iter_int64(&b_iter);
         }
-        else if (bson_iter_key(&b_iter) == "available_steps_count")
+        else if (g_strcmp0(bson_iter_key(&b_iter) , "available_steps_count") == 0)
         {
             variable.m_AvailableStepsCount = bson_iter_int64(&b_iter);
         }
         /* boolean */
-        // else if (bson_iter_key(&b_iter) == "is_value")
+        // else if (g_strcmp0(bson_iter_key(&b_iter) , "is_value" == 0))
         // {
         //     variable.m_is_value = (bool)bson_iter_bool(&b_iter);
         // }
-        else if (bson_iter_key(&b_iter) == "is_single_value")
+        else if (g_strcmp0(bson_iter_key(&b_iter) , "is_single_value") == 0)
         {
             variable.m_SingleValue = (bool)bson_iter_bool(&b_iter);
         }
-        else if (bson_iter_key(&b_iter) == "is_constant_dims")
+        else if (g_strcmp0(bson_iter_key(&b_iter) , "is_constant_dims") == 0)
         {
             bool constantDims = (bool)bson_iter_bool(&b_iter);
 
@@ -224,24 +227,24 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
                 variable.SetConstantDims();
             }
         }
-        else if (bson_iter_key(&b_iter) == "is_read_as_joined")
+        else if (g_strcmp0(bson_iter_key(&b_iter) , "is_read_as_joined") == 0)
         {
             variable.m_ReadAsJoined = (bool)bson_iter_bool(&b_iter);
         }
-        else if (bson_iter_key(&b_iter) == "is_read_as_local_value")
+        else if (g_strcmp0(bson_iter_key(&b_iter) , "is_read_as_local_value") == 0)
         {
             variable.m_ReadAsLocalValue = (bool)bson_iter_bool(&b_iter);
         }
-        else if (bson_iter_key(&b_iter) == "is_random_access")
+        else if (g_strcmp0(bson_iter_key(&b_iter) , "is_random_access") == 0)
         {
             variable.m_RandomAccess = (bool)bson_iter_bool(&b_iter);
         }
-        else if (bson_iter_key(&b_iter) == "is_first_streaming_step")
+        else if (g_strcmp0(bson_iter_key(&b_iter) , "is_first_streaming_step") == 0)
         {
             variable.m_FirstStreamingStep = (bool)bson_iter_bool(&b_iter);
         }
         /* value_type*/
-        else if (bson_iter_key(&b_iter) == "min_value")
+        else if (g_strcmp0(bson_iter_key(&b_iter) , "min_value") == 0)
         {
             // if (variable.m_var_type == INT32)
             // if (variable.GetType() == INT32)
@@ -268,7 +271,7 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
             //     variable.m_min_value.real_double = bson_iter_double(&b_iter);
             // }
         }
-        // else if (bson_iter_key(&b_iter) == "max_value")
+        // else if (g_strcmp0(bson_iter_key(&b_iter) , "max_value" == 0))
         // {
         //     if (variable.m_var_type == INT32)
         //     {
@@ -293,7 +296,7 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
         //         variable.m_max_value.real_double = bson_iter_double(&b_iter);
         //     }
         // }
-        // else if (bson_iter_key(&b_iter) == "curr_value")
+        // else if (g_strcmp0(bson_iter_key(&b_iter) , "curr_value" == 0))
         // {
         //     if (variable.m_var_type == INT32)
         //     {
@@ -319,12 +322,12 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
         //         bson_iter_double(&b_iter);
         //     }
         // }
-        else
-        {
-            std::cout << "Unknown key " << bson_iter_key(&b_iter)
-                      << " when retrieving metadata for variable "
-                      << variable.m_Name << std::endl;
-        }
+        // else
+        // {
+        //     std::cout << "Unknown key " << bson_iter_key(&b_iter)
+        //               << " when retrieving metadata for variable "
+        //               << variable.m_Name << std::endl;
+        // }
 
     } // end while
 }

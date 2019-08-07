@@ -227,7 +227,7 @@ template <class T>
 void GetVariableDataFromJulea(Variable<T> &variable, const T *data,
                               const std::string nameSpace)
 {
-
+    std::cout << "name" << variable.m_Name << std::endl;
 }
 
 /** ------------------------- DATA ------------------------------------------**/
