@@ -235,11 +235,17 @@ if(ADIOS2_HAVE_JULEA_MINASTIRITH)
   target_include_directories(adios2 PRIVATE
   /home/kira/Dokumente/julea/include
   /home/kira/Dokumente/julea/build/include
-  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-srdpm3t4lltp4qipbcikyfjfepc365p5/lib
-  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-srdpm3t4lltp4qipbcikyfjfepc365p5/include/glib-2.0
-  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-srdpm3t4lltp4qipbcikyfjfepc365p5/lib/glib-2.0/include
-  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/lib
-  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/include/libbson-1.0
+  # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-srdpm3t4lltp4qipbcikyfjfepc365p5/lib
+  # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-srdpm3t4lltp4qipbcikyfjfepc365p5/include/glib-2.0
+  # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/glib-2.56.3-srdpm3t4lltp4qipbcikyfjfepc365p5/lib/glib-2.0/include
+  # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/lib
+  # /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.3.0/libbson-1.9.1-tzqabqz35xo6rwbkxmzc6nwma4h2onb3/include/libbson-1.0
+
+  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-8.3.0/glib-2.56.3-uvahvjcdaze4h2ju6uma3y53xslhvb2q/lib
+  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-8.3.0/glib-2.56.3-uvahvjcdaze4h2ju6uma3y53xslhvb2q/include/glib-2.0
+  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-8.3.0/glib-2.56.3-uvahvjcdaze4h2ju6uma3y53xslhvb2q/lib/glib-2.0/include
+  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-8.3.0/libbson-1.9.1-u3z27mm3bm2otccigjqspyxkjgopwhqo/lib
+  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-8.3.0/libbson-1.9.1-u3z27mm3bm2otccigjqspyxkjgopwhqo/include/libbson-1.0
   )
   target_link_libraries(adios2 PRIVATE
   /home/kira/Dokumente/julea/build/lib/                     # does not suffice... to include here
