@@ -539,7 +539,7 @@ void ParseVarTypeFromBSON<std::complex<double>>(
                                         bson_t *bsonMetadata,                  \
                                         const std::string nameSpace);          \
     template void ParseVarTypeFromBSON(Variable<T> &variable,                  \
-                                       bson_iter_t *b_iter);
+                                       bson_iter_t *b_iter); \
 
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation

@@ -58,7 +58,7 @@ void GetAttributeDataFromJulea(Attribute<T> &attribute, const T *data,
     extern template void GetAllAttributeNamesFromJulea(                        \
         Attribute<T> &attribute, const T *data, const std::string nameSpace);  \
 
-#define declare_template_instantiation(T)                                      \
+#define variable_template_instantiation(T)                                      \
     extern template void GetVariableDataFromJulea(                             \
         Variable<T> &variable, const T *data, const std::string nameSpace);    \
     extern template void GetVariableMetadataFromJulea(                         \
@@ -69,8 +69,8 @@ void GetAttributeDataFromJulea(Attribute<T> &attribute, const T *data,
     extern template void GetAttributeMetadataFromJulea(                        \
         Attribute<T> &attribute, bson_t *bsonMetadata,                         \
         const std::string nameSpace);                                          \
-    ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
-#undef declare_template_instantiation
+    ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
+#undef variable_template_instantiation
 } // end namespace engine
 } // end namespace core
 } // end namespace adios2

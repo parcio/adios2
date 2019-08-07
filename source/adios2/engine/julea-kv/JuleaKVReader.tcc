@@ -148,20 +148,20 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
     std::cout << "Julea Reader " << m_ReaderRank << " Namespace of variable "
               << m_Name << std::endl;
 
-    // auto bsonNames = bson_new();
+    auto bsonNames = bson_new();
     auto bsonMetadata = bson_new();
     auto nameSpace = m_Name;
-    // unsigned int varCount = 0;
+    unsigned int varCount = 0;
     // int type;
     // Dims shape;
     // Dims start;
     // Dims count;
     // bool constantDims;
 
-    // GetVariableMetadataFromJulea();
+    // GetVariableMetadataFromJulea(variable, bsonMetadata, nameSpace);
     // GetVariableDataFromJulea();
 
-    // GetNamesBSONFromJulea(nameSpace, bsonNames, &varCount);
+    // GetNamesBSONFromJulea(nameSpace, &bsonNames, &varCount);
 
     // GetVariableBSONFromJulea(nameSpace,variable.m_Name, bsonMetadata);
 
@@ -169,8 +169,8 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
     //                          type, shape, start, count,
     //                          constantDims);
 
-    // GetVariableMetadataFromJulea(variable, bsonMetadata, nameSpace);
-    // ParseVariableFromBSON(variable, bsonMetadata, nameSpace);
+    GetVariableMetadataFromJulea(variable, bsonMetadata, nameSpace); //not working
+    ParseVariableFromBSON(variable, bsonMetadata, nameSpace);   //working
     // ParseVarTypeFromBSON();
 
     /* ----------------------------------------------------------------------------

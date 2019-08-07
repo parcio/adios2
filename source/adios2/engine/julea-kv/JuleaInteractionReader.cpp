@@ -217,7 +217,9 @@ void GetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata,
 
     // GetNamesBSONFromJulea(nameSpace, bsonNames, &varCount);
 
-    // GetVariableBSONFromJulea(nameSpace,variable.m_Name, bsonMetadata);
+    GetVariableBSONFromJulea(nameSpace,variable.m_Name, bsonMetadata);
+
+    ParseVariableFromBSON(variable, bsonMetadata, nameSpace);
 }
 
 
@@ -230,11 +232,9 @@ void GetVariableDataFromJulea(Variable<T> &variable, const T *data,
 
 /** ------------------------- DATA ------------------------------------------**/
 
-#define declare_template_instantiation(T)                                      \
-    template void GetVariableDataFromJulea(                                    \
-        Variable<T> &variable, const T *data, const std::string nameSpace);    \
-    template void GetVariableMetadataFromJulea(Variable<T> &variable,          \
-                                               bson_t *bsonMetadata,           \
+#define variable_template_instantiation(T)                                      \
+    template void GetVariableDataFromJulea(Variable<T> &variable, const T *data, const std::string nameSpace);    \
+    template void GetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata,           \
                                                const std::string nameSpace);   \
     template void GetAllAttributeNamesFromJulea(                               \
         Attribute<T> &attribute, const T *data, const std::string nameSpace);  \
@@ -243,8 +243,8 @@ void GetVariableDataFromJulea(Variable<T> &variable, const T *data,
     template void GetAttributeMetadataFromJulea(Attribute<T> &attribute,       \
                                                 bson_t *bsonMetadata,          \
                                                 const std::string nameSpace);  \
-    ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
-#undef declare_template_instantiation
+ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
+#undef variable_template_instantiation
 
 } // end namespace engine
 } // end namespace core
