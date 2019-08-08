@@ -153,18 +153,15 @@ if(ADIOS2_HAVE_JULEA_GONDOLIN)
   target_include_directories(adios2 PRIVATE
     /home/elentari/Documents/julea/include
     /home/elentari/Documents/julea/build/include
-    /home/elentari/Documents/dependencies/
-    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.4.0/glib-2.56.3-3gh3dnjmtz3kp5weg4pqht6ihswwyrxv/lib
-    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.4.0/glib-2.56.3-3gh3dnjmtz3kp5weg4pqht6ihswwyrxv/include/glib-2.0
-    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.4.0/glib-2.56.3-3gh3dnjmtz3kp5weg4pqht6ihswwyrxv/lib/glib-2.0/include
-
-    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.4.0/libbson-1.9.1-a477qnt3mrkzovo4xdhky7fqvuswywpu/lib
-    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-7.4.0/libbson-1.9.1-a477qnt3mrkzovo4xdhky7fqvuswywpu/include/libbson-1.0
+    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-8.3.0/glib-2.56.3-uvahvjcdaze4h2ju6uma3y53xslhvb2q/lib
+    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-8.3.0/glib-2.56.3-uvahvjcdaze4h2ju6uma3y53xslhvb2q/include/glib-2.0
+    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-8.3.0/glib-2.56.3-uvahvjcdaze4h2ju6uma3y53xslhvb2q/lib/glib-2.0/include
+    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-8.3.0/libbson-1.9.1-u3z27mm3bm2otccigjqspyxkjgopwhqo/lib
+    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-8.3.0/libbson-1.9.1-u3z27mm3bm2otccigjqspyxkjgopwhqo/include/libbson-1.0
     )
   target_link_libraries(adios2 PRIVATE
      # /home/elentari/Documents/julea/build/lib/
       /home/elentari/Documents/julea/build/lib/libjulea.so
-      /home/elentari/Documents/julea/build/lib/libjulea-adios.so
       /home/elentari/Documents/julea/build/lib/libjulea-item.so
       /home/elentari/Documents/julea/build/lib/libjulea-object.so
       /home/elentari/Documents/julea/build/lib/libjulea-kv.so
@@ -241,7 +238,6 @@ if(ADIOS2_HAVE_JULEA_MINASTIRITH)
   target_link_libraries(adios2 PRIVATE
   /home/kira/Dokumente/julea/build/lib/                     # does not suffice... to include here
   /home/kira/Dokumente/julea/build/lib/libjulea.so
-  /home/kira/Dokumente/julea/build/lib/libjulea-adios.so
   /home/kira/Dokumente/julea/build/lib/libjulea-item.so
   /home/kira/Dokumente/julea/build/lib/libjulea-object.so
   /home/kira/Dokumente/julea/build/lib/libjulea-kv.so
