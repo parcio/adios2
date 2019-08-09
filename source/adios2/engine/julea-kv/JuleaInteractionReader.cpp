@@ -13,8 +13,8 @@
 
 #include "JuleaInteractionReader.h"
 
-// #include "JuleaFormatReader.h"
-// #include "JuleaKVReader.h"
+#include "JuleaFormatReader.h" //for ParseVariableFromBSON
+#include "JuleaKVReader.h"
 
 #include <bson.h>
 #include <fstream>
@@ -24,7 +24,8 @@
 #include <utility>
 
 #include <julea-kv.h>
-
+#include <julea-object.h>
+#include <julea.h>
 
 namespace adios2
 {
@@ -34,22 +35,52 @@ namespace engine
 {
 
 template <class T>
-void GetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace)
+void GetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace, long unsigned int *dataSize )
 {
-    std::cout << "Trying to fix template issues while linking" << std::endl;
+    std::cout << "++ Julea Interaction Reader: GetVariableMetadataFromJulea" << std::endl;
+    GetVariableBSONFromJulea(nameSpace,variable.m_Name, &bsonMetadata);
+
+    ParseVariableFromBSON(variable, bsonMetadata, nameSpace, dataSize);
 }
 
 
 template <class T>
 void GetVariableDataFromJulea(Variable<T> &variable, T *data,
-                              const std::string nameSpace)
+                              const std::string nameSpace, long unsigned int dataSize)
 {
-    std::cout << "name" << variable.m_Name << std::endl;
+    std::cout << "-- Julea Interaction Reader: -- DEBUG 1: name = " << variable.m_Name << std::endl;
+
+    guint64 bytesRead = 0;
+    const char *varName = variable.m_Name.c_str();
+    // auto batch = j_batch_new(m_JuleaSemantics);
+	auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
+
+    auto stringDataObject =
+        g_strdup_printf("%s_variables_%s", nameSpace.c_str(), varName);
+    auto dataObject = j_object_new(stringDataObject, varName);
+
+    std::cout << "___ Datasize = " << dataSize << std::endl;
+
+    j_object_read(dataObject, data, dataSize, 0, &bytesRead, batch);
+    j_batch_execute(batch);
+
+    if (bytesRead == dataSize)
+    {
+        std::cout << "++ Julea Interaction Reader: Read data for variable " << varName << std::endl;
+    }
+    else
+    {
+        std::cout << "WARNING: only " << bytesRead << " bytes read instead of " << dataSize <<" bytes!" << std::endl;
+    }
+
+    g_free(stringDataObject);
+    j_object_unref(dataObject);
 }
 
 #define variable_template_instantiation(T)                                     \
-    template void GetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace);\
-	template void GetVariableDataFromJulea(Variable<T> &variable, T *data, const std::string nameSpace);\
+    template void GetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace, long unsigned int *dataSize);\
+	template void GetVariableDataFromJulea(Variable<T> &variable, T *data, const std::string nameSpace, long unsigned int dataSize);\
 
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
@@ -70,53 +101,53 @@ ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 
 // }
 
-// void GetVariableBSONFromJulea(const std::string nameSpace, const std::string
-// varName, bson_t *bsonMetadata)
-// {
-// 	// JBatch *batch;
-//     // gchar *string_metadata_kv;
-//     // gchar *key;
-//     // bson_t* bson_metadata;
-//     // bson_t bson_metadata;
-//     bson_iter_t b_iter;
-//     guint32 value_len = 0;
+void GetVariableBSONFromJulea(const std::string nameSpace, const std::string
+varName, bson_t *bsonMetadata)
+{
+	// JBatch *batch;
+    // gchar *string_metadata_kv;
+    // gchar *key;
+    // bson_t* bson_metadata;
+    // bson_t bson_metadata;
+    bson_iter_t b_iter;
+    guint32 value_len = 0;
 
-//     // g_autoptr(JKV) kv_object = NULL;
-//     void *meta_data_buf = NULL;
-//     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-//     auto batch = j_batch_new(semantics);
+    // g_autoptr(JKV) kv_object = NULL;
+    void *meta_data_buf = NULL;
+    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
 
-//     auto string_metadata_kv = g_strdup_printf("variables_%s",
-//     nameSpace.c_str()); auto kv_object = j_kv_new(string_metadata_kv,
-//     varName.c_str());
-//     // bson_metadata = bson_new();
+    auto string_metadata_kv = g_strdup_printf("variables_%s",
+    nameSpace.c_str()); auto kv_object = j_kv_new(string_metadata_kv,
+    varName.c_str());
+    // bson_metadata = bson_new();
 
-//     j_kv_get(kv_object, &meta_data_buf, &value_len, batch);
-//     j_batch_execute(batch);
+    j_kv_get(kv_object, &meta_data_buf, &value_len, batch);
+    j_batch_execute(batch);
 
-//     if (value_len == 0)
-//     {
-//         // bson_names = bson_new();
-//         printf("WARNING: The variable key-value store is empty! \n");
-//     }
-//     else
-//     {
-//         bson_init_static(bsonMetadata, (uint8_t *)meta_data_buf, value_len);
-//     }
+    if (value_len == 0)
+    {
+        // bson_names = bson_new();
+        printf("WARNING: The variable key-value store is empty! \n");
+    }
+    else
+    {
+        bson_init_static(bsonMetadata, (uint8_t *)meta_data_buf, value_len);
+    }
 
-//     // bson_iter_init(&b_iter, bson_metadata);
-//     // if(bson_iter_init(&b_iter, bson_metadata))
-//     if (bson_iter_init(&b_iter, bsonMetadata))
-//     {
-//         std::cout << "++ Julea Client Logic: Bson iterator is valid"
-//                   << std::endl;
-//     }
-//     else
-//     {
-//         std::cout << "ERROR: Bson iterator is not valid!" << std::endl;
-//     }
+    // bson_iter_init(&b_iter, bson_metadata);
+    // if(bson_iter_init(&b_iter, bson_metadata))
+    if (bson_iter_init(&b_iter, bsonMetadata))
+    {
+        std::cout << "++ Julea Client Logic: Bson iterator is valid"
+                  << std::endl;
+    }
+    else
+    {
+        std::cout << "ERROR: Bson iterator is not valid!" << std::endl;
+    }
 
-// }
+}
 
 void GetNamesBSONFromJulea(const std::string nameSpace, bson_t **bsonNames,
                            unsigned int *varCount)
@@ -221,54 +252,6 @@ void GetVariableBSONFromJulea(const std::string nameSpace,
         *bsonMetadata = bson_new_from_data((const uint8_t *)meta_data_buf, value_len);
     }
 }
-
-// template <>
-// void GetVariableMetadataFromJulea(Variable<std::string> &variable, bson_t *bsonMetadata,
-//                                   const std::string nameSpace)
-// {
-//     auto bsonNames = bson_new();
-//     // auto bsonMetadata = bson_new();
-//     // auto nameSpace = m_JuleaInfo->nameSpace; //FIXME
-//     unsigned int varCount = 0;
-//     int type;
-//     Dims shape;
-//     Dims start;
-//     Dims count;
-//     bool constantDims;
-
-//     // GetVariableMetadataFromJulea();
-//     // GetVariableDataFromJulea();
-
-//     // GetNamesBSONFromJulea(nameSpace, bsonNames, &varCount);
-
-//     GetVariableBSONFromJulea(nameSpace,variable.m_Name, &bsonMetadata);
-
-//     ParseVariableFromBSON(variable, bsonMetadata, nameSpace);
-// }
-
-// template <class T>
-// void OLDGetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata,
-//                                   const std::string nameSpace)
-// {
-// 	auto bsonNames = bson_new();
-//     // auto bsonMetadata = bson_new();
-//     // auto nameSpace = m_JuleaInfo->nameSpace; //FIXME
-//     unsigned int varCount = 0;
-//     int type;
-//     Dims shape;
-//     Dims start;
-//     Dims count;
-//     bool constantDims;
-
-//     // GetVariableMetadataFromJulea();
-//     // GetVariableDataFromJulea();
-
-//     // GetNamesBSONFromJulea(nameSpace, bsonNames, &varCount);
-
-//     // GetVariableBSONFromJulea(nameSpace,variable.m_Name, &bsonMetadata);
-
-//     // ParseVariableFromBSON(variable, bsonMetadata, nameSpace);
-// }
 
 
 /** ------------------------- DATA ------------------------------------------**/

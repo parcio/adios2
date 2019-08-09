@@ -28,7 +28,7 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
                              bool *constantDims);
 
 template <class T>
-void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace);
+void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace,long unsigned int *dataSize);
 void ParseAttributeFromBSON();
 
 // void ParseVarTypeFromBSON();
@@ -73,7 +73,7 @@ void SetMinMax(Variable<T> &variable, const T *data);
 
 #define variable_template_instantiation(T)                                     \
    extern template void ParseVariableFromBSON(Variable<T> &variable,            \
-                                             bson_t *bsonMetadata, const std::string nameSpace);            \
+                                             bson_t *bsonMetadata, const std::string nameSpace, long unsigned int *dataSize);            \
     ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 

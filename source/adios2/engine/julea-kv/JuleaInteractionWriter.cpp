@@ -219,7 +219,8 @@ void PutAttributeDataToJuleaSmall(Attribute<T> &attribute, const T *data,
                                   const std::string nameSpace)
 {
     std::string objName = "attributes";
-    unsigned int dataSize = -1;
+    // unsigned int dataSize = -1; //does this work?
+    unsigned int dataSize = 0; //does this work?
 
     if (attribute.m_IsSingleValue)
     {

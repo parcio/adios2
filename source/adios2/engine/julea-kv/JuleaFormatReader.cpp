@@ -123,7 +123,7 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
 
 template <class T>
 void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
-                           const std::string nameSpace)
+                           const std::string nameSpace, long unsigned int *dataSize)
 {
     bson_iter_t b_iter;
     gchar *key;
@@ -214,6 +214,13 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
         // {
         //     variable.m_is_value = (bool)bson_iter_bool(&b_iter);
         // }
+        else if (g_strcmp0(bson_iter_key(&b_iter), "data_size") == 0)
+        {
+            std::cout << "___ Datasize = " << *dataSize << std::endl;
+            *dataSize = bson_iter_int64(&b_iter);
+            std::cout << "___ Datasize = " << *dataSize << std::endl;
+        }
+
         else if (g_strcmp0(bson_iter_key(&b_iter) , "is_single_value") == 0)
         {
             variable.m_SingleValue = (bool)bson_iter_bool(&b_iter);
@@ -549,7 +556,7 @@ void ParseVarTypeFromBSON<std::complex<double>>(
 #define variable_template_instantiation(T)                                     \
     template void ParseVariableFromBSON(core::Variable<T> &,                   \
                                         bson_t *bsonMetadata,                  \
-                                        const std::string nameSpace);          \
+                                        const std::string nameSpace,long unsigned int *dataSize);          \
     template void ParseVarTypeFromBSON(Variable<T> &variable,                  \
                                        bson_iter_t *b_iter); \
 

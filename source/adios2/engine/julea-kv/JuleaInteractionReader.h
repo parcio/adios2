@@ -24,17 +24,17 @@ namespace engine
 
 
 template <class T>
-void GetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace);
+void GetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace, long unsigned int *dataSize);
 
 template <class T>
 void GetVariableDataFromJulea(Variable<T> &variable, T *data,
-                              const std::string nameSpace);
+                              const std::string nameSpace, long unsigned int dataSize);
 
 #define variable_template_instantiation(T)                                     \
    extern template void GetVariableMetadataFromJulea(Variable<T> &variable,            \
-                                             bson_t *bsonMetadata, const std::string nameSpace);            \
-   extern template void GetVariableMetadataFromJulea(Variable<T> &variable,            \
-                                             T *data, const std::string nameSpace);            \
+                                             bson_t *bsonMetadata, const std::string nameSpace,long unsigned int *dataSize );            \
+   extern template void GetVariableDataFromJulea(Variable<T> &variable,            \
+                                             T *data, const std::string nameSpace,long unsigned int dataSize  );            \
     ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 
