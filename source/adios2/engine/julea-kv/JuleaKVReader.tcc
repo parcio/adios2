@@ -14,6 +14,7 @@
 #include "JuleaClientLogic-legacy.h"
 #include "JuleaFormatReader.h"
 #include "JuleaInteractionReader.h"
+#include "JuleaInteractionReader.h"
 #include "JuleaKVReader.h"
 
 #include <iostream>
@@ -48,8 +49,9 @@ void JuleaKVReader::GetSyncCommon(Variable<std::string> &variable,
               << m_Name << std::endl;
     // std::cout << "++ Julea Reader DEBUG PRINT data_size %d" <<
     // metadata->data_size << std::endl;    //FIXME
-    GetVarDataFromJulea(name_space, metadata->name, metadata->data_size,
-                        (void *)(data), batch);
+    // GetVarDataFromJulea(name_space, metadata->name, metadata->data_size,
+    //                     (void *)(data), batch);
+
 
     // FIXME: additional metadata infos as "IsReadAsJoined" need to be stored in
     // ADIOS
@@ -149,7 +151,8 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
               << m_Name << std::endl;
 
     auto bsonNames = bson_new();
-    auto bsonMetadata = bson_new();
+    // auto bsonMetadata = bson_new();
+    bson_t *bsonMetadata = bson_new();
     auto nameSpace = m_Name;
     unsigned int varCount = 0;
     // int type;
@@ -170,12 +173,14 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
     //                          constantDims);
 
     /* this should gather the internal functions, see below*/
-    // GetVariableMetadataFromJulea(variable, bsonMetadata, nameSpace); //not working
+    // GetVariableMetadataFromJulea(variable, bsonMetadata, m_Name); //not working
+    GetVariableMetadataFromJulea(variable, bsonMetadata, m_Name); //working
+    // TRYGetVariableMetadataFromJulea(variable, bsonMetadata, m_Name); //not working
 
-    GetVariableBSONFromJulea(nameSpace,variable.m_Name, &bsonMetadata);
+    // GetVariableBSONFromJulea(nameSpace,variable.m_Name, &bsonMetadata);
     ParseVariableFromBSON(variable, bsonMetadata, nameSpace);   //working
 
-    // GetVariableDataFromJulea(variable, &data, nameSpace);
+    GetVariableDataFromJulea(variable, data, nameSpace);
 
 
     // ParseVarTypeFromBSON();

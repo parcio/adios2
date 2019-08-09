@@ -42,6 +42,9 @@ template <class T>
 void SetMinMax(Variable<T> &variable, const T *data);
 
 // template <class T>
+// void TESTGetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace);
+
+// template <class T>
 // void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);
 
 // template <class T>
@@ -63,6 +66,10 @@ void SetMinMax(Variable<T> &variable, const T *data);
 //                                              bson_t *bsonMetadata);            \
 //     ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(attribute_template_instantiation)
 // #undef attribute_template_instantiation
+
+   // extern template void TESTGetVariableMetadataFromJulea(Variable<T> &variable,            \
+                                             bson_t *bsonMetadata, const std::string nameSpace);            \
+
 
 #define variable_template_instantiation(T)                                     \
    extern template void ParseVariableFromBSON(Variable<T> &variable,            \

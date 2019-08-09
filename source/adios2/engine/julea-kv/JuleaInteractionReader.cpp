@@ -4,25 +4,27 @@
  *
  * JULEA engine using the JULEA storage framework to handle lower I/O.
  *
- *  Created on: Aug 01, 2019
+ *  Created on: Aug 02, 2019
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
+#ifndef ADIOS2_ENGINE_JULEAINTERACTIONREADERTEST_
+#define ADIOS2_ENGINE_JULEAINTERACTIONREADERTEST_
+
 #include "JuleaInteractionReader.h"
-#include "JuleaMetadata.h"
 
-#include <julea-config.h>
+// #include "JuleaFormatReader.h"
+// #include "JuleaKVReader.h"
 
-#include <assert.h>
 #include <bson.h>
-#include <glib.h>
-#include <string.h>
-
+#include <fstream>
 #include <iostream>
-// #include <julea-internal.h>
+#include <memory>
+#include <string>
+#include <utility>
+
 #include <julea-kv.h>
-#include <julea-object.h>
-#include <julea.h>
+
 
 namespace adios2
 {
@@ -30,6 +32,28 @@ namespace core
 {
 namespace engine
 {
+
+template <class T>
+void GetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace)
+{
+    std::cout << "Trying to fix template issues while linking" << std::endl;
+}
+
+
+template <class T>
+void GetVariableDataFromJulea(Variable<T> &variable, T *data,
+                              const std::string nameSpace)
+{
+    std::cout << "name" << variable.m_Name << std::endl;
+}
+
+#define variable_template_instantiation(T)                                     \
+    template void GetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace);\
+	template void GetVariableDataFromJulea(Variable<T> &variable, T *data, const std::string nameSpace);\
+
+ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
+#undef variable_template_instantiation
+
 
 /** -------------------------------------------------------------------------**/
 /** -------------- TESTING GENERIC FUNCTIONS --------------------------------**/
@@ -198,54 +222,81 @@ void GetVariableBSONFromJulea(const std::string nameSpace,
     }
 }
 
-template <class T>
-void GetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata,
-                                  const std::string nameSpace)
-{
-	auto bsonNames = bson_new();
-    // auto bsonMetadata = bson_new();
-    // auto nameSpace = m_JuleaInfo->nameSpace; //FIXME
-    unsigned int varCount = 0;
-    int type;
-    Dims shape;
-    Dims start;
-    Dims count;
-    bool constantDims;
+// template <>
+// void GetVariableMetadataFromJulea(Variable<std::string> &variable, bson_t *bsonMetadata,
+//                                   const std::string nameSpace)
+// {
+//     auto bsonNames = bson_new();
+//     // auto bsonMetadata = bson_new();
+//     // auto nameSpace = m_JuleaInfo->nameSpace; //FIXME
+//     unsigned int varCount = 0;
+//     int type;
+//     Dims shape;
+//     Dims start;
+//     Dims count;
+//     bool constantDims;
 
-    // GetVariableMetadataFromJulea();
-    // GetVariableDataFromJulea();
+//     // GetVariableMetadataFromJulea();
+//     // GetVariableDataFromJulea();
 
-    // GetNamesBSONFromJulea(nameSpace, bsonNames, &varCount);
+//     // GetNamesBSONFromJulea(nameSpace, bsonNames, &varCount);
 
-    GetVariableBSONFromJulea(nameSpace,variable.m_Name, bsonMetadata);
+//     GetVariableBSONFromJulea(nameSpace,variable.m_Name, &bsonMetadata);
 
-    ParseVariableFromBSON(variable, bsonMetadata, nameSpace);
-}
+//     ParseVariableFromBSON(variable, bsonMetadata, nameSpace);
+// }
 
+// template <class T>
+// void OLDGetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata,
+//                                   const std::string nameSpace)
+// {
+// 	auto bsonNames = bson_new();
+//     // auto bsonMetadata = bson_new();
+//     // auto nameSpace = m_JuleaInfo->nameSpace; //FIXME
+//     unsigned int varCount = 0;
+//     int type;
+//     Dims shape;
+//     Dims start;
+//     Dims count;
+//     bool constantDims;
 
-template <class T>
-void GetVariableDataFromJulea(Variable<T> &variable, const T *data,
-                              const std::string nameSpace)
-{
-    std::cout << "name" << variable.m_Name << std::endl;
-}
+//     // GetVariableMetadataFromJulea();
+//     // GetVariableDataFromJulea();
+
+//     // GetNamesBSONFromJulea(nameSpace, bsonNames, &varCount);
+
+//     // GetVariableBSONFromJulea(nameSpace,variable.m_Name, &bsonMetadata);
+
+//     // ParseVariableFromBSON(variable, bsonMetadata, nameSpace);
+// }
+
 
 /** ------------------------- DATA ------------------------------------------**/
 
-#define variable_template_instantiation(T)                                      \
-    template void GetVariableDataFromJulea(Variable<T> &variable, const T *data, const std::string nameSpace);    \
-    template void GetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata,           \
-                                               const std::string nameSpace);   \
-    template void GetAllAttributeNamesFromJulea(                               \
-        Attribute<T> &attribute, const T *data, const std::string nameSpace);  \
-    template void GetAttributeDataFromJulea(                                   \
-        Attribute<T> &attribute, const T *data, const std::string nameSpace);  \
-    template void GetAttributeMetadataFromJulea(Attribute<T> &attribute,       \
-                                                bson_t *bsonMetadata,          \
-                                                const std::string nameSpace);  \
-ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
-#undef variable_template_instantiation
+// #define variable_template_instantiation(T)                                      \
+//     template void GetVariableDataFromJulea(Variable<T> &variable, const T *data, const std::string nameSpace);    \
+//     template void OLDGetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata,           \
+//                                                const std::string nameSpace);   \
+//     template void GetAllAttributeNamesFromJulea(                               \
+//         Attribute<T> &attribute, const T *data, const std::string nameSpace);  \
+//     template void GetAttributeDataFromJulea(                                   \
+//         Attribute<T> &attribute, const T *data, const std::string nameSpace);  \
+//     template void GetAttributeMetadataFromJulea(Attribute<T> &attribute,       \
+//                                                 bson_t *bsonMetadata,          \
+//                                                 const std::string nameSpace);  \
+// ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
+// #undef variable_template_instantiation
+
+// #define attribute_template_instantiation(T)                                    \
+//     template void ParseAttributeToBSON(Attribute<T> &attribute,                \
+//                                        bson_t *bsonMetadata);                  \
+//     template void ParseAttrTypeToBSON(Attribute<T> &attribute,                 \
+//                                       bson_t *bsonMetadata);
+
+// ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(attribute_template_instantiation)
+// #undef attribute_template_instantiation
 
 } // end namespace engine
 } // end namespace core
 } // end namespace adios2
+#endif /* ADIOS2_ENGINE_JULEAINTERACTIONREADERTEST_ */

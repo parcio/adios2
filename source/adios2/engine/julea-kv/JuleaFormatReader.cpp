@@ -12,7 +12,7 @@
 #define ADIOS2_ENGINE_JULEAFORMATREADER_
 
 #include "JuleaFormatReader.h"
-#include "JuleaKVReader.h"
+// #include "JuleaKVReader.h"
 
 #include <bson.h>
 #include <fstream>
@@ -536,6 +536,15 @@ void ParseVarTypeFromBSON<std::complex<double>>(
 }
 
 // template void SetMinMax(Variable<T> &var);             \
+
+// template <class T>
+// void TESTGetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace)
+// {
+//     std::cout << "Trying to fix template issues while linking" << std::endl;
+// }
+
+    // template void TESTGetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace);\
+
 
 #define variable_template_instantiation(T)                                     \
     template void ParseVariableFromBSON(core::Variable<T> &,                   \
