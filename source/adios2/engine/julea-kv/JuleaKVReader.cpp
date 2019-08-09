@@ -500,18 +500,14 @@ void JuleaKVReader::InitVariables()
     bson_iter_t b_iter;
     bson_t *bsonNames;
     std::string varName;
-    std::string nameSpace = m_Name; //TODO: working everywhere?
+    std::string nameSpace = m_Name;
     unsigned int varCount = 0;
-    // int size = 0;
 
     GetNamesBSONFromJulea(nameSpace, &bsonNames, &varCount);
     bson_iter_init(&b_iter, bsonNames);
 
     std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
 
-    // std::cout << "++ Julea Reader DEBUG PRINT: varCount " << varCount
-    // << std::endl;
-    /* probably not very efficient */
     while (bson_iter_next(&b_iter))
     {
         bson_t *bsonMetadata;
@@ -530,77 +526,7 @@ void JuleaKVReader::InitVariables()
 
         GetVariableMetadataForInitFromBSON(nameSpace, varName, bsonMetadata, &type, &shape,
                                 &start, &count, &constantDims);
-
-        // std::cout << "type now = " << type << std::endl;
-        // std::cout << "shape.size " << shape.size() << std::endl;
-        // std::cout << "start.size " << start.size() << std::endl;
-        // std::cout << "count.size " << count.size() << std::endl;
-        // std::cout << "count: " << count[0] << std::endl;
-        switch (type)
-        {
-        // case COMPOUND:
-        //     //TODO
-        //     break;
-        // case UNKNOWN:
-        //     //TODO
-        //     break;
-        case STRING:
-            m_IO.DefineVariable<std::string>(varName, shape, start, count,
-                                             constantDims);
-            break;
-        case INT8:
-            m_IO.DefineVariable<int8_t>(varName, shape, start, count,
-                                        constantDims);
-            break;
-        case UINT8:
-            m_IO.DefineVariable<uint8_t>(varName, shape, start, count,
-                                         constantDims);
-            break;
-        case INT16:
-            m_IO.DefineVariable<int16_t>(varName, shape, start, count,
-                                         constantDims);
-            break;
-        case UINT16:
-            m_IO.DefineVariable<uint16_t>(varName, shape, start, count,
-                                          constantDims);
-            break;
-        case INT32:
-            m_IO.DefineVariable<int32_t>(varName, shape, start, count,
-                                         constantDims);
-            break;
-        case UINT32:
-            m_IO.DefineVariable<uint32_t>(varName, shape, start, count,
-                                          constantDims);
-            break;
-        case INT64:
-            m_IO.DefineVariable<int64_t>(varName, shape, start, count,
-                                         constantDims);
-            break;
-        case UINT64:
-            m_IO.DefineVariable<uint64_t>(varName, shape, start, count,
-                                          constantDims);
-            break;
-        case FLOAT:
-            m_IO.DefineVariable<float>(varName, shape, start, count,
-                                       constantDims);
-            break;
-        case DOUBLE:
-            m_IO.DefineVariable<double>(varName, shape, start, count,
-                                        constantDims);
-            break;
-        case LONG_DOUBLE:
-            m_IO.DefineVariable<long double>(varName, shape, start, count,
-                                             constantDims);
-            break;
-        case COMPLEX_FLOAT:
-            m_IO.DefineVariable<std::complex<float>>(varName, shape, start,
-                                                     count, constantDims);
-            break;
-        case COMPLEX_DOUBLE:
-            m_IO.DefineVariable<std::complex<double>>(varName, shape, start,
-                                                      count, constantDims);
-            break;
-        }
+        DefineVariableInInit(&m_IO, varName, type, shape, start, count, constantDims);
     }
 }
 

@@ -121,6 +121,77 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
     } // end while
 }
 
+void DefineVariableInInit(core::IO *io, const std::string varName, int type, Dims shape, Dims start, Dims count, bool constantDims)
+{
+    switch (type)
+        {
+        // case COMPOUND:
+        //     //TODO
+        //     break;
+        // case UNKNOWN:
+        //     //TODO
+        //     break;
+        case STRING:
+            io->DefineVariable<std::string>(varName, shape, start, count,
+                                             constantDims);
+            break;
+        case INT8:
+            io->DefineVariable<int8_t>(varName, shape, start, count,
+                                        constantDims);
+            break;
+        case UINT8:
+            io->DefineVariable<uint8_t>(varName, shape, start, count,
+                                         constantDims);
+            break;
+        case INT16:
+            io->DefineVariable<int16_t>(varName, shape, start, count,
+                                         constantDims);
+            break;
+        case UINT16:
+            io->DefineVariable<uint16_t>(varName, shape, start, count,
+                                          constantDims);
+            break;
+        case INT32:
+            io->DefineVariable<int32_t>(varName, shape, start, count,
+                                         constantDims);
+            break;
+        case UINT32:
+            io->DefineVariable<uint32_t>(varName, shape, start, count,
+                                          constantDims);
+            break;
+        case INT64:
+            io->DefineVariable<int64_t>(varName, shape, start, count,
+                                         constantDims);
+            break;
+        case UINT64:
+            io->DefineVariable<uint64_t>(varName, shape, start, count,
+                                          constantDims);
+            break;
+        case FLOAT:
+            io->DefineVariable<float>(varName, shape, start, count,
+                                       constantDims);
+            break;
+        case DOUBLE:
+            io->DefineVariable<double>(varName, shape, start, count,
+                                        constantDims);
+            break;
+        case LONG_DOUBLE:
+            io->DefineVariable<long double>(varName, shape, start, count,
+                                             constantDims);
+            break;
+        case COMPLEX_FLOAT:
+            io->DefineVariable<std::complex<float>>(varName, shape, start,
+                                                     count, constantDims);
+            break;
+        case COMPLEX_DOUBLE:
+            io->DefineVariable<std::complex<double>>(varName, shape, start,
+                                                      count, constantDims);
+            break;
+        }
+}
+
+
+
 template <class T>
 void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
                            const std::string nameSpace, long unsigned int *dataSize)

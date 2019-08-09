@@ -27,6 +27,9 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
                              int *type, Dims *shape, Dims *start, Dims *count,
                              bool *constantDims);
 
+void DefineVariableInInit(core::IO *io, const std::string varName, int type, Dims shape, Dims start, Dims count, bool constantDims);
+
+
 template <class T>
 void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace,long unsigned int *dataSize);
 void ParseAttributeFromBSON();
