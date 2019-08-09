@@ -113,14 +113,11 @@ void GetNamesBSONFromJulea(const std::string nameSpace, bson_t **bsonNames,
     if (value_len == 0)
     {
         // bsonNames = bson_new();
-        // printf("WARNING: The names key-value store is empty! \n");
         std::cout << "WARNING: The names key-value store is empty!" << std::endl;
         *varCount = 0;
     }
     else
     {
-        // bson_names = bson_new_from_data((const uint8_t *)names_buf,
-        // value_len);
         *bsonNames = bson_new_from_data((const uint8_t *)names_buf, value_len);
         std::cout << "-- bsonNames length: " << (*bsonNames)->len << std::endl;
 
@@ -132,22 +129,12 @@ void GetNamesBSONFromJulea(const std::string nameSpace, bson_t **bsonNames,
 
     j_kv_unref(kv_object);
     j_batch_unref(batch);
-   std::cout << "-- JADIOS DEBUG --- PRINT 1 " << std::endl;
 }
 
 void GetVariableBSONFromJulea(const std::string nameSpace,
                               const std::string varName, bson_t **bsonMetadata)
 {
-    // JBatch *batch;
-    // gchar *string_metadata_kv;
-    // gchar *key;
-    // bson_t* bson_metadata;
-    // bson_t bson_metadata;
-    // bson_iter_t b_iter;
     guint32 value_len = 0;
-    std::cout << "-- JADIOS DEBUG --- GetVariableBSONFromJulea " << std::endl;
-
-    // g_autoptr(JKV) kv_object = NULL;
     void *meta_data_buf = NULL;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
@@ -167,9 +154,6 @@ void GetVariableBSONFromJulea(const std::string nameSpace,
     }
     else
     {
-        //FIXME: why is bson_init_static not working? memory issues
-        // bson_init_static(*bsonMetadata, (uint8_t *)meta_data_buf, value_len);
-
         *bsonMetadata = bson_new_from_data((const uint8_t *)meta_data_buf, value_len);
     }
 }
