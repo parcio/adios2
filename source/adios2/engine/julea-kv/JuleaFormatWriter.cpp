@@ -126,6 +126,7 @@ void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
 template <class T>
 void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata)
 {
+    std::cout << "_____________________________________________" << std::endl;
     std::cout << "Test" << std::endl;
     T min;
     T max;
