@@ -132,8 +132,7 @@ int TestWriteAttribute()
         /*** IO class object: settings and factory of Settings: Variables,
          * Parameters, Transports, and Execution: Engines */
         adios2::IO juleaIO = adios.DeclareIO("juleaIO");
-        // juleaIO.SetEngine("julea-kv");
-        juleaIO.SetEngine("bp");
+        juleaIO.SetEngine("julea-kv");
 
         /** global array: name, { shape (total dimensions) }, { start (local) },
          * { count (local) }, all are constant dimensions */
@@ -153,8 +152,8 @@ int TestWriteAttribute()
                                      myDoubles.size());
 
         /** Engine derived class, spawned to start IO operations */
-        adios2::Engine juleaWriter = juleaIO.Open("myVector.bp", adios2::Mode::Write);
-        // adios2::Engine juleaWriter = juleaIO.Open("testFile", adios2::Mode::Write);
+        // adios2::Engine juleaWriter = juleaIO.Open("myVector.bp", adios2::Mode::Write);
+        adios2::Engine juleaWriter = juleaIO.Open("testFile", adios2::Mode::Write);
 
         /** Write variable for buffering */
         // juleaWriter.Put<float>(bpFloats, myFloats.data());
@@ -171,9 +170,10 @@ int TestReadAttribute()
         /*** IO class object: settings and factory of Settings: Variables,
          * Parameters, Transports, and Execution: Engines */
         adios2::IO juleaIO = adios.DeclareIO("juleaIO");
-        // juleaIO.SetEngine("julea-kv");
+        juleaIO.SetEngine("julea-kv");
 
-        adios2::Engine juleaReader = juleaIO.Open("myVector.bp", adios2::Mode::Read);
+        // adios2::Engine juleaReader = juleaIO.Open("myVector.bp", adios2::Mode::Read);
+        adios2::Engine juleaReader = juleaIO.Open("testFile", adios2::Mode::Read);
 
         adios2::Attribute<std::string> juleaAttrSingleString = juleaIO.InquireAttribute<std::string>("Single_String");
 
