@@ -102,6 +102,7 @@ int TestReadVariable(){
         juleaReader.Get<float>(juleaFloats, myFloats.data(),adios2::Mode::Sync);
         // juleaReader.Get<float>(juleaFloats2, myFloats2.data(),adios2::Mode::Sync);
         juleaReader.Get<int>(juleaInts, myInts.data(),adios2::Mode::Sync);
+        // std::cout << "Data : " << juleaFloats.GetData() << std::endl;
         // juleaReader.Get<int>(juleaInts2, myInts2.data(),adios2::Mode::Sync);
     }
 
@@ -146,8 +147,8 @@ int TestWriteAttribute()
         juleaIO.DefineAttribute<std::string>("Array_of_Strings", myStrings.data(),
                                           myStrings.size());
 
-        juleaIO.DefineAttribute<double>("Attr_Double", 0.f);
-        std::vector<double> myDoubles = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+        juleaIO.DefineAttribute<double>("Attr_Double", 42.42);
+        std::vector<double> myDoubles = {1, 42, -333, 4, 5, 6, 7, 8, 9, 10};
         juleaIO.DefineAttribute<double>("Array_of_Doubles", myDoubles.data(),
                                      myDoubles.size());
 
@@ -171,27 +172,25 @@ int TestReadAttribute()
          * Parameters, Transports, and Execution: Engines */
         adios2::IO juleaIO = adios.DeclareIO("juleaIO");
         // juleaIO.SetEngine("julea-kv");
-        juleaIO.SetEngine("bp");
 
-        // std::vector<std::string> myStrings = {"trala", "lala", "lalida"};
-        // std::vector<std::string> singleString = {"File generated with ADIOS2"};
-        // adios2::Engine juleaReader = juleaIO.Open("testFile", adios2::Mode::Write);
         adios2::Engine juleaReader = juleaIO.Open("myVector.bp", adios2::Mode::Read);
 
-        std::cout << "DEBUG Reading Attribute... " << std::endl;
         adios2::Attribute<std::string> juleaAttrSingleString = juleaIO.InquireAttribute<std::string>("Single_String");
-        // std::cout << "juleaAttrSingleString: " <<juleaAttrSingleString.m_DataSingleValue << std::endl;
+
         if(juleaAttrSingleString)
         {
-            std::cout << "Data: " << juleaAttrSingleString.Name() << std::endl;
+            std::cout << "Name: " << juleaAttrSingleString.Name() << std::endl;
+            std::cout << "Data: " << juleaAttrSingleString.Data()[0] << std::endl;
+            std::cout << "-- Attribute string read " << std::endl;
         }
 
-        // std::cout << "juleaAttrSingleString: " <<juleaAttrSingleString << std::endl;
         // adios2::Attribute<double> juleaAttrDouble = juleaIO.InquireAttribute<double>("Attr_Double");
         auto juleaAttrDouble = juleaIO.InquireAttribute<double>("Attr_Double");
         if(juleaAttrDouble)
         {
-            std::cout << "Attribute double read " << std::endl;
+            std::cout << "Name: " << juleaAttrDouble.Name() << std::endl;
+            std::cout << "Data: " << juleaAttrDouble.Data()[0] << std::endl;
+            std::cout << "-- Attribute double read " << std::endl;
         }
 }
 
@@ -207,13 +206,13 @@ int main(int argc, char *argv[])
     {
 		std::cout << "JuleaEngineTest :)" << std::endl;
 		// err = TestWriteVariable();
-        // std::cout << "\n JuleaEngineTest :) Write variable finished" << std::endl;
+        // std::cout << "\n JuleaEngineTest :) Write variable finished \n" << std::endl;
         // err = TestReadVariable();
-        // std::cout << "\n JuleaEngineTest :) Read variable finished" << std::endl;
+        // std::cout << "\n JuleaEngineTest :) Read variable finished \n" << std::endl;
         err = TestWriteAttribute();
-        std::cout << "\n JuleaEngineTest :) Write attribute finished" << std::endl;
+        std::cout << "\n JuleaEngineTest :) Write attribute finished \n" << std::endl;
         err = TestReadAttribute();
-        std::cout << "\n JuleaEngineTest :) Read attribute finished" << std::endl;
+        std::cout << "\n JuleaEngineTest :) Read attribute finished \n" << std::endl;
 
     }
 	catch (std::invalid_argument &e)
