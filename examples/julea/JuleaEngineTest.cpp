@@ -164,8 +164,6 @@ int TestWriteAttribute()
 
 int TestReadAttribute()
 {
-    std::vector<float> myFloats = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    const std::size_t Nx = myFloats.size();
     /** ADIOS class factory of IO class objects, DebugON is recommended */
         adios2::ADIOS adios(adios2::DebugON);
 
@@ -178,7 +176,7 @@ int TestReadAttribute()
         // std::vector<std::string> myStrings = {"trala", "lala", "lalida"};
         // std::vector<std::string> singleString = {"File generated with ADIOS2"};
         // adios2::Engine juleaReader = juleaIO.Open("testFile", adios2::Mode::Write);
-        adios2::Engine juleaReader = juleaIO.Open("myVector.bp", adios2::Mode::Write);
+        adios2::Engine juleaReader = juleaIO.Open("myVector.bp", adios2::Mode::Read);
 
         std::cout << "DEBUG Reading Attribute... " << std::endl;
         adios2::Attribute<std::string> juleaAttrSingleString = juleaIO.InquireAttribute<std::string>("Single_String");
@@ -195,34 +193,6 @@ int TestReadAttribute()
         {
             std::cout << "Attribute double read " << std::endl;
         }
-        // std::cout << "juleaAttrSingleString: " <<juleaAttrSingleString.m_DataSingleValue << std::endl;
-        // adios::Attribute<std::string> juleaAttrStrings = juleaIO.InquireAttribute<std::string>("Array_of_Strings");
-
-    //     /** global array: name, { shape (total dimensions) }, { start (local) },
-    //      * { count (local) }, all are constant dimensions */
-    //     adios2::Variable<float> bpFloats = juleaIO.DefineVariable<float>(
-    //         "bpFloats", {}, {}, {Nx}, adios2::ConstantDims);
-
-    //     juleaIO.DefineAttribute<std::string>("Single_String",
-    //                                       "File generated with ADIOS2");
-
-    //     std::vector<std::string> myStrings = {"one", "two", "three"};
-    //     juleaIO.DefineAttribute<std::string>("Array_of_Strings", myStrings.data(),
-    //                                       myStrings.size());
-
-    //     juleaIO.DefineAttribute<double>("Attr_Double", 0.f);
-    //     std::vector<double> myDoubles = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    //     juleaIO.DefineAttribute<double>("Array_of_Doubles", myDoubles.data(),
-    //                                  myDoubles.size());
-
-    //     /** Engine derived class, spawned to start IO operations */
-    //     adios2::Engine bpWriter = juleaIO.Open("myVector.bp", adios2::Mode::Write);
-
-    //     /** Write variable for buffering */
-    //     bpWriter.Put<float>(bpFloats, myFloats.data());
-
-    //     /** Create bp file, engine becomes unreachable after this*/
-    //     bpWriter.Close();
 }
 
 
