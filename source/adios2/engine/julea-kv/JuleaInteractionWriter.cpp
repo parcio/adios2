@@ -51,17 +51,11 @@ void CheckIfAlreadyInKV(std::string kvName, std::string paramName,
     void *namesBuf = NULL;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
-    auto batch2 = j_batch_new(semantics);
-    // auto batch2 = j_batch_new(semantics);
-
     auto name = strdup(paramName.c_str());
 
-    // auto batch_2 = j_batch_new(j_batch_get_semantics(batch));
-
-    /* names_kv = kv holding all variable names */
-    // auto kvObjectNames = j_kv_new(kvName.c_str(), nameSpace.c_str());
     j_kv_get(kvObjectNames, &namesBuf, &valueLen, batch);
     j_batch_execute(batch);
+
     std::cout << "-- namesKV: valueLen = " << valueLen << std::endl;
 
     if (valueLen == 0)
@@ -78,25 +72,14 @@ void CheckIfAlreadyInKV(std::string kvName, std::string paramName,
     if (!bson_iter_init_find(&bIter, *bsonNames, name))
     {
         *IsAlreadyInKV = false;
-
-        // std::cout << "Init b_iter successfull " << std::endl;
-        // bson_append_int32(bsonNames, name, -1, 42);
-        // std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
         std::cout << "-- bsonNames length: " << (*bsonNames)->len << std::endl;
-        // auto namesBuf = g_memdup(bson_get_data(bsonNames), bsonNames->len);
-        // j_kv_put(kvObjectNames, namesBuf, bsonNames->len, g_free, batch2);
-
-        // j_batch_execute(batch2);
-        // //FIXME: var_type?!
     }
     else
     {
         *IsAlreadyInKV = true;
         std::cout << "++ Julea Interaction Writer: Attribute " << name
                   << " already in kv store. " << std::endl;
-        // std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
         std::cout << "-- bsonNames length: " << (*bsonNames)->len << std::endl;
-        // TODO: update variable -> is there anything else necessary to do?
     }
     // j_kv_unref(kvObjectNames); //FIXME: still needed afterwards in write metadata
     // j_kv_unref(kvObjectMetadata);
@@ -105,6 +88,10 @@ void CheckIfAlreadyInKV(std::string kvName, std::string paramName,
     // bson_destroy(bsonNames);
 }
 
+/*
+ *   Writes the variable/attribute name into the separate names kv store which
+ *   was necessary as the julea kv iterator did not return the key. Maybe fixed by now.
+ */
 void WriteNameToJuleaKV(std::string kvName, std::string paramName,
                         std::string nameSpace, bson_t *bsonNames,
                         JKV *kvObjectNames)
@@ -113,8 +100,8 @@ void WriteNameToJuleaKV(std::string kvName, std::string paramName,
     auto batch = j_batch_new(semantics);
     auto name = strdup(paramName.c_str());
 
-    std::cout <<"WriteNameToJuleaKV " << "-- bsonNames length: " << bsonNames->len << std::endl;
-    bson_append_int32(bsonNames, name, -1, 42);
+    // std::cout <<"WriteNameToJuleaKV " << "-- bsonNames length: " << bsonNames->len << std::endl;
+    bson_append_int32(bsonNames, name, -1, 42); //TODO: type?
     std::cout << "WriteNameToJuleaKV " << "-- bsonNames length: " << bsonNames->len << std::endl;
 
     auto namesBuf = g_memdup(bson_get_data(bsonNames), bsonNames->len);
@@ -134,33 +121,22 @@ void WriteMetadataToJuleaKV(std::string kvName, std::string paramName,
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
-    /* Put name to names kv */
-    // namesBuf = g_memdup(bson_get_data(bsonNames), bsonNames->len);
-    // j_kv_put(kvObjectNames, namesBuf, bsonNames->len, g_free, batch);
+    // std::cout << "kvName " << kvName << std::endl;
+    // std::cout << "paramName " << paramName << std::endl;
+    // std::cout << "nameSpace " << nameSpace << std::endl;
 
-    // std::cout << "_____________________________________________" << std::endl;
-    std::cout << "kvName " << kvName << std::endl;
-    std::cout << "paramName " << paramName << std::endl;
-    std::cout << "nameSpace " << nameSpace << std::endl;
-
-    /* Write metadata struct to kv store*/
-    // auto stringMetadataKV = g_strdup_printf("attributes_%s", nameSpace);
     auto stringMetadataKV =
         g_strdup_printf("%s_%s", kvName.c_str(), nameSpace.c_str());
-    std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
+    // std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
     auto kvObjectMetadata = j_kv_new(stringMetadataKV, paramName.c_str());
-    // std::cout << "-- DEBUG 1 " << std::endl;
 
     metaDataBuf = g_memdup(bson_get_data(bsonMetaData), bsonMetaData->len);
-    // std::cout << "-- DEBUG 2 " << std::endl;
     j_kv_put(kvObjectMetadata, metaDataBuf, bsonMetaData->len, g_free, batch); //FIXME: reading issue
 
-    // std::cout << "-- DEBUG 3 " << std::endl;
     j_batch_execute(batch);
-    // std::cout << "-- DEBUG 4 " << std::endl;
+
     j_kv_unref(kvObjectMetadata);
     j_batch_unref(batch);
-
     // j_kv_unref(kvObjectNames);
     // g_free(stringMetadataKV);
 }
@@ -259,25 +235,18 @@ void PutVariableMetadataToJuleaSmall(Variable<T> &variable,
                                      bson_t *bsonMetaData,
                                      const std::string nameSpace)
 {
-    // bson_t *bsonNames = bson_new(); // FIXME
     bson_t *bsonNames; // FIXME
-    // bson_iter_t bIter;
-    // std::string kvName = "variable_names";
-    // const char *kvNameC = kvName.c_str();
+
     const char *kvNames = "variable_names";
     const char * kvMD = "variables";
     bool IsAlreadyInKV = false;
 
     /* names_kv = kv holding all variable names */
-    // auto kvObjectNames = j_kv_new(kvNameC, nameSpace.c_str());
     auto kvObjectNames = j_kv_new(kvNames, nameSpace.c_str());
 
-    // CheckIfAlreadyInKV(kvNameC, variable.m_Name, nameSpace.c_str(), bsonNames,
-                       // kvObjectNames);
     CheckIfAlreadyInKV(kvMD, variable.m_Name, nameSpace.c_str(), &bsonNames,
                        kvObjectNames, &IsAlreadyInKV);
-    // WriteMetadataToJuleaKV(kvNameC, variable.m_Name, nameSpace.c_str(),
-                           // bsonNames, bsonMetaData, kvObjectNames);
+
     if (!IsAlreadyInKV)
     {
         WriteNameToJuleaKV(kvMD, variable.m_Name, nameSpace.c_str(), bsonNames,
@@ -311,12 +280,12 @@ void WriteDataToJuleaObjectStore(std::string objName, std::string paramName,
 
     auto name = strdup(paramName.c_str());
 
-    /* Write data pointer to object store*/
-    // auto stringDataObject =
-    // g_strdup_printf("%s_variables_%s", nameSpace, name);
+    /* Write data pointer to object store:
+    * printf("%s_variables_%s", nameSpace, name)*/
+
     auto stringDataObject =
         g_strdup_printf("%s_%s_%s", nameSpace.c_str(), objName.c_str(), name);
-    std::cout << "stringDataObject " << stringDataObject << std::endl;
+    // std::cout << "stringDataObject " << stringDataObject << std::endl;
     auto dataObject = j_object_new(stringDataObject, name);
 
     j_object_create(dataObject, batch);
@@ -359,8 +328,7 @@ void PutAttributeDataToJuleaSmall(Attribute<T> &attribute, const T *data,
                                   const std::string nameSpace)
 {
     std::string objName = "attributes";
-    // unsigned int dataSize = -1; //does this work?
-    unsigned int dataSize = 0; //does this work?
+    unsigned int dataSize = 0;
 
     if (attribute.m_IsSingleValue)
     {
@@ -382,6 +350,7 @@ void PutAttributeDataToJuleaSmall(Attribute<T> &attribute, const T *data,
 /** -------------- TESTING GENERIC FUNCTIONS END ----------------------------**/
 /** -------------------------------------------------------------------------**/
 
+/* Write data pointer to object store*/
 template <class T>
 void PutVariableDataToJulea(Variable<T> &variable, const T *data,
                             const std::string nameSpace)
@@ -394,7 +363,6 @@ void PutVariableDataToJulea(Variable<T> &variable, const T *data,
     auto numberElements = adios2::helper::GetTotalSize(variable.m_Count);
     auto dataSize = variable.m_ElementSize * numberElements;
 
-    /* Write data pointer to object store*/
     auto stringDataObject =
         g_strdup_printf("%s_variables_%s", nameSpace.c_str(), varName);
     auto dataObject = j_object_new(stringDataObject, varName);
@@ -425,7 +393,6 @@ template <class T>
 void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
                                 const std::string nameSpace)
 {
-    // guint64 bytesWritten = 0;
     guint32 valueLen = 0;
 
     bson_iter_t bIter;
@@ -437,17 +404,14 @@ void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
     auto batch2 = j_batch_new(semantics);
-
     auto varName = strdup(variable.m_Name.c_str());
-
-    // auto batch_2 = j_batch_new(j_batch_get_semantics(batch));
 
     /* names_kv = kv holding all variable names */
     auto kvObjectNames = j_kv_new("variable_names", nameSpace.c_str());
     j_kv_get(kvObjectNames, &namesBuf, &valueLen, batch);
     j_batch_execute(batch);
 
-    std::cout << "-- namesKV: valueLen = " << valueLen << std::endl;
+    // std::cout << "-- namesKV: valueLen = " << valueLen << std::endl;
     if (valueLen == 0)
     {
         bsonNames = bson_new();
@@ -462,7 +426,7 @@ void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
     {
         std::cout << "Init b_iter successfull " << std::endl;
         bson_append_int32(bsonNames, varName, -1, 42);
-        std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
+        // std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
 
         // bson_append_int32(bsonNames, varName, -1, bsonMetaData->var_type);
         // //FIXME: var_type?!
@@ -472,12 +436,12 @@ void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
         std::cout << "++ Julea Interaction Writer: Variable " << varName
                   << " already in kv store. " << std::endl;
         // TODO: update variable -> is there anything else necessary to do?
-        std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
+        // std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
     }
 
     /* Write metadata struct to kv store*/
     auto stringMetadataKV = g_strdup_printf("variables_%s", nameSpace.c_str());
-    std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
+    // std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
     auto kvObjectMetadata = j_kv_new(stringMetadataKV, varName);
 
     metaDataBuf = g_memdup(bson_get_data(bsonMetaData), bsonMetaData->len);

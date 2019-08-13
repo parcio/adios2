@@ -74,7 +74,7 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
     // PutVariableMetadataToJulea(variable, bsonMetadata,
     //                                 m_Name);
     PutVariableMetadataToJuleaSmall(variable, bsonMetadata,
-                                    m_Name); //FIXME
+                                    m_Name);
     // PutVariableDataToJulea(variable, data, m_Name);
     PutVariableDataToJuleaSmall(variable, data, m_Name);
 
