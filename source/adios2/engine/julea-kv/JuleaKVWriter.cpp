@@ -185,9 +185,10 @@ void JuleaKVWriter::PerformPuts()
  * [JuleaWriter::Flush description]
  * @param transportIndex [description]
  */
+// void JuleaKVWriter::Flush()
 void JuleaKVWriter::Flush(const int transportIndex)
 {
-    DoFlush(false, transportIndex);
+    DoFlush(false);
     // ResetBuffer(m_Data);
 
     if (m_CollectiveMetadata)
@@ -330,15 +331,23 @@ ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
  * [JuleaWriter::DoClose description]
  * @param transportIndex [description]
  */
+// void JuleaKVWriter::DoClose()
 void JuleaKVWriter::DoClose(const int transportIndex)
 {
-    // std::cout << "JULEA ENGINE: Do close" << std::endl;
+    std::cout << "___ where to write attribute: Do close" << std::endl;
     if (m_Verbosity == 5)
     {
         std::cout << "Julea Writer " << m_WriterRank << " Close(" << m_Name
                   << ")\n";
     }
     //TODO: free semantics
+    /* Write deferred variables*/
+    if (m_DeferredVariables.size() > 0)
+    {
+        // PerformPuts();
+    }
+    DoFlush(true, transportIndex);
+    // TODO: Close Transports?!
 }
 
 /**TODO
@@ -346,16 +355,19 @@ void JuleaKVWriter::DoClose(const int transportIndex)
  * @param isFinal        [description]
  * @param transportIndex [description]
  */
+// void JuleaKVWriter::DoFlush(const bool isFinal)
 void JuleaKVWriter::DoFlush(const bool isFinal, const int transportIndex)
 {
-    // if (m_BP3Serializer.m_Aggregator.m_IsActive)
-    // {
-    AggregateWriteData(isFinal, transportIndex);
-    // }
-    // else
-    // {
-    WriteData(isFinal, transportIndex);
-    // }
+    if (m_Aggregator.m_IsActive)
+    {
+        AggregateWriteData(isFinal, transportIndex);
+        // AggregateWriteData(isFinal);
+    }
+    else
+    {
+        WriteData(isFinal, transportIndex);
+        // WriteData(isFinal);
+    }
     if (m_Verbosity == 5)
     {
         std::cout << "Julea Writer " << m_WriterRank << " DoFlush \n";
@@ -368,6 +380,7 @@ void JuleaKVWriter::DoFlush(const bool isFinal, const int transportIndex)
  * @param isFinal        [description]
  * @param transportIndex [description]
  */
+// void JuleaKVWriter::WriteData(const bool isFinal)
 void JuleaKVWriter::WriteData(const bool isFinal, const int transportIndex)
 {
     Metadata *metadata;
@@ -378,16 +391,19 @@ void JuleaKVWriter::WriteData(const bool isFinal, const int transportIndex)
     if (isFinal)
     {
         // m_BP3Serializer.CloseData(m_IO); DESIGN how to realize with JULEA?
-        dataSize = m_Data.m_Position;
+        if(!m_IsClosed)
+        {
+            PutAttributes(m_IO);
+        }
+        // dataSize = m_Data.m_Position;
     }
     else
     {
-        // m_BP3Serializer.CloseStream(m_IO);
-        // parameter passed to constructor?!
+        // m_BP3Serializer.CloseStream(m_IO); //TODO needed?
+        // TODO: write attributes?
     }
 
-    // m_FileDataManager.WriteFiles(m_Data.m_Buffer.data(), //FIXME: Compiler ?!
-    //                              dataSize, transportIndex);
+    // m_FileDataManager.WriteFiles(m_Data.m_Buffer.data(), dataSize, transportIndex);
     // m_FileDataManager.FlushFiles(transportIndex);
 
     // TODO: sufficient?
@@ -404,8 +420,8 @@ void JuleaKVWriter::WriteData(const bool isFinal, const int transportIndex)
  * @param isFinal        [description]
  * @param transportIndex [description]
  */
-void JuleaKVWriter::AggregateWriteData(const bool isFinal,
-                                       const int transportIndex)
+// void JuleaKVWriter::AggregateWriteData(const bool isFinal)
+void JuleaKVWriter::AggregateWriteData(const bool isFinal, const int transportIndex)
 {
     // DESIGN: check BP3Writer
     if (m_Verbosity == 5)

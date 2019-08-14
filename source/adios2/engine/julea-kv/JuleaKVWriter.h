@@ -57,7 +57,8 @@ public:
     size_t CurrentStep() const final;
     void PerformPuts() final;
     void EndStep() final;
-    void Flush(const int transportIndex = -1) final;
+    void Flush(const int transportIndex = -1) final; //TODO: transportindex needed?
+    // void Flush();
 
 private:
     // JuleaInfo *m_JuleaInfo;
@@ -75,6 +76,10 @@ private:
     bool m_Flushed = false; // DESIGN: used in HDF5Writer
 
     /**  --- DESIGN: the following is similar to BP3Writer and BP3Base --- */
+
+    /** true: Close was called, Engine will call this many times for different
+     * transports */
+    bool m_IsClosed = false;
 
     /** Default: write collective metadata in Capsule metadata. */
     bool m_CollectiveMetadata = true;
@@ -152,6 +157,7 @@ private:
     void PutDeferredCommon(Variable<T> &variable, const T *values);
 
     void DoFlush(const bool isFinal = false, const int transportIndex = -1);
+    // void DoFlush(const bool isFinal = false);
     /**
      * Closes a single transport or all transports
      * @param transportIndex, if -1 (default) closes all transports,
@@ -160,12 +166,15 @@ private:
      */
     void DoClose(const int transportIndex = -1) final;
 
+    // void DoClose();
+
     /**
      * DESIGN
      * N-to-N data buffers writes, including metadata file
      * @param transportIndex
      */
     void WriteData(const bool isFinal, const int transportIndex = -1);
+    // void WriteData(const bool isFinal);
 
     /**
      * DESIGN
@@ -173,6 +182,7 @@ private:
      * @param transportIndex
      */
     void AggregateWriteData(const bool isFinal, const int transportIndex = -1);
+    // void AggregateWriteData(const bool isFinal);
 
     /**
      * Put Attributes to file.

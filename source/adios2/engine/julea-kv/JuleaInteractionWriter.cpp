@@ -517,6 +517,7 @@ template <class T>
 void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetaData,
                                  const std::string nameSpace)
 {
+    std::cout << "___ PutAttributeMetadataToJulea: " << std::endl;
     // guint64 bytesWritten = 0;
     guint32 valueLen = 0;
 

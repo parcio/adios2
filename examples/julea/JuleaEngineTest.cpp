@@ -50,9 +50,12 @@ int TestWriteVariable(){
 
     /** Write variable for buffering */
     juleaWriter.Put<float>(juleaFloats, myFloats.data(),adios2::Mode::Sync);
+    // juleaWriter.Put<float>(juleaFloats, myFloats.data(),adios2::Mode::Deferred);
     // juleaWriter.Put<float>(juleaFloats2, myFloats2.data(),adios2::Mode::Sync);
     juleaWriter.Put<int>(juleaInts, myInts.data(),adios2::Mode::Sync);
+    // juleaWriter.Put<int>(juleaInts, myInts.data(),adios2::Mode::Deferred);
     juleaWriter.Put<int>(juleaInts2, myInts2.data(),adios2::Mode::Sync);
+    // juleaWriter.Put<int>(juleaInts2, myInts2.data(),adios2::Mode::Deferred);
 
     /** Create bp file, engine becomes unreachable after this*/
     juleaWriter.Close();
