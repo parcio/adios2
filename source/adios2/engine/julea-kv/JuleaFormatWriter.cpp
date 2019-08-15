@@ -44,6 +44,7 @@ template <class T>
 void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
 {
     // name is key in kv
+    std::cout << "-- ParseAttributeToBSON " << std::endl;
     unsigned int dataSize = -1;
 
     bson_append_int64(bsonMetadata, "number_elements", -1,
@@ -54,10 +55,15 @@ void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
     {
         // TODO: check if this is correct
         dataSize = sizeof(attribute.m_DataSingleValue);
+        std::cout << "-- dataSize single value = " << dataSize << std::endl;
     }
     else
     {
-        dataSize = attribute.m_DataArray.size();
+
+        dataSize = attribute.m_DataArray.size() * sizeof(T);
+        std::cout << "-- dataSize Array.size() = " << attribute.m_DataArray.size() << std::endl;
+        std::cout << "-- dataSize Array = " << dataSize << std::endl;
+        std::cout << "-- dataSize m_Elements = " << attribute.m_Elements << std::endl;
     }
 
     bson_append_int64(bsonMetadata, "data_size", -1, dataSize);

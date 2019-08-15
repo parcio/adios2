@@ -22,6 +22,10 @@ namespace core
 namespace engine
 {
 
+// void DefineAttributeInInit(core::IO *io, const std::string varName, int type, bool IsSingleValue);
+template <class T>
+void DefineAttributeInInit(core::IO *io, const std::string attrName, T *data, int type, bool IsSingleValue, size_t numberElements);
+
 void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
                              const std::string varName, bson_t *bsonMetadata,
                              int *type, Dims *shape, Dims *start, Dims *count,
@@ -39,11 +43,13 @@ template <class T>
 void ParseVarTypeFromBSON(Variable<T> &variable,bson_iter_t *b_iter);
 
 
-void ParseAttrTypeFromBSON();
-
 template <class T>
 void SetMinMax(Variable<T> &variable, const T *data);
 
+
+void ParseAttributeFromBSON( const std::string nameSpace, const std::string attrName, bson_t *bsonMetadata,long unsigned int *dataSize, size_t numberElements, bool IsSingleValue);
+
+void ParseAttrTypeFromBSON();
 // template <class T>
 // void TESTGetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace);
 
@@ -77,6 +83,7 @@ void SetMinMax(Variable<T> &variable, const T *data);
 #define variable_template_instantiation(T)                                     \
    extern template void ParseVariableFromBSON(Variable<T> &variable,            \
                                              bson_t *bsonMetadata, const std::string nameSpace, long unsigned int *dataSize);            \
+   extern template void DefineAttributeInInit(core::IO *io, const std::string attrName, T *data, int type, bool IsSingleValue, size_t numberElements);\
     ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 

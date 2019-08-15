@@ -271,6 +271,7 @@ void JuleaKVReader::Init()
     InitParameters();
     InitTransports();
     InitVariables();
+    InitAttributes();
 }
 
 /**
@@ -285,33 +286,100 @@ void JuleaKVReader::InitVariables()
     bson_t *bsonNames;
     std::string varName;
     std::string nameSpace = m_Name;
+    std::string kvName = "variable_names";
     unsigned int varCount = 0;
 
-    GetNamesBSONFromJulea(nameSpace, &bsonNames, &varCount);
+    GetNamesBSONFromJulea(nameSpace, &bsonNames, &varCount, kvName);
+
+    if(varCount == 0)
+    {
+        std::cout << "++ InitVariables: no variables stored in KV" << std::endl;
+    }
+    else
+    {
+        bson_iter_init(&b_iter, bsonNames);
+
+        std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
+
+        while (bson_iter_next(&b_iter))
+        {
+            bson_t *bsonMetadata;
+
+            varName = g_strdup(bson_iter_key(&b_iter));
+
+            std::cout << "-- Variable name " << varName << std::endl;
+
+            GetVariableBSONFromJulea(nameSpace, varName, &bsonMetadata);
+
+            Dims shape;
+            Dims start;
+            Dims count;
+            bool constantDims;
+            int type;
+
+            GetVariableMetadataForInitFromBSON(nameSpace, varName, bsonMetadata, &type, &shape,
+                                    &start, &count, &constantDims);
+            DefineVariableInInit(&m_IO, varName, type, shape, start, count, constantDims);
+        }
+
+    }
+}
+
+void JuleaKVReader::InitAttributes()
+{
+    bson_iter_t b_iter;
+    bson_t *bsonNames;
+    std::string attrName;
+    std::string nameSpace = m_Name;
+    std::string kvName = "attribute_names";
+    unsigned int varCount;
+    long unsigned int dataSize;
+    // void *data;
+    // T *data;
+
+
+    GetNamesBSONFromJulea(nameSpace, &bsonNames, &varCount, kvName); // TODO: get all attribute names
     bson_iter_init(&b_iter, bsonNames);
 
+    std::cout << "-- InitAttributes " << std::endl;
     std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
 
     while (bson_iter_next(&b_iter))
     {
         bson_t *bsonMetadata;
+        varCount = 0;
+        dataSize = 0;
+        attrName = g_strdup(bson_iter_key(&b_iter));
+        size_t numberElements; //FIXME not yet returned by functions
 
-        varName = g_strdup(bson_iter_key(&b_iter));
+        std::cout << "-- Attribute name " << attrName << std::endl;
 
-        std::cout << "-- Variable name " << varName << std::endl;
+        // GetVariableBSONFromJulea(nameSpace, attrName, &bsonMetadata);
+        GetAttributeBSONFromJulea(nameSpace, attrName, &bsonMetadata);
 
-        GetVariableBSONFromJulea(nameSpace, varName, &bsonMetadata);
-
-        Dims shape;
-        Dims start;
-        Dims count;
-        bool constantDims;
+        bool IsSingleValue;
         int type;
 
-        GetVariableMetadataForInitFromBSON(nameSpace, varName, bsonMetadata, &type, &shape,
-                                &start, &count, &constantDims);
-        DefineVariableInInit(&m_IO, varName, type, shape, start, count, constantDims);
+        // GetVariableMetadataForInitFromBSON(nameSpace, varName, bsonMetadata, &type, &shape,
+        //                         &start, &count, &constantDims);
+        GetAttributeMetadataFromJulea(attrName, bsonMetadata, nameSpace, &dataSize);
+        std::cout << "Data size = " << dataSize << std::endl;
+        // GetAttributeDataFromJulea(attrName,data, nameSpace, dataSize );
+        // DefineAttributeInInit(&m_IO, attrName, type, IsSingleValue);
+#define declare_attribute_type(T)                                                        \
+        T *data;\
+        GetAttributeDataFromJulea(attrName,data, nameSpace, dataSize );\
+        if(IsSingleValue)\
+        {\
+        }\
+        else\
+        {\
+            DefineAttributeInInit(&m_IO, attrName, data, type, IsSingleValue, numberElements);\
+        }\
+    ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
+#undef declare_attribute_type
     }
+
 }
 
 void JuleaKVReader::InitParameters()

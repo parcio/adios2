@@ -480,7 +480,7 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
         const std::string type(attributePair.second.first);
         const std::string name(attributePair.first);
         const std::string attrName = strdup(name.c_str());
-
+        std::cout << "------------------------------------" << std::endl;
         std::cout << "-- PutAttributes: type " << type << std::endl;
         std::cout << "-- PutAttributes: name " << name << std::endl;
         std::cout << "-- PutAttributes: attrName " << attrName << std::endl;
@@ -501,7 +501,6 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
 #define declare_attribute_type(T)                                                        \
     else if (type == helper::GetType<T>())                                     \
     {                                                                          \
-        // std::cout << "-- PutAttributes: DEBUG 3" << std::endl;\
         Attribute<T> &attribute = *io.InquireAttribute<T>(name);               \
         if (attribute.m_IsSingleValue)                                         \
         {                                                                      \
