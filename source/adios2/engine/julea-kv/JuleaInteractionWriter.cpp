@@ -209,9 +209,10 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
                                       bson_t *bsonMetaData,
                                       const std::string nameSpace)
 {
-    bson_t *bsonNames = bson_new(); // FIXME
-    std::string kvName = "attributes";
-    const char *kvNameC = kvName.c_str();
+    bson_t *bsonNames; // FIXME
+
+    const char *kvNames = "attribute_names";
+    const char *kvMD = "attributes";
     bool IsAlreadyInKV = false;
 
     /* names_kv = kv holding all attribute names */
@@ -226,8 +227,31 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
     // }
     // WriteMetadataToJuleaKV(kvNameC, attribute.m_Name, nameSpace.c_str(),
     //                        bsonNames, bsonMetaData, kvObjectNames);
-    // std::cout << "++ Julea Interaction: PutAttributeMetadataToJuleaSmall  "
-    // << std::endl;
+    std::cout << "++ Julea Interaction: PutAttributeMetadataToJuleaSmall  "
+    << std::endl;
+
+    /* names_kv = kv holding all variable names */
+    auto kvObjectNames = j_kv_new(kvNames, nameSpace.c_str());
+
+    CheckIfAlreadyInKV(kvMD, attribute.m_Name, nameSpace.c_str(), &bsonNames,
+                       kvObjectNames, &IsAlreadyInKV);
+
+    if (!IsAlreadyInKV)
+    {
+        WriteNameToJuleaKV(kvMD, attribute.m_Name, nameSpace.c_str(), bsonNames,
+                       kvObjectNames);
+        std::cout << "Test IsAlreadyInKV " << IsAlreadyInKV << std::endl;
+    }
+    else
+    {
+        // UpdateMetadataInKV(kvMD, variable.m_Name, nameSpace.c_str(),
+        //                    bsonNames, bsonMetaData, kvObjectNames);
+        std::cout << "___ NEEDS UPDATE ___ " << std::endl;
+    }
+        WriteMetadataToJuleaKV(kvMD, attribute.m_Name, nameSpace.c_str(),
+                           bsonNames, bsonMetaData, kvObjectNames);
+
+    j_kv_unref(kvObjectNames);
 }
 
 template <class T>
@@ -609,6 +633,34 @@ void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetaData,
 
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
+// #define declare_template_instantiation(T)                                      \
+//     extern template void PutVariableDataToJulea(                               \
+//         Variable<T> &variable, const T *data, const std::string nameSpace);    \
+//     extern template void PutVariableDataToJuleaSmall(                          \
+//         Variable<T> &variable, const T *data, const std::string nameSpace);    \
+//     extern template void PutVariableMetadataToJulea(                           \
+//         Variable<T> &variable, bson_t *bsonMetadata,                           \
+//         const std::string nameSpace);                                          \
+//     extern template void PutVariableMetadataToJuleaSmall(                      \
+//         Variable<T> &variable, bson_t *bsonMetadata,                           \
+//         const std::string nameSpace);                                          \
+//       ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
+// #undef declare_template_instantiation
+
+// #define declare_attribute_type(T)                                      \
+//     extern template void PutAttributeDataToJulea(                              \
+//         Attribute<T> &attribute, const T *data, const std::string nameSpace);  \
+//     extern template void PutAttributeDataToJuleaSmall(                         \
+//         Attribute<T> &attribute, const T *data, const std::string nameSpace);  \
+//     extern template void PutAttributeMetadataToJulea(                          \
+//         Attribute<T> &attribute, bson_t *bsonMetadata,                         \
+//         const std::string nameSpace);                                          \
+//     extern template void PutAttributeMetadataToJuleaSmall(                     \
+//         Attribute<T> &attribute, bson_t *bsonMetadata,                         \
+//         const std::string nameSpace);                                          \
+//     ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
+// #undef declare_attribute_type
+
 
 } // end namespace engine
 } // end namespace core

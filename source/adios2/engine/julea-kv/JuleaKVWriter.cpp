@@ -468,6 +468,12 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
 {
     const auto attributesDataMap = io.GetAttributesDataMap();
 
+    // count is known ahead of time
+    const uint32_t attributesCount =
+        static_cast<uint32_t>(attributesDataMap.size());
+
+    std::cout << "attributesCount: " << attributesCount << std::endl;
+
     for (const auto &attributePair : attributesDataMap)
     {
         auto bsonMetadata = bson_new();
@@ -475,6 +481,9 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
         const std::string name(attributePair.first);
         const std::string attrName = strdup(name.c_str());
 
+        std::cout << "-- PutAttributes: type " << type << std::endl;
+        std::cout << "-- PutAttributes: name " << name << std::endl;
+        std::cout << "-- PutAttributes: attrName " << attrName << std::endl;
         // each attribute is only written to output once
         // so filter out the ones already written
         // FIXME: is m_SerializeAttributes already in use?
@@ -483,36 +492,38 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
         {
             continue;
         }
+        // std::cout << "-- PutAttributes: DEBUG 1 " << std::endl;
 
         if (type == "unknown")
         {
             std::cout << "Attribute type is 'unknown' " << std::endl;
         }
-#define declare_type(T)                                                        \
+#define declare_attribute_type(T)                                                        \
     else if (type == helper::GetType<T>())                                     \
     {                                                                          \
+        // std::cout << "-- PutAttributes: DEBUG 3" << std::endl;\
         Attribute<T> &attribute = *io.InquireAttribute<T>(name);               \
         if (attribute.m_IsSingleValue)                                         \
         {                                                                      \
-            ParseAttributeToBSON(&attribute, bsonMetadata);                    \
-            ParseAttrTypeToBSON(&attribute, bsonMetadata);                     \
-            PutAttributeMetadataToJulea(&attribute, bsonMetadata,              \
+            ParseAttributeToBSON(attribute, bsonMetadata);                    \
+            ParseAttrTypeToBSON(attribute, bsonMetadata);                     \
+            PutAttributeMetadataToJuleaSmall(attribute, bsonMetadata,              \
                                         m_Name);               \
-            PutAttributeDataToJulea(&attribute, &attribute.m_DataSingleValue,  \
+            PutAttributeDataToJulea(attribute, &attribute.m_DataSingleValue,  \
                                     m_Name);                   \
         }                                                                      \
         else                                                                   \
         {                                                                      \
-            ParseAttributeToBSON(&attribute, bsonMetadata);                    \
-            ParseAttrTypeToBSON(&attribute, bsonMetadata);                     \
-            PutAttributeMetadataToJulea(&attribute, bsonMetadata,              \
+            ParseAttributeToBSON(attribute, bsonMetadata);                    \
+            ParseAttrTypeToBSON(attribute, bsonMetadata);                     \
+            PutAttributeMetadataToJuleaSmall(attribute, bsonMetadata,              \
                                         m_Name);               \
-            PutAttributeDataToJulea(&attribute, &attribute.m_DataArray,        \
-                                    m_Name);                   \
+            PutAttributeDataToJulea(attribute, attribute.m_DataArray.data(), m_Name); \
         }                                                                      \
-    }                                                                          \
-    ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_type)
-#undef declare_type
+    }
+    ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
+#undef declare_attribute_type
+
     }
 }
 

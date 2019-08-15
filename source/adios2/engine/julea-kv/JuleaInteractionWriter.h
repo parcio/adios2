@@ -80,6 +80,8 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
         const std::string nameSpace);                                          \
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
+
+
 } // end namespace engine
 } // end namespace core
 } // end namespace adios2

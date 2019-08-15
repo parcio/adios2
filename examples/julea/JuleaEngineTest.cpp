@@ -214,8 +214,8 @@ int main(int argc, char *argv[])
         // std::cout << "\n JuleaEngineTest :) Read variable finished \n" << std::endl;
         err = TestWriteAttribute();
         std::cout << "\n JuleaEngineTest :) Write attribute finished \n" << std::endl;
-        err = TestReadAttribute();
-        std::cout << "\n JuleaEngineTest :) Read attribute finished \n" << std::endl;
+        // err = TestReadAttribute();
+        // std::cout << "\n JuleaEngineTest :) Read attribute finished \n" << std::endl;
 
     }
 	catch (std::invalid_argument &e)
