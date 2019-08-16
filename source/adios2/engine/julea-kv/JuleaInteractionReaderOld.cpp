@@ -120,21 +120,23 @@ namespace engine
 //     {
 //         // bsonNames = bson_new();
 //         // printf("WARNING: The names key-value store is empty! \n");
-//         std::cout << "WARNING: The names key-value store is empty!" << std::endl;
-//         *varCount = 0;
+//         std::cout << "WARNING: The names key-value store is empty!" <<
+//         std::endl; *varCount = 0;
 //     }
 //     else
 //     {
 //         // bson_names = bson_new_from_data((const uint8_t *)names_buf,
 //         // value_len);
-//         *bsonNames = bson_new_from_data((const uint8_t *)names_buf, value_len);
-//         std::cout << "-- bsonNames length: " << (*bsonNames)->len << std::endl;
+//         *bsonNames = bson_new_from_data((const uint8_t *)names_buf,
+//         value_len); std::cout << "-- bsonNames length: " << (*bsonNames)->len
+//         << std::endl;
 
 //     }
 
 //     *varCount = bson_count_keys(*bsonNames);
 //     // printf("-- JADIOS DEBUG PRINT: count_names %d\n", *varCount);
-//     std::cout << "-- JADIOS DEBUG PRINT: count_names " << *varCount << std::endl;
+//     std::cout << "-- JADIOS DEBUG PRINT: count_names " << *varCount <<
+//     std::endl;
 
 //     // *names = (char **)g_slice_alloc(*count_names * sizeof(char *));
 //     // *types = (int *)g_slice_alloc(*count_names * sizeof(int));
@@ -163,7 +165,8 @@ namespace engine
 // }
 
 // void GetVariableBSONFromJulea(const std::string nameSpace,
-//                               const std::string varName, bson_t **bsonMetadata)
+//                               const std::string varName, bson_t
+//                               **bsonMetadata)
 // {
 //     // JBatch *batch;
 //     // gchar *string_metadata_kv;
@@ -172,7 +175,8 @@ namespace engine
 //     // bson_t bson_metadata;
 //     // bson_iter_t b_iter;
 //     guint32 value_len = 0;
-//     std::cout << "-- JADIOS DEBUG --- GetVariableBSONFromJulea " << std::endl;
+//     std::cout << "-- JADIOS DEBUG --- GetVariableBSONFromJulea " <<
+//     std::endl;
 
 //     // g_autoptr(JKV) kv_object = NULL;
 //     void *meta_data_buf = NULL;
@@ -195,14 +199,17 @@ namespace engine
 //     else
 //     {
 //         //FIXME: why is bson_init_static not working? memory issues
-//         // bson_init_static(*bsonMetadata, (uint8_t *)meta_data_buf, value_len);
+//         // bson_init_static(*bsonMetadata, (uint8_t *)meta_data_buf,
+//         value_len);
 
-//         *bsonMetadata = bson_new_from_data((const uint8_t *)meta_data_buf, value_len);
+//         *bsonMetadata = bson_new_from_data((const uint8_t *)meta_data_buf,
+//         value_len);
 //     }
 // }
 
 // template <>
-// void GetVariableMetadataFromJulea(Variable<std::string> &variable, bson_t *bsonMetadata,
+// void GetVariableMetadataFromJulea(Variable<std::string> &variable, bson_t
+// *bsonMetadata,
 //                                   const std::string nameSpace)
 // {
 //     auto bsonNames = bson_new();
@@ -226,7 +233,8 @@ namespace engine
 // }
 
 // template <class T>
-// void OLDGetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata,
+// void OLDGetVariableMetadataFromJulea(Variable<T> &variable, bson_t
+// *bsonMetadata,
 //                                   const std::string nameSpace)
 // {
 // 	auto bsonNames = bson_new();
@@ -249,7 +257,6 @@ namespace engine
 //     // ParseVariableFromBSON(variable, bsonMetadata, nameSpace);
 // }
 
-
 // template <class T>
 // void GetVariableDataFromJulea(Variable<T> &variable, const T *data,
 //                               const std::string nameSpace)
@@ -257,7 +264,8 @@ namespace engine
 //     std::cout << "name" << variable.m_Name << std::endl;
 // }
 
-// /** ------------------------- DATA ------------------------------------------**/
+// /** ------------------------- DATA
+// ------------------------------------------**/
 
 // #define variable_template_instantiation(T)                                      \
 //     template void GetVariableDataFromJulea(Variable<T> &variable, const T *data, const std::string nameSpace);    \

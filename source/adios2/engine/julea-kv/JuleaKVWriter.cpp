@@ -222,7 +222,7 @@ void JuleaKVWriter::Init()
     std::cout << "JULEA WRITER: Namespace = " << m_Name << std::endl;
     // TODO: which order?
 
-    m_JuleaSemantics = j_semantics_new (J_SEMANTICS_TEMPLATE_DEFAULT);
+    m_JuleaSemantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
 
     j_init();
     InitParameters();
@@ -340,7 +340,7 @@ void JuleaKVWriter::DoClose(const int transportIndex)
         std::cout << "Julea Writer " << m_WriterRank << " Close(" << m_Name
                   << ")\n";
     }
-    //TODO: free semantics
+    // TODO: free semantics
     /* Write deferred variables*/
     if (m_DeferredVariables.size() > 0)
     {
@@ -391,7 +391,7 @@ void JuleaKVWriter::WriteData(const bool isFinal, const int transportIndex)
     if (isFinal)
     {
         // m_BP3Serializer.CloseData(m_IO); DESIGN how to realize with JULEA?
-        if(!m_IsClosed)
+        if (!m_IsClosed)
         {
             PutAttributes(m_IO);
         }
@@ -403,8 +403,8 @@ void JuleaKVWriter::WriteData(const bool isFinal, const int transportIndex)
         // TODO: write attributes?
     }
 
-    // m_FileDataManager.WriteFiles(m_Data.m_Buffer.data(), dataSize, transportIndex);
-    // m_FileDataManager.FlushFiles(transportIndex);
+    // m_FileDataManager.WriteFiles(m_Data.m_Buffer.data(), dataSize,
+    // transportIndex); m_FileDataManager.FlushFiles(transportIndex);
 
     // TODO: sufficient?
     // j_gmm_put (metadata, m_Data.m_Buffer.data());
@@ -421,7 +421,8 @@ void JuleaKVWriter::WriteData(const bool isFinal, const int transportIndex)
  * @param transportIndex [description]
  */
 // void JuleaKVWriter::AggregateWriteData(const bool isFinal)
-void JuleaKVWriter::AggregateWriteData(const bool isFinal, const int transportIndex)
+void JuleaKVWriter::AggregateWriteData(const bool isFinal,
+                                       const int transportIndex)
 {
     // DESIGN: check BP3Writer
     if (m_Verbosity == 5)
@@ -498,31 +499,29 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
         {
             std::cout << "Attribute type is 'unknown' " << std::endl;
         }
-#define declare_attribute_type(T)                                                        \
+#define declare_attribute_type(T)                                              \
     else if (type == helper::GetType<T>())                                     \
     {                                                                          \
         Attribute<T> &attribute = *io.InquireAttribute<T>(name);               \
         if (attribute.m_IsSingleValue)                                         \
         {                                                                      \
-            ParseAttributeToBSON(attribute, bsonMetadata);                    \
-            ParseAttrTypeToBSON(attribute, bsonMetadata);                     \
-            PutAttributeMetadataToJuleaSmall(attribute, bsonMetadata,              \
-                                        m_Name);               \
-            PutAttributeDataToJulea(attribute, &attribute.m_DataSingleValue,  \
-                                    m_Name);                   \
+            ParseAttributeToBSON(attribute, bsonMetadata);                     \
+            ParseAttrTypeToBSON(attribute, bsonMetadata);                      \
+            PutAttributeMetadataToJuleaSmall(attribute, bsonMetadata, m_Name); \
+            PutAttributeDataToJulea(attribute, &attribute.m_DataSingleValue,   \
+                                    m_Name);                                   \
         }                                                                      \
         else                                                                   \
         {                                                                      \
-            ParseAttributeToBSON(attribute, bsonMetadata);                    \
-            ParseAttrTypeToBSON(attribute, bsonMetadata);                     \
-            PutAttributeMetadataToJuleaSmall(attribute, bsonMetadata,              \
-                                        m_Name);               \
-            PutAttributeDataToJulea(attribute, attribute.m_DataArray.data(), m_Name); \
+            ParseAttributeToBSON(attribute, bsonMetadata);                     \
+            ParseAttrTypeToBSON(attribute, bsonMetadata);                      \
+            PutAttributeMetadataToJuleaSmall(attribute, bsonMetadata, m_Name); \
+            PutAttributeDataToJulea(attribute, attribute.m_DataArray.data(),   \
+                                    m_Name);                                   \
         }                                                                      \
     }
-    ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
+        ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
 #undef declare_attribute_type
-
     }
 }
 

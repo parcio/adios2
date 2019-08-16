@@ -72,7 +72,9 @@ void GetVariableBSONFromJulea(const std::string nameSpace,
 void GetAttributeMetadataFromJulea(const std::string attrName,
                                    bson_t *bsonMetadata,
                                    const std::string nameSpace,
-                                   long unsigned int *dataSize);
+                                   long unsigned int *dataSize,
+                                   size_t *numberElements, bool *IsSingleValue,
+                                   int *type);
 
 // void GetAttributeDataFromJulea(const std::string attrName, void *data,
 //                                const std::string nameSpace,long unsigned int

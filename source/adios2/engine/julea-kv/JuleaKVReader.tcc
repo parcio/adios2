@@ -14,7 +14,6 @@
 #include "JuleaClientLogic-legacy.h"
 #include "JuleaFormatReader.h"
 #include "JuleaInteractionReader.h"
-#include "JuleaInteractionReader.h"
 #include "JuleaKVReader.h"
 
 #include <iostream>
@@ -49,7 +48,6 @@ void JuleaKVReader::GetSyncCommon(Variable<std::string> &variable,
               << m_Name << std::endl;
     // GetVarDataFromJulea(name_space, metadata->name, metadata->data_size,
     //                     (void *)(data), batch);
-
 
     // FIXME: additional metadata infos as "IsReadAsJoined" need to be stored in
     // ADIOS

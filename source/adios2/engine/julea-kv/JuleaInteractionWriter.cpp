@@ -81,8 +81,8 @@ void CheckIfAlreadyInKV(std::string kvName, std::string paramName,
                   << " already in kv store. " << std::endl;
         std::cout << "-- bsonNames length: " << (*bsonNames)->len << std::endl;
     }
-    // j_kv_unref(kvObjectNames); //FIXME: still needed afterwards in write metadata
-    // j_kv_unref(kvObjectMetadata);
+    // j_kv_unref(kvObjectNames); //FIXME: still needed afterwards in write
+    // metadata j_kv_unref(kvObjectMetadata);
     j_batch_unref(batch);
     // j_batch_unref(batch2);
     // bson_destroy(bsonNames);
@@ -90,7 +90,8 @@ void CheckIfAlreadyInKV(std::string kvName, std::string paramName,
 
 /*
  *   Writes the variable/attribute name into the separate names kv store which
- *   was necessary as the julea kv iterator did not return the key. Maybe fixed by now.
+ *   was necessary as the julea kv iterator did not return the key. Maybe fixed
+ * by now.
  */
 void WriteNameToJuleaKV(std::string kvName, std::string paramName,
                         std::string nameSpace, bson_t *bsonNames,
@@ -100,15 +101,16 @@ void WriteNameToJuleaKV(std::string kvName, std::string paramName,
     auto batch = j_batch_new(semantics);
     auto name = strdup(paramName.c_str());
 
-    // std::cout <<"WriteNameToJuleaKV " << "-- bsonNames length: " << bsonNames->len << std::endl;
-    bson_append_int32(bsonNames, name, -1, 42); //TODO: type?
-    std::cout << "WriteNameToJuleaKV " << "-- bsonNames length: " << bsonNames->len << std::endl;
+    // std::cout <<"WriteNameToJuleaKV " << "-- bsonNames length: " <<
+    // bsonNames->len << std::endl;
+    bson_append_int32(bsonNames, name, -1, 42); // TODO: type?
+    std::cout << "WriteNameToJuleaKV "
+              << "-- bsonNames length: " << bsonNames->len << std::endl;
 
     auto namesBuf = g_memdup(bson_get_data(bsonNames), bsonNames->len);
     j_kv_put(kvObjectNames, namesBuf, bsonNames->len, g_free, batch);
 
     j_batch_execute(batch);
-
 }
 
 void WriteMetadataToJuleaKV(std::string kvName, std::string paramName,
@@ -131,7 +133,8 @@ void WriteMetadataToJuleaKV(std::string kvName, std::string paramName,
     auto kvObjectMetadata = j_kv_new(stringMetadataKV, paramName.c_str());
 
     metaDataBuf = g_memdup(bson_get_data(bsonMetaData), bsonMetaData->len);
-    j_kv_put(kvObjectMetadata, metaDataBuf, bsonMetaData->len, g_free, batch); //FIXME: reading issue
+    j_kv_put(kvObjectMetadata, metaDataBuf, bsonMetaData->len, g_free,
+             batch); // FIXME: reading issue
 
     j_batch_execute(batch);
 
@@ -156,11 +159,10 @@ void WriteMetadataToJuleaKV(std::string kvName, std::string paramName,
 //     // namesBuf = g_memdup(bson_get_data(bsonNames), bsonNames->len);
 //     // j_kv_put(kvObjectNames, namesBuf, bsonNames->len, g_free, batch);
 
-//     // std::cout << "_____________________________________________" << std::endl;
-//     std::cout << "kvName " << kvName << std::endl;
-//     std::cout << "paramName " << paramName << std::endl;
-//     std::cout << "nameSpace " << nameSpace << std::endl;
-//     auto stringMetadataKV =
+//     // std::cout << "_____________________________________________" <<
+//     std::endl; std::cout << "kvName " << kvName << std::endl; std::cout <<
+//     "paramName " << paramName << std::endl; std::cout << "nameSpace " <<
+//     nameSpace << std::endl; auto stringMetadataKV =
 //         g_strdup_printf("%s_%s", kvName.c_str(), nameSpace.c_str());
 //     std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
 //     auto kvObjectMetadata = j_kv_new(stringMetadataKV, paramName.c_str());
@@ -179,7 +181,8 @@ void WriteMetadataToJuleaKV(std::string kvName, std::string paramName,
 //     // }
 //     // else
 //     // {
-//     //     bsonNames = bson_new_from_data((const uint8_t *)namesBuf, valueLen);
+//     //     bsonNames = bson_new_from_data((const uint8_t *)namesBuf,
+//     valueLen);
 //     // }
 
 //     /* Write metadata struct to kv store*/
@@ -192,7 +195,8 @@ void WriteMetadataToJuleaKV(std::string kvName, std::string paramName,
 
 //     metaDataBuf = g_memdup(bson_get_data(bsonMetaData), bsonMetaData->len);
 //     // std::cout << "-- DEBUG 2 " << std::endl;
-//     j_kv_put(kvObjectMetadata, metaDataBuf, bsonMetaData->len, g_free, batch); //FIXME: reading issue
+//     j_kv_put(kvObjectMetadata, metaDataBuf, bsonMetaData->len, g_free,
+//     batch); //FIXME: reading issue
 
 //     // std::cout << "-- DEBUG 3 " << std::endl;
 //     j_batch_execute(batch);
@@ -217,18 +221,20 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
 
     /* names_kv = kv holding all attribute names */
     // auto kvObjectNames = j_kv_new(kvNameC, nameSpace.c_str());
-    // CheckIfAlreadyInKV(kvNameC, attribute.m_Name, nameSpace.c_str(), bsonNames,
+    // CheckIfAlreadyInKV(kvNameC, attribute.m_Name, nameSpace.c_str(),
+    // bsonNames,
     //                    kvObjectNames,IsAlreadyInKV);
 
     // if (!IsAlreadyInKV)
     // {
-    //     WriteNameToJuleaKV(kvMD, variable.m_Name, nameSpace.c_str(), bsonNames,
+    //     WriteNameToJuleaKV(kvMD, variable.m_Name, nameSpace.c_str(),
+    //     bsonNames,
     //                    kvObjectNames)
     // }
     // WriteMetadataToJuleaKV(kvNameC, attribute.m_Name, nameSpace.c_str(),
     //                        bsonNames, bsonMetaData, kvObjectNames);
     std::cout << "++ Julea Interaction: PutAttributeMetadataToJuleaSmall  "
-    << std::endl;
+              << std::endl;
 
     /* names_kv = kv holding all variable names */
     auto kvObjectNames = j_kv_new(kvNames, nameSpace.c_str());
@@ -239,7 +245,7 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
     if (!IsAlreadyInKV)
     {
         WriteNameToJuleaKV(kvMD, attribute.m_Name, nameSpace.c_str(), bsonNames,
-                       kvObjectNames);
+                           kvObjectNames);
         std::cout << "Test IsAlreadyInKV " << IsAlreadyInKV << std::endl;
     }
     else
@@ -248,8 +254,8 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
         //                    bsonNames, bsonMetaData, kvObjectNames);
         std::cout << "___ NEEDS UPDATE ___ " << std::endl;
     }
-        WriteMetadataToJuleaKV(kvMD, attribute.m_Name, nameSpace.c_str(),
-                           bsonNames, bsonMetaData, kvObjectNames);
+    WriteMetadataToJuleaKV(kvMD, attribute.m_Name, nameSpace.c_str(), bsonNames,
+                           bsonMetaData, kvObjectNames);
 
     j_kv_unref(kvObjectNames);
 }
@@ -262,7 +268,7 @@ void PutVariableMetadataToJuleaSmall(Variable<T> &variable,
     bson_t *bsonNames; // FIXME
 
     const char *kvNames = "variable_names";
-    const char * kvMD = "variables";
+    const char *kvMD = "variables";
     bool IsAlreadyInKV = false;
 
     /* names_kv = kv holding all variable names */
@@ -274,7 +280,7 @@ void PutVariableMetadataToJuleaSmall(Variable<T> &variable,
     if (!IsAlreadyInKV)
     {
         WriteNameToJuleaKV(kvMD, variable.m_Name, nameSpace.c_str(), bsonNames,
-                       kvObjectNames);
+                           kvObjectNames);
         std::cout << "Test IsAlreadyInKV " << IsAlreadyInKV << std::endl;
     }
     else
@@ -283,8 +289,8 @@ void PutVariableMetadataToJuleaSmall(Variable<T> &variable,
         //                    bsonNames, bsonMetaData, kvObjectNames);
         std::cout << "___ NEEDS UPDATE ___ " << std::endl;
     }
-        WriteMetadataToJuleaKV(kvMD, variable.m_Name, nameSpace.c_str(),
-                           bsonNames, bsonMetaData, kvObjectNames);
+    WriteMetadataToJuleaKV(kvMD, variable.m_Name, nameSpace.c_str(), bsonNames,
+                           bsonMetaData, kvObjectNames);
 
     j_kv_unref(kvObjectNames);
 
@@ -305,7 +311,7 @@ void WriteDataToJuleaObjectStore(std::string objName, std::string paramName,
     auto name = strdup(paramName.c_str());
 
     /* Write data pointer to object store:
-    * printf("%s_variables_%s", nameSpace, name)*/
+     * printf("%s_variables_%s", nameSpace, name)*/
 
     auto stringDataObject =
         g_strdup_printf("%s_%s_%s", nameSpace.c_str(), objName.c_str(), name);
@@ -660,7 +666,6 @@ ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 //         const std::string nameSpace);                                          \
 //     ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
 // #undef declare_attribute_type
-
 
 } // end namespace engine
 } // end namespace core

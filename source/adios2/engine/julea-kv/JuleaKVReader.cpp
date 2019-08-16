@@ -351,46 +351,50 @@ void JuleaKVReader::InitAttributes()
         varCount = 0;
         dataSize = 0;
         attrName = g_strdup(bson_iter_key(&b_iter));
-        size_t numberElements; // FIXME not yet returned by functions
+        bool IsSingleValue = false;
+        int type = 0;
+        size_t numberElements = 0;
 
         std::cout << "-----------------------------------" << std::endl;
         std::cout << "-- Attribute name " << attrName << std::endl;
 
-        // GetVariableBSONFromJulea(nameSpace, attrName, &bsonMetadata);
         GetAttributeBSONFromJulea(nameSpace, attrName, &bsonMetadata);
-
-        bool IsSingleValue;
-        int type;
 
         // GetVariableMetadataForInitFromBSON(nameSpace, varName, bsonMetadata,
         // &type, &shape,
         //                         &start, &count, &constantDims);
         GetAttributeMetadataFromJulea(attrName, bsonMetadata, nameSpace,
-                                      &dataSize);
+                                      &dataSize, &numberElements,
+                                      &IsSingleValue, &type);
         std::cout << "Data size = " << dataSize << std::endl;
         // GetAttributeDataFromJulea(attrName,data, nameSpace, dataSize );
         // DefineAttributeInInit(&m_IO, attrName, type, IsSingleValue);
         std::string typeString;
-        typeString = "double";
+        GetAdiosTypeString(type, &typeString);
 #define declare_attribute_type(T)                                              \
-        std::cout << "declare_attribute_type " << std::endl;                       \
-        if (typeString == helper::GetType<T>())\
-        {\
-            T *data;                                                                   \
-            GetAttributeDataFromJulea(attrName, data, nameSpace, dataSize);            \
-            if (IsSingleValue)                                                         \
-            {                                                                          \
-            }                                                                          \
-            else                                                                       \
-            {                                                                          \
-            }\
-        }
+    if (typeString == helper::GetType<T>())                                    \
+    {                                                                          \
+        std::cout << "typeString = " << typeString << std::endl;               \
+        std::cout << "declare_attribute_type " << std::endl;                   \
+        T *data;                                                               \
+        GetAttributeDataFromJulea(attrName, data, nameSpace, dataSize);        \
+        if (IsSingleValue)                                                     \
+        {                                                                      \
+            DefineAttributeInInit(&m_IO, attrName, data, type, IsSingleValue,  \
+                                  numberElements);                             \
+        }                                                                      \
+        else                                                                   \
+        {                                                                      \
+            DefineAttributeInInit(&m_IO, attrName, data, type, IsSingleValue,  \
+                                  numberElements);                             \
+        }                                                                      \
+    }
         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
 #undef declare_attribute_type
     }
 }
-        // Variable<T> test;
-//     #define declare_attribute_type(T)                                                           \
+// Variable<T> test;
+//     #define declare_attribute_type(T) \
 //         std::cout << "Test this makro... " << std::endl;        \
 
 //             ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
@@ -399,9 +403,9 @@ void JuleaKVReader::InitAttributes()
 //         if (typeString == "compound")
 //         {
 //         }
-// #define declare_attribute_type(T)                                                        \
-//     else if (typeString == helper::GetType<T>())                                     \
-//     {                                                                          \
+// #define declare_attribute_type(T) \
+//     else if (typeString == helper::GetType<T>()) \
+//     { \
 //         T *data;\
 //     }
 //         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)

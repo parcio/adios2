@@ -29,85 +29,142 @@ namespace engine
 {
 
 template <class T>
-void DefineAttributeInInit(core::IO *io, const std::string attrName, T *data, int type, bool IsSingleValue, size_t numberElements)
+void DefineAttributeInInit(core::IO *io, const std::string attrName, T *data,
+                           int type, bool IsSingleValue, size_t numberElements)
 {
-    if(IsSingleValue)
+    if (IsSingleValue)
     {
-
     }
     else
     {
         switch (type)
-            {
-            // case COMPOUND:
-            //     //TODO
-            //     break;
-            // case UNKNOWN:
-            //     //TODO
-            //     break;
-            case STRING:
-                // io->DefineVariable<std::string>(varName, shape, start, count,
-                //                                  constantDims);
-                // io->DefineAttribute<std::string>(attrName, data, numberElements);
-                break;
-            case INT8:
-                // io->DefineVariable<int8_t>(varName, shape, start, count,
-                                            // constantDims);
-                break;
-            case UINT8:
-                // io->DefineVariable<uint8_t>(varName, shape, start, count,
-                                             // constantDims);
-                break;
-            case INT16:
-                // io->DefineVariable<int16_t>(varName, shape, start, count,
-                                             // constantDims);
-                break;
-            case UINT16:
-                // io->DefineVariable<uint16_t>(varName, shape, start, count,
-                                              // constantDims);
-                break;
-            case INT32:
-                // io->DefineVariable<int32_t>(varName, shape, start, count,
-                                             // constantDims);
-                break;
-            case UINT32:
-                // io->DefineVariable<uint32_t>(varName, shape, start, count,
-                                              // constantDims);
-                break;
-            case INT64:
-                // io->DefineVariable<int64_t>(varName, shape, start, count,
-                                             // constantDims);
-                break;
-            case UINT64:
-                // io->DefineVariable<uint64_t>(varName, shape, start, count,
-                                              // constantDims);
-                break;
-            case FLOAT:
-                // io->DefineVariable<float>(varName, shape, start, count,
-                                           // constantDims);
-                break;
-            case DOUBLE:
-                // io->DefineVariable<double>(varName, shape, start, count,
-                                            // constantDims);
-                break;
-            case LONG_DOUBLE:
-                // io->DefineVariable<long double>(varName, shape, start, count,
-                                                 // constantDims);
-                break;
-            case COMPLEX_FLOAT:
-                // io->DefineVariable<std::complex<float>>(varName, shape, start,
-                                                         // count, constantDims);
-                break;
-            case COMPLEX_DOUBLE:
-                // io->DefineVariable<std::complex<double>>(varName, shape, start,
-                                                          // count, constantDims);
-                break;
-            }
+        {
+        // case COMPOUND:
+        //     //TODO
+        //     break;
+        // case UNKNOWN:
+        //     //TODO
+        //     break;
+        case STRING:
+            // io->DefineVariable<std::string>(varName, shape, start, count,
+            //                                  constantDims);
+            // io->DefineAttribute<std::string>(attrName, data, numberElements);
+            break;
+        case INT8:
+            // io->DefineVariable<int8_t>(varName, shape, start, count,
+            // constantDims);
+            break;
+        case UINT8:
+            // io->DefineVariable<uint8_t>(varName, shape, start, count,
+            // constantDims);
+            break;
+        case INT16:
+            // io->DefineVariable<int16_t>(varName, shape, start, count,
+            // constantDims);
+            break;
+        case UINT16:
+            // io->DefineVariable<uint16_t>(varName, shape, start, count,
+            // constantDims);
+            break;
+        case INT32:
+            // io->DefineVariable<int32_t>(varName, shape, start, count,
+            // constantDims);
+            break;
+        case UINT32:
+            // io->DefineVariable<uint32_t>(varName, shape, start, count,
+            // constantDims);
+            break;
+        case INT64:
+            // io->DefineVariable<int64_t>(varName, shape, start, count,
+            // constantDims);
+            break;
+        case UINT64:
+            // io->DefineVariable<uint64_t>(varName, shape, start, count,
+            // constantDims);
+            break;
+        case FLOAT:
+            // io->DefineVariable<float>(varName, shape, start, count,
+            // constantDims);
+            break;
+        case DOUBLE:
+            // io->DefineVariable<double>(varName, shape, start, count,
+            // constantDims);
+            break;
+        case LONG_DOUBLE:
+            // io->DefineVariable<long double>(varName, shape, start, count,
+            // constantDims);
+            break;
+        case COMPLEX_FLOAT:
+            // io->DefineVariable<std::complex<float>>(varName, shape, start,
+            // count, constantDims);
+            break;
+        case COMPLEX_DOUBLE:
+            // io->DefineVariable<std::complex<double>>(varName, shape, start,
+            // count, constantDims);
+            break;
+        }
     }
-
 }
 
-void ParseAttributeFromBSON( const std::string nameSpace, const std::string attrName, bson_t *bsonMetadata,long unsigned int *dataSize, size_t numberElements, bool IsSingleValue)
+void GetAdiosTypeString(int type, std::string *typeString)
+{
+    switch (type)
+    {
+    // case COMPOUND:
+    //     //TODO
+    //     break;
+    // case UNKNOWN:
+    //     //TODO
+    //     break;
+    case STRING:
+        *typeString = "string";
+        break;
+    case INT8:
+        *typeString = "int8_t";
+        break;
+    case UINT8:
+        *typeString = "uint8_t";
+        break;
+    case INT16:
+        *typeString = "int16_t";
+        break;
+    case UINT16:
+        *typeString = "uint16_t";
+        break;
+    case INT32:
+        *typeString = "int32_t";
+        break;
+    case UINT32:
+        *typeString = "uint32_t";
+        break;
+    case INT64:
+        *typeString = "int64_t";
+        break;
+    case UINT64:
+        *typeString = "uint64_t";
+        break;
+    case FLOAT:
+        *typeString = "float";
+        break;
+    case DOUBLE:
+        *typeString = "double";
+        break;
+    case LONG_DOUBLE:
+        *typeString = "long double";
+        break;
+    case COMPLEX_FLOAT:
+        *typeString = "complex float";
+        break;
+    case COMPLEX_DOUBLE:
+        *typeString = "complex double";
+        break;
+    }
+}
+
+void ParseAttributeFromBSON(const std::string nameSpace,
+                            const std::string attrName, bson_t *bsonMetadata,
+                            long unsigned int *dataSize, size_t *numberElements,
+                            bool *IsSingleValue, int *type)
 {
     bson_iter_t b_iter;
     gchar *key;
@@ -123,15 +180,15 @@ void ParseAttributeFromBSON( const std::string nameSpace, const std::string attr
         std::cout << "ERROR: Bson iterator is not valid!" << std::endl;
     }
 
-    //TODO: what to do with the of the keys? max_value etc
+    // TODO: what to do with the of the keys? max_value etc
 
     /* probably not very efficient */
     while (bson_iter_next(&b_iter))
     {
 
-        if (g_strcmp0(bson_iter_key(&b_iter) , "number_elements") == 0)
+        if (g_strcmp0(bson_iter_key(&b_iter), "number_elements") == 0)
         {
-            numberElements = bson_iter_int64(&b_iter);
+            *numberElements = (size_t)bson_iter_int64(&b_iter);
             // size = bson_iter_int64(&b_iter);
 
             // if (size > 0)
@@ -147,10 +204,10 @@ void ParseAttributeFromBSON( const std::string nameSpace, const std::string attr
             //     }
             // }
         }
-        else if (g_strcmp0(bson_iter_key(&b_iter) , "is_single_value") == 0)
+        else if (g_strcmp0(bson_iter_key(&b_iter), "is_single_value") == 0)
         {
             // variable.m_SingleValue = (bool)bson_iter_bool(&b_iter);
-            IsSingleValue = (bool)bson_iter_bool(&b_iter);
+            *IsSingleValue = (bool)bson_iter_bool(&b_iter);
         }
         else if (g_strcmp0(bson_iter_key(&b_iter), "data_size") == 0)
         {
@@ -158,9 +215,14 @@ void ParseAttributeFromBSON( const std::string nameSpace, const std::string attr
             *dataSize = bson_iter_int64(&b_iter);
             std::cout << "___ Datasize = " << *dataSize << std::endl;
         }
+        else if (g_strcmp0(bson_iter_key(&b_iter), "attr_type") == 0)
+        {
+            std::cout << "___ type = " << *type << std::endl;
+            *type = bson_iter_int32(&b_iter);
+            std::cout << "___ type = " << *type << std::endl;
+        }
     }
 }
-
 
 void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
                                         const std::string varName,
@@ -170,7 +232,8 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
 {
     bson_iter_t b_iter;
     gchar *key;
-    std::cout << "------- GetVariableMetadataForInitFromBSON -----------" << std::endl;
+    std::cout << "------- GetVariableMetadataForInitFromBSON -----------"
+              << std::endl;
     if (bson_iter_init(&b_iter, bsonMetadata))
     {
         std::cout << "++ Julea Format Reader: Bson iterator is valid"
@@ -187,7 +250,8 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
         if (g_strcmp0(bson_iter_key(&b_iter), "shape_size") == 0)
         {
             auto shapeSize = bson_iter_int64(&b_iter);
-            std::cout << "-- JADIOS DEBUG PRINT: shapeSize = " << shapeSize << std::endl;
+            std::cout << "-- JADIOS DEBUG PRINT: shapeSize = " << shapeSize
+                      << std::endl;
             if (shapeSize > 0)
             {
                 for (guint i = 0; i < shapeSize; i++)
@@ -198,7 +262,6 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
                     if (g_strcmp0(bson_iter_key(&b_iter), key) == 0)
                     {
                         (*shape).push_back(bson_iter_int64(&b_iter));
-
                     }
                 }
             }
@@ -206,7 +269,8 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
         else if (g_strcmp0(bson_iter_key(&b_iter), "start_size") == 0)
         {
             auto startSize = bson_iter_int64(&b_iter);
-            std::cout << "-- JADIOS DEBUG PRINT: startSize = " << startSize << std::endl;
+            std::cout << "-- JADIOS DEBUG PRINT: startSize = " << startSize
+                      << std::endl;
 
             if (startSize > 0)
             {
@@ -237,98 +301,92 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
 
                     if (g_strcmp0(bson_iter_key(&b_iter), key) == 0)
                     {
-                        (*count).push_back (bson_iter_int64(&b_iter));
-                        std::cout << "-- Test in for loop: count[i] = " <<  bson_iter_int64(&b_iter) << std::endl;
+                        (*count).push_back(bson_iter_int64(&b_iter));
+                        std::cout << "-- Test in for loop: count[i] = "
+                                  << bson_iter_int64(&b_iter) << std::endl;
                     }
                 }
             }
         }
         else if (g_strcmp0(bson_iter_key(&b_iter), "var_type") == 0)
         {
-                *type = bson_iter_int32(&b_iter);
-                std::cout << "-- TYPE = " << bson_iter_int32(&b_iter) << std::endl;
+            *type = bson_iter_int32(&b_iter);
+            std::cout << "-- TYPE = " << bson_iter_int32(&b_iter) << std::endl;
         }
         else if (g_strcmp0(bson_iter_key(&b_iter), "is_constant_dims") == 0)
         {
-                *constantDims = bson_iter_bool(&b_iter);
+            *constantDims = bson_iter_bool(&b_iter);
         }
     } // end while
 }
 
-void DefineVariableInInit(core::IO *io, const std::string varName, int type, Dims shape, Dims start, Dims count, bool constantDims)
+void DefineVariableInInit(core::IO *io, const std::string varName, int type,
+                          Dims shape, Dims start, Dims count, bool constantDims)
 {
     switch (type)
-        {
-        // case COMPOUND:
-        //     //TODO
-        //     break;
-        // case UNKNOWN:
-        //     //TODO
-        //     break;
-        case STRING:
-            io->DefineVariable<std::string>(varName, shape, start, count,
-                                             constantDims);
-            break;
-        case INT8:
-            io->DefineVariable<int8_t>(varName, shape, start, count,
+    {
+    // case COMPOUND:
+    //     //TODO
+    //     break;
+    // case UNKNOWN:
+    //     //TODO
+    //     break;
+    case STRING:
+        io->DefineVariable<std::string>(varName, shape, start, count,
                                         constantDims);
-            break;
-        case UINT8:
-            io->DefineVariable<uint8_t>(varName, shape, start, count,
-                                         constantDims);
-            break;
-        case INT16:
-            io->DefineVariable<int16_t>(varName, shape, start, count,
-                                         constantDims);
-            break;
-        case UINT16:
-            io->DefineVariable<uint16_t>(varName, shape, start, count,
-                                          constantDims);
-            break;
-        case INT32:
-            io->DefineVariable<int32_t>(varName, shape, start, count,
-                                         constantDims);
-            break;
-        case UINT32:
-            io->DefineVariable<uint32_t>(varName, shape, start, count,
-                                          constantDims);
-            break;
-        case INT64:
-            io->DefineVariable<int64_t>(varName, shape, start, count,
-                                         constantDims);
-            break;
-        case UINT64:
-            io->DefineVariable<uint64_t>(varName, shape, start, count,
-                                          constantDims);
-            break;
-        case FLOAT:
-            io->DefineVariable<float>(varName, shape, start, count,
-                                       constantDims);
-            break;
-        case DOUBLE:
-            io->DefineVariable<double>(varName, shape, start, count,
+        break;
+    case INT8:
+        io->DefineVariable<int8_t>(varName, shape, start, count, constantDims);
+        break;
+    case UINT8:
+        io->DefineVariable<uint8_t>(varName, shape, start, count, constantDims);
+        break;
+    case INT16:
+        io->DefineVariable<int16_t>(varName, shape, start, count, constantDims);
+        break;
+    case UINT16:
+        io->DefineVariable<uint16_t>(varName, shape, start, count,
+                                     constantDims);
+        break;
+    case INT32:
+        io->DefineVariable<int32_t>(varName, shape, start, count, constantDims);
+        break;
+    case UINT32:
+        io->DefineVariable<uint32_t>(varName, shape, start, count,
+                                     constantDims);
+        break;
+    case INT64:
+        io->DefineVariable<int64_t>(varName, shape, start, count, constantDims);
+        break;
+    case UINT64:
+        io->DefineVariable<uint64_t>(varName, shape, start, count,
+                                     constantDims);
+        break;
+    case FLOAT:
+        io->DefineVariable<float>(varName, shape, start, count, constantDims);
+        break;
+    case DOUBLE:
+        io->DefineVariable<double>(varName, shape, start, count, constantDims);
+        break;
+    case LONG_DOUBLE:
+        io->DefineVariable<long double>(varName, shape, start, count,
                                         constantDims);
-            break;
-        case LONG_DOUBLE:
-            io->DefineVariable<long double>(varName, shape, start, count,
-                                             constantDims);
-            break;
-        case COMPLEX_FLOAT:
-            io->DefineVariable<std::complex<float>>(varName, shape, start,
-                                                     count, constantDims);
-            break;
-        case COMPLEX_DOUBLE:
-            io->DefineVariable<std::complex<double>>(varName, shape, start,
-                                                      count, constantDims);
-            break;
-        }
+        break;
+    case COMPLEX_FLOAT:
+        io->DefineVariable<std::complex<float>>(varName, shape, start, count,
+                                                constantDims);
+        break;
+    case COMPLEX_DOUBLE:
+        io->DefineVariable<std::complex<double>>(varName, shape, start, count,
+                                                 constantDims);
+        break;
+    }
 }
-
-
 
 template <class T>
 void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
-                           const std::string nameSpace, long unsigned int *dataSize)
+                           const std::string nameSpace,
+                           long unsigned int *dataSize)
 {
     bson_iter_t b_iter;
     gchar *key;
@@ -344,13 +402,13 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
         std::cout << "ERROR: Bson iterator is not valid!" << std::endl;
     }
 
-    //TODO: what to do with the of the keys? max_value etc
+    // TODO: what to do with the of the keys? max_value etc
 
     /* probably not very efficient */
     while (bson_iter_next(&b_iter))
     {
 
-        if (g_strcmp0(bson_iter_key(&b_iter) , "memory_start_size") == 0)
+        if (g_strcmp0(bson_iter_key(&b_iter), "memory_start_size") == 0)
         {
             size = bson_iter_int64(&b_iter);
 
@@ -360,14 +418,14 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
                 {
                     bson_iter_next(&b_iter);
                     key = g_strdup_printf("memory_start_%d", i);
-                    if (g_strcmp0(bson_iter_key(&b_iter) , key) == 0)
+                    if (g_strcmp0(bson_iter_key(&b_iter), key) == 0)
                     {
                         variable.m_MemoryStart[i] = bson_iter_int64(&b_iter);
                     }
                 }
             }
         }
-        else if (g_strcmp0(bson_iter_key(&b_iter) , "memory_count_size") == 0)
+        else if (g_strcmp0(bson_iter_key(&b_iter), "memory_count_size") == 0)
         {
             size = bson_iter_int64(&b_iter);
 
@@ -377,7 +435,7 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
                 {
                     bson_iter_next(&b_iter);
                     key = g_strdup_printf("memory_count_%d", i);
-                    if (g_strcmp0(bson_iter_key(&b_iter) , key) == 0)
+                    if (g_strcmp0(bson_iter_key(&b_iter), key) == 0)
                     {
                         variable.m_MemoryCount[i] = bson_iter_int64(&b_iter);
                     }
@@ -385,19 +443,19 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
             }
         }
         /* unsigned long */
-        else if (g_strcmp0(bson_iter_key(&b_iter) , "steps_start") == 0)
+        else if (g_strcmp0(bson_iter_key(&b_iter), "steps_start") == 0)
         {
             variable.m_StepsStart = bson_iter_int64(&b_iter);
         }
-        else if (g_strcmp0(bson_iter_key(&b_iter) , "steps_count") == 0)
+        else if (g_strcmp0(bson_iter_key(&b_iter), "steps_count") == 0)
         {
             variable.m_StepsCount = bson_iter_int64(&b_iter);
         }
-        else if (g_strcmp0(bson_iter_key(&b_iter) , "block_id") == 0)
+        else if (g_strcmp0(bson_iter_key(&b_iter), "block_id") == 0)
         {
             variable.m_BlockID = bson_iter_int64(&b_iter);
         }
-        else if (g_strcmp0(bson_iter_key(&b_iter) , "index_start") == 0)
+        else if (g_strcmp0(bson_iter_key(&b_iter), "index_start") == 0)
         {
             variable.m_IndexStart = bson_iter_int64(&b_iter);
         }
@@ -406,11 +464,13 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
         //     variable.m_ElementSize = bson_iter_int64(&b_iter); //TODO
         //     elementSize read only?!
         // }
-        else if (g_strcmp0(bson_iter_key(&b_iter) , "available_steps_start") == 0)
+        else if (g_strcmp0(bson_iter_key(&b_iter), "available_steps_start") ==
+                 0)
         {
             variable.m_AvailableStepsStart = bson_iter_int64(&b_iter);
         }
-        else if (g_strcmp0(bson_iter_key(&b_iter) , "available_steps_count") == 0)
+        else if (g_strcmp0(bson_iter_key(&b_iter), "available_steps_count") ==
+                 0)
         {
             variable.m_AvailableStepsCount = bson_iter_int64(&b_iter);
         }
@@ -426,11 +486,11 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
             std::cout << "___ Datasize = " << *dataSize << std::endl;
         }
 
-        else if (g_strcmp0(bson_iter_key(&b_iter) , "is_single_value") == 0)
+        else if (g_strcmp0(bson_iter_key(&b_iter), "is_single_value") == 0)
         {
             variable.m_SingleValue = (bool)bson_iter_bool(&b_iter);
         }
-        else if (g_strcmp0(bson_iter_key(&b_iter) , "is_constant_dims") == 0)
+        else if (g_strcmp0(bson_iter_key(&b_iter), "is_constant_dims") == 0)
         {
             bool constantDims = (bool)bson_iter_bool(&b_iter);
 
@@ -439,24 +499,26 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
                 variable.SetConstantDims();
             }
         }
-        else if (g_strcmp0(bson_iter_key(&b_iter) , "is_read_as_joined") == 0)
+        else if (g_strcmp0(bson_iter_key(&b_iter), "is_read_as_joined") == 0)
         {
             variable.m_ReadAsJoined = (bool)bson_iter_bool(&b_iter);
         }
-        else if (g_strcmp0(bson_iter_key(&b_iter) , "is_read_as_local_value") == 0)
+        else if (g_strcmp0(bson_iter_key(&b_iter), "is_read_as_local_value") ==
+                 0)
         {
             variable.m_ReadAsLocalValue = (bool)bson_iter_bool(&b_iter);
         }
-        else if (g_strcmp0(bson_iter_key(&b_iter) , "is_random_access") == 0)
+        else if (g_strcmp0(bson_iter_key(&b_iter), "is_random_access") == 0)
         {
             variable.m_RandomAccess = (bool)bson_iter_bool(&b_iter);
         }
-        else if (g_strcmp0(bson_iter_key(&b_iter) , "is_first_streaming_step") == 0)
+        else if (g_strcmp0(bson_iter_key(&b_iter), "is_first_streaming_step") ==
+                 0)
         {
             variable.m_FirstStreamingStep = (bool)bson_iter_bool(&b_iter);
         }
         /* value_type*/
-        else if (g_strcmp0(bson_iter_key(&b_iter) , "min_value") == 0)
+        else if (g_strcmp0(bson_iter_key(&b_iter), "min_value") == 0)
         {
             // if (variable.m_var_type == INT32)
             // if (variable.GetType() == INT32)
@@ -694,8 +756,7 @@ void ParseVarTypeFromBSON<uint64_t>(Variable<uint64_t> &variable,
 }
 
 template <>
-void ParseVarTypeFromBSON<float>(Variable<float> &variable,
-                                  bson_iter_t *b_iter)
+void ParseVarTypeFromBSON<float>(Variable<float> &variable, bson_iter_t *b_iter)
 {
     // bson_append_double(bsonMetadata, "var_type", -1, FLOAT);
     // bson_append_double(bsonMetadata, "min_value", -1, variable.Min());
@@ -750,21 +811,24 @@ void ParseVarTypeFromBSON<std::complex<double>>(
 // template void SetMinMax(Variable<T> &var);             \
 
 // template <class T>
-// void TESTGetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace)
+// void TESTGetVariableMetadataFromJulea(Variable<T> &variable, bson_t
+// *bsonMetadata, const std::string nameSpace)
 // {
 //     std::cout << "Trying to fix template issues while linking" << std::endl;
 // }
 
-    // template void TESTGetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace);\
+// template void TESTGetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace);\
 
 
 #define variable_template_instantiation(T)                                     \
-    template void ParseVariableFromBSON(core::Variable<T> &,                   \
-                                        bson_t *bsonMetadata,                  \
-                                        const std::string nameSpace,long unsigned int *dataSize);          \
+    template void ParseVariableFromBSON(                                       \
+        core::Variable<T> &, bson_t *bsonMetadata,                             \
+        const std::string nameSpace, long unsigned int *dataSize);             \
     template void ParseVarTypeFromBSON(Variable<T> &variable,                  \
-                                       bson_iter_t *b_iter); \
-    template void DefineAttributeInInit(core::IO *io, const std::string attrName, T *data, int type, bool IsSingleValue, size_t numberElements);\
+                                       bson_iter_t *b_iter);                   \
+    template void DefineAttributeInInit(                                       \
+        core::IO *io, const std::string attrName, T *data, int type,           \
+        bool IsSingleValue, size_t numberElements);
 
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation

@@ -28,12 +28,13 @@ namespace engine
 //                            unsigned int *varCount);
 
 // void GetVariableBSONFromJulea(const std::string nameSpace,
-//                               const std::string varName, bson_t **bsonMetadata);
-
+//                               const std::string varName, bson_t
+//                               **bsonMetadata);
 
 // /* Variable Functions */
 // template <class T>
-// void OLDGetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata,
+// void OLDGetVariableMetadataFromJulea(Variable<T> &variable, bson_t
+// *bsonMetadata,
 //                                   const std::string nameSpace);
 
 // template <class T>
@@ -42,7 +43,8 @@ namespace engine
 
 // /* Attribute Functions */
 // // template <class T>
-// // void GetAllAttributeNamesFromJulea(Variable<T> &variable, bson_t *bsonMetadata,
+// // void GetAllAttributeNamesFromJulea(Variable<T> &variable, bson_t
+// *bsonMetadata,
 // //                                    const std::string nameSpace);
 
 // template <class T>
@@ -71,7 +73,6 @@ namespace engine
 //         const std::string nameSpace);                                          \
 //     ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 // #undef variable_template_instantiation
-
 
 } // end namespace engine
 } // end namespace core

@@ -22,36 +22,45 @@ namespace core
 namespace engine
 {
 
-// void DefineAttributeInInit(core::IO *io, const std::string varName, int type, bool IsSingleValue);
+// void DefineAttributeInInit(core::IO *io, const std::string varName, int type,
+// bool IsSingleValue);
 template <class T>
-void DefineAttributeInInit(core::IO *io, const std::string attrName, T *data, int type, bool IsSingleValue, size_t numberElements);
+void DefineAttributeInInit(core::IO *io, const std::string attrName, T *data,
+                           int type, bool IsSingleValue, size_t numberElements);
 
 void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
-                             const std::string varName, bson_t *bsonMetadata,
-                             int *type, Dims *shape, Dims *start, Dims *count,
-                             bool *constantDims);
+                                        const std::string varName,
+                                        bson_t *bsonMetadata, int *type,
+                                        Dims *shape, Dims *start, Dims *count,
+                                        bool *constantDims);
 
-void DefineVariableInInit(core::IO *io, const std::string varName, int type, Dims shape, Dims start, Dims count, bool constantDims);
-
+void DefineVariableInInit(core::IO *io, const std::string varName, int type,
+                          Dims shape, Dims start, Dims count,
+                          bool constantDims);
 
 template <class T>
-void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace,long unsigned int *dataSize);
-void ParseAttributeFromBSON();
+void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
+                           const std::string nameSpace,
+                           long unsigned int *dataSize);
+// void ParseAttributeFromBSON();
 
 // void ParseVarTypeFromBSON();
 template <class T>
-void ParseVarTypeFromBSON(Variable<T> &variable,bson_iter_t *b_iter);
-
+void ParseVarTypeFromBSON(Variable<T> &variable, bson_iter_t *b_iter);
 
 template <class T>
 void SetMinMax(Variable<T> &variable, const T *data);
 
+void ParseAttributeFromBSON(const std::string nameSpace,
+                            const std::string attrName, bson_t *bsonMetadata,
+                            long unsigned int *dataSize, size_t *numberElements,
+                            bool *IsSingleValue, int *type);
 
-void ParseAttributeFromBSON( const std::string nameSpace, const std::string attrName, bson_t *bsonMetadata,long unsigned int *dataSize, size_t numberElements, bool IsSingleValue);
-
-void ParseAttrTypeFromBSON();
+void GetAdiosTypeString(int type, std::string *typeString);
+// void ParseAttrTypeFromBSON(); //FIXME implement
 // template <class T>
-// void TESTGetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace);
+// void TESTGetVariableMetadataFromJulea(Variable<T> &variable, bson_t
+// *bsonMetadata, const std::string nameSpace);
 
 // template <class T>
 // void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);
@@ -76,14 +85,17 @@ void ParseAttrTypeFromBSON();
 //     ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(attribute_template_instantiation)
 // #undef attribute_template_instantiation
 
-   // extern template void TESTGetVariableMetadataFromJulea(Variable<T> &variable,            \
+// extern template void TESTGetVariableMetadataFromJulea(Variable<T> &variable,            \
                                              bson_t *bsonMetadata, const std::string nameSpace);            \
 
 
 #define variable_template_instantiation(T)                                     \
-   extern template void ParseVariableFromBSON(Variable<T> &variable,            \
-                                             bson_t *bsonMetadata, const std::string nameSpace, long unsigned int *dataSize);            \
-   extern template void DefineAttributeInInit(core::IO *io, const std::string attrName, T *data, int type, bool IsSingleValue, size_t numberElements);\
+    extern template void ParseVariableFromBSON(                                \
+        Variable<T> &variable, bson_t *bsonMetadata,                           \
+        const std::string nameSpace, long unsigned int *dataSize);             \
+    extern template void DefineAttributeInInit(                                \
+        core::IO *io, const std::string attrName, T *data, int type,           \
+        bool IsSingleValue, size_t numberElements);                            \
     ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 

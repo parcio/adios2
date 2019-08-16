@@ -61,9 +61,11 @@ void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
     {
 
         dataSize = attribute.m_DataArray.size() * sizeof(T);
-        std::cout << "-- dataSize Array.size() = " << attribute.m_DataArray.size() << std::endl;
+        std::cout << "-- dataSize Array.size() = "
+                  << attribute.m_DataArray.size() << std::endl;
         std::cout << "-- dataSize Array = " << dataSize << std::endl;
-        std::cout << "-- dataSize m_Elements = " << attribute.m_Elements << std::endl;
+        std::cout << "-- dataSize m_Elements = " << attribute.m_Elements
+                  << std::endl;
     }
 
     bson_append_int64(bsonMetadata, "data_size", -1, dataSize);
@@ -166,7 +168,7 @@ void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata)
         key = g_strdup_printf("count_%d", i);
 
         bson_append_int64(bsonMetadata, key, -1, variable.m_Count[i]);
-    std::cout << "count " << i << variable.m_Count[i] << std::endl;
+        std::cout << "count " << i << variable.m_Count[i] << std::endl;
     }
 
     bson_append_int64(bsonMetadata, "memory_start_size", -1,

@@ -42,8 +42,7 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
     ParseVariableToMetadataStruct(variable, blockInfo, metadata);
     ParseVarTypeToBSON(variable, blockInfo, metadata);
 
-    PutVariableMetadataToJulea(variable, bsonMetadata,
-                               m_Name);
+    PutVariableMetadataToJulea(variable, bsonMetadata, m_Name);
     // PutVariableMetadataToJuleaSmall(variable, bsonMetadata,
     //                            m_Name);
     PutVariableDataToJulea(variable, blockInfo.Data, m_Name);
@@ -73,8 +72,7 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 
     // PutVariableMetadataToJulea(variable, bsonMetadata,
     //                                 m_Name);
-    PutVariableMetadataToJuleaSmall(variable, bsonMetadata,
-                                    m_Name);
+    PutVariableMetadataToJuleaSmall(variable, bsonMetadata, m_Name);
     // PutVariableDataToJulea(variable, data, m_Name);
     PutVariableDataToJuleaSmall(variable, data, m_Name);
 

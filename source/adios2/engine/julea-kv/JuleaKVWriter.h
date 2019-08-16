@@ -57,7 +57,8 @@ public:
     size_t CurrentStep() const final;
     void PerformPuts() final;
     void EndStep() final;
-    void Flush(const int transportIndex = -1) final; //TODO: transportindex needed?
+    void
+    Flush(const int transportIndex = -1) final; // TODO: transportindex needed?
     // void Flush();
 
 private:
