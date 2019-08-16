@@ -371,6 +371,7 @@ void JuleaKVReader::InitAttributes()
         // GetAttributeDataFromJulea(attrName,data, nameSpace, dataSize );
         // DefineAttributeInInit(&m_IO, attrName, type, IsSingleValue);
         std::string typeString;
+        typeString = "double";
 #define declare_attribute_type(T)                                              \
         std::cout << "declare_attribute_type " << std::endl;                       \
         if (typeString == helper::GetType<T>())\
