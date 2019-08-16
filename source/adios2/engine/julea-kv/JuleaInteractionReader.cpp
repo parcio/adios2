@@ -8,9 +8,6 @@
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
-#ifndef ADIOS2_ENGINE_JULEAINTERACTIONREADERTEST_
-#define ADIOS2_ENGINE_JULEAINTERACTIONREADERTEST_
-
 #include "JuleaInteractionReader.h"
 
 #include "JuleaFormatReader.h" //for ParseVariableFromBSON
@@ -299,7 +296,7 @@ void GetAttributeBSONFromJulea(const std::string nameSpace,
 
 #define attribute_template_instantiation(T)                                     \
     template void GetAttributeDataFromJulea(                            \
-        const std::string attrName, T *data, const std::string nameSpace, long unsigned int dataSize);             \
+        const std::string attrName, T *data, const std::string nameSpace, long unsigned int dataSize);
     ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(attribute_template_instantiation)
 #undef attribute_template_instantiation
 
@@ -336,4 +333,3 @@ void GetAttributeBSONFromJulea(const std::string nameSpace,
 } // end namespace engine
 } // end namespace core
 } // end namespace adios2
-#endif /* ADIOS2_ENGINE_JULEAINTERACTIONREADERTEST_ */
