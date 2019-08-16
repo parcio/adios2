@@ -299,8 +299,8 @@ void GetAttributeBSONFromJulea(const std::string nameSpace,
 
 #define attribute_template_instantiation(T)                                     \
     template void GetAttributeDataFromJulea(                            \
-        const std::string attrName, const T *data, const std::string nameSpace);             \
-    ADIOS2_FOREACH_STDTYPE_1ARG(attribute_template_instantiation)
+        const std::string attrName, T *data, const std::string nameSpace, long unsigned int dataSize);             \
+    ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(attribute_template_instantiation)
 #undef attribute_template_instantiation
 
 // #define attribute_template_instantiation(T)                                     \
