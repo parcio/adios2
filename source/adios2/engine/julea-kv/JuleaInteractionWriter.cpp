@@ -235,8 +235,9 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
     // WriteMetadataToJuleaKV(kvNameC, attribute.m_Name, nameSpace.c_str(),
     //                        bsonNames, bsonMetaData, kvObjectNames);
 
-    std::cout << "++ Julea Interaction: PutAttributeMetadataToJuleaSmall ++++++ "
-              << std::endl;
+    std::cout
+        << "++ Julea Interaction: PutAttributeMetadataToJuleaSmall ++++++ "
+        << std::endl;
     /* names_kv = kv holding all variable names */
     auto kvObjectNames = j_kv_new(kvNames, nameSpace.c_str());
 

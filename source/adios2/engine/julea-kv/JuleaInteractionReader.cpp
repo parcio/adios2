@@ -88,27 +88,19 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
     template void GetVariableDataFromJulea(Variable<T> &variable, T *data,     \
                                            const std::string nameSpace,        \
                                            long unsigned int dataSize);
-
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 
 void GetNamesBSONFromJulea(const std::string nameSpace, bson_t **bsonNames,
                            unsigned int *varCount, const std::string kvName)
 {
-
-    // GetVariableNamesBSONFromJulea(nameSpace, bsonNames, varCount,
-    // "variable_names");
-
-    // GetAttributeNamesBSONFromJulea(nameSpace, bsonNames, varCount,
-    // "attribute_names"); bson_t *bson_names; bson_iter_t b_iter;
+    std::cout << "-- GetNamesBSONFromJulea ------" << std::endl;
     guint32 valueLen = 0;
-
     // g_autoptr(JKV) kv_object = NULL;
     void *namesBuf = NULL;
 
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
-    // printf("-- JADIOS DEBUG PRINT: get_all_var_names_from_kv \n");
 
     // auto kv_object = j_kv_new("variable_names", nameSpace.c_str());
     auto kvObject = j_kv_new(kvName.c_str(), nameSpace.c_str());
@@ -219,37 +211,7 @@ void GetVariableBSONFromJulea(const std::string nameSpace,
 }
 
 /** ------------------------- Attributes -----------------------------------**/
-// template <class T>
-// void GetAttributeMetadataFromJulea(Attribute<T> &attribute, bson_t
-// *bsonMetadata, const std::string nameSpace, long unsigned int dataSize)
-void GetAttributeMetadataFromJulea(const std::string attrName,
-                                   bson_t *bsonMetadata,
-                                   const std::string nameSpace,
-                                   long unsigned int *dataSize,
-                                   size_t *numberElements, bool *IsSingleValue,
-                                   int *type)
-{
-    // long unsigned int dataSize = 0;
-    // size_t numberElements = 0;
-    // bool IsSingleValue = false;
 
-    std::cout << "++ Julea Interaction Reader: GetAttributeMetadataFromJulea"
-              << std::endl;
-    // GetVariableBSONFromJulea(nameSpace,attrName, &bsonMetadata);
-    GetAttributeBSONFromJulea(nameSpace, attrName, &bsonMetadata);
-    ParseAttributeFromBSON(nameSpace, attrName, bsonMetadata, dataSize,
-                           numberElements, IsSingleValue, type);
-    // ParseAttrTypeFromBSON();
-    // ParseVariableFromBSON(attrName, bsonMetadata, nameSpace, dataSize);
-}
-
-// template <class T>
-// void GetAttributeDataFromJulea(Attribute<T> &attribute, T *data,
-//                               const std::string nameSpace, long unsigned int
-//                               dataSize)
-// void GetAttributeDataFromJulea(const std::string attrName, void *data,
-//                               const std::string nameSpace, long unsigned int
-//                               dataSize)
 template <class T>
 void GetAttributeDataFromJulea(const std::string attrName, T *data,
                                const std::string nameSpace,
@@ -291,6 +253,13 @@ void GetAttributeDataFromJulea(const std::string attrName, T *data,
     j_object_unref(dataObject);
 }
 
+#define attribute_template_instantiation(T)                                    \
+    template void GetAttributeDataFromJulea(                                   \
+        const std::string attrName, T *data, const std::string nameSpace,      \
+        long unsigned int dataSize);
+ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(attribute_template_instantiation)
+#undef attribute_template_instantiation
+
 void GetAttributeBSONFromJulea(const std::string nameSpace,
                                const std::string attrName,
                                bson_t **bsonMetadata)
@@ -320,13 +289,29 @@ void GetAttributeBSONFromJulea(const std::string nameSpace,
             bson_new_from_data((const uint8_t *)metaDataBuf, valueLen);
     }
 }
+// template <class T>
+// void GetAttributeMetadataFromJulea(Attribute<T> &attribute, bson_t
+// *bsonMetadata, const std::string nameSpace, long unsigned int dataSize)
+void GetAttributeMetadataFromJulea(const std::string attrName,
+                                   bson_t *bsonMetadata,
+                                   const std::string nameSpace,
+                                   long unsigned int *dataSize,
+                                   size_t *numberElements, bool *IsSingleValue,
+                                   int *type)
+{
+    // long unsigned int dataSize = 0;
+    // size_t numberElements = 0;
+    // bool IsSingleValue = false;
 
-#define attribute_template_instantiation(T)                                    \
-    template void GetAttributeDataFromJulea(                                   \
-        const std::string attrName, T *data, const std::string nameSpace,      \
-        long unsigned int dataSize);
-ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(attribute_template_instantiation)
-#undef attribute_template_instantiation
+    std::cout << "++ Julea Interaction Reader: GetAttributeMetadataFromJulea"
+              << std::endl;
+    // GetVariableBSONFromJulea(nameSpace,attrName, &bsonMetadata);
+    GetAttributeBSONFromJulea(nameSpace, attrName, &bsonMetadata);
+    ParseAttributeFromBSON(nameSpace, attrName, bsonMetadata, dataSize,
+                           numberElements, IsSingleValue, type);
+    // ParseAttrTypeFromBSON();
+    // ParseVariableFromBSON(attrName, bsonMetadata, nameSpace, dataSize);
+}
 
 // #define attribute_template_instantiation(T)                                     \
 //     template void GetAttributeMetadataFromJulea(Attribute<T> &attribute, bson_t *bsonMetadata, const std::string nameSpace,long unsigned int dataSize);\

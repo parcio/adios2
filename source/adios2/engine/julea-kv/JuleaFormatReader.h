@@ -24,9 +24,10 @@ namespace engine
 
 // void DefineAttributeInInit(core::IO *io, const std::string varName, int type,
 // bool IsSingleValue);
-template <class T>
-void DefineAttributeInInit(core::IO *io, const std::string attrName, T *data,
-                           int type, bool IsSingleValue, size_t numberElements);
+// template <class T>
+// void DefineAttributeInInit(core::IO *io, const std::string attrName, T *data,
+//                            int type, bool IsSingleValue, size_t
+//                            numberElements);
 
 void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
                                         const std::string varName,
@@ -42,9 +43,7 @@ template <class T>
 void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
                            const std::string nameSpace,
                            long unsigned int *dataSize);
-// void ParseAttributeFromBSON();
 
-// void ParseVarTypeFromBSON();
 template <class T>
 void ParseVarTypeFromBSON(Variable<T> &variable, bson_iter_t *b_iter);
 
@@ -57,45 +56,16 @@ void ParseAttributeFromBSON(const std::string nameSpace,
                             bool *IsSingleValue, int *type);
 
 void GetAdiosTypeString(int type, std::string *typeString);
-// void ParseAttrTypeFromBSON(); //FIXME implement
-// template <class T>
-// void TESTGetVariableMetadataFromJulea(Variable<T> &variable, bson_t
-// *bsonMetadata, const std::string nameSpace);
 
-// template <class T>
-// void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);
-
-// template <class T>
-// void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);
-
-// template <class T>
-// void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata);
-
-// /* also sets m_Min, m_Max, m_Value; therefore the data pointer needs to be
-//  * passed */
-// template <class T>
-// void ParseVarTypeToBSON(Variable<T> &variable, const T *data,
-//                         bson_t *bsonMetadata);
-
-// #define attribute_template_instantiation(T)                                    \
-//     extern template void ParseAttributeToBSON(Attribute<T> &attribute,         \
-//                                               bson_t *bsonMetadata);           \
-//     extern template void ParseAttrTypeToBSON(Attribute<T> &attribute,          \
-//                                              bson_t *bsonMetadata);            \
-//     ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(attribute_template_instantiation)
-// #undef attribute_template_instantiation
-
-// extern template void TESTGetVariableMetadataFromJulea(Variable<T> &variable,            \
-                                             bson_t *bsonMetadata, const std::string nameSpace);            \
+// extern template void DefineAttributeInInit(                                \
+        core::IO *io, const std::string attrName, T *data, int type,           \
+        bool IsSingleValue, size_t numberElements);                            \
 
 
 #define variable_template_instantiation(T)                                     \
     extern template void ParseVariableFromBSON(                                \
         Variable<T> &variable, bson_t *bsonMetadata,                           \
         const std::string nameSpace, long unsigned int *dataSize);             \
-    extern template void DefineAttributeInInit(                                \
-        core::IO *io, const std::string attrName, T *data, int type,           \
-        bool IsSingleValue, size_t numberElements);                            \
     ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 

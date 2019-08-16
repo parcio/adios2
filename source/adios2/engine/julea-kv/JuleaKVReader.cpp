@@ -158,23 +158,6 @@ void JuleaKVReader::EndStep()
     // }
 }
 
-// TODO: check details of BP3Deserializer
-// #define declare_type(T) \
-//     else if (type == helper::GetType<T>()) \
-//     { \
-//         Variable<T> &variable = \
-//             FindVariable<T>(name, "in call to PerformGets, EndStep or
-//             Close"); \
-//         for (auto &blockInfo : variable.m_BlocksInfo) \
-//         { \
-//             m_BP3Deserializer.SetVariableBlockInfo(variable, blockInfo); \
-//         } \
-//         ReadVariableBlocks(variable); \
-//         variable.m_BlocksInfo.clear(); \
-//     }
-//         ADIOS2_FOREACH_TYPE_1ARG(declare_type)
-// #undef declare_type
-
 /*
     PerformGets similar to BP-Engine
 
@@ -362,9 +345,6 @@ void JuleaKVReader::InitAttributes()
                                       &IsSingleValue, &type);
         std::cout << "Data size = " << dataSize << std::endl;
 
-        // DefineAttributeInInit(&m_IO, attrName, data, type, IsSingleValue,  \
-                                  numberElements);
-
         GetAdiosTypeString(type, &typeString);
 #define declare_attribute_type(T)                                              \
     if (typeString == helper::GetType<T>())                                    \
@@ -387,40 +367,6 @@ void JuleaKVReader::InitAttributes()
 #undef declare_attribute_type
     }
 }
-// Variable<T> test;
-//     #define declare_attribute_type(T) \
-//         std::cout << "Test this makro... " << std::endl;        \
-
-//             ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
-// #undef declare_attribute_type
-//         std::string typeString;
-//         if (typeString == "compound")
-//         {
-//         }
-// #define declare_attribute_type(T) \
-//     else if (typeString == helper::GetType<T>()) \
-//     { \
-//         T *data;\
-//     }
-//         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
-// #undef declare_attribute_type
-
-//     #define declare_attribute_type(T)                                              \
-//     std::cout << "declare_attribute_type " << std::endl;                       \
-//     T *data;                                                                   \
-//     GetAttributeDataFromJulea(attrName, data, nameSpace, dataSize);            \
-//     if (IsSingleValue)                                                         \
-//     {                                                                          \
-//         DefineAttributeInInit(&m_IO, attrName, data, type, IsSingleValue,      \
-//                               numberElements);                                 \
-//     }                                                                          \
-//     else                                                                       \
-//     {                                                                          \
-//         DefineAttributeInInit(&m_IO, attrName, data, type, IsSingleValue,      \
-//                               numberElements);                                 \
-//     }                                                                          \
-//     ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
-// #undef declare_attribute_type
 
 void JuleaKVReader::InitParameters()
 {
@@ -492,22 +438,6 @@ void JuleaKVReader::DoClose(const int transportIndex)
     // g_free(m_JuleaInfo->nameSpace);
     // g_slice_free(JuleaInfo, m_JuleaInfo);
 }
-
-// #define declare_type(T)                                                        \
-//     std::map<size_t, std::vector<typename Variable<T>::Info>>                  \
-//     JuleaReader::DoAllStepsBlocksInfo(const Variable<T> &variable) const         \
-//     {                                                                          \
-//         return AllStepsBlocksInfo(variable);                 \
-//     }                                                                          \
-//                                                                                \
-//     std::vector<typename Variable<T>::Info> JuleaReader::DoBlocksInfo(           \
-//         const Variable<T> &variable, const size_t step) const                  \
-//     {                                                                          \
-//         return BlocksInfo(variable, step);                   \
-//     }
-
-// ADIOS2_FOREACH_TYPE_1ARG(declare_type)
-// #undef declare_type
 
 } // end namespace engine
 } // end namespace core

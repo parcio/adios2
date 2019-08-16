@@ -28,83 +28,85 @@ namespace core
 namespace engine
 {
 
-template <class T>
-void DefineAttributeInInit(core::IO *io, const std::string attrName, T *data,
-                           int type, bool IsSingleValue, size_t numberElements)
-{
-    if (IsSingleValue)
-    {
-    }
-    else
-    {
-        switch (type)
-        {
-        // case COMPOUND:
-        //     //TODO
-        //     break;
-        // case UNKNOWN:
-        //     //TODO
-        //     break;
-        case STRING:
-            // io->DefineVariable<std::string>(varName, shape, start, count,
-            //                                  constantDims);
-            // io->DefineAttribute<std::string>(attrName, data, numberElements);
-            break;
-        case INT8:
-            // io->DefineVariable<int8_t>(varName, shape, start, count,
-            // constantDims);
-            break;
-        case UINT8:
-            // io->DefineVariable<uint8_t>(varName, shape, start, count,
-            // constantDims);
-            break;
-        case INT16:
-            // io->DefineVariable<int16_t>(varName, shape, start, count,
-            // constantDims);
-            break;
-        case UINT16:
-            // io->DefineVariable<uint16_t>(varName, shape, start, count,
-            // constantDims);
-            break;
-        case INT32:
-            // io->DefineVariable<int32_t>(varName, shape, start, count,
-            // constantDims);
-            break;
-        case UINT32:
-            // io->DefineVariable<uint32_t>(varName, shape, start, count,
-            // constantDims);
-            break;
-        case INT64:
-            // io->DefineVariable<int64_t>(varName, shape, start, count,
-            // constantDims);
-            break;
-        case UINT64:
-            // io->DefineVariable<uint64_t>(varName, shape, start, count,
-            // constantDims);
-            break;
-        case FLOAT:
-            // io->DefineVariable<float>(varName, shape, start, count,
-            // constantDims);
-            break;
-        case DOUBLE:
-            // io->DefineVariable<double>(varName, shape, start, count,
-            // constantDims);
-            break;
-        case LONG_DOUBLE:
-            // io->DefineVariable<long double>(varName, shape, start, count,
-            // constantDims);
-            break;
-        case COMPLEX_FLOAT:
-            // io->DefineVariable<std::complex<float>>(varName, shape, start,
-            // count, constantDims);
-            break;
-        case COMPLEX_DOUBLE:
-            // io->DefineVariable<std::complex<double>>(varName, shape, start,
-            // count, constantDims);
-            break;
-        }
-    }
-}
+// template <class T>
+// void DefineAttributeInInit(core::IO *io, const std::string attrName, T *data,
+//                            int type, bool IsSingleValue, size_t
+//                            numberElements)
+// {
+//     if (IsSingleValue)
+//     {
+//     }
+//     else
+//     {
+//         switch (type)
+//         {
+//         // case COMPOUND:
+//         //     //TODO
+//         //     break;
+//         // case UNKNOWN:
+//         //     //TODO
+//         //     break;
+//         case STRING:
+//             // io->DefineVariable<std::string>(varName, shape, start, count,
+//             //                                  constantDims);
+//             // io->DefineAttribute<std::string>(attrName, data,
+//             numberElements); break;
+//         case INT8:
+//             // io->DefineVariable<int8_t>(varName, shape, start, count,
+//             // constantDims);
+//             break;
+//         case UINT8:
+//             // io->DefineVariable<uint8_t>(varName, shape, start, count,
+//             // constantDims);
+//             break;
+//         case INT16:
+//             // io->DefineVariable<int16_t>(varName, shape, start, count,
+//             // constantDims);
+//             break;
+//         case UINT16:
+//             // io->DefineVariable<uint16_t>(varName, shape, start, count,
+//             // constantDims);
+//             break;
+//         case INT32:
+//             // io->DefineVariable<int32_t>(varName, shape, start, count,
+//             // constantDims);
+//             break;
+//         case UINT32:
+//             // io->DefineVariable<uint32_t>(varName, shape, start, count,
+//             // constantDims);
+//             break;
+//         case INT64:
+//             // io->DefineVariable<int64_t>(varName, shape, start, count,
+//             // constantDims);
+//             break;
+//         case UINT64:
+//             // io->DefineVariable<uint64_t>(varName, shape, start, count,
+//             // constantDims);
+//             break;
+//         case FLOAT:
+//             // io->DefineVariable<float>(varName, shape, start, count,
+//             // constantDims);
+//             break;
+//         case DOUBLE:
+//             // io->DefineVariable<double>(varName, shape, start, count,
+//             // constantDims);
+//             break;
+//         case LONG_DOUBLE:
+//             // io->DefineVariable<long double>(varName, shape, start, count,
+//             // constantDims);
+//             break;
+//         case COMPLEX_FLOAT:
+//             // io->DefineVariable<std::complex<float>>(varName, shape, start,
+//             // count, constantDims);
+//             break;
+//         case COMPLEX_DOUBLE:
+//             // io->DefineVariable<std::complex<double>>(varName, shape,
+//             start,
+//             // count, constantDims);
+//             break;
+//         }
+//     }
+// }
 
 void GetAdiosTypeString(int type, std::string *typeString)
 {
@@ -588,41 +590,6 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
     } // end while
 }
 
-// template <class T>
-// void SetMinMax(Variable<T> &var)
-// {
-//     T min;
-//     T max;
-
-//     auto number_elements = adios2::helper::GetTotalSize(variable.m_Count);
-//     adios2::helper::GetMinMax(data, number_elements, min, max);
-//     variable.m_Min = min;
-//     variable.m_Max = max;
-// }
-
-// template <class T>
-// void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
-// {
-//     // name is key in kv
-//     unsigned int dataSize = -1;
-
-//     bson_append_int64(bsonMetadata, "number_elements", -1,
-//                       attribute.m_Elements);
-//     bson_append_bool(bsonMetadata, "is_single_value", -1,
-//                      attribute.m_IsSingleValue);
-//     if (attribute.m_IsSingleValue)
-//     {
-//         // TODO: check if this is correct
-//         dataSize = sizeof(attribute.m_DataSingleValue);
-//     }
-//     else
-//     {
-//         dataSize = attribute.m_DataArray.size();
-//     }
-
-//     bson_append_int64(bsonMetadata, "data_size", -1, dataSize);
-// }
-
 template <>
 void ParseVarTypeFromBSON<std::string>(Variable<std::string> &variable,
                                        bson_iter_t *b_iter)
@@ -790,36 +757,18 @@ void ParseVarTypeFromBSON<std::complex<double>>(
               << variable.Min() << std::endl;
 }
 
-// template void SetMinMax(Variable<T> &var);             \
-
-// template <class T>
-// void TESTGetVariableMetadataFromJulea(Variable<T> &variable, bson_t
-// *bsonMetadata, const std::string nameSpace)
-// {
-//     std::cout << "Trying to fix template issues while linking" << std::endl;
-// }
-
-// template void TESTGetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata, const std::string nameSpace);\
-
+// template void DefineAttributeInInit(                                       \
+        core::IO *io, const std::string attrName, T *data, int type,           \
+        bool IsSingleValue, size_t numberElements);
 
 #define variable_template_instantiation(T)                                     \
     template void ParseVariableFromBSON(                                       \
         core::Variable<T> &, bson_t *bsonMetadata,                             \
         const std::string nameSpace, long unsigned int *dataSize);             \
     template void ParseVarTypeFromBSON(Variable<T> &variable,                  \
-                                       bson_iter_t *b_iter);                   \
-    template void DefineAttributeInInit(                                       \
-        core::IO *io, const std::string attrName, T *data, int type,           \
-        bool IsSingleValue, size_t numberElements);
-
+                                       bson_iter_t *b_iter);
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
-
-// #define attribute_template_instantiation(T)                                    \
-//     template void ParseAttributeToBSON(Attribute<T> &attribute,                \
-//                                        bson_t *bsonMetadata);                  \
-//     template void ParseAttrTypeToBSON(Attribute<T> &attribute,                 \
-//                                       bson_t *bsonMetadata);
 
 // ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(attribute_template_instantiation)
 // #undef attribute_template_instantiation
