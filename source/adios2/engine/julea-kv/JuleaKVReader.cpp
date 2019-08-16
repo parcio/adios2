@@ -335,8 +335,6 @@ void JuleaKVReader::InitAttributes()
     std::string kvName = "attribute_names";
     unsigned int varCount;
     long unsigned int dataSize;
-    // void *data;
-    // T *data;
 
     GetNamesBSONFromJulea(nameSpace, &bsonNames, &varCount,
                           kvName); // TODO: get all attribute names
@@ -347,46 +345,42 @@ void JuleaKVReader::InitAttributes()
 
     while (bson_iter_next(&b_iter))
     {
+        std::string typeString;
         bson_t *bsonMetadata;
         varCount = 0;
         dataSize = 0;
         attrName = g_strdup(bson_iter_key(&b_iter));
-        bool IsSingleValue = false;
         int type = 0;
         size_t numberElements = 0;
+        bool IsSingleValue = false;
 
         std::cout << "-----------------------------------" << std::endl;
         std::cout << "-- Attribute name " << attrName << std::endl;
 
-        GetAttributeBSONFromJulea(nameSpace, attrName, &bsonMetadata);
-
-        // GetVariableMetadataForInitFromBSON(nameSpace, varName, bsonMetadata,
-        // &type, &shape,
-        //                         &start, &count, &constantDims);
         GetAttributeMetadataFromJulea(attrName, bsonMetadata, nameSpace,
                                       &dataSize, &numberElements,
                                       &IsSingleValue, &type);
         std::cout << "Data size = " << dataSize << std::endl;
-        // GetAttributeDataFromJulea(attrName,data, nameSpace, dataSize );
-        // DefineAttributeInInit(&m_IO, attrName, type, IsSingleValue);
-        std::string typeString;
+
+        // DefineAttributeInInit(&m_IO, attrName, data, type, IsSingleValue,  \
+                                  numberElements);
+
         GetAdiosTypeString(type, &typeString);
 #define declare_attribute_type(T)                                              \
     if (typeString == helper::GetType<T>())                                    \
     {                                                                          \
-        std::cout << "typeString = " << typeString << std::endl;               \
-        std::cout << "declare_attribute_type " << std::endl;                   \
         T *data;                                                               \
+        std::cout << "typeString = " << typeString << std::endl;               \
         GetAttributeDataFromJulea(attrName, data, nameSpace, dataSize);        \
         if (IsSingleValue)                                                     \
         {                                                                      \
-            DefineAttributeInInit(&m_IO, attrName, data, type, IsSingleValue,  \
-                                  numberElements);                             \
+            std::cout << "Data: " << *data << std::endl;                       \
+            m_IO.DefineAttribute<T>(attrName, *data);                          \
         }                                                                      \
         else                                                                   \
         {                                                                      \
-            DefineAttributeInInit(&m_IO, attrName, data, type, IsSingleValue,  \
-                                  numberElements);                             \
+            std::cout << "Data: " << data[0] << std::endl;                     \
+            m_IO.DefineAttribute<T>(attrName, data, numberElements);           \
         }                                                                      \
     }
         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)

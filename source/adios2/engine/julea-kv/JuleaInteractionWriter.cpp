@@ -43,6 +43,7 @@ void CheckIfAlreadyInKV(std::string kvName, std::string paramName,
                         std::string nameSpace, bson_t **bsonNames,
                         JKV *kvObjectNames, bool *IsAlreadyInKV)
 {
+    std::cout << "-- CheckIfAlreadyInKV -----" << std::endl;
     guint64 bytesWritten = 0;
     guint32 valueLen = 0;
 
@@ -104,8 +105,8 @@ void WriteNameToJuleaKV(std::string kvName, std::string paramName,
     // std::cout <<"WriteNameToJuleaKV " << "-- bsonNames length: " <<
     // bsonNames->len << std::endl;
     bson_append_int32(bsonNames, name, -1, 42); // TODO: type?
-    std::cout << "WriteNameToJuleaKV "
-              << "-- bsonNames length: " << bsonNames->len << std::endl;
+    std::cout << "-- WriteNameToJuleaKV ------" << std::endl;
+    std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
 
     auto namesBuf = g_memdup(bson_get_data(bsonNames), bsonNames->len);
     j_kv_put(kvObjectNames, namesBuf, bsonNames->len, g_free, batch);
@@ -233,9 +234,9 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
     // }
     // WriteMetadataToJuleaKV(kvNameC, attribute.m_Name, nameSpace.c_str(),
     //                        bsonNames, bsonMetaData, kvObjectNames);
-    std::cout << "++ Julea Interaction: PutAttributeMetadataToJuleaSmall  "
-              << std::endl;
 
+    std::cout << "++ Julea Interaction: PutAttributeMetadataToJuleaSmall ++++++ "
+              << std::endl;
     /* names_kv = kv holding all variable names */
     auto kvObjectNames = j_kv_new(kvNames, nameSpace.c_str());
 
@@ -498,6 +499,7 @@ template <class T>
 void PutAttributeDataToJulea(Attribute<T> &attribute, const T *data,
                              const std::string nameSpace)
 {
+    std::cout << "-- PutAttributeDataToJulea -------" << std::endl;
     guint64 bytesWritten = 0;
     unsigned int dataSize = -1;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -521,6 +523,7 @@ void PutAttributeDataToJulea(Attribute<T> &attribute, const T *data,
         g_strdup_printf("%s_attributes_%s", nameSpace.c_str(), attrName);
     auto dataObject = j_object_new(stringDataObject, attrName);
 
+    std::cout << "stringDataObject: " << stringDataObject << std::endl;
     j_object_create(dataObject, batch);
     j_object_write(dataObject, data, dataSize, 0, &bytesWritten, batch);
 
@@ -540,14 +543,14 @@ void PutAttributeDataToJulea(Attribute<T> &attribute, const T *data,
     j_object_unref(dataObject);
     j_batch_unref(batch);
 
-    std::cout << "++ Julea Interaction Writer: Put Variable " << std::endl;
+    std::cout << "++ Julea Interaction Writer: Put Attribute " << std::endl;
 }
 
 template <class T>
 void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetaData,
                                  const std::string nameSpace)
 {
-    std::cout << "___ PutAttributeMetadataToJulea: " << std::endl;
+    std::cout << "-- PutAttributeMetadataToJulea ------ " << std::endl;
     // guint64 bytesWritten = 0;
     guint32 valueLen = 0;
 

@@ -268,6 +268,8 @@ void GetAttributeDataFromJulea(const std::string attrName, T *data,
         "%s_attributes_%s", nameSpace.c_str(), attrName.c_str());
     auto dataObject = j_object_new(stringDataObject, attrName.c_str());
 
+    std::cout << "stringDataObject: " << stringDataObject << std::endl;
+
     std::cout << "___ GetAttributeDataFromJulea Datasize = " << dataSize
               << std::endl;
 
@@ -298,7 +300,7 @@ void GetAttributeBSONFromJulea(const std::string nameSpace,
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
-    std::cout << "-- GetAttributeBSONFromJulea" << std::endl;
+    std::cout << "-- GetAttributeBSONFromJulea 1111 " << std::endl;
     auto stringMetadataKV = g_strdup_printf("attributes_%s", nameSpace.c_str());
     auto kvObject = j_kv_new(stringMetadataKV, attrName.c_str());
     // bson_metadata = bson_new();

@@ -44,7 +44,7 @@ template <class T>
 void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
 {
     // name is key in kv
-    std::cout << "-- ParseAttributeToBSON " << std::endl;
+    std::cout << "-- ParseAttributeToBSON ------ " << std::endl;
     unsigned int dataSize = -1;
 
     bson_append_int64(bsonMetadata, "number_elements", -1,
@@ -75,6 +75,7 @@ void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
 template <class T>
 void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
 {
+    std::cout << "-- ParseAttrTypeToBSON ------" << std::endl;
     int type = -1;
 
     if (helper::GetType<T>() == "string")
@@ -128,7 +129,7 @@ void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
 
     bson_append_int32(bsonMetadata, "attr_type", -1, type);
     std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
-    std::cout << "ParseAttrTypeToBSON type :" << attribute.m_Type << std::endl;
+    std::cout << "-- type: " << attribute.m_Type << std::endl;
 }
 
 template <class T>

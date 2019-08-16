@@ -168,7 +168,6 @@ void ParseAttributeFromBSON(const std::string nameSpace,
 {
     bson_iter_t b_iter;
     gchar *key;
-    // unsigned int size;
 
     if (bson_iter_init(&b_iter, bsonMetadata))
     {
@@ -180,8 +179,6 @@ void ParseAttributeFromBSON(const std::string nameSpace,
         std::cout << "ERROR: Bson iterator is not valid!" << std::endl;
     }
 
-    // TODO: what to do with the of the keys? max_value etc
-
     /* probably not very efficient */
     while (bson_iter_next(&b_iter))
     {
@@ -189,35 +186,20 @@ void ParseAttributeFromBSON(const std::string nameSpace,
         if (g_strcmp0(bson_iter_key(&b_iter), "number_elements") == 0)
         {
             *numberElements = (size_t)bson_iter_int64(&b_iter);
-            // size = bson_iter_int64(&b_iter);
-
-            // if (size > 0)
-            // {
-            //     for (guint i = 0; i < size; i++)
-            //     {
-            //         bson_iter_next(&b_iter);
-            //         key = g_strdup_printf("memory_start_%d", i);
-            //         if (g_strcmp0(bson_iter_key(&b_iter) , key) == 0)
-            //         {
-            //             variable.m_MemoryStart[i] = bson_iter_int64(&b_iter);
-            //         }
-            //     }
-            // }
         }
         else if (g_strcmp0(bson_iter_key(&b_iter), "is_single_value") == 0)
         {
-            // variable.m_SingleValue = (bool)bson_iter_bool(&b_iter);
             *IsSingleValue = (bool)bson_iter_bool(&b_iter);
         }
         else if (g_strcmp0(bson_iter_key(&b_iter), "data_size") == 0)
         {
-            std::cout << "___ Datasize = " << *dataSize << std::endl;
+            // std::cout << "___ Datasize = " << *dataSize << std::endl;
             *dataSize = bson_iter_int64(&b_iter);
             std::cout << "___ Datasize = " << *dataSize << std::endl;
         }
         else if (g_strcmp0(bson_iter_key(&b_iter), "attr_type") == 0)
         {
-            std::cout << "___ type = " << *type << std::endl;
+            // std::cout << "___ type = " << *type << std::endl;
             *type = bson_iter_int32(&b_iter);
             std::cout << "___ type = " << *type << std::endl;
         }
