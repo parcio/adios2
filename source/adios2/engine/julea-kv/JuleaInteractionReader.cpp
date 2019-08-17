@@ -215,11 +215,13 @@ void GetAttributeMetadataFromJulea(const std::string attrName,
     }
 }
 
-void GetAttributeDataFromJuleaDifferentBuffer(const std::string attrName, void *data,
-                               const std::string nameSpace,
-                               long unsigned int dataSize)
+void GetAttributeDataFromJuleaDifferentBuffer(const std::string attrName,
+                                              void *data,
+                                              const std::string nameSpace,
+                                              long unsigned int dataSize)
 {
-    std::cout << "-- GetAttributeDataFromJuleaDifferentBuffer -----" << std::endl;
+    std::cout << "-- GetAttributeDataFromJuleaDifferentBuffer -----"
+              << std::endl;
 
     guint64 bytesRead = 0;
     // const char *attrName = attribute.m_Name.c_str();
@@ -232,11 +234,12 @@ void GetAttributeDataFromJuleaDifferentBuffer(const std::string attrName, void *
     auto dataObject = j_object_new(stringDataObject, attrName.c_str());
 
     std::cout << "-- stringDataObject: " << stringDataObject << std::endl;
-
     std::cout << "-- Datasize = " << dataSize << std::endl;
 
     j_object_read(dataObject, &data, dataSize, 0, &bytesRead, batch);
     j_batch_execute(batch);
+
+    std::cout << "__ Data: " << data << std::endl;
 
     if (bytesRead == dataSize)
     {
@@ -253,7 +256,6 @@ void GetAttributeDataFromJuleaDifferentBuffer(const std::string attrName, void *
     // g_free(stringDataObject);
     // j_object_unref(dataObject);
 }
-
 
 template <class T>
 void GetAttributeDataFromJulea(const std::string attrName, T *data,
@@ -273,12 +275,10 @@ void GetAttributeDataFromJulea(const std::string attrName, T *data,
     auto dataObject = j_object_new(stringDataObject, attrName.c_str());
 
     std::cout << "-- stringDataObject: " << stringDataObject << std::endl;
-
     std::cout << "-- Datasize = " << dataSize << std::endl;
 
     j_object_read(dataObject, data, dataSize, 0, &bytesRead, batch);
     j_batch_execute(batch);
-
 
     if (bytesRead == dataSize)
     {

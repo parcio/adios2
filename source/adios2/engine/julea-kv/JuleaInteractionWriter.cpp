@@ -507,8 +507,9 @@ void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
 //     auto batch = j_batch_new(semantics);
 
 //     auto attrName = strdup(attribute.m_Name.c_str());
-//     // auto numberElements = adios2::helper::GetTotalSize(attribute.m_Elements);
-//     auto numberElements = attribute.m_Elements;
+//     // auto numberElements =
+//     adios2::helper::GetTotalSize(attribute.m_Elements); auto numberElements =
+//     attribute.m_Elements;
 
 //     if (attribute.m_IsSingleValue)
 //     {
@@ -531,7 +532,8 @@ void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
 //     j_batch_execute(batch);
 //     if (bytesWritten == dataSize)
 //     {
-//         std::cout << "++ Julea Interaction Writer: Data written for attribute "
+//         std::cout << "++ Julea Interaction Writer: Data written for attribute
+//         "
 //                   << attrName << std::endl;
 //     }
 //     else
@@ -562,27 +564,30 @@ void PutAttributeDataToJulea(Attribute<T> &attribute, const T *data,
     // auto numberElements = adios2::helper::GetTotalSize(attribute.m_Elements);
     auto numberElements = attribute.m_Elements;
 
+    if (attribute.m_Type == "string")
+    {
+        std::cout << "Currently not supported" << std::endl;
+        std::cout << "Data: " << *data << std::endl;
+        dataSize = attribute.m_DataArray.size() * sizeof(T);
+        std::cout << "datSize: " << dataSize << std::endl;
+    }
 
     if (attribute.m_IsSingleValue)
     {
-        // TODO: check if this is correct
-        // std::cout << "Data &: " << &data << std::endl;
         std::cout << "Data: " << *data << std::endl;
-        std::cout << "attribute.m_DataSingleValue: " << attribute.m_DataSingleValue<< std::endl;
+        std::cout << "attribute.m_DataSingleValue: "
+                  << attribute.m_DataSingleValue << std::endl;
 
         dataSize = sizeof(attribute.m_DataSingleValue);
-        // std::cout << "dataSize: " << dataSize << std::endl;
-        // void *bitte = static_cast<void>(attribute.m_DataSingleValue); //FIXME
-        // dataBuf = g_memdup((void)attribute.m_DataSingleValue, dataSize); //FIXME
     }
     else
     {
         // std::cout << "Data &: " << &data << std::endl;
         std::cout << "Data: " << *data << std::endl;
-        std::cout << "attribute.m_DataArray.data(): " << attribute.m_DataArray.data()<< std::endl;
+        std::cout << "attribute.m_DataArray.data(): "
+                  << attribute.m_DataArray.data() << std::endl;
 
         dataSize = attribute.m_DataArray.size() * sizeof(T);
-        // dataBuf = g_memdup((void)attribute.m_DataArray.data(), dataSize);
     }
 
     /* Write data pointer to object store*/
@@ -594,7 +599,6 @@ void PutAttributeDataToJulea(Attribute<T> &attribute, const T *data,
     j_object_create(dataObject, batch);
     j_object_write(dataObject, data, dataSize, 0, &bytesWritten, batch);
     // j_object_write(dataObject, dataBuf, dataSize, 0, &bytesWritten, batch);
-
 
     j_batch_execute(batch);
     if (bytesWritten == dataSize)

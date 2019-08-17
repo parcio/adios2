@@ -179,8 +179,8 @@ int TestReadAttribute()
         adios2::Engine juleaReader = juleaIO.Open("testFile", adios2::Mode::Read);
 
         std::cout << "__________ Test application: Read attribute __________________" << std::endl;
-        adios2::Attribute<std::string> juleaAttrSingleString = juleaIO.InquireAttribute<std::string>("Single_String");
 
+        adios2::Attribute<std::string> juleaAttrSingleString = juleaIO.InquireAttribute<std::string>("Single_String");
         if(juleaAttrSingleString)
         {
             std::cout << "Name: " << juleaAttrSingleString.Name() << std::endl;
