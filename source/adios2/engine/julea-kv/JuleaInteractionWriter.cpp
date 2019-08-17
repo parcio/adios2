@@ -496,13 +496,65 @@ void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
 
 /** ------------ ATTRIBUTES -------------------------------------------------**/
 
+// template <class T>
+// void PutAttributeDataToJulea(Attribute<T> &attribute, const T *data,
+//                              const std::string nameSpace)
+// {
+//     std::cout << "-- PutAttributeDataToJulea -------" << std::endl;
+//     guint64 bytesWritten = 0;
+//     unsigned int dataSize = -1;
+//     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+//     auto batch = j_batch_new(semantics);
+
+//     auto attrName = strdup(attribute.m_Name.c_str());
+//     // auto numberElements = adios2::helper::GetTotalSize(attribute.m_Elements);
+//     auto numberElements = attribute.m_Elements;
+
+//     if (attribute.m_IsSingleValue)
+//     {
+//         // TODO: check if this is correct
+//         dataSize = sizeof(attribute.m_DataSingleValue);
+//     }
+//     else
+//     {
+//         dataSize = attribute.m_DataArray.size();
+//     }
+//     /* Write data pointer to object store*/
+//     auto stringDataObject =
+//         g_strdup_printf("%s_attributes_%s", nameSpace.c_str(), attrName);
+//     auto dataObject = j_object_new(stringDataObject, attrName);
+
+//     std::cout << "stringDataObject: " << stringDataObject << std::endl;
+//     j_object_create(dataObject, batch);
+//     j_object_write(dataObject, data, dataSize, 0, &bytesWritten, batch);
+
+//     j_batch_execute(batch);
+//     if (bytesWritten == dataSize)
+//     {
+//         std::cout << "++ Julea Interaction Writer: Data written for attribute "
+//                   << attrName << std::endl;
+//     }
+//     else
+//     {
+//         std::cout << "WARNING: only " << bytesWritten
+//                   << " bytes written instead of " << dataSize << " bytes! "
+//                   << std::endl;
+//     }
+//     g_free(stringDataObject);
+//     j_object_unref(dataObject);
+//     j_batch_unref(batch);
+
+//     std::cout << "++ Julea Interaction Writer: Put Attribute " << std::endl;
+// }
+
 template <class T>
 void PutAttributeDataToJulea(Attribute<T> &attribute, const T *data,
                              const std::string nameSpace)
 {
     std::cout << "-- PutAttributeDataToJulea -------" << std::endl;
+    void *dataBuf = NULL;
     guint64 bytesWritten = 0;
-    unsigned int dataSize = -1;
+    unsigned int dataSize = 0;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
@@ -510,15 +562,29 @@ void PutAttributeDataToJulea(Attribute<T> &attribute, const T *data,
     // auto numberElements = adios2::helper::GetTotalSize(attribute.m_Elements);
     auto numberElements = attribute.m_Elements;
 
+
     if (attribute.m_IsSingleValue)
     {
         // TODO: check if this is correct
+        // std::cout << "Data &: " << &data << std::endl;
+        std::cout << "Data: " << *data << std::endl;
+        std::cout << "attribute.m_DataSingleValue: " << attribute.m_DataSingleValue<< std::endl;
+
         dataSize = sizeof(attribute.m_DataSingleValue);
+        // std::cout << "dataSize: " << dataSize << std::endl;
+        // void *bitte = static_cast<void>(attribute.m_DataSingleValue); //FIXME
+        // dataBuf = g_memdup((void)attribute.m_DataSingleValue, dataSize); //FIXME
     }
     else
     {
-        dataSize = attribute.m_DataArray.size();
+        // std::cout << "Data &: " << &data << std::endl;
+        std::cout << "Data: " << *data << std::endl;
+        std::cout << "attribute.m_DataArray.data(): " << attribute.m_DataArray.data()<< std::endl;
+
+        dataSize = attribute.m_DataArray.size() * sizeof(T);
+        // dataBuf = g_memdup((void)attribute.m_DataArray.data(), dataSize);
     }
+
     /* Write data pointer to object store*/
     auto stringDataObject =
         g_strdup_printf("%s_attributes_%s", nameSpace.c_str(), attrName);
@@ -527,6 +593,8 @@ void PutAttributeDataToJulea(Attribute<T> &attribute, const T *data,
     std::cout << "stringDataObject: " << stringDataObject << std::endl;
     j_object_create(dataObject, batch);
     j_object_write(dataObject, data, dataSize, 0, &bytesWritten, batch);
+    // j_object_write(dataObject, dataBuf, dataSize, 0, &bytesWritten, batch);
+
 
     j_batch_execute(batch);
     if (bytesWritten == dataSize)

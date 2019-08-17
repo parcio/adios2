@@ -150,7 +150,7 @@ int TestWriteAttribute()
                                           myStrings.size());
 
         juleaIO.DefineAttribute<double>("Attr_Double", 42.42);
-        std::vector<double> myDoubles = {1, 42, -333, 4, 5, 6, 7, 8, 9, 10};
+        std::vector<double> myDoubles = {-111, 42, -333, 4, 5, 6, 7, 8, 9, 10};
         juleaIO.DefineAttribute<double>("Array_of_Doubles", myDoubles.data(),
                                      myDoubles.size());
 
@@ -178,13 +178,14 @@ int TestReadAttribute()
         // adios2::Engine juleaReader = juleaIO.Open("myVector.bp", adios2::Mode::Read);
         adios2::Engine juleaReader = juleaIO.Open("testFile", adios2::Mode::Read);
 
+        std::cout << "__________ Test application: Read attribute __________________" << std::endl;
         adios2::Attribute<std::string> juleaAttrSingleString = juleaIO.InquireAttribute<std::string>("Single_String");
 
         if(juleaAttrSingleString)
         {
             std::cout << "Name: " << juleaAttrSingleString.Name() << std::endl;
             std::cout << "Data: " << juleaAttrSingleString.Data()[0] << std::endl;
-            std::cout << "-- Attribute string read " << std::endl;
+            // std::cout << "-- Attribute string read " << std::endl;
         }
 
         // adios2::Attribute<double> juleaAttrDouble = juleaIO.InquireAttribute<double>("Attr_Double");
@@ -193,7 +194,15 @@ int TestReadAttribute()
         {
             std::cout << "Name: " << juleaAttrDouble.Name() << std::endl;
             std::cout << "Data: " << juleaAttrDouble.Data()[0] << std::endl;
-            std::cout << "-- Attribute double read " << std::endl;
+            // std::cout << "-- Attribute double read " << std::endl;
+        }
+
+        auto juleaAttrDoubleArray = juleaIO.InquireAttribute<double>("Array_of_Doubles");
+        if(juleaAttrDouble)
+        {
+            std::cout << "Name: " << juleaAttrDoubleArray.Name() << std::endl;
+            std::cout << "Data: " << juleaAttrDoubleArray.Data()[0] << std::endl;
+            // std::cout << "-- Attribute double read " << std::endl;
         }
 }
 

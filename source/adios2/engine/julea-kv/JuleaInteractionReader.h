@@ -59,8 +59,12 @@ void GetAttributeMetadataFromJulea(const std::string attrName,
                                    int *type);
 
 void GetAttributeBSONFromJulea(const std::string nameSpace,
-                               const std::string varName,
-                               bson_t **bsonMetadata);
+                               const std::string varName, bson_t **bsonMetadata,
+                               guint32 *valueLen);
+
+void GetAttributeDataFromJuleaDifferentBuffer(const std::string attrName, void *data,
+                               const std::string nameSpace,
+                               long unsigned int dataSize);
 
 template <class T>
 void GetAttributeDataFromJulea(const std::string attrName, T *data,

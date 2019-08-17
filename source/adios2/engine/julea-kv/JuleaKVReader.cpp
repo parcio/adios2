@@ -346,26 +346,90 @@ void JuleaKVReader::InitAttributes()
         std::cout << "Data size = " << dataSize << std::endl;
 
         GetAdiosTypeString(type, &typeString);
-#define declare_attribute_type(T)                                              \
+
+            // std::cout << "Data: " << &data[0] << std::endl;                     \
+
+
+        // GetAttributeDataFromJuleaDifferentBuffer(attrName, dataBuf, nameSpace, dataSize);
+        // std::cout << "Databuf: " << &dataBuf << std::endl;
+        // std::cout << "Databuf: " << dataBuf << std::endl;
+        // std::cout << "Databuf: " << dataBuf << std::endl;
+
+    #define declare_attribute_type(T)                                              \
     if (typeString == helper::GetType<T>())                                    \
     {                                                                          \
-        T *data;                                                               \
+        T *dataBuf = (T*) g_slice_alloc(dataSize);                                  \
+        GetAttributeDataFromJulea(attrName, dataBuf, nameSpace, dataSize);     \
         std::cout << "typeString = " << typeString << std::endl;               \
-        GetAttributeDataFromJulea(attrName, data, nameSpace, dataSize);        \
         if (IsSingleValue)                                                     \
         {                                                                      \
-            std::cout << "Data: " << *data << std::endl;                       \
-            m_IO.DefineAttribute<T>(attrName, *data);                          \
+            std::cout << "Data: " << *dataBuf << std::endl;                     \
+            m_IO.DefineAttribute<T>(attrName, *dataBuf);                    \
         }                                                                      \
         else                                                                   \
         {                                                                      \
-            std::cout << "Data: " << data[0] << std::endl;                     \
-            m_IO.DefineAttribute<T>(attrName, data, numberElements);           \
+            std::cout << "Data: " << *dataBuf << std::endl;                     \
+            m_IO.DefineAttribute<T>(attrName, dataBuf, numberElements);   \
         }                                                                      \
     }
         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
 #undef declare_attribute_type
+
+// #define declare_attribute_type(T)                                              \
+//     if (typeString == helper::GetType<T>())                                    \
+//     {                                                                          \
+//         T *data = static_cast<T>(dataBuf);                                                               \
+//         std::cout << "typeString = " << typeString << std::endl;               \
+//         GetAttributeDataFromJulea(attrName, &data, nameSpace, dataSize);        \
+//         if (IsSingleValue)                                                     \
+//         {                                                                      \
+//             std::cout << "Data: " << data << std::endl;                       \
+//             m_IO.DefineAttribute<T>(attrName, data);                          \
+//         }                                                                      \
+//         else                                                                   \
+//         {                                                                      \
+//             m_IO.DefineAttribute<T>(attrName, &data, numberElements);           \
+//         }                                                                      \
+//     }
+//         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
+// #undef declare_attribute_type
+
+//     #define declare_attribute_type(T)                                              \
+//     if (typeString == helper::GetType<T>())                                    \
+//     {                                                                          \
+//         T data;\
+//         data =reinterpret_cast<T>( g_slice_alloc(dataSize));               \
+//         std::cout << "typeString = " << typeString << std::endl;               \
+//         GetAttributeDataFromJulea(attrName, &data, nameSpace, dataSize);        \
+//         if (IsSingleValue)                                                     \
+//         {                                                                      \
+//             m_IO.DefineAttribute<T>(attrName, data);                          \
+//         }                                                                      \
+//     }
+//         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
+// #undef declare_attribute_type
+
+//     #define declare_attribute_type(T)                                              \
+//     if (typeString == helper::GetType<T>())                                    \
+//     {                                                                          \
+//         T *data = new T(dataSize);\
+//         std::cout << "typeString = " << typeString << std::endl;               \
+//     }
+//         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
+// #undef declare_attribute_type
+
     }
+        // else                                                                   \
+        GetAttributeDataFromJulea(attrName, &data, nameSpace, dataSize);        \
+        if (IsSingleValue)                                                     \
+        {                                                                      \
+            m_IO.DefineAttribute<T>(attrName, data);                          \
+        }                                                                      \
+            std::cout << "Data: " << data << std::endl;                       \
+        // {                                                                      \
+        //     m_IO.DefineAttribute<T>(attrName, data, numberElements);           \
+        // }                                                                      \
+        //
 }
 
 void JuleaKVReader::InitParameters()

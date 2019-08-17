@@ -494,7 +494,7 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
             continue;
         }
         // std::cout << "-- PutAttributes: DEBUG 1 " << std::endl;
-
+        //FIXME: not the righ data passed!
         if (type == "unknown")
         {
             std::cout << "Attribute type is 'unknown' " << std::endl;
@@ -502,9 +502,15 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
 #define declare_attribute_type(T)                                              \
     else if (type == helper::GetType<T>())                                     \
     {                                                                          \
+        if (type == "string")\
+        {\
+            std::cout << "Put String attributes currently not yet supported" << std::endl;\
+        }\
+        else{\
         Attribute<T> &attribute = *io.InquireAttribute<T>(name);               \
         if (attribute.m_IsSingleValue)                                         \
         {                                                                      \
+            std::cout << "-- PutAttributes: data " << attribute.m_DataSingleValue << " ********************* " << std::endl; \
             ParseAttributeToBSON(attribute, bsonMetadata);                     \
             ParseAttrTypeToBSON(attribute, bsonMetadata);                      \
             PutAttributeMetadataToJuleaSmall(attribute, bsonMetadata, m_Name); \
@@ -513,12 +519,14 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
         }                                                                      \
         else                                                                   \
         {                                                                      \
+            std::cout << "-- PutAttributes: data " << attribute.m_DataArray.data()[0] << " ********************* " << std::endl; \
             ParseAttributeToBSON(attribute, bsonMetadata);                     \
             ParseAttrTypeToBSON(attribute, bsonMetadata);                      \
             PutAttributeMetadataToJuleaSmall(attribute, bsonMetadata, m_Name); \
             PutAttributeDataToJulea(attribute, attribute.m_DataArray.data(),   \
                                     m_Name);                                   \
         }                                                                      \
+        }\
     }
         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
 #undef declare_attribute_type

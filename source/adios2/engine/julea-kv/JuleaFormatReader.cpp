@@ -181,10 +181,8 @@ void ParseAttributeFromBSON(const std::string nameSpace,
         std::cout << "ERROR: Bson iterator is not valid!" << std::endl;
     }
 
-    /* probably not very efficient */
     while (bson_iter_next(&b_iter))
     {
-
         if (g_strcmp0(bson_iter_key(&b_iter), "number_elements") == 0)
         {
             *numberElements = (size_t)bson_iter_int64(&b_iter);
