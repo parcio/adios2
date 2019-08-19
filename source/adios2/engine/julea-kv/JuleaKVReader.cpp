@@ -364,15 +364,18 @@ void JuleaKVReader::InitAttributes()
         {                                                                      \
             continue;                                                          \
         }                                                                      \
-        if (IsSingleValue)                                                     \
-        {                                                                      \
-            std::cout << "Data: " << *dataBuf << std::endl;                    \
-            m_IO.DefineAttribute<T>(attrName, *dataBuf);                       \
-        }                                                                      \
         else                                                                   \
         {                                                                      \
-            std::cout << "Data: " << *dataBuf << std::endl;                    \
-            m_IO.DefineAttribute<T>(attrName, dataBuf, numberElements);        \
+            if (IsSingleValue)                                                 \
+            {                                                                  \
+                std::cout << "Data: " << *dataBuf << std::endl;                \
+                m_IO.DefineAttribute<T>(attrName, *dataBuf);                   \
+            }                                                                  \
+            else                                                               \
+            {                                                                  \
+                std::cout << "Data: " << *dataBuf << std::endl;                \
+                m_IO.DefineAttribute<T>(attrName, dataBuf, numberElements);    \
+            }                                                                  \
         }                                                                      \
     }
         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)

@@ -215,47 +215,47 @@ void GetAttributeMetadataFromJulea(const std::string attrName,
     }
 }
 
-void GetAttributeDataFromJuleaDifferentBuffer(const std::string attrName,
-                                              void *data,
-                                              const std::string nameSpace,
-                                              long unsigned int dataSize)
-{
-    std::cout << "-- GetAttributeDataFromJuleaDifferentBuffer -----"
-              << std::endl;
+// void GetAttributeDataFromJuleaDifferentBuffer(const std::string attrName,
+//                                               void *data,
+//                                               const std::string nameSpace,
+//                                               long unsigned int dataSize)
+// {
+//     std::cout << "-- GetAttributeDataFromJuleaDifferentBuffer -----"
+//               << std::endl;
 
-    guint64 bytesRead = 0;
-    // const char *attrName = attribute.m_Name.c_str();
-    // auto batch = j_batch_new(m_JuleaSemantics);
-    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    auto batch = j_batch_new(semantics);
+//     guint64 bytesRead = 0;
+//     // const char *attrName = attribute.m_Name.c_str();
+//     // auto batch = j_batch_new(m_JuleaSemantics);
+//     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+//     auto batch = j_batch_new(semantics);
 
-    auto stringDataObject = g_strdup_printf(
-        "%s_attributes_%s", nameSpace.c_str(), attrName.c_str());
-    auto dataObject = j_object_new(stringDataObject, attrName.c_str());
+//     auto stringDataObject = g_strdup_printf(
+//         "%s_attributes_%s", nameSpace.c_str(), attrName.c_str());
+//     auto dataObject = j_object_new(stringDataObject, attrName.c_str());
 
-    std::cout << "-- stringDataObject: " << stringDataObject << std::endl;
-    std::cout << "-- Datasize = " << dataSize << std::endl;
+//     std::cout << "-- stringDataObject: " << stringDataObject << std::endl;
+//     std::cout << "-- Datasize = " << dataSize << std::endl;
 
-    j_object_read(dataObject, &data, dataSize, 0, &bytesRead, batch);
-    j_batch_execute(batch);
+//     j_object_read(dataObject, &data, dataSize, 0, &bytesRead, batch);
+//     j_batch_execute(batch);
 
-    std::cout << "__ Data: " << data << std::endl;
+//     std::cout << "__ Data: " << data << std::endl;
 
-    if (bytesRead == dataSize)
-    {
-        std::cout << "++ Julea Interaction Reader: Read data for attribute "
-                  << attrName << std::endl;
-    }
-    else
-    {
-        std::cout << "WARNING: only " << bytesRead << " bytes read instead of "
-                  << dataSize << " bytes!" << std::endl;
-    }
-    std::cout << "Data: " << &data << std::endl;
+//     if (bytesRead == dataSize)
+//     {
+//         std::cout << "++ Julea Interaction Reader: Read data for attribute "
+//                   << attrName << std::endl;
+//     }
+//     else
+//     {
+//         std::cout << "WARNING: only " << bytesRead << " bytes read instead of "
+//                   << dataSize << " bytes!" << std::endl;
+//     }
+//     std::cout << "Data: " << &data << std::endl;
 
-    // g_free(stringDataObject);
-    // j_object_unref(dataObject);
-}
+//     // g_free(stringDataObject);
+//     // j_object_unref(dataObject);
+// }
 
 template <class T>
 void GetAttributeDataFromJulea(const std::string attrName, T *data,
@@ -289,6 +289,42 @@ void GetAttributeDataFromJulea(const std::string attrName, T *data,
     {
         std::cout << "WARNING: only " << bytesRead << " bytes read instead of "
                   << dataSize << " bytes!" << std::endl;
+    }
+
+    // g_free(stringDataObject);
+    // j_object_unref(dataObject);
+}
+
+template <>
+void GetAttributeDataFromJulea<std::string>(const std::string attrName,
+std::string *data, const std::string nameSpace, long unsigned int dataSize)
+{
+    std::cout << "-- GetAttributeDataFromJulea -----" << std::endl;
+
+    guint64 bytesRead = 0;
+    // const char *attrName = attribute.m_Name.c_str();
+    // auto batch = j_batch_new(m_JuleaSemantics);
+    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
+
+    auto stringDataObject = g_strdup_printf(
+        "%s_attributes_%s", nameSpace.c_str(), attrName.c_str());
+    auto dataObject = j_object_new(stringDataObject, attrName.c_str());
+
+    std::cout << "-- stringDataObject: " << stringDataObject << std::endl;
+    std::cout << "-- Datasize = " << dataSize << std::endl;
+
+    j_object_read(dataObject, data, dataSize, 0, &bytesRead, batch);
+    j_batch_execute(batch);
+
+    if (bytesRead == dataSize)
+    {
+        std::cout << "++ Julea Interaction Reader: Read data for attribute "
+                  << attrName << std::endl;
+    }
+    else
+    {
+        std::cout << "WARNING: only " << bytesRead << " bytes read instead of " << dataSize << " bytes!" << std::endl;
     }
 
     // g_free(stringDataObject);
