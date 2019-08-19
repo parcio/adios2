@@ -481,6 +481,8 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
         const std::string type(attributePair.second.first);
         const std::string name(attributePair.first);
         const std::string attrName = strdup(name.c_str());
+        char *stringData;
+        unsigned int dataSize = 0;
         std::cout << "------------------------------------" << std::endl;
         std::cout << "-- PutAttributes: type " << type << std::endl;
         std::cout << "-- PutAttributes: name " << name << std::endl;
@@ -499,6 +501,7 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
         {
             std::cout << "Attribute type is 'unknown' " << std::endl;
         }
+
 #define declare_attribute_type(T)                                              \
     else if (type == helper::GetType<T>())                                     \
     {                                                                          \
@@ -506,53 +509,85 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
         ParseAttributeToBSON(attribute, bsonMetadata);                         \
         ParseAttrTypeToBSON(attribute, bsonMetadata);                          \
         PutAttributeMetadataToJuleaSmall(attribute, bsonMetadata, m_Name);     \
-        if (attribute.m_IsSingleValue)                                         \
-        {                                                                      \
-            std::cout << "-- PutAttributes: data "                             \
-                      << attribute.m_DataSingleValue                           \
-                      << " ********************* " << std::endl;               \
-            PutAttributeDataToJulea(attribute, &attribute.m_DataSingleValue,   \
-                                    m_Name);                                   \
-        }                                                                      \
-        else                                                                   \
-        {                                                                      \
-            std::cout << "-- PutAttributes: data "                             \
-                      << attribute.m_DataArray.data()[0]                       \
-                      << " ********************* " << std::endl;               \
-            PutAttributeDataToJulea(attribute, attribute.m_DataArray.data(),   \
-                                    m_Name);                                   \
-        }                                                                      \
+        PutAttributeDataToJulea(attribute,m_Name);                             \
     }
         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
 #undef declare_attribute_type
 
-        //         #define declare_attribute_type(T)                                              \
+
+
+// #define declare_attribute_type(T)                                              \
 //     else if (type == helper::GetType<T>())                                     \
 //     {                                                                          \
 //         Attribute<T> &attribute = *io.InquireAttribute<T>(name);               \
-//         ParseAttributeToBSON(attribute, bsonMetadata);                     \
-//         ParseAttrTypeToBSON(attribute, bsonMetadata);                      \
-//         PutAttributeMetadataToJuleaSmall(attribute, bsonMetadata, m_Name); \
-//         if (type == "string")\
-//         {\
-//             std::cout << "Put String attributes currently not yet supported" << std::endl;\
-//              PutAttributeDataToJulea(attribute, &attribute.m_DataSingleValue,   \
-//                                         m_Name);                                   \
-//         }\
-//         else{\
-//             if (attribute.m_IsSingleValue)                                         \
-//             {                                                                      \
-//                 std::cout << "-- PutAttributes: data " << attribute.m_DataSingleValue << " ********************* " << std::endl; \
-//                 PutAttributeDataToJulea(attribute, &attribute.m_DataSingleValue,   \
-//                                         m_Name);                                   \
-//             }                                                                      \
-//             else                                                                   \
-//             {                                                                      \
-//                 std::cout << "-- PutAttributes: data " << attribute.m_DataArray.data()[0] << " ********************* " << std::endl; \
-//                 PutAttributeDataToJulea(attribute, attribute.m_DataArray.data(),   \
-//                                         m_Name);                                   \
-//             }                                                                      \
-//         }\
+//         ParseAttributeToBSON(attribute, bsonMetadata);                         \
+//         ParseAttrTypeToBSON(attribute, bsonMetadata);                          \
+//         PutAttributeMetadataToJuleaSmall(attribute, bsonMetadata, m_Name);     \
+//         if (type == "string")                                                  \
+//         {                                                                      \
+//             PutAttributeDataToJulea(attribute, &attribute.m_DataSingleValue,   \
+//                                     m_Name);                                   \
+//         }                                                                      \
+//         else                                                                   \
+//         {                                                                      \
+//             if (attribute.m_IsSingleValue)                                     \
+//             {                                                                  \
+//                 std::cout << "-- PutAttributes: data "                         \
+//                           << attribute.m_DataSingleValue                       \
+//                           << " ********************* " << std::endl;           \
+//                 PutAttributeDataToJulea(attribute,                             \
+//                                         &attribute.m_DataSingleValue, m_Name); \
+//             }                                                                  \
+//             else                                                               \
+//             {                                                                  \
+//                 std::cout << "-- PutAttributes: data "                         \
+//                           << attribute.m_DataArray.data()[0]                   \
+//                           << " ********************* " << std::endl;           \
+//                 PutAttributeDataToJulea(attribute,                             \
+//                                         attribute.m_DataArray.data(), m_Name); \
+//             }                                                                  \
+//         }                                                                      \
+//     }
+//         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
+// #undef declare_attribute_type
+
+
+
+
+
+
+
+
+
+        //
+        //
+        //
+        //         #define declare_attribute_type(T) \
+//     else if (type == helper::GetType<T>()) \
+//     { \
+//         Attribute<T> &attribute = *io.InquireAttribute<T>(name); \
+//         ParseAttributeToBSON(attribute, bsonMetadata); \
+//         ParseAttrTypeToBSON(attribute, bsonMetadata); \
+//         PutAttributeMetadataToJuleaSmall(attribute, bsonMetadata,
+        //         m_Name);     \
+//         if (attribute.m_IsSingleValue) \
+//         { \
+//             std::cout << "-- PutAttributes: data " \
+//                       << attribute.m_DataSingleValue \
+//                       << " ********************* " << std::endl; \
+//             PutAttributeDataToJulea(attribute,
+        //             &attribute.m_DataSingleValue,   \
+//                                     m_Name, dataSize); \
+//         } \
+//         else \
+//         { \
+//             std::cout << "-- PutAttributes: data " \
+//                       << attribute.m_DataArray.data()[0] \
+//                       << " ********************* " << std::endl; \
+//             PutAttributeDataToJulea(attribute,
+        //             attribute.m_DataArray.data(),   \
+//                                     m_Name, dataSize); \
+//         } \
 //     }
         //         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
         // #undef declare_attribute_type
