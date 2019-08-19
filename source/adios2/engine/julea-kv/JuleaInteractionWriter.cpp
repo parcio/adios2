@@ -496,61 +496,9 @@ void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
 
 /** ------------ ATTRIBUTES -------------------------------------------------**/
 
-// template <class T>
-// void PutAttributeDataToJulea(Attribute<T> &attribute, const T *data,
-//                              const std::string nameSpace)
-// {
-//     std::cout << "-- PutAttributeDataToJulea -------" << std::endl;
-//     guint64 bytesWritten = 0;
-//     unsigned int dataSize = -1;
-//     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-//     auto batch = j_batch_new(semantics);
-
-//     auto attrName = strdup(attribute.m_Name.c_str());
-//     // auto numberElements =
-//     adios2::helper::GetTotalSize(attribute.m_Elements); auto numberElements =
-//     attribute.m_Elements;
-
-//     if (attribute.m_IsSingleValue)
-//     {
-//         // TODO: check if this is correct
-//         dataSize = sizeof(attribute.m_DataSingleValue);
-//     }
-//     else
-//     {
-//         dataSize = attribute.m_DataArray.size();
-//     }
-//     /* Write data pointer to object store*/
-//     auto stringDataObject =
-//         g_strdup_printf("%s_attributes_%s", nameSpace.c_str(), attrName);
-//     auto dataObject = j_object_new(stringDataObject, attrName);
-
-//     std::cout << "stringDataObject: " << stringDataObject << std::endl;
-//     j_object_create(dataObject, batch);
-//     j_object_write(dataObject, data, dataSize, 0, &bytesWritten, batch);
-
-//     j_batch_execute(batch);
-//     if (bytesWritten == dataSize)
-//     {
-//         std::cout << "++ Julea Interaction Writer: Data written for attribute
-//         "
-//                   << attrName << std::endl;
-//     }
-//     else
-//     {
-//         std::cout << "WARNING: only " << bytesWritten
-//                   << " bytes written instead of " << dataSize << " bytes! "
-//                   << std::endl;
-//     }
-//     g_free(stringDataObject);
-//     j_object_unref(dataObject);
-//     j_batch_unref(batch);
-
-//     std::cout << "++ Julea Interaction Writer: Put Attribute " << std::endl;
-// }
-
 template <class T>
-void PutAttributeDataToJulea(Attribute<T> &attribute, const std::string nameSpace)
+void PutAttributeDataToJulea(Attribute<T> &attribute,
+                             const std::string nameSpace)
 {
     std::cout << "-- PutAttributeDataToJulea -------" << std::endl;
     void *dataBuf = NULL;
@@ -561,7 +509,6 @@ void PutAttributeDataToJulea(Attribute<T> &attribute, const std::string nameSpac
     char *cString;
 
     auto attrName = strdup(attribute.m_Name.c_str());
-    // auto numberElements = adios2::helper::GetTotalSize(attribute.m_Elements);
     auto numberElements = attribute.m_Elements;
 
     /* Write data pointer to object store*/
@@ -571,28 +518,25 @@ void PutAttributeDataToJulea(Attribute<T> &attribute, const std::string nameSpac
 
     std::cout << "stringDataObject: " << stringDataObject << std::endl;
     j_object_create(dataObject, batch);
+
     if (attribute.m_IsSingleValue)
     {
-        // std::cout << "Data: " << *data << std::endl;
         std::cout << "attribute.m_DataSingleValue: "
                   << attribute.m_DataSingleValue << std::endl;
 
         dataSize = sizeof(attribute.m_DataSingleValue);
-    j_object_write(dataObject, &attribute.m_DataSingleValue, dataSize, 0, &bytesWritten, batch);
+        j_object_write(dataObject, &attribute.m_DataSingleValue, dataSize, 0,
+                       &bytesWritten, batch);
     }
     else
     {
-        // std::cout << "Data &: " << &data << std::endl;
-        // std::cout << "Data: " << *data << std::endl;
         std::cout << "attribute.m_DataArray.data(): "
                   << attribute.m_DataArray.data() << std::endl;
 
         dataSize = attribute.m_DataArray.size() * sizeof(T);
-    j_object_write(dataObject, attribute.m_DataArray.data(), dataSize, 0, &bytesWritten, batch);
+        j_object_write(dataObject, attribute.m_DataArray.data(), dataSize, 0,
+                       &bytesWritten, batch);
     }
-
-    // j_object_write(dataObject, data, dataSize, 0, &bytesWritten, batch);
-    // j_object_write(dataObject, dataBuf, dataSize, 0, &bytesWritten, batch);
 
     j_batch_execute(batch);
     if (bytesWritten == dataSize)
@@ -614,25 +558,21 @@ void PutAttributeDataToJulea(Attribute<T> &attribute, const std::string nameSpac
 }
 
 template <>
-void PutAttributeDataToJulea<std::string>(
-    Attribute<std::string> &attribute, const std::string nameSpace)
+void PutAttributeDataToJulea<std::string>(Attribute<std::string> &attribute,
+                                          const std::string nameSpace)
 {
-     std::cout << "-- PutAttributeDataToJulea -------" << std::endl;
-    void *dataBuf = NULL;
-    guint64 bytesWritten = 0;
+    std::cout << "-- PutAttributeDataToJulea -------" << std::endl;
+
     unsigned int dataSize = 0;
+    guint64 bytesWritten = 0;
+    void *dataBuf = NULL;
+
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
-    // auto attrData = attribute.m_DataArray.data();
-    // int vectorLen = attribute.m_DataArray.size();
-    // char *dataElement;
-    // char **dataArray;
 
     auto attrName = strdup(attribute.m_Name.c_str());
-    // auto numberElements = adios2::helper::GetTotalSize(attribute.m_Elements);
     auto numberElements = attribute.m_Elements;
 
-    /* Write data pointer to object store*/
     auto stringDataObject =
         g_strdup_printf("%s_attributes_%s", nameSpace.c_str(), attrName);
     auto dataObject = j_object_new(stringDataObject, attrName);
@@ -643,39 +583,30 @@ void PutAttributeDataToJulea<std::string>(
     if (attribute.m_IsSingleValue)
     {
         dataSize = attribute.m_DataSingleValue.length();
-        char *dataElement = new char[attribute.m_DataSingleValue.length()+1];
-            strcpy(dataElement, attribute.m_DataSingleValue.c_str());
+        char *dataElement = new char[attribute.m_DataSingleValue.length() + 1];
+        strcpy(dataElement, attribute.m_DataSingleValue.c_str());
 
-    j_object_write(dataObject, dataElement, dataSize, 0, &bytesWritten, batch);
+        j_object_write(dataObject, dataElement, dataSize, 0, &bytesWritten,
+                       batch);
         std::cout << "dataSize: " << dataSize << std::endl;
         std::cout << "dataElement: " << dataElement << std::endl;
     }
     else
     {
-        char **dataArray = new char*[attribute.m_DataArray.size()];
-        for (size_t i = 0; i <  attribute.m_DataArray.size(); i++)
+        char **dataArray = new char *[attribute.m_DataArray.size()];
+        for (size_t i = 0; i < attribute.m_DataArray.size(); i++)
         {
             dataSize = dataSize + attribute.m_DataArray.data()[i].length();
-            dataArray[i] = new char[(attribute.m_DataArray.data()[i].length())+1];
+            dataArray[i] =
+                new char[(attribute.m_DataArray.data()[i].length()) + 1];
             strcpy(dataArray[i], attribute.m_DataArray.data()[i].c_str());
 
             std::cout << "dataSize: " << dataSize << std::endl;
             std::cout << "dataArray [i]: " << dataArray[i] << std::endl;
         }
-        // std::cout << "vectorLen: " << vectorLen << std::endl;
-        // for (size_t i = 0; i < vectorLen; i++)
-        // {
-        //     dataSize += attrData[i].length();
-        // std::cout << "dataSize: " << dataSize << std::endl;
-        //     dataArray[i] = new char[attrData[i].length()+1];
-        // std::cout << "dataArray [i]: " << dataArray[i] << std::endl;
-        //     strcpy(dataArray[i], attrData[i].c_str());
-        // }
-    j_object_write(dataObject, dataArray, dataSize, 0, &bytesWritten, batch);
+        j_object_write(dataObject, dataArray, dataSize, 0, &bytesWritten,
+                       batch);
     }
-
-    // j_object_write(dataObject, data, dataSize, 0, &bytesWritten, batch);
-    // j_object_write(dataObject, stringData, dataSize, 0, &bytesWritten, batch);
 
     j_batch_execute(batch);
     if (bytesWritten == dataSize)
@@ -701,8 +632,6 @@ void PutAttributeStringDataToJulea<std::string>(
     Attribute<std::string> &attribute, const std::string *data,
     const std::string nameSpace)
 {
-
-
 }
 
 template <class T>
@@ -788,8 +717,8 @@ void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetaData,
     template void PutVariableMetadataToJuleaSmall(                             \
         Variable<T> &variable, bson_t *bsonMetaData,                           \
         const std::string nameSpace);                                          \
-    template void PutAttributeDataToJulea(                                     \
-        Attribute<T> &attribute, const std::string nameSpace);  \
+    template void PutAttributeDataToJulea(Attribute<T> &attribute,             \
+                                          const std::string nameSpace);        \
     template void PutAttributeDataToJuleaSmall(                                \
         Attribute<T> &attribute, const T *data, const std::string nameSpace);  \
     template void PutAttributeMetadataToJulea(Attribute<T> &attribute,         \
@@ -801,7 +730,6 @@ void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetaData,
 
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
-
 
 // #define declare_template_instantiation(T)                                      \
 //     extern template void PutVariableDataToJulea(                               \

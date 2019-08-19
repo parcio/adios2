@@ -43,7 +43,6 @@ void SetMinMax(Variable<T> &variable, const T *data)
 template <class T>
 void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
 {
-    // name is key in kv
     std::cout << "-- ParseAttributeToBSON ------ " << std::endl;
     unsigned int dataSize = 0;
 
@@ -53,19 +52,12 @@ void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
                      attribute.m_IsSingleValue);
     if (attribute.m_IsSingleValue)
     {
-        // TODO: check if this is correct
         dataSize = sizeof(attribute.m_DataSingleValue);
-        // dataSize = attribute.m_DataSingleValue.length();
         std::cout << "-- dataSize single value = " << dataSize << std::endl;
     }
     else
     {
         dataSize = attribute.m_DataArray.size() * sizeof(T);
-        // std::cout << "-- dataSize Array.size() = "
-                  // << attribute.m_DataArray.size() << std::endl;
-        // std::cout << "-- dataSize Array = " << dataSize << std::endl;
-        // std::cout << "-- dataSize m_Elements = " << attribute.m_Elements
-                  // << std::endl;
     }
 
     bson_append_int64(bsonMetadata, "data_size", -1, dataSize);
@@ -73,9 +65,9 @@ void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
 }
 
 template <>
-void ParseAttributeToBSON<std::string>(Attribute<std::string> &attribute, bson_t *bsonMetadata)
+void ParseAttributeToBSON<std::string>(Attribute<std::string> &attribute,
+                                       bson_t *bsonMetadata)
 {
-    // name is key in kv
     std::cout << "-- ParseAttributeToBSON ------ " << std::endl;
     unsigned int dataSize = 0;
 
@@ -85,8 +77,6 @@ void ParseAttributeToBSON<std::string>(Attribute<std::string> &attribute, bson_t
                      attribute.m_IsSingleValue);
     if (attribute.m_IsSingleValue)
     {
-        // TODO: check if this is correct
-        // dataSize = sizeof(attribute.m_DataSingleValue);
         dataSize = attribute.m_DataSingleValue.length();
         std::cout << "-- dataSize single value = " << dataSize << std::endl;
     }
@@ -97,12 +87,6 @@ void ParseAttributeToBSON<std::string>(Attribute<std::string> &attribute, bson_t
             dataSize = dataSize + attribute.m_DataArray.data()[i].length();
             std::cout << "dataSize: " << dataSize << std::endl;
         }
-        // dataSize = attribute.m_DataArray.size() * sizeof(T);
-        // std::cout << "-- dataSize Array.size() = "
-                  // << attribute.m_DataArray.size() << std::endl;
-        // std::cout << "-- dataSize Array = " << dataSize << std::endl;
-        // std::cout << "-- dataSize m_Elements = " << attribute.m_Elements
-                  // << std::endl;
     }
 
     bson_append_int64(bsonMetadata, "data_size", -1, dataSize);

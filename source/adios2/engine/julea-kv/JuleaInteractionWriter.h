@@ -43,7 +43,8 @@ void PutVariableMetadataToJuleaSmall(Variable<T> &variable,
 
 /* Attribute Functions */
 template <class T>
-void PutAttributeDataToJulea(Attribute<T> &attribute, const std::string nameSpace);
+void PutAttributeDataToJulea(Attribute<T> &attribute,
+                             const std::string nameSpace);
 
 template <class T>
 void PutAttributeStringDataToJulea(Attribute<T> &attribute, const T *data,
@@ -72,8 +73,8 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
     extern template void PutVariableMetadataToJuleaSmall(                      \
         Variable<T> &variable, bson_t *bsonMetadata,                           \
         const std::string nameSpace);                                          \
-    extern template void PutAttributeDataToJulea(                              \
-        Attribute<T> &attribute, const std::string nameSpace);  \
+    extern template void PutAttributeDataToJulea(Attribute<T> &attribute,      \
+                                                 const std::string nameSpace); \
     extern template void PutAttributeDataToJuleaSmall(                         \
         Attribute<T> &attribute, const T *data, const std::string nameSpace);  \
     extern template void PutAttributeMetadataToJulea(                          \
