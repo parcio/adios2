@@ -206,6 +206,69 @@ void ParseAttributeFromBSON(const std::string nameSpace,
     }
 }
 
+void ParseAttributeFromBSON(const std::string nameSpace,
+                            const std::string attrName, bson_t *bsonMetadata,
+                            long unsigned int *completeSize,
+                            size_t *numberElements, bool *IsSingleValue,
+                            int *type, unsigned int **dataSizes)
+{
+    bson_iter_t b_iter;
+    gchar *key;
+
+    if (bson_iter_init(&b_iter, bsonMetadata))
+    {
+        std::cout << "++ Julea Format Reader: Bson iterator is valid"
+                  << std::endl;
+    }
+    else
+    {
+        std::cout << "ERROR: Bson iterator is not valid!" << std::endl;
+    }
+
+    while (bson_iter_next(&b_iter))
+    {
+        if (g_strcmp0(bson_iter_key(&b_iter), "number_elements") == 0)
+        {
+            *numberElements = (size_t)bson_iter_int64(&b_iter);
+            std::cout << "numberElements: " << *numberElements << std::endl;
+        }
+        else if (g_strcmp0(bson_iter_key(&b_iter), "is_single_value") == 0)
+        {
+            *IsSingleValue = (bool)bson_iter_bool(&b_iter);
+            std::cout << "IsSingleValue: " << *IsSingleValue << std::endl;
+
+            if (!IsSingleValue)
+            {
+                for (int i = 0; i < *numberElements; i++)
+                {
+                    std::cout << "i: " << i << std::endl;
+
+                    bson_iter_next(&b_iter);
+                    key = g_strdup_printf("entry_size_%d", i);
+
+                    if (g_strcmp0(bson_iter_key(&b_iter), key) == 0)
+                    {
+                        *dataSizes[i] = bson_iter_int64(&b_iter);
+                        std::cout << "___ Datasize = " << *dataSizes[i]
+                                  << std::endl;
+                    }
+                }
+            }
+        }
+        else if (g_strcmp0(bson_iter_key(&b_iter), "complete_data_size") == 0)
+        {
+            *completeSize = bson_iter_int64(&b_iter);
+            std::cout << "___ completeSize = " << *completeSize << std::endl;
+        }
+        else if (g_strcmp0(bson_iter_key(&b_iter), "attr_type") == 0)
+        {
+            // std::cout << "___ type = " << *type << std::endl;
+            *type = bson_iter_int32(&b_iter);
+            std::cout << "___ type = " << *type << std::endl;
+        }
+    }
+}
+
 void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
                                         const std::string varName,
                                         bson_t *bsonMetadata, int *type,

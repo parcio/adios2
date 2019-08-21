@@ -22,10 +22,6 @@ namespace core
 namespace engine
 {
 
-template <class T>
-void GetAttributeDataFromJulea(const std::string attrName, T *data,
-                               const std::string nameSpace,
-                               long unsigned int dataSize);
 /* Variables and Attributes */
 void GetNamesBSONFromJulea(const std::string nameSpace, bson_t **bsonNames,
                            unsigned int *varCount, const std::string kvName);
@@ -44,7 +40,38 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
                               const std::string nameSpace,
                               long unsigned int dataSize);
 
+/* Attributes */
+void GetAttributeMetadataFromJulea(const std::string attrName,
+                                   bson_t *bsonMetadata,
+                                   const std::string nameSpace,
+                                   long unsigned int *dataSize,
+                                   size_t *numberElements, bool *IsSingleValue,
+                                   int *type);
 
+void GetAttributeMetadataFromJulea(const std::string attrName,
+                                   bson_t *bsonMetadata,
+                                   const std::string nameSpace,
+                                   long unsigned int *completeSize,
+                                   size_t *numberElements, bool *IsSingleValue,
+                                   int *type, unsigned int **dataSizes);
+
+void GetAttributeBSONFromJulea(const std::string nameSpace,
+                               const std::string varName, bson_t **bsonMetadata,
+                               guint32 *valueLen);
+template <class T>
+void GetAttributeDataFromJulea(const std::string attrName, T *data,
+                               const std::string nameSpace,
+                               long unsigned int dataSize);
+
+template <class T>
+void GetAttributeDataFromJulea(const std::string attrName, T *data,
+                               const std::string nameSpace,
+                               long unsigned int dataSize, bool IsSingleValue);
+
+// void GetAttributeDataFromJuleaDifferentBuffer(const std::string attrName,
+//                                               void *data,
+//                                               const std::string nameSpace,
+//                                               long unsigned int dataSize);
 #define variable_template_instantiation(T)                                     \
     extern template void GetVariableMetadataFromJulea(                         \
         Variable<T> &variable, bson_t *bsonMetadata,                           \
@@ -54,23 +81,6 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
         long unsigned int dataSize);
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
-/* Attributes */
-void GetAttributeMetadataFromJulea(const std::string attrName,
-                                   bson_t *bsonMetadata,
-                                   const std::string nameSpace,
-                                   long unsigned int *dataSize,
-                                   size_t *numberElements, bool *IsSingleValue,
-                                   int *type);
-
-void GetAttributeBSONFromJulea(const std::string nameSpace,
-                               const std::string varName, bson_t **bsonMetadata,
-                               guint32 *valueLen);
-
-// void GetAttributeDataFromJuleaDifferentBuffer(const std::string attrName,
-//                                               void *data,
-//                                               const std::string nameSpace,
-//                                               long unsigned int dataSize);
-
 
 #define attribute_template_instantiation(T)                                    \
     extern template void GetAttributeDataFromJulea(                            \
@@ -80,6 +90,9 @@ void GetAttributeBSONFromJulea(const std::string nameSpace,
 ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(attribute_template_instantiation)
 #undef attribute_template_instantiation
 
+// extern template void GetAttributeDataFromJulea(                            \
+    //     const std::string attrName, T *data, const std::string nameSpace,      \
+    //     long unsigned int dataSize, bool IsSingleValue);
 } // end namespace engine
 } // end namespace core
 } // end namespace adios2

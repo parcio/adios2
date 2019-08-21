@@ -60,7 +60,7 @@ void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
         dataSize = attribute.m_DataArray.size() * sizeof(T);
     }
 
-    bson_append_int64(bsonMetadata, "data_size", -1, dataSize);
+    bson_append_int64(bsonMetadata, "complete_data_size", -1, dataSize);
     std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
 }
 
@@ -69,27 +69,36 @@ void ParseAttributeToBSON<std::string>(Attribute<std::string> &attribute,
                                        bson_t *bsonMetadata)
 {
     std::cout << "-- ParseAttributeToBSON ------ " << std::endl;
-    unsigned int dataSize = 0;
+    unsigned int completeSize = 0;
+    unsigned int entrySize = 0;
+    gchar *key;
 
     bson_append_int64(bsonMetadata, "number_elements", -1,
-                      attribute.m_Elements);
+                      attribute.m_Elements); // TODO: still needed?
     bson_append_bool(bsonMetadata, "is_single_value", -1,
                      attribute.m_IsSingleValue);
     if (attribute.m_IsSingleValue)
     {
-        dataSize = attribute.m_DataSingleValue.length();
-        std::cout << "-- dataSize single value = " << dataSize << std::endl;
+        completeSize = attribute.m_DataSingleValue.length();
+        std::cout << "-- dataSize single value = " << completeSize << std::endl;
     }
     else
     {
+        // bson_append_int64(bsonMetadata, "array_size", -1,
+        //                   attribute.m_DataArray.size());
         for (size_t i = 0; i < attribute.m_DataArray.size(); i++)
         {
-            dataSize = dataSize + attribute.m_DataArray.data()[i].length();
-            std::cout << "dataSize: " << dataSize << std::endl;
+            entrySize = attribute.m_DataArray.data()[i].length();
+            std::cout << "entry_size_: " << entrySize << std::endl;
+
+            completeSize = completeSize + entrySize;
+            std::cout << "complete_data_size: " << completeSize << std::endl;
+            key = g_strdup_printf("entry_size_%d", i);
+            bson_append_int64(bsonMetadata, key, -1, entrySize);
         }
     }
-
-    bson_append_int64(bsonMetadata, "data_size", -1, dataSize);
+    bson_append_int64(bsonMetadata, "complete_data_size", -1, completeSize);
+    std::cout << "-- complete_data_size: " << completeSize << std::endl;
     std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
 }
 

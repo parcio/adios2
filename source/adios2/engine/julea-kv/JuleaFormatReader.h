@@ -55,6 +55,12 @@ void ParseAttributeFromBSON(const std::string nameSpace,
                             long unsigned int *dataSize, size_t *numberElements,
                             bool *IsSingleValue, int *type);
 
+void ParseAttributeFromBSON(const std::string nameSpace,
+                            const std::string attrName, bson_t *bsonMetadata,
+                            long unsigned int *completeSize,
+                            size_t *numberElements, bool *IsSingleValue,
+                            int *type, unsigned int **dataSizes);
+
 void GetAdiosTypeString(int type, std::string *typeString);
 
 // extern template void DefineAttributeInInit(                                \

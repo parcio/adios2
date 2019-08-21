@@ -215,6 +215,24 @@ void GetAttributeMetadataFromJulea(const std::string attrName,
     }
 }
 
+void GetAttributeMetadataFromJulea(const std::string attrName,
+                                   bson_t *bsonMetadata,
+                                   const std::string nameSpace,
+                                   long unsigned int *completeSize,
+                                   size_t *numberElements, bool *IsSingleValue,
+                                   int *type, unsigned int **dataSizes)
+{
+    std::cout << "-- GetAttributeMetadataFromJulea ------" << std::endl;
+    guint32 valueLen = 0;
+    GetAttributeBSONFromJulea(nameSpace, attrName, &bsonMetadata, &valueLen);
+
+    if (valueLen > 0)
+    {
+        ParseAttributeFromBSON(nameSpace, attrName, bsonMetadata, completeSize,
+                               numberElements, IsSingleValue, type, dataSizes);
+    }
+}
+
 // void GetAttributeDataFromJuleaDifferentBuffer(const std::string attrName,
 //                                               void *data,
 //                                               const std::string nameSpace,
@@ -248,7 +266,8 @@ void GetAttributeMetadataFromJulea(const std::string attrName,
 //     }
 //     else
 //     {
-//         std::cout << "WARNING: only " << bytesRead << " bytes read instead of "
+//         std::cout << "WARNING: only " << bytesRead << " bytes read instead of
+//         "
 //                   << dataSize << " bytes!" << std::endl;
 //     }
 //     std::cout << "Data: " << &data << std::endl;
@@ -295,9 +314,20 @@ void GetAttributeDataFromJulea(const std::string attrName, T *data,
     // j_object_unref(dataObject);
 }
 
+template <class T>
+void GetAttributeDataFromJulea(const std::string attrName, T *data,
+                               const std::string nameSpace,
+                               long unsigned int dataSize, bool IsSingleValue)
+{
+    std::cout << "-- GetAttributeDataFromJulea -----" << std::endl;
+}
+
 template <>
 void GetAttributeDataFromJulea<std::string>(const std::string attrName,
-std::string *data, const std::string nameSpace, long unsigned int dataSize)
+                                            std::string *data,
+                                            const std::string nameSpace,
+                                            long unsigned int dataSize,
+                                            bool IsSingleValue)
 {
     std::cout << "-- GetAttributeDataFromJulea -----" << std::endl;
 
@@ -306,6 +336,7 @@ std::string *data, const std::string nameSpace, long unsigned int dataSize)
     // auto batch = j_batch_new(m_JuleaSemantics);
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
+    void *dataBuf;
 
     auto stringDataObject = g_strdup_printf(
         "%s_attributes_%s", nameSpace.c_str(), attrName.c_str());
@@ -314,9 +345,30 @@ std::string *data, const std::string nameSpace, long unsigned int dataSize)
     std::cout << "-- stringDataObject: " << stringDataObject << std::endl;
     std::cout << "-- Datasize = " << dataSize << std::endl;
 
-    j_object_read(dataObject, data, dataSize, 0, &bytesRead, batch);
-    j_batch_execute(batch);
+    // j_object_read(dataObject, data, dataSize, 0, &bytesRead, batch);
+    // j_object_read(dataObject, dataBuf, dataSize, 0, &bytesRead, batch);
+    // j_batch_execute(batch);
 
+    if (IsSingleValue)
+    {
+        // char **string;
+        // j_object_read(dataObject, string, dataSize, 0, &bytesRead, batch);
+        // j_batch_execute(batch);
+        // std::cout << "string: " << string[0] << std::endl;
+        // j_object_read(dataObject, dataBuf, dataSize, 0, &bytesRead, batch);
+        // std::string stringData = *data;
+        // std::cout << "stringData: " << stringData.data() << std::endl;
+    }
+    else
+    {
+        char **stringArray = new char *[dataSize + 1];
+        // j_object_read(dataObject, dataBuf, dataSize, 0, &bytesRead, batch);
+        j_object_read(dataObject, stringArray, dataSize, 0, &bytesRead, batch);
+        j_batch_execute(batch);
+        std::cout << "string: " << stringArray[0] << std::endl;
+        // std::cout << "string: " << stringArray[1] << std::endl;
+        // std::cout << "string: " << stringArray[2] << std::endl;
+    }
     if (bytesRead == dataSize)
     {
         std::cout << "++ Julea Interaction Reader: Read data for attribute "
@@ -324,7 +376,8 @@ std::string *data, const std::string nameSpace, long unsigned int dataSize)
     }
     else
     {
-        std::cout << "WARNING: only " << bytesRead << " bytes read instead of " << dataSize << " bytes!" << std::endl;
+        std::cout << "WARNING: only " << bytesRead << " bytes read instead of "
+                  << dataSize << " bytes!" << std::endl;
     }
 
     // g_free(stringDataObject);
@@ -334,7 +387,10 @@ std::string *data, const std::string nameSpace, long unsigned int dataSize)
 #define attribute_template_instantiation(T)                                    \
     template void GetAttributeDataFromJulea(                                   \
         const std::string attrName, T *data, const std::string nameSpace,      \
-        long unsigned int dataSize);
+        long unsigned int dataSize);                                           \
+    template void GetAttributeDataFromJulea(                                   \
+        const std::string attrName, T *data, const std::string nameSpace,      \
+        long unsigned int dataSize, bool IsSingleValue);
 ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(attribute_template_instantiation)
 #undef attribute_template_instantiation
 

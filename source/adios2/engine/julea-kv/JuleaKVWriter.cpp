@@ -505,6 +505,8 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
     else if (type == helper::GetType<T>())                                     \
     {                                                                          \
         Attribute<T> &attribute = *io.InquireAttribute<T>(name);               \
+        std::cout << "-- PutAttributes: m_Elements " << attribute.m_Elements   \
+                  << std::endl;                                                \
         ParseAttributeToBSON(attribute, bsonMetadata);                         \
         ParseAttrTypeToBSON(attribute, bsonMetadata);                          \
         PutAttributeMetadataToJuleaSmall(attribute, bsonMetadata, m_Name);     \
