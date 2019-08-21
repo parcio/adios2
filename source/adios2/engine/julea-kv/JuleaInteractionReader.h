@@ -66,7 +66,8 @@ void GetAttributeDataFromJulea(const std::string attrName, T *data,
 template <class T>
 void GetAttributeDataFromJulea(const std::string attrName, T *data,
                                const std::string nameSpace,
-                               long unsigned int dataSize, bool IsSingleValue);
+                               long unsigned int completeSize, bool IsSingleValue,
+                               size_t numberElements, unsigned int *dataSizes);
 
 // void GetAttributeDataFromJuleaDifferentBuffer(const std::string attrName,
 //                                               void *data,

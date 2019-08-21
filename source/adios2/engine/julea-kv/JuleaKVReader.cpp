@@ -367,19 +367,13 @@ void JuleaKVReader::InitAttributes()
         if (typeString == "string")                                            \
         {                                                                      \
             GetAttributeDataFromJulea(attrName, dataBuf, nameSpace,            \
-                                      completeSize, IsSingleValue);            \
-            if (IsSingleValue)                                                 \
-            {                                                                  \
-            }                                                                  \
-            else                                                               \
-            {                                                                  \
-                std::cout << "Data: " << *dataBuf << std::endl;                \
-            }                                                                  \
+                                      completeSize, IsSingleValue, numberElements, dataSizes); \
         }                                                                      \
         else                                                                   \
         {                                                                      \
             GetAttributeDataFromJulea(attrName, dataBuf, nameSpace,            \
                                       completeSize);                           \
+        }                                                                      \
             if (IsSingleValue)                                                 \
             {                                                                  \
                 std::cout << "Data: " << *dataBuf << std::endl;                \
@@ -390,7 +384,6 @@ void JuleaKVReader::InitAttributes()
                 std::cout << "Data: " << *dataBuf << std::endl;                \
                 m_IO.DefineAttribute<T>(attrName, dataBuf, numberElements);    \
             }                                                                  \
-        }                                                                      \
     }
         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
 #undef declare_attribute_type
