@@ -59,7 +59,7 @@ void ParseAttributeFromBSON(const std::string nameSpace,
                             const std::string attrName, bson_t *bsonMetadata,
                             long unsigned int *completeSize,
                             size_t *numberElements, bool *IsSingleValue,
-                            int *type, unsigned int **dataSizes);
+                            int *type, unsigned long **dataSizes);
 
 void GetAdiosTypeString(int type, std::string *typeString);
 

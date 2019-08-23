@@ -318,7 +318,7 @@ void JuleaKVReader::InitAttributes()
     std::string kvName = "attribute_names";
     unsigned int varCount;
     long unsigned int completeSize;
-    unsigned int *dataSizes;
+    unsigned long *dataSizes;
 
     GetNamesBSONFromJulea(nameSpace, &bsonNames, &varCount,
                           kvName); // TODO: get all attribute names
@@ -333,7 +333,7 @@ void JuleaKVReader::InitAttributes()
         bson_t *bsonMetadata;
         varCount = 0;
         completeSize = 0;
-        // *dataSizes = 0;
+        dataSizes = NULL;
         attrName = g_strdup(bson_iter_key(&b_iter));
         int type = 0;
         size_t numberElements = 0;
@@ -359,21 +359,45 @@ void JuleaKVReader::InitAttributes()
         // std::endl; std::cout << "Databuf: " << dataBuf << std::endl;
         // std::cout << "Databuf: " << dataBuf << std::endl;
 
+        // dataBuf = (T *)g_slice_alloc(numberElements * sizeof(T));          \
+
 #define declare_attribute_type(T)                                              \
     if (typeString == helper::GetType<T>())                                    \
     {                                                                          \
-        T *dataBuf = (T *)g_slice_alloc(completeSize);                         \
+        T *dataBuf = NULL;                                                     \
         std::cout << "typeString = " << typeString << std::endl;               \
         if (typeString == "string")                                            \
         {                                                                      \
-            GetAttributeDataFromJulea(attrName, dataBuf, nameSpace,            \
-                                      completeSize, IsSingleValue, numberElements, dataSizes); \
+            char *data = new char[completeSize];                               \
+            GetAttributeStringDataFromJulea(attrName, data, nameSpace,         \
+                                            completeSize, IsSingleValue,       \
+                                            numberElements, dataSizes);        \
+            if (IsSingleValue)                                                 \
+            {                                                                  \
+                std::string dataString(data);                                  \
+                std::cout << "Data: " << dataString << std::endl;              \
+                m_IO.DefineAttribute<std::string>(attrName, dataString);       \
+            }                                                                  \
+            else                                                               \
+            {                                                                  \
+                std::vector<std::string> dataStringArray;                      \
+                unsigned long offset = 0;                                      \
+                for (size_t i = 0; i < numberElements; i++)                    \
+                {                                                              \
+                    dataStringArray.push_back(data + offset);                  \
+                    std::cout << "data[" << offset << "]: " << data + offset   \
+                              << std::endl;                                    \
+                    offset += dataSizes[i];                                    \
+                }                                                              \
+                m_IO.DefineAttribute<std::string>(                             \
+                    attrName, dataStringArray.data(), numberElements);         \
+            }                                                                  \
         }                                                                      \
         else                                                                   \
         {                                                                      \
+            dataBuf = (T *)g_slice_alloc(completeSize);                        \
             GetAttributeDataFromJulea(attrName, dataBuf, nameSpace,            \
                                       completeSize);                           \
-        }                                                                      \
             if (IsSingleValue)                                                 \
             {                                                                  \
                 std::cout << "Data: " << *dataBuf << std::endl;                \
@@ -384,6 +408,7 @@ void JuleaKVReader::InitAttributes()
                 std::cout << "Data: " << *dataBuf << std::endl;                \
                 m_IO.DefineAttribute<T>(attrName, dataBuf, numberElements);    \
             }                                                                  \
+        }                                                                      \
     }
         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
 #undef declare_attribute_type

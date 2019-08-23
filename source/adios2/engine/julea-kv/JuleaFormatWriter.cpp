@@ -79,7 +79,7 @@ void ParseAttributeToBSON<std::string>(Attribute<std::string> &attribute,
                      attribute.m_IsSingleValue);
     if (attribute.m_IsSingleValue)
     {
-        completeSize = attribute.m_DataSingleValue.length();
+        completeSize = attribute.m_DataSingleValue.length() + 1;
         std::cout << "-- dataSize single value = " << completeSize << std::endl;
     }
     else
@@ -88,12 +88,13 @@ void ParseAttributeToBSON<std::string>(Attribute<std::string> &attribute,
         //                   attribute.m_DataArray.size());
         for (size_t i = 0; i < attribute.m_DataArray.size(); i++)
         {
-            entrySize = attribute.m_DataArray.data()[i].length();
-            std::cout << "entry_size_: " << entrySize << std::endl;
+            entrySize = attribute.m_DataArray.data()[i].length() + 1;
+            // std::cout << "entry_size_: " << entrySize << std::endl;
 
             completeSize = completeSize + entrySize;
             std::cout << "complete_data_size: " << completeSize << std::endl;
             key = g_strdup_printf("entry_size_%d", i);
+            std::cout << "key: " << key << std::endl;
             bson_append_int64(bsonMetadata, key, -1, entrySize);
         }
     }

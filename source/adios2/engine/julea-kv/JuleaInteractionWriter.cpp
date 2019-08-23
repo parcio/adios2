@@ -582,8 +582,8 @@ void PutAttributeDataToJulea<std::string>(Attribute<std::string> &attribute,
 
     if (attribute.m_IsSingleValue)
     {
-        dataSize = attribute.m_DataSingleValue.length();
-        char *dataElement = new char[attribute.m_DataSingleValue.length() + 1];
+        dataSize = attribute.m_DataSingleValue.length() + 1;
+        char *dataElement = new char[dataSize];
         strcpy(dataElement, attribute.m_DataSingleValue.c_str());
 
         j_object_write(dataObject, dataElement, dataSize, 0, &bytesWritten,
@@ -593,19 +593,17 @@ void PutAttributeDataToJulea<std::string>(Attribute<std::string> &attribute,
     }
     else
     {
-        char **dataArray = new char *[attribute.m_DataArray.size()];
+        unsigned int offset = 0;
         for (size_t i = 0; i < attribute.m_DataArray.size(); i++)
         {
-            dataSize = dataSize + attribute.m_DataArray.data()[i].length();
-            dataArray[i] =
-                new char[(attribute.m_DataArray.data()[i].length()) + 1];
-            strcpy(dataArray[i], attribute.m_DataArray.data()[i].c_str());
+            dataSize = attribute.m_DataArray.data()[i].length() + 1;
+            j_object_write(dataObject, attribute.m_DataArray.data()[i].c_str(),
+                           dataSize, offset, &bytesWritten, batch);
+            offset += dataSize;
 
-            std::cout << "dataSize: " << dataSize << std::endl;
-            std::cout << "dataArray [i]: " << dataArray[i] << std::endl;
+            // std::cout << "dataSize: " << dataSize << std::endl;
+            // std::cout << "dataArray [i]: " << dataArray[i] << std::endl;
         }
-        j_object_write(dataObject, dataArray, dataSize, 0, &bytesWritten,
-                       batch);
     }
 
     j_batch_execute(batch);

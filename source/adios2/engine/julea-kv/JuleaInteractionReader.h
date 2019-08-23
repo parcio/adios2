@@ -53,7 +53,7 @@ void GetAttributeMetadataFromJulea(const std::string attrName,
                                    const std::string nameSpace,
                                    long unsigned int *completeSize,
                                    size_t *numberElements, bool *IsSingleValue,
-                                   int *type, unsigned int **dataSizes);
+                                   int *type, unsigned long **dataSizes);
 
 void GetAttributeBSONFromJulea(const std::string nameSpace,
                                const std::string varName, bson_t **bsonMetadata,
@@ -66,8 +66,15 @@ void GetAttributeDataFromJulea(const std::string attrName, T *data,
 template <class T>
 void GetAttributeDataFromJulea(const std::string attrName, T *data,
                                const std::string nameSpace,
-                               long unsigned int completeSize, bool IsSingleValue,
-                               size_t numberElements, unsigned int *dataSizes);
+                               long unsigned int completeSize,
+                               bool IsSingleValue, size_t numberElements,
+                               unsigned long *dataSizes);
+
+void GetAttributeStringDataFromJulea(const std::string attrName, char *data,
+                                     const std::string nameSpace,
+                                     long unsigned int completeSize,
+                                     bool IsSingleValue, size_t numberElements,
+                                     unsigned long *dataSizes);
 
 // void GetAttributeDataFromJuleaDifferentBuffer(const std::string attrName,
 //                                               void *data,

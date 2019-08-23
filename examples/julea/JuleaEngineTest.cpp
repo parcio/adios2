@@ -188,6 +188,15 @@ int TestReadAttribute()
             // std::cout << "-- Attribute string read " << std::endl;
         }
 
+        adios2::Attribute<std::string> juleaAttrStringArray = juleaIO.InquireAttribute<std::string>("Array_of_Strings");
+        if(juleaAttrSingleString)
+        {
+            std::cout << "Name: " << juleaAttrStringArray.Name() << std::endl;
+            std::cout << "Data: " << juleaAttrStringArray.Data()[0] << std::endl;
+            // std::cout << "-- Attribute string read " << std::endl;
+        }
+
+
         // adios2::Attribute<double> juleaAttrDouble = juleaIO.InquireAttribute<double>("Attr_Double");
         auto juleaAttrDouble = juleaIO.InquireAttribute<double>("Attr_Double");
         if(juleaAttrDouble)
