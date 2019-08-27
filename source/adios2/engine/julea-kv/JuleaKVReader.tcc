@@ -42,6 +42,7 @@ void JuleaKVReader::GetSyncCommon(Variable<std::string> &variable,
     Metadata *metadata = g_slice_new(Metadata);
     metadata->name = g_strdup(variable.m_Name.c_str());
 
+    std::cout << "\n______________GetSync String_____________________" << std::endl;
     std::cout << "Julea Reader " << m_ReaderRank
               << " Reached Get Sync Common (String, String) " << std::endl;
     std::cout << "Julea Reader " << m_ReaderRank << " Namespace of variable "
@@ -67,10 +68,13 @@ template <class T>
 void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
 {
 
+    std::cout << "\n______________GetSync T_____________________" << std::endl;
     std::cout << "Julea Reader " << m_ReaderRank
               << " Reached Get Sync Common (T, T)" << std::endl;
-    std::cout << "Julea Reader " << m_ReaderRank << " Namespace of variable "
+    std::cout << "Julea Reader " << m_ReaderRank << " Namespace: "
               << m_Name << std::endl;
+    std::cout << "Julea Reader " << m_ReaderRank << " Variable name: "
+              << variable.m_Name << std::endl;
 
     auto bsonNames = bson_new();
     bson_t *bsonMetadata = bson_new();

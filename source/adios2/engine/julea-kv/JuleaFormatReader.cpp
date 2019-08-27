@@ -28,86 +28,6 @@ namespace core
 namespace engine
 {
 
-// template <class T>
-// void DefineAttributeInInit(core::IO *io, const std::string attrName, T *data,
-//                            int type, bool IsSingleValue, size_t
-//                            numberElements)
-// {
-//     if (IsSingleValue)
-//     {
-//     }
-//     else
-//     {
-//         switch (type)
-//         {
-//         // case COMPOUND:
-//         //     //TODO
-//         //     break;
-//         // case UNKNOWN:
-//         //     //TODO
-//         //     break;
-//         case STRING:
-//             // io->DefineVariable<std::string>(varName, shape, start, count,
-//             //                                  constantDims);
-//             // io->DefineAttribute<std::string>(attrName, data,
-//             numberElements); break;
-//         case INT8:
-//             // io->DefineVariable<int8_t>(varName, shape, start, count,
-//             // constantDims);
-//             break;
-//         case UINT8:
-//             // io->DefineVariable<uint8_t>(varName, shape, start, count,
-//             // constantDims);
-//             break;
-//         case INT16:
-//             // io->DefineVariable<int16_t>(varName, shape, start, count,
-//             // constantDims);
-//             break;
-//         case UINT16:
-//             // io->DefineVariable<uint16_t>(varName, shape, start, count,
-//             // constantDims);
-//             break;
-//         case INT32:
-//             // io->DefineVariable<int32_t>(varName, shape, start, count,
-//             // constantDims);
-//             break;
-//         case UINT32:
-//             // io->DefineVariable<uint32_t>(varName, shape, start, count,
-//             // constantDims);
-//             break;
-//         case INT64:
-//             // io->DefineVariable<int64_t>(varName, shape, start, count,
-//             // constantDims);
-//             break;
-//         case UINT64:
-//             // io->DefineVariable<uint64_t>(varName, shape, start, count,
-//             // constantDims);
-//             break;
-//         case FLOAT:
-//             // io->DefineVariable<float>(varName, shape, start, count,
-//             // constantDims);
-//             break;
-//         case DOUBLE:
-//             // io->DefineVariable<double>(varName, shape, start, count,
-//             // constantDims);
-//             break;
-//         case LONG_DOUBLE:
-//             // io->DefineVariable<long double>(varName, shape, start, count,
-//             // constantDims);
-//             break;
-//         case COMPLEX_FLOAT:
-//             // io->DefineVariable<std::complex<float>>(varName, shape, start,
-//             // count, constantDims);
-//             break;
-//         case COMPLEX_DOUBLE:
-//             // io->DefineVariable<std::complex<double>>(varName, shape,
-//             start,
-//             // count, constantDims);
-//             break;
-//         }
-//     }
-// }
-
 void GetAdiosTypeString(int type, std::string *typeString)
 {
     switch (type)
@@ -173,8 +93,8 @@ void ParseAttributeFromBSON(const std::string nameSpace,
 
     if (bson_iter_init(&b_iter, bsonMetadata))
     {
-        std::cout << "++ Julea Format Reader: Bson iterator is valid"
-                  << std::endl;
+        // std::cout << "++ Julea Format Reader: Bson iterator is valid"
+                  // << std::endl;
     }
     else
     {
@@ -195,13 +115,13 @@ void ParseAttributeFromBSON(const std::string nameSpace,
         {
             // std::cout << "___ Datasize = " << *dataSize << std::endl;
             *dataSize = bson_iter_int64(&b_iter);
-            std::cout << "___ Datasize = " << *dataSize << std::endl;
+            // std::cout << "___ Datasize = " << *dataSize << std::endl;
         }
         else if (g_strcmp0(bson_iter_key(&b_iter), "attr_type") == 0)
         {
             // std::cout << "___ type = " << *type << std::endl;
             *type = bson_iter_int32(&b_iter);
-            std::cout << "___ type = " << *type << std::endl;
+            // std::cout << "___ type = " << *type << std::endl;
         }
     }
 }
@@ -230,23 +150,23 @@ void ParseAttributeFromBSON(const std::string nameSpace,
         if (g_strcmp0(bson_iter_key(&b_iter), "number_elements") == 0)
         {
             *numberElements = (size_t)bson_iter_int64(&b_iter);
-            std::cout << "numberElements: " << *numberElements << std::endl;
+            // std::cout << "numberElements: " << *numberElements << std::endl;
         }
         else if (g_strcmp0(bson_iter_key(&b_iter), "is_single_value") == 0)
         {
             *IsSingleValue = (bool)bson_iter_bool(&b_iter);
-            std::cout << "IsSingleValue: " << *IsSingleValue << std::endl;
+            // std::cout << "IsSingleValue: " << *IsSingleValue << std::endl;
         }
         else if (g_strcmp0(bson_iter_key(&b_iter), "complete_data_size") == 0)
         {
             *completeSize = bson_iter_int64(&b_iter);
-            std::cout << "___ completeSize = " << *completeSize << std::endl;
+            // std::cout << "___ completeSize = " << *completeSize << std::endl;
         }
         else if (g_strcmp0(bson_iter_key(&b_iter), "attr_type") == 0)
         {
             // std::cout << "___ type = " << *type << std::endl;
             *type = bson_iter_int32(&b_iter);
-            std::cout << "___ type = " << *type << std::endl;
+            // std::cout << "___ type = " << *type << std::endl;
         }
     }
     if (!*IsSingleValue && (*type == STRING))
@@ -258,12 +178,12 @@ void ParseAttributeFromBSON(const std::string nameSpace,
             std::cout << "i: " << i << std::endl;
 
             key = g_strdup_printf("entry_size_%d", i);
-            std::cout << "key: " << key << std::endl;
+            // std::cout << "key: " << key << std::endl;
 
             if (bson_iter_find(&b_iter, key))
             {
                 (*dataSizes)[i] = bson_iter_int64(&b_iter);
-                std::cout << "___ Datasize = " << (*dataSizes)[i] << std::endl;
+                // std::cout << "___ Datasize = " << (*dataSizes)[i] << std::endl;
             }
         }
     }

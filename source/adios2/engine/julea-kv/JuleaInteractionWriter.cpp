@@ -78,7 +78,7 @@ void CheckIfAlreadyInKV(std::string kvName, std::string paramName,
     else
     {
         *IsAlreadyInKV = true;
-        std::cout << "++ Julea Interaction Writer: Attribute " << name
+        std::cout << "++ Julea Interaction Writer:  " << name
                   << " already in kv store. " << std::endl;
         // std::cout << "-- bsonNames length: " << (*bsonNames)->len << std::endl;
     }

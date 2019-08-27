@@ -37,6 +37,7 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
     auto bsonMetadata = bson_new();
     Metadata *metadata = g_slice_new(Metadata);
 
+     std::cout << "\n______________PutSync BlockInfo_____________________" << std::endl;
     SetMinMax(variable, blockInfo.Data);
 
     ParseVariableToMetadataStruct(variable, blockInfo, metadata);
@@ -65,6 +66,13 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 {
     auto bsonMetadata = bson_new();
 
+    std::cout << "\n______________PutSync T_____________________" << std::endl;
+    std::cout << "Julea Writer " << m_WriterRank
+              << " Reached Get Sync Common (T, T)" << std::endl;
+    std::cout << "Julea Writer " << m_WriterRank << " Namespace: "
+              << m_Name << std::endl;
+    std::cout << "Julea Writer " << m_WriterRank << " Variable name: "
+              << variable.m_Name << std::endl;
     SetMinMax(variable, data);
 
     ParseVariableToBSON(variable, bsonMetadata);
@@ -86,6 +94,7 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 template <class T>
 void JuleaKVWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
 {
+     std::cout << "\n______________PutDeferred T_____________________" << std::endl;
     // std::cout << "JULEA ENGINE: PutDeferredCommon" << std::endl;
     // std::cout << "You successfully reached the JULEA engine with the DEFERRED
     // mode "<< std::endl;

@@ -313,18 +313,22 @@ void JuleaKVReader::InitAttributes()
 {
     bson_iter_t b_iter;
     bson_t *bsonNames;
+
     std::string attrName;
     std::string nameSpace = m_Name;
     std::string kvName = "attribute_names";
+
     unsigned int varCount;
     long unsigned int completeSize;
     unsigned long *dataSizes;
 
+    // std::cout << "-----------------------------------" << std::endl;
+    std::cout << "\n______________InitAttributes_____________________" << std::endl;
+    // std::cout << "-- InitAttributes " << std::endl;
     GetNamesBSONFromJulea(nameSpace, &bsonNames, &varCount,
                           kvName); // TODO: get all attribute names
     bson_iter_init(&b_iter, bsonNames);
 
-    std::cout << "-- InitAttributes " << std::endl;
     std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
 
     while (bson_iter_next(&b_iter))
@@ -345,33 +349,20 @@ void JuleaKVReader::InitAttributes()
         GetAttributeMetadataFromJulea(attrName, bsonMetadata, nameSpace,
                                       &completeSize, &numberElements,
                                       &IsSingleValue, &type, &dataSizes);
-        std::cout << "Data size = " << completeSize << std::endl;
-
-        // FIXME: get dataSizes from Bson
-        // FIXME: pass numberElements to function
+        // std::cout << "Data size = " << completeSize << std::endl;
 
         GetAdiosTypeString(type, &typeString);
-
-        // std::cout << "Data: " << &data[0] << std::endl;                     \
-
-        // GetAttributeDataFromJuleaDifferentBuffer(attrName, dataBuf,
-        // nameSpace, dataSize); std::cout << "Databuf: " << &dataBuf <<
-        // std::endl; std::cout << "Databuf: " << dataBuf << std::endl;
-        // std::cout << "Databuf: " << dataBuf << std::endl;
-
-        // dataBuf = (T *)g_slice_alloc(numberElements * sizeof(T));          \
 
 #define declare_attribute_type(T)                                              \
     if (typeString == helper::GetType<T>())                                    \
     {                                                                          \
         T *dataBuf = NULL;                                                     \
-        std::cout << "typeString = " << typeString << std::endl;               \
         if (typeString == "string")                                            \
         {                                                                      \
             char *data = new char[completeSize];                               \
             GetAttributeStringDataFromJulea(attrName, data, nameSpace,         \
                                             completeSize, IsSingleValue,       \
-                                            numberElements);        \
+                                            numberElements);                   \
             if (IsSingleValue)                                                 \
             {                                                                  \
                 std::string dataString(data);                                  \
@@ -413,6 +404,7 @@ void JuleaKVReader::InitAttributes()
         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
 #undef declare_attribute_type
     }
+    std::cout << "_________________________________________________\n" << std::endl;
 }
 
 void JuleaKVReader::InitParameters()

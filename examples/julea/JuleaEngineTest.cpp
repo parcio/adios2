@@ -15,7 +15,7 @@
 
 #include <adios2.h>
 
-int TestWriteVariable(){
+void TestWriteVariable(){
  /** Application variable */
     std::vector<float> myFloats = {12345.6, 1, 2, 3, 4, 5, 6, 7, 8, -42.333};
     // std::vector<float> myFloats2 = {-6666.6, 1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -59,12 +59,10 @@ int TestWriteVariable(){
 
     /** Create bp file, engine becomes unreachable after this*/
     juleaWriter.Close();
-
-    return 0;
 }
 
 
-int TestReadVariable(){
+void TestReadVariable(){
     /** Application variable */
     std::vector<float> myFloats = {-42, -42, -42, -42, -42, -42, -42, -42, -42, -42};
     // std::vector<float> myFloats2 = {-42, -42, -42, -42, -42, -42, -42, -42, -42, -42};
@@ -110,7 +108,8 @@ int TestReadVariable(){
     }
 
     // std::cout << "Data: " << juleaFloats.Name() << std::endl;
-    std::cout << std::endl;
+    std::cout << "\n__________ Test application: Read vartiable __________________" << std::endl;
+
     for(int i = 0; i <10; i++)
     {
         std::cout << "juleaFloats contains now: " << myFloats[i] << std::endl;
@@ -121,11 +120,9 @@ int TestReadVariable(){
     std::cout << std::endl;
     /** Create bp file, engine becomes unreachable after this*/
     juleaReader.Close();
-
-    return 0;
 }
 
-int TestWriteAttribute()
+void TestWriteAttribute()
 {
     std::vector<float> myFloats = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     const std::size_t Nx = myFloats.size();
@@ -165,7 +162,7 @@ int TestWriteAttribute()
         juleaWriter.Close();
 }
 
-int TestReadAttribute()
+void TestReadAttribute()
 {
     /** ADIOS class factory of IO class objects, DebugON is recommended */
         adios2::ADIOS adios(adios2::DebugON);
@@ -178,13 +175,13 @@ int TestReadAttribute()
         // adios2::Engine juleaReader = juleaIO.Open("myVector.bp", adios2::Mode::Read);
         adios2::Engine juleaReader = juleaIO.Open("testFile", adios2::Mode::Read);
 
-        std::cout << "__________ Test application: Read attribute __________________" << std::endl;
+        std::cout << "\n__________ Test application: Read attribute __________________" << std::endl;
 
         adios2::Attribute<std::string> juleaAttrSingleString = juleaIO.InquireAttribute<std::string>("Single_String");
         if(juleaAttrSingleString)
         {
             std::cout << "Name: " << juleaAttrSingleString.Name() << std::endl;
-            std::cout << "Data: " << juleaAttrSingleString.Data()[0] << std::endl;
+            std::cout << "-- Data: " << juleaAttrSingleString.Data()[0] << std::endl;
             // std::cout << "-- Attribute string read " << std::endl;
         }
 
@@ -192,7 +189,9 @@ int TestReadAttribute()
         if(juleaAttrSingleString)
         {
             std::cout << "Name: " << juleaAttrStringArray.Name() << std::endl;
-            std::cout << "Data: " << juleaAttrStringArray.Data()[0] << std::endl;
+            std::cout << "-- Data: " << juleaAttrStringArray.Data()[0] << std::endl;
+            std::cout << "-- Data: " << juleaAttrStringArray.Data()[1] << std::endl;
+            std::cout << "-- Data: " << juleaAttrStringArray.Data()[2] << std::endl;
             // std::cout << "-- Attribute string read " << std::endl;
         }
 
@@ -202,7 +201,7 @@ int TestReadAttribute()
         if(juleaAttrDouble)
         {
             std::cout << "Name: " << juleaAttrDouble.Name() << std::endl;
-            std::cout << "Data: " << juleaAttrDouble.Data()[0] << std::endl;
+            std::cout << "-- Data: " << juleaAttrDouble.Data()[0] << std::endl;
             // std::cout << "-- Attribute double read " << std::endl;
         }
 
@@ -210,7 +209,9 @@ int TestReadAttribute()
         if(juleaAttrDouble)
         {
             std::cout << "Name: " << juleaAttrDoubleArray.Name() << std::endl;
-            std::cout << "Data: " << juleaAttrDoubleArray.Data()[0] << std::endl;
+            std::cout << "-- Data: " << juleaAttrDoubleArray.Data()[0] << std::endl;
+            std::cout << "-- Data: " << juleaAttrDoubleArray.Data()[1] << std::endl;
+            std::cout << "-- Data: " << juleaAttrDoubleArray.Data()[2] << std::endl;
             // std::cout << "-- Attribute double read " << std::endl;
         }
 }
@@ -226,14 +227,14 @@ int main(int argc, char *argv[])
     try
     {
 		std::cout << "JuleaEngineTest :)" << std::endl;
-		// err = TestWriteVariable();
-        // std::cout << "\n JuleaEngineTest :) Write variable finished \n" << std::endl;
-        // err = TestReadVariable();
-        // std::cout << "\n JuleaEngineTest :) Read variable finished \n" << std::endl;
-        err = TestWriteAttribute();
-        std::cout << "\n JuleaEngineTest :) Write attribute finished \n" << std::endl;
-        err = TestReadAttribute();
-        std::cout << "\n JuleaEngineTest :) Read attribute finished \n" << std::endl;
+		TestWriteVariable();
+        std::cout << "\n JuleaEngineTest :) Write variable finished \n" << std::endl;
+        TestReadVariable();
+        std::cout << "\n JuleaEngineTest :) Read variable finished \n" << std::endl;
+        // TestWriteAttribute();
+        // std::cout << "\n JuleaEngineTest :) Write attribute finished \n" << std::endl;
+        // TestReadAttribute();
+        // std::cout << "\n JuleaEngineTest :) Read attribute finished \n" << std::endl;
 
     }
 	catch (std::invalid_argument &e)
