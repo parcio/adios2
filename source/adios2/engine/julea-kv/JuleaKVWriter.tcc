@@ -34,20 +34,21 @@ template <class T>
 void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
                                   const typename Variable<T>::Info &blockInfo)
 {
-    auto bsonMetadata = bson_new();
-    Metadata *metadata = g_slice_new(Metadata);
+    // auto bsonMetadata = bson_new();
+    // Metadata *metadata = g_slice_new(Metadata);
 
-     std::cout << "\n______________PutSync BlockInfo_____________________" << std::endl;
-    SetMinMax(variable, blockInfo.Data);
+    //  std::cout << "\n______________PutSync BlockInfo_____________________" << std::endl;
+    // SetMinMax(variable, blockInfo.Data);
 
-    ParseVariableToMetadataStruct(variable, blockInfo, metadata);
-    ParseVarTypeToBSON(variable, blockInfo, metadata);
+    // ParseVariableToMetadataStruct(variable, blockInfo, metadata);
+    // ParseVarTypeToBSON(variable, blockInfo, metadata);
 
-    // PutVariableMetadataToJulea(variable, bsonMetadata, m_Name);
-    PutVariableMetadataToJuleaSmall(variable, bsonMetadata,
-                               m_Name);
-    // PutVariableDataToJulea(variable, blockInfo.Data, m_Name);
-    PutVariableDataToJuleaSmall(variable, blockInfo.Data, m_Name);
+    // // PutVariableMetadataToJulea(variable, bsonMetadata, m_Name);
+    // PutVariableMetadataToJuleaSmall(variable, bsonMetadata,
+    //                            m_Name);
+    // // PutVariableDataToJulea(variable, blockInfo.Data, m_Name);
+    // PutVariableDataToJuleaSmall(variable, blockInfo.Data, m_Name);
+    // bson_destroy(bsonMetadata);
 
     if (m_Verbosity == 5)
     {
@@ -83,6 +84,8 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
     PutVariableMetadataToJuleaSmall(variable, bsonMetadata, m_Name);
     // PutVariableDataToJulea(variable, data, m_Name);
     PutVariableDataToJuleaSmall(variable, data, m_Name);
+
+    bson_destroy(bsonMetadata);
 
     if (m_Verbosity == 5)
     {

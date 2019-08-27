@@ -57,6 +57,7 @@ JuleaKVReader::~JuleaKVReader()
         std::cout << "Julea Reader " << m_ReaderRank << " deconstructor on "
                   << m_Name << "\n";
     }
+    j_semantics_unref(m_JuleaSemantics);
 }
 
 StepStatus JuleaKVReader::BeginStep(const StepMode mode,
@@ -288,7 +289,8 @@ void JuleaKVReader::InitVariables()
         {
             bson_t *bsonMetadata;
 
-            varName = g_strdup(bson_iter_key(&b_iter));
+            // varName = g_strdup(bson_iter_key(&b_iter));
+            varName = strdup(bson_iter_key(&b_iter));
 
             std::cout << "-- Variable name " << varName << std::endl;
 
@@ -305,8 +307,14 @@ void JuleaKVReader::InitVariables()
                                                &constantDims);
             DefineVariableInInit(&m_IO, varName, type, shape, start, count,
                                  constantDims);
+            bson_destroy(bsonMetadata);
+            // free(varName);
+            // free(&varName);
         }
+        // free(varName);
+    // TODO how to free varName?
     }
+    bson_destroy(bsonNames);
 }
 
 void JuleaKVReader::InitAttributes()
@@ -389,6 +397,7 @@ void JuleaKVReader::InitAttributes()
                 m_IO.DefineAttribute<std::string>(                             \
                     attrName, dataStringArray.data(), numberElements);         \
             }                                                                  \
+            delete(data);\
         }                                                                      \
         else                                                                   \
         {                                                                      \
@@ -405,11 +414,15 @@ void JuleaKVReader::InitAttributes()
                 std::cout << "Data: " << *dataBuf << std::endl;                \
                 m_IO.DefineAttribute<T>(attrName, dataBuf, numberElements);    \
             }                                                                  \
+            delete(dataBuf);\
         }                                                                      \
     }
         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
 #undef declare_attribute_type
+    delete(&attrName);
+    bson_destroy(bsonMetadata);
     }
+    bson_destroy(bsonNames);
     std::cout << "_________________________________________________\n" << std::endl;
 }
 

@@ -38,15 +38,16 @@ void JuleaKVReader::GetSyncCommon(Variable<std::string> &variable,
     semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     batch = j_batch_new(semantics);
 
-    gchar *name_space = strdup(m_Name.c_str());
-    Metadata *metadata = g_slice_new(Metadata);
-    metadata->name = g_strdup(variable.m_Name.c_str());
+    //FIXME: still using metadata struct
+    // gchar *name_space = strdup(m_Name.c_str());
+    // Metadata *metadata = g_slice_new(Metadata);
+    // metadata->name = g_strdup(variable.m_Name.c_str());
 
-    std::cout << "\n______________GetSync String_____________________" << std::endl;
-    std::cout << "Julea Reader " << m_ReaderRank
-              << " Reached Get Sync Common (String, String) " << std::endl;
-    std::cout << "Julea Reader " << m_ReaderRank << " Namespace of variable "
-              << m_Name << std::endl;
+    // std::cout << "\n______________GetSync String_____________________" << std::endl;
+    // std::cout << "Julea Reader " << m_ReaderRank
+    //           << " Reached Get Sync Common (String, String) " << std::endl;
+    // std::cout << "Julea Reader " << m_ReaderRank << " Namespace of variable "
+    //           << m_Name << std::endl;
     // GetVarDataFromJulea(name_space, metadata->name, metadata->data_size,
     //                     (void *)(data), batch);
 
@@ -61,6 +62,8 @@ void JuleaKVReader::GetSyncCommon(Variable<std::string> &variable,
                   << variable.m_Name << ")\n";
     }
     j_batch_unref(batch);
+    j_semantics_unref(semantics);
+
 }
 
 // inline needed? is in skeleton-engine
@@ -77,7 +80,8 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
               << variable.m_Name << std::endl;
 
     auto bsonNames = bson_new();
-    bson_t *bsonMetadata = bson_new();
+    // bson_t *bsonMetadata = bson_new();
+    bson_t *bsonMetadata = NULL;
     auto nameSpace = m_Name;
     unsigned int varCount = 0;
     long unsigned int dataSize = 0;
@@ -85,7 +89,17 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
     /* all the additional metadata which is not used in InitVariables has to be
      * read again */
     GetVariableMetadataFromJulea(variable, bsonMetadata, nameSpace, &dataSize);
-    GetVariableDataFromJulea(variable, data, nameSpace, dataSize);
+    if(bsonMetadata == NULL)
+    {
+        bson_destroy(bsonNames);
+        return;
+    }
+    else
+    {
+        GetVariableDataFromJulea(variable, data, nameSpace, dataSize);
+        bson_destroy(bsonMetadata);
+        bson_destroy(bsonNames);
+    }
 }
 
 template <class T>

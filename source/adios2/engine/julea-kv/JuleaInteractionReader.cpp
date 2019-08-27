@@ -39,6 +39,10 @@ void GetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata,
     std::cout << "-- GetVariableMetadataFromJulea -----" << std::endl;
     GetVariableBSONFromJulea(nameSpace, variable.m_Name, &bsonMetadata);
 
+    if(bsonMetadata == NULL)
+    {
+        return;
+    }
     ParseVariableFromBSON(variable, bsonMetadata, nameSpace, dataSize);
 }
 
@@ -75,6 +79,8 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
                   << dataSize << " bytes!" << std::endl;
     }
 
+    j_batch_unref(batch);
+    j_semantics_unref(semantics);
     g_free(stringDataObject);
     j_object_unref(dataObject);
 }
@@ -115,6 +121,8 @@ void GetNamesBSONFromJulea(const std::string nameSpace, bson_t **bsonNames,
                   << std::endl;
 
         *varCount = 0;
+        free(namesBuf);
+        j_semantics_unref(semantics);
         j_kv_unref(kvObject);
         j_batch_unref(batch);
         return;
@@ -129,8 +137,10 @@ void GetNamesBSONFromJulea(const std::string nameSpace, bson_t **bsonNames,
     // printf("-- JADIOS DEBUG PRINT: count_names %d\n", *varCount);
     // std::cout << "-- count_names: " << *varCount << std::endl;
 
+    j_semantics_unref(semantics);
     j_kv_unref(kvObject);
     j_batch_unref(batch);
+    free(namesBuf);
 }
 
 void GetVariableBSONFromJulea(const std::string nameSpace,
@@ -160,6 +170,11 @@ void GetVariableBSONFromJulea(const std::string nameSpace,
         *bsonMetadata =
             bson_new_from_data((const uint8_t *)metaDataBuf, valueLen);
     }
+    j_kv_unref(kvObject);
+    j_semantics_unref(semantics);
+    j_batch_unref(batch);
+    g_free(stringMetadataKV);
+    free(metaDataBuf);
 }
 
 /** ------------------------- Attributes -----------------------------------**/
@@ -192,6 +207,11 @@ void GetAttributeBSONFromJulea(const std::string nameSpace,
         *bsonMetadata =
             bson_new_from_data((const uint8_t *)metaDataBuf, *valueLen);
     }
+    free(metaDataBuf);
+    j_kv_unref(kvObject);
+    j_semantics_unref(semantics);
+    j_batch_unref(batch);
+    g_free(stringMetadataKV);
 }
 
 void GetAttributeMetadataFromJulea(const std::string attrName,
@@ -263,8 +283,10 @@ void GetAttributeDataFromJulea(const std::string attrName, T *data,
                   << dataSize << " bytes!" << std::endl;
     }
 
-    // g_free(stringDataObject);
-    // j_object_unref(dataObject);
+    j_batch_unref(batch);
+    j_semantics_unref(semantics);
+    g_free(stringDataObject);
+    j_object_unref(dataObject);
 }
 
 void GetAttributeStringDataFromJulea(const std::string attrName, char *data,
@@ -278,7 +300,7 @@ void GetAttributeStringDataFromJulea(const std::string attrName, char *data,
     guint64 bytesRead = 0;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
-    void *dataBuf;
+    // void *dataBuf;
 
     auto stringDataObject = g_strdup_printf(
         "%s_attributes_%s", nameSpace.c_str(), attrName.c_str());
@@ -316,8 +338,10 @@ void GetAttributeStringDataFromJulea(const std::string attrName, char *data,
                   << completeSize << " bytes!" << std::endl;
     }
 
-    // g_free(stringDataObject);
-    // j_object_unref(dataObject);
+    j_batch_unref(batch);
+    j_semantics_unref(semantics);
+    g_free(stringDataObject);
+    j_object_unref(dataObject);
 }
 
 #define attribute_template_instantiation(T)                                    \

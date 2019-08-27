@@ -60,6 +60,7 @@ JuleaKVWriter::~JuleaKVWriter()
         std::cout << "Julea Writer " << m_WriterRank << " deconstructor on "
                   << m_Name << "\n";
     }
+    j_semantics_unref(m_JuleaSemantics);
 }
 
 /**
@@ -514,6 +515,7 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
     }
         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
 #undef declare_attribute_type
+    bson_destroy(bsonMetadata);
     }
 }
 

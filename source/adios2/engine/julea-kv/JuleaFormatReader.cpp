@@ -124,6 +124,7 @@ void ParseAttributeFromBSON(const std::string nameSpace,
             // std::cout << "___ type = " << *type << std::endl;
         }
     }
+    g_free(key);
 }
 
 void ParseAttributeFromBSON(const std::string nameSpace,
@@ -187,6 +188,7 @@ void ParseAttributeFromBSON(const std::string nameSpace,
             }
         }
     }
+    g_free(key);
 }
 
 void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
@@ -283,6 +285,7 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
             *constantDims = bson_iter_bool(&b_iter);
         }
     } // end while
+    g_free(key);
 }
 
 void DefineVariableInInit(core::IO *io, const std::string varName, int type,
@@ -569,6 +572,7 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
         // }
 
     } // end while
+    g_free(key);
 }
 
 template <>

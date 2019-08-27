@@ -85,8 +85,11 @@ void CheckIfAlreadyInKV(std::string kvName, std::string paramName,
     // j_kv_unref(kvObjectNames); //FIXME: still needed afterwards in write
     // metadata j_kv_unref(kvObjectMetadata);
     j_batch_unref(batch);
+    free(name);
+    free(namesBuf);
     // j_batch_unref(batch2);
     // bson_destroy(bsonNames);
+    j_semantics_unref(semantics);
 }
 
 /*
@@ -110,8 +113,12 @@ void WriteNameToJuleaKV(std::string kvName, std::string paramName,
 
     auto namesBuf = g_memdup(bson_get_data(bsonNames), bsonNames->len);
     j_kv_put(kvObjectNames, namesBuf, bsonNames->len, g_free, batch);
-
     j_batch_execute(batch);
+
+    free(name);
+    j_kv_unref(kvObjectNames);
+    j_batch_unref(batch);
+    j_semantics_unref(semantics);
 }
 
 void WriteMetadataToJuleaKV(std::string kvName, std::string paramName,
@@ -142,7 +149,8 @@ void WriteMetadataToJuleaKV(std::string kvName, std::string paramName,
     j_kv_unref(kvObjectMetadata);
     j_batch_unref(batch);
     // j_kv_unref(kvObjectNames);
-    // g_free(stringMetadataKV);
+    g_free(stringMetadataKV);
+    j_semantics_unref(semantics);
 }
 
 // void UpdateMetadataInJuleaKV(std::string kvName, std::string paramName,
@@ -259,7 +267,10 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
     WriteMetadataToJuleaKV(kvMD, attribute.m_Name, nameSpace.c_str(), bsonNames,
                            bsonMetaData, kvObjectNames);
 
+    // delete(kvNames);
+    // delete(kvMD);
     j_kv_unref(kvObjectNames);
+    bson_destroy(bsonNames);
 }
 
 template <class T>
@@ -295,6 +306,9 @@ void PutVariableMetadataToJuleaSmall(Variable<T> &variable,
                            bsonMetaData, kvObjectNames);
 
     j_kv_unref(kvObjectNames);
+    bson_destroy(bsonNames);
+    // delete(kvNames);
+    // delete(kvMD);
 
     // std::cout << "++ Julea Interaction: PutVariableMetadataToJuleaSmall  " <<
     // std::endl;
@@ -335,9 +349,11 @@ void WriteDataToJuleaObjectStore(std::string objName, std::string paramName,
                   << " bytes written instead of " << dataSize << " bytes! "
                   << std::endl;
     }
-    // g_free(stringDataObject);
-    // j_object_unref(dataObject);
-    // j_batch_unref(batch);
+    free(name);
+    g_free(stringDataObject);
+    j_object_unref(dataObject);
+    j_batch_unref(batch);
+    j_semantics_unref(semantics);
 }
 
 template <class T>
@@ -416,9 +432,11 @@ void PutVariableDataToJulea(Variable<T> &variable, const T *data,
                   << " bytes written instead of " << dataSize << " bytes! "
                   << std::endl;
     }
+    free(varName);
     g_free(stringDataObject);
     j_object_unref(dataObject);
     j_batch_unref(batch);
+    j_semantics_unref(semantics);
 
     std::cout << "++ Julea Interaction Writer: Put Variable " << std::endl;
 }
@@ -485,12 +503,14 @@ void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
 
     j_batch_execute(batch2); // Writing metadata
 
+    free(varName);
     g_free(stringMetadataKV);
     j_kv_unref(kvObjectNames);
     j_kv_unref(kvObjectMetadata);
     j_batch_unref(batch);
     j_batch_unref(batch2);
     bson_destroy(bsonNames);
+    j_semantics_unref(semantics);
 
     std::cout << "++ Julea Interaction Writer: Put Variable " << std::endl;
 }
@@ -544,9 +564,13 @@ void PutAttributeDataToJulea(Attribute<T> &attribute,
                   << " bytes written instead of " << dataSize << " bytes! "
                   << std::endl;
     }
+
+
+    free(attrName);
     g_free(stringDataObject);
     j_object_unref(dataObject);
     j_batch_unref(batch);
+    j_semantics_unref(semantics);
 
     std::cout << "++ Julea Interaction Writer: Put Attribute " << std::endl;
 }
@@ -606,9 +630,11 @@ void PutAttributeDataToJulea<std::string>(Attribute<std::string> &attribute,
                   << " bytes written instead of " << offset << " bytes! "
                   << std::endl;
     }
+    free(attrName);
     g_free(stringDataObject);
     j_object_unref(dataObject);
     j_batch_unref(batch);
+    j_semantics_unref(semantics);
 
     std::cout << "++ Julea Interaction Writer: Put Attribute " << std::endl;
 }
@@ -672,12 +698,14 @@ void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetaData,
 
     j_batch_execute(batch2); // Writing metadata
 
+    free(attrName);
     g_free(stringMetadataKV);
     j_kv_unref(kvObjectNames);
     j_kv_unref(kvObjectMetadata);
     j_batch_unref(batch);
     j_batch_unref(batch2);
     bson_destroy(bsonNames);
+    j_semantics_unref(semantics);
 
     std::cout << "++ Julea Interaction Writer: Put Attribute " << std::endl;
 }

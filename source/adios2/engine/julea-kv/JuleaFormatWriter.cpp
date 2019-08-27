@@ -99,6 +99,7 @@ void ParseAttributeToBSON<std::string>(Attribute<std::string> &attribute,
         }
     }
     bson_append_int64(bsonMetadata, "complete_data_size", -1, completeSize);
+    g_free(key);
     // std::cout << "-- complete_data_size: " << completeSize << std::endl;
     // std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
 }
@@ -250,6 +251,7 @@ void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata)
     bson_append_int64(bsonMetadata, "is_first_streaming_step", -1,
                       variable.m_FirstStreamingStep);
     std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
+    g_free(key);
 }
 
 template <>
