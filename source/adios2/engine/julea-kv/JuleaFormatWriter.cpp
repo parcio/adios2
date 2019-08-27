@@ -43,7 +43,7 @@ void SetMinMax(Variable<T> &variable, const T *data)
 template <class T>
 void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
 {
-    std::cout << "-- ParseAttributeToBSON ------ " << std::endl;
+    // std::cout << "-- ParseAttributeToBSON ------ " << std::endl;
     unsigned int dataSize = 0;
 
     bson_append_int64(bsonMetadata, "number_elements", -1,
@@ -53,7 +53,7 @@ void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
     if (attribute.m_IsSingleValue)
     {
         dataSize = sizeof(attribute.m_DataSingleValue);
-        std::cout << "-- dataSize single value = " << dataSize << std::endl;
+        // std::cout << "-- dataSize single value = " << dataSize << std::endl;
     }
     else
     {
@@ -61,14 +61,14 @@ void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
     }
 
     bson_append_int64(bsonMetadata, "complete_data_size", -1, dataSize);
-    std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
+    // std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
 }
 
 template <>
 void ParseAttributeToBSON<std::string>(Attribute<std::string> &attribute,
                                        bson_t *bsonMetadata)
 {
-    std::cout << "-- ParseAttributeToBSON ------ " << std::endl;
+    // std::cout << "-- ParseAttributeToBSON ------ " << std::endl;
     unsigned int completeSize = 0;
     unsigned int entrySize = 0;
     gchar *key;
@@ -80,7 +80,7 @@ void ParseAttributeToBSON<std::string>(Attribute<std::string> &attribute,
     if (attribute.m_IsSingleValue)
     {
         completeSize = attribute.m_DataSingleValue.length() + 1;
-        std::cout << "-- dataSize single value = " << completeSize << std::endl;
+        // std::cout << "-- dataSize single value = " << completeSize << std::endl;
     }
     else
     {
@@ -92,21 +92,21 @@ void ParseAttributeToBSON<std::string>(Attribute<std::string> &attribute,
             // std::cout << "entry_size_: " << entrySize << std::endl;
 
             completeSize = completeSize + entrySize;
-            std::cout << "complete_data_size: " << completeSize << std::endl;
+            // std::cout << "complete_data_size: " << completeSize << std::endl;
             key = g_strdup_printf("entry_size_%d", i);
-            std::cout << "key: " << key << std::endl;
+            // std::cout << "key: " << key << std::endl;
             bson_append_int64(bsonMetadata, key, -1, entrySize);
         }
     }
     bson_append_int64(bsonMetadata, "complete_data_size", -1, completeSize);
-    std::cout << "-- complete_data_size: " << completeSize << std::endl;
-    std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
+    // std::cout << "-- complete_data_size: " << completeSize << std::endl;
+    // std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
 }
 
 template <class T>
 void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
 {
-    std::cout << "-- ParseAttrTypeToBSON ------" << std::endl;
+    // std::cout << "-- ParseAttrTypeToBSON ------" << std::endl;
     int type = -1;
 
     if (helper::GetType<T>() == "string")
@@ -159,8 +159,8 @@ void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
     }
 
     bson_append_int32(bsonMetadata, "attr_type", -1, type);
-    std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
-    std::cout << "-- type: " << attribute.m_Type << std::endl;
+    // std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
+    // std::cout << "-- type: " << attribute.m_Type << std::endl;
 }
 
 template <class T>

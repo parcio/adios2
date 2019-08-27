@@ -371,7 +371,7 @@ void JuleaKVReader::InitAttributes()
             char *data = new char[completeSize];                               \
             GetAttributeStringDataFromJulea(attrName, data, nameSpace,         \
                                             completeSize, IsSingleValue,       \
-                                            numberElements, dataSizes);        \
+                                            numberElements);        \
             if (IsSingleValue)                                                 \
             {                                                                  \
                 std::string dataString(data);                                  \
