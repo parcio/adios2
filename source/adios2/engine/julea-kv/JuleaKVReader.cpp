@@ -313,8 +313,8 @@ void JuleaKVReader::InitVariables()
         }
         // free(varName);
     // TODO how to free varName?
+    // bson_destroy(bsonNames);
     }
-    bson_destroy(bsonNames);
 }
 
 void JuleaKVReader::InitAttributes()
@@ -322,7 +322,7 @@ void JuleaKVReader::InitAttributes()
     bson_iter_t b_iter;
     bson_t *bsonNames;
 
-    std::string attrName;
+    // std::string *attrName;
     std::string nameSpace = m_Name;
     std::string kvName = "attribute_names";
 
@@ -348,11 +348,13 @@ void JuleaKVReader::InitAttributes()
     while (bson_iter_next(&b_iter))
     {
         std::string typeString;
-        bson_t *bsonMetadata;
+        // bson_t *bsonMetadata;
         attrCount = 0;
         completeSize = 0;
         dataSizes = NULL;
-        attrName = g_strdup(bson_iter_key(&b_iter));
+        // attrName = g_strdup(bson_iter_key(&b_iter));
+        // *attrName = strdup(bson_iter_key(&b_iter));
+        std::string attrName (bson_iter_key(&b_iter));
         int type = 0;
         size_t numberElements = 0;
         bool IsSingleValue = false;
@@ -360,7 +362,10 @@ void JuleaKVReader::InitAttributes()
         std::cout << "-----------------------------------" << std::endl;
         std::cout << "-- Attribute name " << attrName << std::endl;
 
-        GetAttributeMetadataFromJulea(attrName, bsonMetadata, nameSpace,
+        // GetAttributeMetadataFromJulea(attrName, bsonMetadata, nameSpace,
+        //                               &completeSize, &numberElements,
+        //                               &IsSingleValue, &type, &dataSizes);
+         GetAttributeMetadataFromJulea(attrName,nameSpace,
                                       &completeSize, &numberElements,
                                       &IsSingleValue, &type, &dataSizes);
         // std::cout << "Data size = " << completeSize << std::endl;
@@ -396,6 +401,7 @@ void JuleaKVReader::InitAttributes()
                 }                                                              \
                 m_IO.DefineAttribute<std::string>(                             \
                     attrName, dataStringArray.data(), numberElements);         \
+                delete(dataSizes);\
             }                                                                  \
             delete(data);\
         }                                                                      \
@@ -414,14 +420,14 @@ void JuleaKVReader::InitAttributes()
                 std::cout << "Data: " << *dataBuf << std::endl;                \
                 m_IO.DefineAttribute<T>(attrName, dataBuf, numberElements);    \
             }                                                                  \
-            delete(dataBuf);\
+            g_slice_free(T, dataBuf);\
         }                                                                      \
     }
         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
 #undef declare_attribute_type
-    delete(&attrName);
-    bson_destroy(bsonMetadata);
-    }
+    // delete (&attrName); // FIXME: how to free?
+    // free(attrName);
+    } //end while
     bson_destroy(bsonNames);
     std::cout << "_________________________________________________\n" << std::endl;
 }

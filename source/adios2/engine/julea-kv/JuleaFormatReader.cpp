@@ -186,9 +186,9 @@ void ParseAttributeFromBSON(const std::string nameSpace,
                 (*dataSizes)[i] = bson_iter_int64(&b_iter);
                 // std::cout << "___ Datasize = " << (*dataSizes)[i] << std::endl;
             }
+            g_free(key);
         }
     }
-    g_free(key);
 }
 
 void GetVariableMetadataForInitFromBSON(const std::string nameSpace,

@@ -98,7 +98,7 @@ ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 void GetNamesBSONFromJulea(const std::string nameSpace, bson_t **bsonNames,
                            unsigned int *varCount, const std::string kvName)
 {
-    // std::cout << "-- GetNamesBSONFromJulea ------" << std::endl;
+    std::cout << "-- GetNamesBSONFromJulea ------" << std::endl;
     guint32 valueLen = 0;
     // g_autoptr(JKV) kv_object = NULL;
     void *namesBuf = NULL;
@@ -188,7 +188,7 @@ void GetAttributeBSONFromJulea(const std::string nameSpace,
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
-    // std::cout << "-- GetAttributeBSONFromJulea ---- " << std::endl;
+    std::cout << "-- GetAttributeBSONFromJulea ---- " << std::endl;
 
     auto stringMetadataKV = g_strdup_printf("attributes_%s", nameSpace.c_str());
     auto kvObject = j_kv_new(stringMetadataKV, attrName.c_str());
@@ -215,13 +215,13 @@ void GetAttributeBSONFromJulea(const std::string nameSpace,
 }
 
 void GetAttributeMetadataFromJulea(const std::string attrName,
-                                   bson_t *bsonMetadata,
                                    const std::string nameSpace,
                                    long unsigned int *dataSize,
                                    size_t *numberElements, bool *IsSingleValue,
                                    int *type)
 {
-    // std::cout << "-- GetAttributeMetadataFromJulea ------" << std::endl;
+    bson_t *bsonMetadata;
+    std::cout << "-- GetAttributeMetadataFromJulea ------" << std::endl;
     guint32 valueLen = 0;
     GetAttributeBSONFromJulea(nameSpace, attrName, &bsonMetadata, &valueLen);
 
@@ -230,16 +230,17 @@ void GetAttributeMetadataFromJulea(const std::string attrName,
         ParseAttributeFromBSON(nameSpace, attrName, bsonMetadata, dataSize,
                                numberElements, IsSingleValue, type);
     }
+    bson_destroy(bsonMetadata);
 }
 
 void GetAttributeMetadataFromJulea(const std::string attrName,
-                                   bson_t *bsonMetadata,
                                    const std::string nameSpace,
                                    long unsigned int *completeSize,
                                    size_t *numberElements, bool *IsSingleValue,
                                    int *type, unsigned long **dataSizes)
 {
-    // std::cout << "-- GetAttributeMetadataFromJulea ------" << std::endl;
+    bson_t *bsonMetadata;
+    std::cout << "-- GetAttributeMetadataFromJulea ------" << std::endl;
     guint32 valueLen = 0;
     GetAttributeBSONFromJulea(nameSpace, attrName, &bsonMetadata, &valueLen);
 
@@ -248,6 +249,7 @@ void GetAttributeMetadataFromJulea(const std::string attrName,
         ParseAttributeFromBSON(nameSpace, attrName, bsonMetadata, completeSize,
                                numberElements, IsSingleValue, type, dataSizes);
     }
+    bson_destroy(bsonMetadata);
 }
 
 template <class T>
@@ -255,7 +257,7 @@ void GetAttributeDataFromJulea(const std::string attrName, T *data,
                                const std::string nameSpace,
                                long unsigned int dataSize)
 {
-    // std::cout << "-- GetAttributeDataFromJulea -----" << std::endl;
+    std::cout << "-- GetAttributeDataFromJulea -----" << std::endl;
 
     guint64 bytesRead = 0;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -294,8 +296,8 @@ void GetAttributeStringDataFromJulea(const std::string attrName, char *data,
                                      long unsigned int completeSize,
                                      bool IsSingleValue, size_t numberElements)
 {
-    // std::cout << "-- GetAttributeDataFromJulea -- String version -----"
-              // << std::endl;
+    std::cout << "-- GetAttributeDataFromJulea -- String version -----"
+              << std::endl;
 
     guint64 bytesRead = 0;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);

@@ -42,14 +42,12 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
 
 /* Attributes */
 void GetAttributeMetadataFromJulea(const std::string attrName,
-                                   bson_t *bsonMetadata,
                                    const std::string nameSpace,
                                    long unsigned int *dataSize,
                                    size_t *numberElements, bool *IsSingleValue,
                                    int *type);
 
 void GetAttributeMetadataFromJulea(const std::string attrName,
-                                   bson_t *bsonMetadata,
                                    const std::string nameSpace,
                                    long unsigned int *completeSize,
                                    size_t *numberElements, bool *IsSingleValue,
