@@ -68,7 +68,7 @@ template <>
 void ParseAttributeToBSON<std::string>(Attribute<std::string> &attribute,
                                        bson_t *bsonMetadata)
 {
-    // std::cout << "-- ParseAttributeToBSON ------ " << std::endl;
+    std::cout << "-- ParseAttributeToBSON ------ " << std::endl;
     unsigned int completeSize = 0;
     unsigned int entrySize = 0;
     gchar *key;
@@ -96,10 +96,10 @@ void ParseAttributeToBSON<std::string>(Attribute<std::string> &attribute,
             key = g_strdup_printf("entry_size_%d", i);
             // std::cout << "key: " << key << std::endl;
             bson_append_int64(bsonMetadata, key, -1, entrySize);
+            g_free(key);
         }
     }
     bson_append_int64(bsonMetadata, "complete_data_size", -1, completeSize);
-    g_free(key);
     // std::cout << "-- complete_data_size: " << completeSize << std::endl;
     // std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
 }

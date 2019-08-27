@@ -478,25 +478,25 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
 
     for (const auto &attributePair : attributesDataMap)
     {
-        auto bsonMetadata = bson_new();
+        unsigned int dataSize = 0;
         const std::string type(attributePair.second.first);
         const std::string name(attributePair.first);
-        const std::string attrName = strdup(name.c_str());
-        char *stringData;
-        unsigned int dataSize = 0;
+
+        auto bsonMetadata = bson_new();
         std::cout << "------------------------------------" << std::endl;
         std::cout << "-- PutAttributes: type " << type << std::endl;
         std::cout << "-- PutAttributes: name " << name << std::endl;
-        std::cout << "-- PutAttributes: attrName " << attrName << std::endl;
+
         // each attribute is only written to output once
         // so filter out the ones already written
+        // FIXME: should this be guaranteed by the attributeMap of IO?
         // FIXME: is m_SerializeAttributes already in use?
-        auto it = m_SerializedAttributes.find(attrName);
-        if (it != m_SerializedAttributes.end())
-        {
-            continue;
-        }
-        // std::cout << "-- PutAttributes: DEBUG 1 " << std::endl;
+        // auto it = m_SerializedAttributes.find(name);
+        // if (it != m_SerializedAttributes.end())
+        // {
+        //     continue;
+        // }
+
         if (type == "unknown")
         {
             std::cout << "Attribute type is 'unknown' " << std::endl;
@@ -516,6 +516,8 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
 #undef declare_attribute_type
     bson_destroy(bsonMetadata);
+    // free(attrName);
+    // delete(&attrName);
     }
 }
 

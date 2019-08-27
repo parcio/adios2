@@ -606,6 +606,8 @@ void PutAttributeDataToJulea<std::string>(Attribute<std::string> &attribute,
 
         j_object_write(dataObject, dataElement, dataSize, 0, &bytesWritten,
                        batch);
+        j_batch_execute(batch);
+        delete(dataElement);
     }
     else
     {
@@ -616,9 +618,9 @@ void PutAttributeDataToJulea<std::string>(Attribute<std::string> &attribute,
                            dataSize, offset, &bytesWritten, batch);
             offset += dataSize;
         }
+        j_batch_execute(batch);
     }
 
-    j_batch_execute(batch);
     if (bytesWritten == offset)
     {
         std::cout << "++ Julea Interaction Writer: Data written for attribute "
