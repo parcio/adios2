@@ -62,7 +62,7 @@ void TestWriteVariableSync(){
 }
 
 
-void TestReadVariable(){
+void TestReadVariableSync(){
     /** Application variable */
     std::vector<float> myFloats = {-42, -42, -42, -42, -42, -42, -42, -42, -42, -42};
     // std::vector<float> myFloats2 = {-42, -42, -42, -42, -42, -42, -42, -42, -42, -42};
@@ -219,9 +219,10 @@ void TestReadAttribute()
 
 void TestWriteVariableDeferred(){
  /** Application variable */
-   std::vector<float> myFloats = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    std::vector<int> myInts = {0, -1, -2, -3, -4, -5, -6, -7, -8, -9};
+    std::vector<float> myFloats = {666, -111, 2, 3, 4, 5, 6, 7, 8, 9};
+    std::vector<int> myInts = {111, -1, -2, -3, -4, -5, -6, -7, -8, -9};
     std::vector<int> myInts2 = {777, 42, 4242, 424242};
+
     const std::size_t Nx = myFloats.size();
     const std::size_t Nx2 = myInts.size();
     const std::size_t Nx3 = myInts2.size();
@@ -238,18 +239,71 @@ void TestWriteVariableDeferred(){
 
     adios2::Variable<int> bpInts = juleaIO.DefineVariable<int>(
             "bpInts", {}, {}, {Nx}, adios2::ConstantDims);
-    adios2::Variable<int> bpInts2 = juleaIO.DefineVariable<int>(
-        "bpInts2", {}, {}, {Nx3}, adios2::ConstantDims);
+    // adios2::Variable<int> bpInts2 = juleaIO.DefineVariable<int>(
+    //     "bpInts2", {}, {}, {Nx3}, adios2::ConstantDims);
 
     adios2::Engine juleaWriter = juleaIO.Open("testFile", adios2::Mode::Write );
 
     juleaWriter.Put(bpFloats, myFloats.data());
     juleaWriter.Put(bpInts, myInts.data());
-    juleaWriter.Put(bpInts2, myInts2.data());
+    // juleaWriter.Put(bpInts2, myInts2.data());
 
     juleaWriter.PerformPuts();
 
     juleaWriter.Close();
+}
+
+
+void TestReadVariableDeferred(){
+ /** Application variable */
+    std::vector<float> myFloats = {-42, -42, -42, -42, -42, -42, -42, -42, -42, -42};
+    std::vector<int> myInts = {-42, -42, -42, -42, -42, -42, -42, -42, -42, -42};
+    std::vector<int> myInts2 = {-42, -42, -42, -42};
+    const std::size_t Nx = myFloats.size();
+    const std::size_t Nx2 = myInts.size();
+    const std::size_t Nx3 = myInts2.size();
+
+    std::cout << "JuleaEngineTest Writing deferred ... " << std::endl;
+
+    adios2::ADIOS adios(adios2::DebugON);
+
+    adios2::IO juleaIO = adios.DeclareIO("juleaIO");
+    juleaIO.SetEngine("julea-kv");
+
+    adios2::Engine juleaReader = juleaIO.Open("testFile", adios2::Mode::Read );
+
+    adios2::Variable<float> bpFloats = juleaIO.InquireVariable<float>(
+      "bpFloats");
+    adios2::Variable<int> bpInts = juleaIO.InquireVariable<int>(
+      "bpInts");
+    // adios2::Variable<int> bpInts2 = juleaIO.InquireVariable<int>(
+    //   "bpInts2");
+
+    if(bpFloats)
+    {
+        std::cout << "bpFloats: Inquire was successfull " << std::endl;
+        juleaReader.Get<float>(bpFloats, myFloats.data(),adios2::Mode::Sync);
+    }
+    if(bpInts)
+    {
+        std::cout << "bpInts: Inquire was successfull " << std::endl;
+        juleaReader.Get<int>(bpInts, myInts.data(),adios2::Mode::Sync);
+    }
+    // if(bpInts2)
+    // {
+    //     std::cout << "bpInts2: Inquire was successfull " << std::endl;
+    //     juleaReader.Get<int>(bpInts2, myInts2.data(),adios2::Mode::Sync);
+    // }
+
+    // juleaReader.PerformPuts();
+    for(int i = 0; i <10; i++)
+    {
+        std::cout << "bpFloats contains now: " << myFloats[i] << std::endl;
+        std::cout << "bpInts contains now: " << myInts[i] << std::endl;
+        // std::cout << "juleaInts2 contains now: " << myInts2[i] << std::endl;
+    }
+
+    juleaReader.Close();
 }
 
 
@@ -265,7 +319,7 @@ int main(int argc, char *argv[])
 		// std::cout << "JuleaEngineTest :)" << std::endl;
 		// TestWriteVariableSync();
   //       std::cout << "\n JuleaEngineTest :) Write variable finished \n" << std::endl;
-  //       TestReadVariable();
+  //       TestReadVariableSync();
   //       std::cout << "\n JuleaEngineTest :) Read variable finished \n" << std::endl;
   //       TestWriteAttribute();
   //       std::cout << "\n JuleaEngineTest :) Write attribute finished \n" << std::endl;
@@ -274,6 +328,8 @@ int main(int argc, char *argv[])
 
         TestWriteVariableDeferred();
         std::cout << "\n JuleaEngineTest :) Write variable asynchronous finished \n" << std::endl;
+        TestReadVariableDeferred();
+        std::cout << "\n JuleaEngineTest :) Read variable asynchronous finished \n" << std::endl;
 
     }
 	catch (std::invalid_argument &e)
