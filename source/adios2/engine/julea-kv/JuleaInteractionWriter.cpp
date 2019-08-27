@@ -121,9 +121,59 @@ void WriteNameToJuleaKV(std::string kvName, std::string paramName,
     j_semantics_unref(semantics);
 }
 
+/* checks if name is in kv */
+void WriteNameToJuleaKV(std::string paramName,
+                        std::string nameSpace, std::string kvNames)
+{
+    guint32 valueLen = 0;
+    bson_t *bsonNames;
+    bson_iter_t bIter;
+    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
+    auto batch2 = j_batch_new(semantics);
+    auto name = strdup(paramName.c_str());
+    void *namesBuf = NULL;
+
+    auto kvObjectNames = j_kv_new(kvNames.c_str(), nameSpace.c_str());
+
+    j_kv_get(kvObjectNames, &namesBuf, &valueLen, batch);
+    j_batch_execute(batch);
+
+    if (valueLen == 0)
+    {
+        bsonNames = bson_new();
+    }
+    else
+    {
+        bsonNames = bson_new_from_data((const uint8_t *)namesBuf, valueLen);
+    }
+
+    /* Check if variable name is already in kv store */
+    if (!bson_iter_init_find(&bIter, bsonNames, name))
+    {
+        bson_append_int32(bsonNames, name, -1, 42);
+    }
+    else
+    {
+        std::cout << "++ Julea Interaction Writer:  " << name
+                  << " already in kv store. " << std::endl;
+    }
+
+    namesBuf = g_memdup(bson_get_data(bsonNames), bsonNames->len);
+    j_kv_put(kvObjectNames, namesBuf, bsonNames->len, g_free, batch2);
+    j_batch_execute(batch2);
+
+    free(name);
+    j_kv_unref(kvObjectNames);
+    j_batch_unref(batch);
+    j_batch_unref(batch2);
+    j_semantics_unref(semantics);
+}
+
+
 void WriteMetadataToJuleaKV(std::string kvName, std::string paramName,
                             std::string nameSpace, bson_t *bsonNames,
-                            bson_t *bsonMetaData, JKV *kvObjectNames)
+                            bson_t *bsonMetaData)
 {
     void *namesBuf = NULL;
     void *metaDataBuf = NULL;
@@ -227,51 +277,45 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
 
     const char *kvNames = "attribute_names";
     const char *kvMD = "attributes";
-    bool IsAlreadyInKV = false;
+    // bool IsAlreadyInKV = false;
 
+    WriteNameToJuleaKV(attribute.m_Name, nameSpace.c_str(), kvNames);
+
+    WriteMetadataToJuleaKV(kvMD, attribute.m_Name, nameSpace.c_str(), bsonNames,
+                           bsonMetaData);
     /* names_kv = kv holding all attribute names */
     // auto kvObjectNames = j_kv_new(kvNameC, nameSpace.c_str());
+    //
+
+    // TODO: check if update version is necessary!
     // CheckIfAlreadyInKV(kvNameC, attribute.m_Name, nameSpace.c_str(),
-    // bsonNames,
-    //                    kvObjectNames,IsAlreadyInKV);
+    // bsonNames, kvObjectNames,IsAlreadyInKV);
+
+    /* names_kv = kv holding all variable names */
+    // auto kvObjectNames = j_kv_new(kvNames, nameSpace.c_str());
+
+    // CheckIfAlreadyInKV(kvMD, attribute.m_Name, nameSpace.c_str(), &bsonNames,
+    //                    kvObjectNames, &IsAlreadyInKV);
 
     // if (!IsAlreadyInKV)
     // {
-    //     WriteNameToJuleaKV(kvMD, variable.m_Name, nameSpace.c_str(),
-    //     bsonNames,
-    //                    kvObjectNames)
+    //     WriteNameToJuleaKV(kvMD, attribute.m_Name, nameSpace.c_str(), bsonNames,
+    //                        kvObjectNames);
+    //     std::cout << "Test IsAlreadyInKV " << IsAlreadyInKV << std::endl;
     // }
-    // WriteMetadataToJuleaKV(kvNameC, attribute.m_Name, nameSpace.c_str(),
-    //                        bsonNames, bsonMetaData, kvObjectNames);
-
-    // std::cout
-        // << "++ Julea Interaction: PutAttributeMetadataToJuleaSmall ++++++ "
-        // << std::endl;
-    /* names_kv = kv holding all variable names */
-    auto kvObjectNames = j_kv_new(kvNames, nameSpace.c_str());
-
-    CheckIfAlreadyInKV(kvMD, attribute.m_Name, nameSpace.c_str(), &bsonNames,
-                       kvObjectNames, &IsAlreadyInKV);
-
-    if (!IsAlreadyInKV)
-    {
-        WriteNameToJuleaKV(kvMD, attribute.m_Name, nameSpace.c_str(), bsonNames,
-                           kvObjectNames);
-        std::cout << "Test IsAlreadyInKV " << IsAlreadyInKV << std::endl;
-    }
-    else
-    {
-        // UpdateMetadataInKV(kvMD, variable.m_Name, nameSpace.c_str(),
-        //                    bsonNames, bsonMetaData, kvObjectNames);
-        std::cout << "___ NEEDS UPDATE ___ " << std::endl;
-    }
-    WriteMetadataToJuleaKV(kvMD, attribute.m_Name, nameSpace.c_str(), bsonNames,
-                           bsonMetaData, kvObjectNames);
+    // else
+    // {
+    //     // UpdateMetadataInKV(kvMD, variable.m_Name, nameSpace.c_str(),
+    //     //                    bsonNames, bsonMetaData, kvObjectNames);
+    //     std::cout << "___ NEEDS UPDATE ___ " << std::endl;
+    // }
+    // WriteMetadataToJuleaKV(kvMD, attribute.m_Name, nameSpace.c_str(), bsonNames,
+    //                        bsonMetaData);
 
     // delete(kvNames);
     // delete(kvMD);
-    j_kv_unref(kvObjectNames);
-    bson_destroy(bsonNames);
+    // j_kv_unref(kvObjectNames);
+    // bson_destroy(bsonNames);
 }
 
 template <class T>
@@ -279,40 +323,43 @@ void PutVariableMetadataToJuleaSmall(Variable<T> &variable,
                                      bson_t *bsonMetaData,
                                      const std::string nameSpace)
 {
-    bson_t *bsonNames; // FIXME
+    bson_t *bsonNames;
 
     const char *kvNames = "variable_names";
     const char *kvMD = "variables";
     bool IsAlreadyInKV = false;
 
-    /* names_kv = kv holding all variable names */
-    auto kvObjectNames = j_kv_new(kvNames, nameSpace.c_str());
 
-    CheckIfAlreadyInKV(kvMD, variable.m_Name, nameSpace.c_str(), &bsonNames,
-                       kvObjectNames, &IsAlreadyInKV);
+    WriteNameToJuleaKV(variable.m_Name, nameSpace.c_str(), kvNames);
 
-    if (!IsAlreadyInKV)
-    {
-        WriteNameToJuleaKV(kvMD, variable.m_Name, nameSpace.c_str(), bsonNames,
-                           kvObjectNames);
-        std::cout << "Test IsAlreadyInKV " << IsAlreadyInKV << std::endl;
-    }
-    else
-    {
-        // UpdateMetadataInKV(kvMD, variable.m_Name, nameSpace.c_str(),
-        //                    bsonNames, bsonMetaData, kvObjectNames);
-        std::cout << "___ NEEDS UPDATE ___ " << std::endl;
-    }
     WriteMetadataToJuleaKV(kvMD, variable.m_Name, nameSpace.c_str(), bsonNames,
-                           bsonMetaData, kvObjectNames);
+                           bsonMetaData);
+        // WriteMetadataToJuleaKV(kvMD, variable.m_Name, nameSpace.c_str(), bsonNames,
+                           // bsonMetaData, kvObjectNames);
 
-    j_kv_unref(kvObjectNames);
-    bson_destroy(bsonNames);
-    // delete(kvNames);
-    // delete(kvMD);
+    // TODO: check if update version is necessary!
+    /* names_kv = kv holding all variable names */
+    // auto kvObjectNames = j_kv_new(kvNames, nameSpace.c_str());
 
-    // std::cout << "++ Julea Interaction: PutVariableMetadataToJuleaSmall  " <<
-    // std::endl;
+    // CheckIfAlreadyInKV(kvMD, variable.m_Name, nameSpace.c_str(), &bsonNames,
+    //                    kvObjectNames, &IsAlreadyInKV);
+    // if (!IsAlreadyInKV)
+    // {
+    //     WriteNameToJuleaKV(kvMD, variable.m_Name, nameSpace.c_str(), bsonNames,
+    //                        kvObjectNames);
+    //     std::cout << "Test IsAlreadyInKV " << IsAlreadyInKV << std::endl;
+    // }
+    // else
+    // {
+    //     // UpdateMetadataInKV(kvMD, variable.m_Name, nameSpace.c_str(),
+    //     //                    bsonNames, bsonMetaData, kvObjectNames);
+    //     std::cout << "___ NEEDS UPDATE ___ " << std::endl;
+    // }
+    // WriteMetadataToJuleaKV(kvMD, variable.m_Name, nameSpace.c_str(), bsonNames,
+                           // bsonMetaData, kvObjectNames);
+
+    // j_kv_unref(kvObjectNames);
+    // bson_destroy(bsonNames);
 }
 
 /** ------------------------- DATA ------------------------------------------**/
@@ -510,7 +557,7 @@ void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
     j_kv_unref(kvObjectMetadata);
     j_batch_unref(batch);
     j_batch_unref(batch2);
-    bson_destroy(bsonNames);
+    // bson_destroy(bsonNames);
     j_semantics_unref(semantics);
 
     std::cout << "++ Julea Interaction Writer: Put Variable " << std::endl;
