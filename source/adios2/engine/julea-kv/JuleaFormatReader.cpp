@@ -457,7 +457,6 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
         else if (g_strcmp0(bson_iter_key(&b_iter), "is_single_value") == 0)
         {
             variable.m_SingleValue = (bool)bson_iter_bool(&b_iter);
-            // std::cout << "--- Test is this showing up? DEBUG 1" << std::endl;
         }
         else if (g_strcmp0(bson_iter_key(&b_iter), "is_constant_dims") == 0)
         {
@@ -467,12 +466,10 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
             {
                 variable.SetConstantDims();
             }
-            // std::cout << "--- Test is this showing up? DEBUG 2" << std::endl;
         }
         else if (g_strcmp0(bson_iter_key(&b_iter), "is_read_as_joined") == 0)
         {
             variable.m_ReadAsJoined = (bool)bson_iter_bool(&b_iter);
-            // std::cout << "--- Test is this showing up? DEBUG 3" << std::endl;
 
         }
         else if (g_strcmp0(bson_iter_key(&b_iter), "is_read_as_local_value") ==
@@ -487,7 +484,6 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
         else if (g_strcmp0(bson_iter_key(&b_iter), "is_first_streaming_step") ==
                  0)
         {
-            // std::cout << "--- Test is this showing up? DEBUG 3" << std::endl;
             variable.m_FirstStreamingStep = (bool)bson_iter_bool(&b_iter);
         }
         /* value_type*/

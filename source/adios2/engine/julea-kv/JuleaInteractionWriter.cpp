@@ -44,7 +44,7 @@ void CheckIfAlreadyInKV(std::string kvName, std::string paramName,
                         JKV *kvObjectNames, bool *IsAlreadyInKV)
 {
     std::cout << "-- CheckIfAlreadyInKV -----" << std::endl;
-    guint64 bytesWritten = 0;
+    // guint64 bytesWritten = 0;
     guint32 valueLen = 0;
 
     bson_iter_t bIter;

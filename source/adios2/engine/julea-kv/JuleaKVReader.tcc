@@ -79,37 +79,13 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
     std::cout << "Julea Reader " << m_ReaderRank << " Variable name: "
               << variable.m_Name << std::endl;
 
-    // auto bsonNames = bson_new();
-    // bson_t *bsonMetadata = bson_new();
-    // bson_t *bsonMetadata = NULL;
     auto nameSpace = m_Name;
-    // unsigned int varCount = 0;
     long unsigned int dataSize = 0;
 
     /* all the additional metadata which is not used in InitVariables has to be
      * read again */
-    // GetVariableMetadataFromJulea(variable, bsonMetadata, nameSpace, &dataSize);
     GetVariableMetadataFromJulea(variable, nameSpace, &dataSize);
-    std::cout << "--- Test is this showing up? " << std::endl;
     GetVariableDataFromJulea(variable, data, nameSpace, dataSize);
-
-    // bson_destroy(bsonNames);
-    // bson_destroy(bsonMetadata);
-
-    // TODO: bsonMetadata should never be NULL! application checks if Inquire worked!
-    // if not: get is never called in the first place
-    // FIXME: free memory!
-    // if(bsonMetadata == NULL)
-    // {
-    //     bson_destroy(bsonNames);
-    //     return;
-    // }
-    // else
-    // {
-    //     // GetVariableDataFromJulea(variable, data, nameSpace, dataSize);
-    //     bson_destroy(bsonMetadata);
-    //     bson_destroy(bsonNames);
-    // }
 }
 
 template <class T>
