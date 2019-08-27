@@ -146,10 +146,11 @@ void WriteMetadataToJuleaKV(std::string kvName, std::string paramName,
 
     j_batch_execute(batch);
 
+    // free(metaDataBuf);
+    // free(namesBuf);
+    g_free(stringMetadataKV);
     j_kv_unref(kvObjectMetadata);
     j_batch_unref(batch);
-    // j_kv_unref(kvObjectNames);
-    g_free(stringMetadataKV);
     j_semantics_unref(semantics);
 }
 

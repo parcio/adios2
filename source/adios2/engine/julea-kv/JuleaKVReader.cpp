@@ -268,7 +268,7 @@ void JuleaKVReader::InitVariables()
 {
     bson_iter_t b_iter;
     bson_t *bsonNames;
-    std::string varName;
+    // std::string varName;
     std::string nameSpace = m_Name;
     std::string kvName = "variable_names";
     unsigned int varCount = 0;
@@ -290,7 +290,7 @@ void JuleaKVReader::InitVariables()
             bson_t *bsonMetadata;
 
             // varName = g_strdup(bson_iter_key(&b_iter));
-            varName = strdup(bson_iter_key(&b_iter));
+            std::string varName (bson_iter_key(&b_iter));
 
             std::cout << "-- Variable name " << varName << std::endl;
 
@@ -305,15 +305,15 @@ void JuleaKVReader::InitVariables()
             GetVariableMetadataForInitFromBSON(nameSpace, varName, bsonMetadata,
                                                &type, &shape, &start, &count,
                                                &constantDims);
+            bson_destroy(bsonMetadata);
             DefineVariableInInit(&m_IO, varName, type, shape, start, count,
                                  constantDims);
-            bson_destroy(bsonMetadata);
             // free(varName);
             // free(&varName);
         }
         // free(varName);
     // TODO how to free varName?
-    // bson_destroy(bsonNames);
+    bson_destroy(bsonNames);
     }
 }
 

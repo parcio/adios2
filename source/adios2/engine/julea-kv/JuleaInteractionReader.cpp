@@ -155,14 +155,12 @@ void GetVariableBSONFromJulea(const std::string nameSpace,
 
     auto stringMetadataKV = g_strdup_printf("variables_%s", nameSpace.c_str());
     auto kvObject = j_kv_new(stringMetadataKV, varName.c_str());
-    // bson_metadata = bson_new();
 
     j_kv_get(kvObject, &metaDataBuf, &valueLen, batch);
     j_batch_execute(batch);
 
     if (valueLen == 0)
     {
-        // bson_names = bson_new();
         printf("WARNING: The variable key-value store is empty! \n");
     }
     else
