@@ -318,16 +318,22 @@ void JuleaKVReader::InitAttributes()
     std::string nameSpace = m_Name;
     std::string kvName = "attribute_names";
 
-    unsigned int varCount;
+    unsigned int attrCount;
     long unsigned int completeSize;
     unsigned long *dataSizes;
 
-    // std::cout << "-----------------------------------" << std::endl;
     std::cout << "\n______________InitAttributes_____________________" << std::endl;
-    // std::cout << "-- InitAttributes " << std::endl;
-    GetNamesBSONFromJulea(nameSpace, &bsonNames, &varCount,
+    GetNamesBSONFromJulea(nameSpace, &bsonNames, &attrCount,
                           kvName); // TODO: get all attribute names
-    bson_iter_init(&b_iter, bsonNames);
+
+    if (attrCount == 0)
+    {
+        return;
+    }
+    else
+    {
+        bson_iter_init(&b_iter, bsonNames);
+    }
 
     std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
 
@@ -335,7 +341,7 @@ void JuleaKVReader::InitAttributes()
     {
         std::string typeString;
         bson_t *bsonMetadata;
-        varCount = 0;
+        attrCount = 0;
         completeSize = 0;
         dataSizes = NULL;
         attrName = g_strdup(bson_iter_key(&b_iter));
