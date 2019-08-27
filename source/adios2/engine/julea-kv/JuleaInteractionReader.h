@@ -63,22 +63,12 @@ void GetAttributeDataFromJulea(const std::string attrName, T *data,
                                const std::string nameSpace,
                                long unsigned int dataSize);
 
-// template <class T>
-// void GetAttributeDataFromJulea(const std::string attrName, T *data,
-//                                const std::string nameSpace,
-//                                long unsigned int completeSize,
-//                                bool IsSingleValue, size_t numberElements,
-//                                unsigned long *dataSizes);
-
 void GetAttributeStringDataFromJulea(const std::string attrName, char *data,
                                      const std::string nameSpace,
                                      long unsigned int completeSize,
                                      bool IsSingleValue, size_t numberElements);
 
-// void GetAttributeDataFromJuleaDifferentBuffer(const std::string attrName,
-//                                               void *data,
-//                                               const std::string nameSpace,
-//                                               long unsigned int dataSize);
+
 #define variable_template_instantiation(T)                                     \
     extern template void GetVariableMetadataFromJulea(                         \
         Variable<T> &variable, bson_t *bsonMetadata,                           \
@@ -97,9 +87,6 @@ ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(attribute_template_instantiation)
 #undef attribute_template_instantiation
 
-// extern template void GetAttributeDataFromJulea(                            \
-    //     const std::string attrName, T *data, const std::string nameSpace,      \
-    //     long unsigned int dataSize, bool IsSingleValue);
 } // end namespace engine
 } // end namespace core
 } // end namespace adios2
