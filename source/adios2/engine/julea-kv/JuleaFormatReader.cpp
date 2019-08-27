@@ -174,7 +174,7 @@ void ParseAttributeFromBSON(const std::string nameSpace,
     {
         bson_iter_init(&b_iter, bsonMetadata);
         *dataSizes = new unsigned long[*numberElements];
-        for (int i = 0; i < *numberElements; i++)
+        for (int i = 0; i < *numberElements; ++i)
         {
             std::cout << "i: " << i << std::endl;
 
@@ -221,7 +221,7 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
                       << std::endl;
             if (shapeSize > 0)
             {
-                for (guint i = 0; i < shapeSize; i++)
+                for (guint i = 0; i < shapeSize; ++i)
                 {
                     bson_iter_next(&b_iter);
                     key = g_strdup_printf("shape_%d", i);
@@ -241,7 +241,7 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
 
             if (startSize > 0)
             {
-                for (guint i = 0; i < startSize; i++)
+                for (guint i = 0; i < startSize; ++i)
                 {
                     bson_iter_next(&b_iter);
                     key = g_strdup_printf("start_%d", i);
@@ -260,7 +260,7 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
             if (countSize > 0)
             {
 
-                for (guint i = 0; i < countSize; i++)
+                for (guint i = 0; i < countSize; ++i)
                 {
                     bson_iter_next(&b_iter);
                     key = g_strdup_printf("count_%d", i);
@@ -382,7 +382,7 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
 
             if (size > 0)
             {
-                for (guint i = 0; i < size; i++)
+                for (guint i = 0; i < size; ++i)
                 {
                     bson_iter_next(&b_iter);
                     key = g_strdup_printf("memory_start_%d", i);
@@ -399,7 +399,7 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
 
             if (size > 0)
             {
-                for (guint i = 0; i < size; i++)
+                for (guint i = 0; i < size; ++i)
                 {
                     bson_iter_next(&b_iter);
                     key = g_strdup_printf("memory_count_%d", i);

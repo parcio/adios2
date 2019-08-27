@@ -136,13 +136,6 @@ void JuleaKVWriter::PerformPuts()
         std::cout << "Julea Writer " << m_WriterRank << "     PerformPuts()\n";
     }
 
-    // is it actually necessary to differentiate? or is perform puts only called
-    // with sync? probably not?! PSEUDO: how to get actual value?
-    // bool deferred = true;
-    // if(deferred){
-    //     return;
-    // }
-
     /** if there are no deferred variables there is nothing to do */
     if (m_DeferredVariables.empty())
     {
@@ -171,7 +164,7 @@ void JuleaKVWriter::PerformPuts()
         Variable<T> &variable = FindVariable<T>(                               \
             variableName, "in call to PerformPuts, EndStep or Close");         \
                                                                                \
-        PutSyncCommon(variable, variable.m_Data);                              \
+        PerformPutCommon(variable);                              \
     }
         ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation

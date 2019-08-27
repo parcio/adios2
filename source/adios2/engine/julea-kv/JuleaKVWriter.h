@@ -191,6 +191,9 @@ private:
      */
     void PutAttributes(core::IO &io);
 
+        template <class T>
+    void PerformPutCommon(Variable<T> &variable);
+
     // /**
     //  * Sets buffer's positions to zero and fill buffer with zero char
     //  * @param bufferSTL buffer to be reset

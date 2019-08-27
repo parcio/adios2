@@ -392,7 +392,7 @@ void JuleaKVReader::InitAttributes()
             {                                                                  \
                 std::vector<std::string> dataStringArray;                      \
                 unsigned long offset = 0;                                      \
-                for (size_t i = 0; i < numberElements; i++)                    \
+                for (size_t i = 0; i < numberElements; ++i)                    \
                 {                                                              \
                     dataStringArray.push_back(data + offset);                  \
                     std::cout << "data[" << offset << "]: " << data + offset   \

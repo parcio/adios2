@@ -89,17 +89,21 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
     /* all the additional metadata which is not used in InitVariables has to be
      * read again */
     GetVariableMetadataFromJulea(variable, bsonMetadata, nameSpace, &dataSize);
-    if(bsonMetadata == NULL)
-    {
-        bson_destroy(bsonNames);
-        return;
-    }
-    else
-    {
-        GetVariableDataFromJulea(variable, data, nameSpace, dataSize);
-        bson_destroy(bsonMetadata);
-        bson_destroy(bsonNames);
-    }
+    GetVariableDataFromJulea(variable, data, nameSpace, dataSize);
+
+
+    // FIXME: free memory!
+    // if(bsonMetadata == NULL)
+    // {
+    //     bson_destroy(bsonNames);
+    //     return;
+    // }
+    // else
+    // {
+    //     GetVariableDataFromJulea(variable, data, nameSpace, dataSize);
+    //     bson_destroy(bsonMetadata);
+    //     bson_destroy(bsonNames);
+    // }
 }
 
 template <class T>

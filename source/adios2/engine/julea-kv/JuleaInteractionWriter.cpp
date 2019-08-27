@@ -43,7 +43,7 @@ void CheckIfAlreadyInKV(std::string kvName, std::string paramName,
                         std::string nameSpace, bson_t **bsonNames,
                         JKV *kvObjectNames, bool *IsAlreadyInKV)
 {
-    // std::cout << "-- CheckIfAlreadyInKV -----" << std::endl;
+    std::cout << "-- CheckIfAlreadyInKV -----" << std::endl;
     guint64 bytesWritten = 0;
     guint32 valueLen = 0;
 
@@ -57,7 +57,7 @@ void CheckIfAlreadyInKV(std::string kvName, std::string paramName,
     j_kv_get(kvObjectNames, &namesBuf, &valueLen, batch);
     j_batch_execute(batch);
 
-    // std::cout << "-- namesKV: valueLen = " << valueLen << std::endl;
+    std::cout << "-- namesKV: valueLen = " << valueLen << std::endl;
 
     if (valueLen == 0)
     {
@@ -105,11 +105,11 @@ void WriteNameToJuleaKV(std::string kvName, std::string paramName,
     auto batch = j_batch_new(semantics);
     auto name = strdup(paramName.c_str());
 
-    // std::cout <<"WriteNameToJuleaKV " << "-- bsonNames length: " <<
-    // bsonNames->len << std::endl;
+    std::cout <<"WriteNameToJuleaKV " << "-- bsonNames length: " <<
+    bsonNames->len << std::endl;
     bson_append_int32(bsonNames, name, -1, 42); // TODO: type?
-    // std::cout << "-- WriteNameToJuleaKV ------" << std::endl;
-    // std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
+    std::cout << "-- WriteNameToJuleaKV ------" << std::endl;
+    std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
 
     auto namesBuf = g_memdup(bson_get_data(bsonNames), bsonNames->len);
     j_kv_put(kvObjectNames, namesBuf, bsonNames->len, g_free, batch);
@@ -464,7 +464,7 @@ void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
     j_kv_get(kvObjectNames, &namesBuf, &valueLen, batch);
     j_batch_execute(batch);
 
-    // std::cout << "-- namesKV: valueLen = " << valueLen << std::endl;
+    std::cout << "-- namesKV: valueLen = " << valueLen << std::endl;
     if (valueLen == 0)
     {
         bsonNames = bson_new();
@@ -479,7 +479,7 @@ void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
     {
         std::cout << "Init b_iter successfull " << std::endl;
         bson_append_int32(bsonNames, varName, -1, 42);
-        // std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
+        std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
 
         // bson_append_int32(bsonNames, varName, -1, bsonMetaData->var_type);
         // //FIXME: var_type?!
@@ -489,7 +489,7 @@ void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
         std::cout << "++ Julea Interaction Writer: Variable " << varName
                   << " already in kv store. " << std::endl;
         // TODO: update variable -> is there anything else necessary to do?
-        // std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
+        std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
     }
 
     /* Write metadata struct to kv store*/
@@ -612,7 +612,7 @@ void PutAttributeDataToJulea<std::string>(Attribute<std::string> &attribute,
     }
     else
     {
-        for (size_t i = 0; i < attribute.m_DataArray.size(); i++)
+        for (size_t i = 0; i < attribute.m_DataArray.size(); ++i)
         {
             dataSize = attribute.m_DataArray.data()[i].length() + 1;
             j_object_write(dataObject, attribute.m_DataArray.data()[i].c_str(),

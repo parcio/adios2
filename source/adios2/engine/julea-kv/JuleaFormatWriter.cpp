@@ -86,7 +86,7 @@ void ParseAttributeToBSON<std::string>(Attribute<std::string> &attribute,
     {
         // bson_append_int64(bsonMetadata, "array_size", -1,
         //                   attribute.m_DataArray.size());
-        for (size_t i = 0; i < attribute.m_DataArray.size(); i++)
+        for (size_t i = 0; i < attribute.m_DataArray.size(); ++i)
         {
             entrySize = attribute.m_DataArray.data()[i].length() + 1;
             // std::cout << "entry_size_: " << entrySize << std::endl;
@@ -167,11 +167,12 @@ void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
 template <class T>
 void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata)
 {
-    // std::cout << "_____________________________________________" << std::endl;
+    std::cout << "_____________________________________________" << std::endl;
     // std::cout << "Test" << std::endl;
     T min;
     T max;
 
+    std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
     uint data_size = 0;
     size_t number_elements = 0;
     char *key;
@@ -181,14 +182,14 @@ void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata)
     std::cout << "count_size " << variable.m_Count.size() << std::endl;
 
     bson_append_int64(bsonMetadata, "shape_size", -1, variable.m_Shape.size());
-    for (guint i = 0; i < variable.m_Shape.size(); i++)
+    for (guint i = 0; i < variable.m_Shape.size(); ++i)
     {
         key = g_strdup_printf("shape_%d", i);
 
         bson_append_int64(bsonMetadata, key, -1, variable.m_Shape[i]);
     }
     bson_append_int64(bsonMetadata, "start_size", -1, variable.m_Start.size());
-    for (guint i = 0; i < variable.m_Start.size(); i++)
+    for (guint i = 0; i < variable.m_Start.size(); ++i)
     {
         key = g_strdup_printf("start_%d", i);
 
@@ -196,7 +197,7 @@ void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata)
     }
 
     bson_append_int64(bsonMetadata, "count_size", -1, variable.m_Count.size());
-    for (guint i = 0; i < variable.m_Count.size(); i++)
+    for (guint i = 0; i < variable.m_Count.size(); ++i)
     {
         key = g_strdup_printf("count_%d", i);
 
@@ -206,7 +207,7 @@ void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata)
 
     bson_append_int64(bsonMetadata, "memory_start_size", -1,
                       variable.m_MemoryStart.size());
-    for (guint i = 0; i < variable.m_MemoryStart.size(); i++)
+    for (guint i = 0; i < variable.m_MemoryStart.size(); ++i)
     {
         key = g_strdup_printf("memory_start_%d", i);
         bson_append_int64(bsonMetadata, key, -1, variable.m_MemoryStart[i]);
@@ -214,7 +215,7 @@ void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata)
 
     bson_append_int64(bsonMetadata, "memory_count_size", -1,
                       variable.m_MemoryCount.size());
-    for (guint i = 0; i < variable.m_MemoryCount.size(); i++)
+    for (guint i = 0; i < variable.m_MemoryCount.size(); ++i)
     {
         key = g_strdup_printf("memory_count_%d", i);
         bson_append_int64(bsonMetadata, key, -1, variable.m_MemoryCount[i]);

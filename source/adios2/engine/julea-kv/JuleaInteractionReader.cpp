@@ -39,10 +39,10 @@ void GetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata,
     std::cout << "-- GetVariableMetadataFromJulea -----" << std::endl;
     GetVariableBSONFromJulea(nameSpace, variable.m_Name, &bsonMetadata);
 
-    if(bsonMetadata == NULL)
-    {
-        return;
-    }
+    // if(bsonMetadata == NULL)
+    // {
+    //     return;
+    // }
     ParseVariableFromBSON(variable, bsonMetadata, nameSpace, dataSize);
 }
 
@@ -151,7 +151,7 @@ void GetVariableBSONFromJulea(const std::string nameSpace,
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
-    // std::cout << "-- GetVariableBSONFromJulea ---- " << std::endl;
+    std::cout << "-- GetVariableBSONFromJulea ---- " << std::endl;
 
     auto stringMetadataKV = g_strdup_printf("variables_%s", nameSpace.c_str());
     auto kvObject = j_kv_new(stringMetadataKV, varName.c_str());
