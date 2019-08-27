@@ -15,7 +15,7 @@
 
 #include <adios2.h>
 
-void TestWriteVariable(){
+void TestWriteVariableSync(){
  /** Application variable */
     std::vector<float> myFloats = {12345.6, 1, 2, 3, 4, 5, 6, 7, 8, -42.333};
     // std::vector<float> myFloats2 = {-6666.6, 1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -217,6 +217,42 @@ void TestReadAttribute()
 }
 
 
+void TestWriteVariableDeferred(){
+ /** Application variable */
+   std::vector<float> myFloats = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    std::vector<int> myInts = {0, -1, -2, -3, -4, -5, -6, -7, -8, -9};
+    std::vector<int> myInts2 = {777, 42, 4242, 424242};
+    const std::size_t Nx = myFloats.size();
+    const std::size_t Nx2 = myInts.size();
+    const std::size_t Nx3 = myInts2.size();
+
+    std::cout << "JuleaEngineTest Writing deferred ... " << std::endl;
+
+    adios2::ADIOS adios(adios2::DebugON);
+
+    adios2::IO juleaIO = adios.DeclareIO("juleaIO");
+    juleaIO.SetEngine("julea-kv");
+
+    adios2::Variable<float> bpFloats = juleaIO.DefineVariable<float>(
+            "bpFloats", {}, {}, {Nx}, adios2::ConstantDims);
+
+    adios2::Variable<int> bpInts = juleaIO.DefineVariable<int>(
+            "bpInts", {}, {}, {Nx}, adios2::ConstantDims);
+    adios2::Variable<int> bpInts2 = juleaIO.DefineVariable<int>(
+        "bpInts2", {}, {}, {Nx3}, adios2::ConstantDims);
+
+    adios2::Engine juleaWriter = juleaIO.Open("testFile", adios2::Mode::Write );
+
+    juleaWriter.Put(bpFloats, myFloats.data());
+    juleaWriter.Put(bpInts, myInts.data());
+    juleaWriter.Put(bpInts2, myInts2.data());
+
+    juleaWriter.PerformPuts();
+
+    juleaWriter.Close();
+}
+
+
 int main(int argc, char *argv[])
 {
     /** Application variable */
@@ -226,15 +262,18 @@ int main(int argc, char *argv[])
 
     try
     {
-		std::cout << "JuleaEngineTest :)" << std::endl;
-		TestWriteVariable();
-        std::cout << "\n JuleaEngineTest :) Write variable finished \n" << std::endl;
-        TestReadVariable();
-        std::cout << "\n JuleaEngineTest :) Read variable finished \n" << std::endl;
-        TestWriteAttribute();
-        std::cout << "\n JuleaEngineTest :) Write attribute finished \n" << std::endl;
-        TestReadAttribute();
-        std::cout << "\n JuleaEngineTest :) Read attribute finished \n" << std::endl;
+		// std::cout << "JuleaEngineTest :)" << std::endl;
+		// TestWriteVariableSync();
+  //       std::cout << "\n JuleaEngineTest :) Write variable finished \n" << std::endl;
+  //       TestReadVariable();
+  //       std::cout << "\n JuleaEngineTest :) Read variable finished \n" << std::endl;
+  //       TestWriteAttribute();
+  //       std::cout << "\n JuleaEngineTest :) Write attribute finished \n" << std::endl;
+  //       TestReadAttribute();
+  //       std::cout << "\n JuleaEngineTest :) Read attribute finished \n" << std::endl;
+
+        TestWriteVariableDeferred();
+        std::cout << "\n JuleaEngineTest :) Write variable asynchronous finished \n" << std::endl;
 
     }
 	catch (std::invalid_argument &e)
