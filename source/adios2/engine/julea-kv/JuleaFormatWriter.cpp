@@ -172,7 +172,7 @@ void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata)
     T min;
     T max;
 
-    std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
+   std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
     uint data_size = 0;
     size_t number_elements = 0;
     char *key;
@@ -236,6 +236,7 @@ void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata)
     number_elements = adios2::helper::GetTotalSize(variable.m_Count);
     data_size = variable.m_ElementSize * number_elements;
     bson_append_int64(bsonMetadata, "data_size", -1, data_size);
+    std::cout << "data_size: " << data_size << std::endl;
 
     //  metadata->deferred_counter = variable.m_DeferredCounter; //FIXME:
     //  needed? metadata->is_value = blockInfo.IsValue;

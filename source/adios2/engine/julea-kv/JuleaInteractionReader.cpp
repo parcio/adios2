@@ -32,18 +32,15 @@ namespace engine
 {
 
 template <class T>
-void GetVariableMetadataFromJulea(Variable<T> &variable, bson_t *bsonMetadata,
-                                  const std::string nameSpace,
+void GetVariableMetadataFromJulea(Variable<T> &variable,const std::string nameSpace,
                                   long unsigned int *dataSize)
 {
     std::cout << "-- GetVariableMetadataFromJulea -----" << std::endl;
-    GetVariableBSONFromJulea(nameSpace, variable.m_Name, &bsonMetadata);
+    bson_t *bsonMetadata = NULL;
 
-    // if(bsonMetadata == NULL)
-    // {
-    //     return;
-    // }
+    GetVariableBSONFromJulea(nameSpace, variable.m_Name, &bsonMetadata);
     ParseVariableFromBSON(variable, bsonMetadata, nameSpace, dataSize);
+    bson_destroy(bsonMetadata);
 }
 
 template <class T>
@@ -87,8 +84,7 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
 
 #define variable_template_instantiation(T)                                     \
     template void GetVariableMetadataFromJulea(                                \
-        Variable<T> &variable, bson_t *bsonMetadata,                           \
-        const std::string nameSpace, long unsigned int *dataSize);             \
+        Variable<T> &variable, const std::string nameSpace, long unsigned int *dataSize);             \
     template void GetVariableDataFromJulea(Variable<T> &variable, T *data,     \
                                            const std::string nameSpace,        \
                                            long unsigned int dataSize);
@@ -168,10 +164,11 @@ void GetVariableBSONFromJulea(const std::string nameSpace,
         *bsonMetadata =
             bson_new_from_data((const uint8_t *)metaDataBuf, valueLen);
     }
+
+    g_free(stringMetadataKV);
     j_kv_unref(kvObject);
     j_semantics_unref(semantics);
     j_batch_unref(batch);
-    g_free(stringMetadataKV);
     free(metaDataBuf);
 }
 
