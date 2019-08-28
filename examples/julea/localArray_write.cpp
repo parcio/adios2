@@ -92,6 +92,7 @@ int main(int argc, char *argv[])
         // create one with default settings here
         adios2::IO io = adios.DeclareIO("Output");
         // io.SetEngine("julea-kv");
+
         /*
          * Define local array: type, name, local size
          * Global dimension and starting offset must be an empty vector
@@ -125,7 +126,7 @@ int main(int argc, char *argv[])
 
         // Open file. "w" means we overwrite any existing file on disk,
         // but Advance() will append steps to the same file.
-        adios2::Engine writer = io.Open("JULEAlocalArray.bp", adios2::Mode::Write);
+        adios2::Engine writer = io.Open("JULEA-LocalArray.bp", adios2::Mode::Write);
 
         for (int step = 0; step < NSTEPS; step++)
         {
@@ -138,42 +139,42 @@ int main(int argc, char *argv[])
             }
             writer.Put<double>(varV0, v0.data());
 
-            // // v1
-            // for (size_t i = 0; i < Nx; i++)
-            // {
-            //     v1[i] = rank * 1.0 + step * 0.1;
-            // }
-            // writer.Put<double>(varV1, v1.data());
+            // v1
+            for (size_t i = 0; i < Nx; i++)
+            {
+                v1[i] = rank * 1.0 + step * 0.1;
+            }
+            writer.Put<double>(varV1, v1.data());
 
-            // // v2
+            // v2
 
-            // // random size per process per step, 5..10 each
-            // Nelems = rand() % 6 + 5;
-            // v2.reserve(Nelems);
-            // for (size_t i = 0; i < Nelems; i++)
-            // {
-            //     v2[i] = rank * 1.0 + step * 0.1;
-            // }
+            // random size per process per step, 5..10 each
+            Nelems = rand() % 6 + 5;
+            v2.reserve(Nelems);
+            for (size_t i = 0; i < Nelems; i++)
+            {
+                v2[i] = rank * 1.0 + step * 0.1;
+            }
 
-            // // Set the size of the array now because we did not know
-            // // the size at the time of definition
-            // varV2.SetSelection(adios2::Box<adios2::Dims>({}, {Nelems}));
-            // writer.Put<double>(varV2, v2.data());
+            // Set the size of the array now because we did not know
+            // the size at the time of definition
+            varV2.SetSelection(adios2::Box<adios2::Dims>({}, {Nelems}));
+            writer.Put<double>(varV2, v2.data());
 
-            // // v3
+            // v3
 
-            // // random chance who writes it
-            // unsigned int chance = rand() % 100;
-            // if (step == 2)
-            // {
-            //     chance = 0;
-            // }
-            // bool doWrite = (chance > 60);
-            // if (doWrite)
-            // {
-            //     varV3.SetSelection(adios2::Box<adios2::Dims>({}, {Nelems}));
-            //     writer.Put<double>(varV3, v3.data());
-            // }
+            // random chance who writes it
+            unsigned int chance = rand() % 100;
+            if (step == 2)
+            {
+                chance = 0;
+            }
+            bool doWrite = (chance > 60);
+            if (doWrite)
+            {
+                varV3.SetSelection(adios2::Box<adios2::Dims>({}, {Nelems}));
+                writer.Put<double>(varV3, v3.data());
+            }
 
             writer.EndStep();
         }

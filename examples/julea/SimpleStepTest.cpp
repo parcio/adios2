@@ -50,11 +50,15 @@ int main(int argc, char *argv[])
     int rank = 0;
 
     // v0 has the same size on every process at every step
-    const size_t Nglobal = 6;
+    const size_t Nglobal = 5;
     std::vector<double> v0(Nglobal);
+    std::cout << "... SimpleStepTest ... " << std::endl;
+    std::cout << "... Only one process ... " << std::endl;
 
     try
     {
+
+        adios2::ADIOS adios(adios2::DebugON);
         adios2::IO io = adios.DeclareIO("Output");
         // io.SetEngine("julea-kv");
         /*
@@ -67,16 +71,19 @@ int main(int argc, char *argv[])
 
         // Open file. "w" means we overwrite any existing file on disk,
         // but Advance() will append steps to the same file.
-        adios2::Engine writer = io.Open("JULEAlocalArray.bp", adios2::Mode::Write);
+        adios2::Engine writer = io.Open("JULEA-SimpleSteps.bp", adios2::Mode::Write);
+        // adios2::Engine writer = io.Open("JULEAlocalArray.bp", adios2::Mode::Append);
 
-        for (int step = 0; step < 5; step++)
+        for (int step = 0; step < 3; step++)
         {
             writer.BeginStep();
 
             // v0
             for (size_t i = 0; i < Nglobal; i++)
             {
-                v0[i] = rank * 1.0 + step * 0.1;
+                // v0[i] = rank * 1.0 + step * 0.1;
+                // v0[i] = 42.0 + step * 0.1;
+                v0[i] = 11*(step+1) + step * 0.1 + i*100;
             }
             writer.Put<double>(varV0, v0.data());
 
