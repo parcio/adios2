@@ -94,7 +94,7 @@ void ParseAttributeFromBSON(const std::string nameSpace,
     if (bson_iter_init(&b_iter, bsonMetadata))
     {
         // std::cout << "++ Julea Format Reader: Bson iterator is valid"
-                  // << std::endl;
+        // << std::endl;
     }
     else
     {
@@ -184,7 +184,8 @@ void ParseAttributeFromBSON(const std::string nameSpace,
             if (bson_iter_find(&b_iter, key))
             {
                 (*dataSizes)[i] = bson_iter_int64(&b_iter);
-                // std::cout << "___ Datasize = " << (*dataSizes)[i] << std::endl;
+                // std::cout << "___ Datasize = " << (*dataSizes)[i] <<
+                // std::endl;
             }
             g_free(key);
         }
@@ -470,7 +471,6 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
         else if (g_strcmp0(bson_iter_key(&b_iter), "is_read_as_joined") == 0)
         {
             variable.m_ReadAsJoined = (bool)bson_iter_bool(&b_iter);
-
         }
         else if (g_strcmp0(bson_iter_key(&b_iter), "is_read_as_local_value") ==
                  0)

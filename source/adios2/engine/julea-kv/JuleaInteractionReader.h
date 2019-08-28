@@ -31,7 +31,8 @@ void GetVariableBSONFromJulea(const std::string nameSpace,
                               const std::string varName, bson_t **bsonMetadata);
 
 template <class T>
-void GetVariableMetadataFromJulea(Variable<T> &variable, const std::string nameSpace,
+void GetVariableMetadataFromJulea(Variable<T> &variable,
+                                  const std::string nameSpace,
                                   long unsigned int *dataSize);
 
 template <class T>
@@ -65,10 +66,10 @@ void GetAttributeStringDataFromJulea(const std::string attrName, char *data,
                                      long unsigned int completeSize,
                                      bool IsSingleValue, size_t numberElements);
 
-
 #define variable_template_instantiation(T)                                     \
     extern template void GetVariableMetadataFromJulea(                         \
-        Variable<T> &variable,const std::string nameSpace, long unsigned int *dataSize);             \
+        Variable<T> &variable, const std::string nameSpace,                    \
+        long unsigned int *dataSize);                                          \
     extern template void GetVariableDataFromJulea(                             \
         Variable<T> &variable, T *data, const std::string nameSpace,           \
         long unsigned int dataSize);

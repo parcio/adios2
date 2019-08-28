@@ -191,7 +191,7 @@ private:
      */
     void PutAttributes(core::IO &io);
 
-        template <class T>
+    template <class T>
     void PerformPutCommon(Variable<T> &variable);
 
     // /**

@@ -32,7 +32,8 @@ namespace engine
 {
 
 template <class T>
-void GetVariableMetadataFromJulea(Variable<T> &variable,const std::string nameSpace,
+void GetVariableMetadataFromJulea(Variable<T> &variable,
+                                  const std::string nameSpace,
                                   long unsigned int *dataSize)
 {
     std::cout << "-- GetVariableMetadataFromJulea -----" << std::endl;
@@ -83,8 +84,9 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
 }
 
 #define variable_template_instantiation(T)                                     \
-    template void GetVariableMetadataFromJulea(                                \
-        Variable<T> &variable, const std::string nameSpace, long unsigned int *dataSize);             \
+    template void GetVariableMetadataFromJulea(Variable<T> &variable,          \
+                                               const std::string nameSpace,    \
+                                               long unsigned int *dataSize);   \
     template void GetVariableDataFromJulea(Variable<T> &variable, T *data,     \
                                            const std::string nameSpace,        \
                                            long unsigned int dataSize);
@@ -126,7 +128,8 @@ void GetNamesBSONFromJulea(const std::string nameSpace, bson_t **bsonNames,
     else
     {
         *bsonNames = bson_new_from_data((const uint8_t *)namesBuf, valueLen);
-        // std::cout << "-- bsonNames length: " << (*bsonNames)->len << std::endl;
+        // std::cout << "-- bsonNames length: " << (*bsonNames)->len <<
+        // std::endl;
     }
 
     *varCount = bson_count_keys(*bsonNames);

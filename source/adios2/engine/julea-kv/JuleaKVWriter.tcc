@@ -32,12 +32,14 @@ namespace engine
 // TODO: necessary function?
 // template <class T>
 // void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
-//                                   const typename Variable<T>::Info &blockInfo)
+//                                   const typename Variable<T>::Info
+//                                   &blockInfo)
 // {
 //     // auto bsonMetadata = bson_new();
 //     // Metadata *metadata = g_slice_new(Metadata);
 
-//      std::cout << "\n______________PutSync BlockInfo_____________________" << std::endl;
+//      std::cout << "\n______________PutSync BlockInfo_____________________" <<
+//      std::endl;
 //     // SetMinMax(variable, blockInfo.Data);
 
 //     // ParseVariableToMetadataStruct(variable, blockInfo, metadata);
@@ -56,7 +58,8 @@ namespace engine
 //                   << variable.m_Name << ")\n";
 //     }
 
-//     // ParseVariableType(variable, blockInfo, metadata); //TODO: what needs to
+//     // ParseVariableType(variable, blockInfo, metadata); //TODO: what needs
+//     to
 //     // be done?
 
 //     // TODO: free memory
@@ -68,14 +71,14 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
                                   const typename Variable<T>::Info &blockInfo)
 {
 
-     std::cout << "\n______________PutSync BlockInfo_____________________" << std::endl;
+    std::cout << "\n______________PutSync BlockInfo_____________________"
+              << std::endl;
     auto bsonMetadata = bson_new();
     SetMinMax(variable, blockInfo.Data);
 
     ParseVariableToBSON(variable, bsonMetadata);
     ParseVarTypeToBSON(variable, blockInfo.Data, bsonMetadata);
-    PutVariableMetadataToJuleaSmall(variable, bsonMetadata,
-                               m_Name);
+    PutVariableMetadataToJuleaSmall(variable, bsonMetadata, m_Name);
     PutVariableDataToJuleaSmall(variable, blockInfo.Data, m_Name);
     // TODO: free memory
     bson_destroy(bsonMetadata);
@@ -85,9 +88,7 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
         std::cout << "Julea Writer " << m_WriterRank << "     PutSync("
                   << variable.m_Name << ")\n";
     }
-
 }
-
 
 template <class T>
 void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
@@ -97,10 +98,10 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
     std::cout << "\n______________PutSync T_____________________" << std::endl;
     std::cout << "Julea Writer " << m_WriterRank
               << " Reached Get Sync Common (T, T)" << std::endl;
-    std::cout << "Julea Writer " << m_WriterRank << " Namespace: "
-              << m_Name << std::endl;
-    std::cout << "Julea Writer " << m_WriterRank << " Variable name: "
-              << variable.m_Name << std::endl;
+    std::cout << "Julea Writer " << m_WriterRank << " Namespace: " << m_Name
+              << std::endl;
+    std::cout << "Julea Writer " << m_WriterRank
+              << " Variable name: " << variable.m_Name << std::endl;
     SetMinMax(variable, data);
 
     ParseVariableToBSON(variable, bsonMetadata);
@@ -124,7 +125,8 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 template <class T>
 void JuleaKVWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
 {
-     std::cout << "\n______________PutDeferred T_____________________" << std::endl;
+    std::cout << "\n______________PutDeferred T_____________________"
+              << std::endl;
 
     std::cout << "variable.m_Data: " << variable.m_Data << std::endl;
     std::cout << "data[0]: " << data[0] << std::endl;
@@ -138,7 +140,8 @@ void JuleaKVWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
     const typename Variable<T>::Info blockInfo =
         variable.SetBlockInfo(data, CurrentStep());
 
-    std::cout << "variable.m_BlocksInfo[0].Data: " << variable.m_BlocksInfo[0].Data << std::endl;
+    std::cout << "variable.m_BlocksInfo[0].Data: "
+              << variable.m_BlocksInfo[0].Data << std::endl;
     std::cout << "blockInfo.Data: " << blockInfo.Data << std::endl;
     std::cout << "blockInfo.Data[0]: " << blockInfo.Data[0] << std::endl;
     if (m_Verbosity == 5)
@@ -157,11 +160,11 @@ void JuleaKVWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
     m_NeedPerformPuts = true;
 }
 
-
 template <class T>
 void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
 {
-     std::cout << "\n______________PerformPutCommon T_____________________" << std::endl;
+    std::cout << "\n______________PerformPutCommon T_____________________"
+              << std::endl;
     for (size_t i = 0; i < variable.m_BlocksInfo.size(); ++i)
     {
         // PutSyncCommon(variable, variable.m_BlocksInfo[i]);

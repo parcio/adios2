@@ -164,7 +164,7 @@ void JuleaKVWriter::PerformPuts()
         Variable<T> &variable = FindVariable<T>(                               \
             variableName, "in call to PerformPuts, EndStep or Close");         \
                                                                                \
-        PerformPutCommon(variable);                              \
+        PerformPutCommon(variable);                                            \
     }
         ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
@@ -505,13 +505,13 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
         ParseAttrTypeToBSON(attribute, bsonMetadata);                          \
         PutAttributeMetadataToJuleaSmall(attribute, bsonMetadata, m_Name);     \
         PutAttributeDataToJulea(attribute, m_Name);                            \
+        bson_destroy(bsonMetadata);                                            \
     }
         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
 #undef declare_attribute_type
-    bson_destroy(bsonMetadata);
-    // free(attrName);
-    // delete(&attrName);
-    }
+        // free(attrName);
+        // delete(&attrName);
+    } // end for
 }
 
 } // end namespace engine

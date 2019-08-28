@@ -38,13 +38,13 @@ void JuleaKVReader::GetSyncCommon(Variable<std::string> &variable,
     semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     batch = j_batch_new(semantics);
 
-    //FIXME: still using metadata struct
+    // FIXME: still using metadata struct
     // gchar *name_space = strdup(m_Name.c_str());
     // Metadata *metadata = g_slice_new(Metadata);
     // metadata->name = g_strdup(variable.m_Name.c_str());
 
-    // std::cout << "\n______________GetSync String_____________________" << std::endl;
-    // std::cout << "Julea Reader " << m_ReaderRank
+    // std::cout << "\n______________GetSync String_____________________" <<
+    // std::endl; std::cout << "Julea Reader " << m_ReaderRank
     //           << " Reached Get Sync Common (String, String) " << std::endl;
     // std::cout << "Julea Reader " << m_ReaderRank << " Namespace of variable "
     //           << m_Name << std::endl;
@@ -63,7 +63,6 @@ void JuleaKVReader::GetSyncCommon(Variable<std::string> &variable,
     }
     j_batch_unref(batch);
     j_semantics_unref(semantics);
-
 }
 
 // inline needed? is in skeleton-engine
@@ -74,10 +73,10 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
     std::cout << "\n______________GetSync T_____________________" << std::endl;
     std::cout << "Julea Reader " << m_ReaderRank
               << " Reached Get Sync Common (T, T)" << std::endl;
-    std::cout << "Julea Reader " << m_ReaderRank << " Namespace: "
-              << m_Name << std::endl;
-    std::cout << "Julea Reader " << m_ReaderRank << " Variable name: "
-              << variable.m_Name << std::endl;
+    std::cout << "Julea Reader " << m_ReaderRank << " Namespace: " << m_Name
+              << std::endl;
+    std::cout << "Julea Reader " << m_ReaderRank
+              << " Variable name: " << variable.m_Name << std::endl;
 
     auto nameSpace = m_Name;
     long unsigned int dataSize = 0;

@@ -61,7 +61,8 @@ void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
     }
 
     bson_append_int64(bsonMetadata, "complete_data_size", -1, dataSize);
-    // std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
+    // std::cout << "-- bsonMetadata length: " << bsonMetadata->len <<
+    // std::endl;
 }
 
 template <>
@@ -80,7 +81,8 @@ void ParseAttributeToBSON<std::string>(Attribute<std::string> &attribute,
     if (attribute.m_IsSingleValue)
     {
         completeSize = attribute.m_DataSingleValue.length() + 1;
-        // std::cout << "-- dataSize single value = " << completeSize << std::endl;
+        // std::cout << "-- dataSize single value = " << completeSize <<
+        // std::endl;
     }
     else
     {
@@ -101,7 +103,8 @@ void ParseAttributeToBSON<std::string>(Attribute<std::string> &attribute,
     }
     bson_append_int64(bsonMetadata, "complete_data_size", -1, completeSize);
     // std::cout << "-- complete_data_size: " << completeSize << std::endl;
-    // std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
+    // std::cout << "-- bsonMetadata length: " << bsonMetadata->len <<
+    // std::endl;
 }
 
 template <class T>
@@ -160,8 +163,8 @@ void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
     }
 
     bson_append_int32(bsonMetadata, "attr_type", -1, type);
-    // std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
-    // std::cout << "-- type: " << attribute.m_Type << std::endl;
+    // std::cout << "-- bsonMetadata length: " << bsonMetadata->len <<
+    // std::endl; std::cout << "-- type: " << attribute.m_Type << std::endl;
 }
 
 template <class T>
@@ -172,7 +175,7 @@ void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata)
     T min;
     T max;
 
-   std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
+    std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
     uint data_size = 0;
     size_t number_elements = 0;
     char *key;
