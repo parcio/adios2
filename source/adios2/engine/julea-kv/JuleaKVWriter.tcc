@@ -157,7 +157,7 @@ void JuleaKVWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
     //     1.05 * helper::PayloadSize(variable.m_Data, variable.m_Count) +
     //     4 * GetBPIndexSizeInData(variable.m_Name, variable.m_Count));
 
-    m_NeedPerformPuts = true;
+    // m_NeedPerformPuts = true;
 }
 
 template <class T>

@@ -73,7 +73,7 @@ JuleaKVWriter::~JuleaKVWriter()
 StepStatus JuleaKVWriter::BeginStep(StepMode mode, const float timeoutSeconds)
 {
     // std::cout << "JULEA ENGINE: BeginStep" << std::endl;
-    m_CurrentStep++; // 0 is the first step
+    // m_CurrentStep++; // 0 is the first step
     if (m_Verbosity == 5)
     {
         std::cout << "Julea Writer " << m_WriterRank
@@ -107,7 +107,8 @@ size_t JuleaKVWriter::CurrentStep() const
 void JuleaKVWriter::EndStep()
 {
     // std::cout << "JULEA ENGINE: EndStep" << std::endl;
-    if (m_NeedPerformPuts)
+    // if (m_NeedPerformPuts)
+    if (m_DeferredVariables.size() > 0)
     {
         PerformPuts();
     }
@@ -115,13 +116,28 @@ void JuleaKVWriter::EndStep()
     {
         std::cout << "Julea Writer " << m_WriterRank << "   EndStep()\n";
     }
+    // SerializeData in BP3
+    // - Profiler ?!
+    // - SerializeDataBuffer (write attributes?!)
+    // --- CopyToBuffer
+    // --- attributesSizeInData
+    // -
+    PutAttributes(m_IO);
 
+
+    /* advance step */
+    // ++m_MetadataSet.TimeStep;
+    // ++m_MetadataSet.CurrentStep;
+    ++m_TimeStep;
+    ++m_CurrentStep;
+
+    /* ------ original EndStep */
+    const size_t currentStep = CurrentStep();
+    const size_t flushStepsCount = m_FlushStepsCount;
     if (m_CurrentStep % m_FlushStepsCount == 0)
     {
         Flush();
     }
-    // TODO: PutAttributes(m_IO)
-    PutAttributes(m_IO);
 }
 
 /**
@@ -155,9 +171,6 @@ void JuleaKVWriter::PerformPuts()
             std::cout << "Julea Writer " << m_WriterRank << "     PerformPuts()"
                       << "compound variable type not supported \n";
         }
-// KILLME! Who would want a template in a makro in a function?!
-// FIXME: change to PutSyncCommon(variable,data);
-// FIXME: still working without for loop over blockinfo?
 #define declare_template_instantiation(T)                                      \
     else if (type == helper::GetType<T>())                                     \
     {                                                                          \
@@ -170,7 +183,7 @@ void JuleaKVWriter::PerformPuts()
 #undef declare_template_instantiation
     }
     m_DeferredVariables.clear();
-    m_NeedPerformPuts = false;
+    // m_NeedPerformPuts = false;
 }
 // ADIOS2_FOREACH_TYPE_1ARG(declare_template_instantiation)
 
@@ -225,7 +238,7 @@ void JuleaKVWriter::Init()
 }
 
 /**TODO
- * [JuleaWriter::InitParameters description]
+ * see BP3Base InitParameters
  */
 void JuleaKVWriter::InitParameters()
 {
@@ -249,6 +262,14 @@ void JuleaKVWriter::InitParameters()
                         "integer in the range [0,5], in call to "
                         "Open or Engine constructor\n");
             }
+        }
+        //  else if (key == "collectivemetadata")
+        // {
+        //     InitParameterCollectiveMetadata(value);
+        // }
+        else if (key == "flushstepscount")
+        {
+            InitParameterFlushStepsCount(value);
         }
     }
     if (m_Verbosity == 5)
@@ -282,6 +303,7 @@ void JuleaKVWriter::InitVariables()
     {
         std::cout << "Julea Writer " << m_WriterRank << " InitVariables()\n";
     }
+
 }
 
 /**TODO
@@ -512,6 +534,43 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
         // free(attrName);
         // delete(&attrName);
     } // end for
+}
+
+
+void JuleaKVWriter::InitParameterFlushStepsCount(const std::string value)
+{
+    long long int flushStepsCount = -1;
+
+    if (m_DebugMode)
+    {
+        bool success = true;
+        std::string description;
+
+        try
+        {
+            flushStepsCount = std::stoll(value);
+        }
+        catch (std::exception &e)
+        {
+            success = false;
+            description = std::string(e.what());
+        }
+
+        if (!success || flushStepsCount < 1)
+        {
+            throw std::invalid_argument(
+                "ERROR: value in FlushStepscount=value in IO SetParameters "
+                "must be an integer >= 1 (default) \nadditional "
+                "description: " +
+                description + "\n, in call to Open\n");
+        }
+    }
+    else
+    {
+        flushStepsCount = std::stoll(value);
+    }
+
+    m_FlushStepsCount = static_cast<size_t>(flushStepsCount);
 }
 
 } // end namespace engine

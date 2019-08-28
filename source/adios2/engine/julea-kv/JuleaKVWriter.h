@@ -68,13 +68,12 @@ private:
 
     int m_Verbosity = 5;       // changed for debugging info from 0 to 5
     int m_WriterRank;          // my rank in the writers' comm
-    size_t m_CurrentStep = -1; // steps start from 0
 
     /** EndStep must call PerformPuts if necessary */
-    bool m_NeedPerformPuts = false; // DESIGN: suggested in SkeletonWriter
+    // bool m_NeedPerformPuts = false; // DESIGN: suggested in SkeletonWriter
 
     /** TODO: needed? */
-    bool m_Flushed = false; // DESIGN: used in HDF5Writer
+    // bool m_Flushed = false; // DESIGN: used in HDF5Writer
 
     /**  --- DESIGN: the following is similar to BP3Writer and BP3Base --- */
 
@@ -85,6 +84,19 @@ private:
     /** Default: write collective metadata in Capsule metadata. */
     bool m_CollectiveMetadata = true;
 
+
+    /* -------------- see BP3Base MetadataSet struct ------------------------*/
+
+    /**
+    * updated with EndStep, if append it will be updated to last,
+    * starts with one in ADIOS1 BP3 format!
+    */
+    uint32_t m_TimeStep = 1;    //starts at 1
+
+    /** Similar to TimeStep, but uses uint64_t and start from zero. Used for
+    * streaming a large number of steps */
+    size_t m_CurrentStep = 0;   //starts at 0
+
     /** Parameter to flush transports at every number of steps, to be used at
      * EndStep */
     size_t m_FlushStepsCount = 1;
@@ -94,14 +106,13 @@ private:
 
     /** tracks Put and Get variables in deferred mode */
     std::set<std::string> m_DeferredVariables;
+    /** tracks the overall size of deferred variables */
+    size_t m_DeferredVariablesDataSize = 0; // TODO: needed?
 
     /** attributes are serialized only once, this set contains the names of ones
      * already serialized.
      */
     std::unordered_set<std::string> m_SerializedAttributes; // TODO: needed?
-
-    /** tracks the overall size of deferred variables */
-    size_t m_DeferredVariablesDataSize = 0;
 
     /** statistics verbosity, only 0 is supported */
     unsigned int m_StatsLevel = 0;
@@ -193,6 +204,10 @@ private:
 
     template <class T>
     void PerformPutCommon(Variable<T> &variable);
+
+    // void InitParameters(const Params &parameters);
+
+    void InitParameterFlushStepsCount(const std::string value);
 
     // /**
     //  * Sets buffer's positions to zero and fill buffer with zero char
