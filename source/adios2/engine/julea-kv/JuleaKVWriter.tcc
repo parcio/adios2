@@ -133,6 +133,7 @@ void JuleaKVWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
 
     if (variable.m_SingleValue)
     {
+    std::cout << "variable.m_SingleValue: " << variable.m_SingleValue << std::endl;
         DoPutSync(variable, data);
         return;
     }
@@ -179,6 +180,7 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
         // {
         //     m_BP3Serializer.PutSpanMetadata(variable, itSpanBlock->second);
         // }
+        std::cout << "Mode: " << m_OpenMode << std::endl;
     }
 
     variable.m_BlocksInfo.clear();

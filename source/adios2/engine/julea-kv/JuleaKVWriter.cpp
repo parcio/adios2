@@ -80,7 +80,7 @@ StepStatus JuleaKVWriter::BeginStep(StepMode mode, const float timeoutSeconds)
                   << "   BeginStep() new step " << m_CurrentStep << "\n";
     }
     std::cout << "StepMode mode: " << mode << std::endl;
-
+    m_StepMode = mode;
     m_DeferredVariables.clear();
     m_DeferredVariablesDataSize = 0;
     return StepStatus::OK;
@@ -108,16 +108,22 @@ size_t JuleaKVWriter::CurrentStep() const
  */
 void JuleaKVWriter::EndStep()
 {
+    // FIXME: append Step Data to Object store not replace it!
+    //
     // std::cout << "JULEA ENGINE: EndStep" << std::endl;
     // if (m_NeedPerformPuts)
     if (m_DeferredVariables.size() > 0)
     {
-        PerformPuts();
+        std::cout << "m_DeferredVariables.size() = " << m_DeferredVariables.size() <<std::endl;
+        PerformPuts(); //FIXME
     }
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Writer " << m_WriterRank << "   EndStep()\n";
+        std::cout << "\n______________EndStep _____________________"
+              << std::endl;
+        // std::cout << "Julea Writer " << m_WriterRank << "   EndStep()\n";
     }
+    //TODO
     // SerializeData in BP3
     // - Profiler ?!
     // - SerializeDataBuffer (write attributes?!)
@@ -197,6 +203,8 @@ void JuleaKVWriter::PerformPuts()
 // void JuleaKVWriter::Flush()
 void JuleaKVWriter::Flush(const int transportIndex)
 {
+    std::cout << "\n______________Flush  _____________________"
+              << std::endl;
     DoFlush(false);
     // ResetBuffer(m_Data);
 
@@ -207,7 +215,7 @@ void JuleaKVWriter::Flush(const int transportIndex)
 
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Writer " << m_WriterRank << "   Flush()\n";
+        // std::cout << "Julea Writer " << m_WriterRank << "   Flush()\n";
     }
 }
 
@@ -357,17 +365,17 @@ ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 // void JuleaKVWriter::DoClose()
 void JuleaKVWriter::DoClose(const int transportIndex)
 {
-    std::cout << "___ where to write attribute: Do close" << std::endl;
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Writer " << m_WriterRank << " Close(" << m_Name
-                  << ")\n";
+        std::cout << "\n______________DoClose_____________________" << std::endl;
+        // std::cout << "Julea Writer " << m_WriterRank << " Close(" << m_Name
+                  // << ")\n";
     }
     // TODO: free semantics
     /* Write deferred variables*/
     if (m_DeferredVariables.size() > 0)
     {
-        // PerformPuts();
+        PerformPuts(); //TODO: correct?
     }
     DoFlush(true, transportIndex);
     // TODO: Close Transports?!
@@ -381,19 +389,22 @@ void JuleaKVWriter::DoClose(const int transportIndex)
 // void JuleaKVWriter::DoFlush(const bool isFinal)
 void JuleaKVWriter::DoFlush(const bool isFinal, const int transportIndex)
 {
+    if (m_Verbosity == 5)
+    {
+        std::cout << "\n______________DoFlush_____________________" << std::endl;
+        // std::cout << "Julea Writer " << m_WriterRank << " DoFlush \n";
+    }
     if (m_Aggregator.m_IsActive)
     {
+        // std::cout << "AggregateWriteData" << std::endl;
         AggregateWriteData(isFinal, transportIndex);
         // AggregateWriteData(isFinal);
     }
     else
     {
+        // std::cout << "WriteData" << std::endl;
         WriteData(isFinal, transportIndex);
         // WriteData(isFinal);
-    }
-    if (m_Verbosity == 5)
-    {
-        std::cout << "Julea Writer " << m_WriterRank << " DoFlush \n";
     }
 }
 
@@ -406,6 +417,8 @@ void JuleaKVWriter::DoFlush(const bool isFinal, const int transportIndex)
 // void JuleaKVWriter::WriteData(const bool isFinal)
 void JuleaKVWriter::WriteData(const bool isFinal, const int transportIndex)
 {
+    std::cout << "\n______________WriteData_____________________" << std::endl;
+
     Metadata *metadata;
     // TODO: parse variable from buffer to metadata struct members
     // DESIGN: check BP3Writer
@@ -433,7 +446,7 @@ void JuleaKVWriter::WriteData(const bool isFinal, const int transportIndex)
     // j_gmm_put (metadata, m_Data.m_Buffer.data());
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Writer " << m_WriterRank << " WriteData\n";
+        // std::cout << "Julea Writer " << m_WriterRank << " WriteData\n";
     }
 }
 
@@ -447,6 +460,7 @@ void JuleaKVWriter::WriteData(const bool isFinal, const int transportIndex)
 void JuleaKVWriter::AggregateWriteData(const bool isFinal,
                                        const int transportIndex)
 {
+    std::cout << "\n______________AggregateWriteData_____________________" << std::endl;
     // DESIGN: check BP3Writer
     if (m_Verbosity == 5)
     {
@@ -490,6 +504,8 @@ void JuleaKVWriter::AggregateWriteData(const bool isFinal,
  */
 void JuleaKVWriter::PutAttributes(core::IO &io)
 {
+    std::cout << "\n______________PutAttributes_____________________" << std::endl;
+
     const auto attributesDataMap = io.GetAttributesDataMap();
 
     // count is known ahead of time

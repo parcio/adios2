@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     int rank = 0;
 
     // v0 has the same size on every process at every step
-    const size_t Nglobal = 5;
+    const size_t Nglobal = 2;
     std::vector<double> v0(Nglobal);
     std::cout << "... SimpleStepTest ... " << std::endl;
     std::cout << "... Only one process ... " << std::endl;
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 
         adios2::ADIOS adios(adios2::DebugON);
         adios2::IO io = adios.DeclareIO("Output");
-        // io.SetEngine("julea-kv");
+        io.SetEngine("julea-kv");
         /*
          * Define local array: type, name, local size
          * Global dimension and starting offset must be an empty vector
@@ -76,6 +76,10 @@ int main(int argc, char *argv[])
 
         for (int step = 0; step < 3; step++)
         {
+            std::cout << "\n-------------------------------------------------------------" << std::endl;
+            std::cout << "---------- Application: for loop [" << step <<"]-------------------------" << std::endl;
+            std::cout << "-------------------------------------------------------------\n" << std::endl;
+
             writer.BeginStep();
 
             // v0
@@ -87,9 +91,12 @@ int main(int argc, char *argv[])
             }
             writer.Put<double>(varV0, v0.data());
 
+            std::cout << "\n---------- Application: EndStep -------------------------------------\n" << std::endl;
             writer.EndStep();
         }
 
+            std::cout << "\n---------- Application: left for loop -------------------------------------\n" << std::endl;
+        // io.FlushAll();
         writer.Close();
     }
     catch (std::invalid_argument &e)
