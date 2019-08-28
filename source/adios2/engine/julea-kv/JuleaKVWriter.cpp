@@ -79,6 +79,8 @@ StepStatus JuleaKVWriter::BeginStep(StepMode mode, const float timeoutSeconds)
         std::cout << "Julea Writer " << m_WriterRank
                   << "   BeginStep() new step " << m_CurrentStep << "\n";
     }
+    std::cout << "StepMode mode: " << mode << std::endl;
+
     m_DeferredVariables.clear();
     m_DeferredVariablesDataSize = 0;
     return StepStatus::OK;
@@ -216,6 +218,11 @@ void JuleaKVWriter::Flush(const int transportIndex)
  */
 void JuleaKVWriter::Init()
 {
+    if (m_OpenMode == Mode::Append)
+    {
+        throw std::invalid_argument(
+            "JuleaKVWriter: OpenMode   -- Append --   hasn't been implemented, yet");
+    }
     std::cout << "\n*********************** JULEA ENGINE WRITER "
                  "*************************"
               << std::endl;

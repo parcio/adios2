@@ -70,7 +70,8 @@ private:
     int m_WriterRank;          // my rank in the writers' comm
 
     /** EndStep must call PerformPuts if necessary */
-    // bool m_NeedPerformPuts = false; // DESIGN: suggested in SkeletonWriter
+    // bool m_NeedPerformPuts = false; // DESIGN: suggested in SkeletonWriter,
+    // probably as a shortcut to avoid m_DeferredVariables
 
     /** TODO: needed? */
     // bool m_Flushed = false; // DESIGN: used in HDF5Writer
