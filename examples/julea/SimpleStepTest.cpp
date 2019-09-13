@@ -41,63 +41,137 @@
 #include <vector>
 
 #include <adios2.h>
-#ifdef ADIOS2_HAVE_MPI
-#include <mpi.h>
-#endif
+// #ifdef ADIOS2_HAVE_MPI
+// #include <mpi.h>
+// #endif
 
-int main(int argc, char *argv[])
+void write(void)
 {
-    int rank = 0;
 
     // v0 has the same size on every process at every step
     const size_t Nglobal = 2;
     std::vector<double> v0(Nglobal);
+    adios2::ADIOS adios(adios2::DebugON);
+    adios2::IO io = adios.DeclareIO("Output");
+    // io.SetEngine("julea-kv");
+    io.SetEngine("bp3");
+    /*
+     * Define local array: type, name, local size
+     * Global dimension and starting offset must be an empty vector
+     * Here the size of the local array is the same on every process
+     */
+    adios2::Variable<double> varV0 =
+        io.DefineVariable<double>("v0", {}, {}, {Nglobal});
+
+    // Open file. "w" means we overwrite any existing file on disk,
+    // but Advance() will append steps to the same file.
+    adios2::Engine writer =
+        io.Open("JULEA-SimpleSteps.bp", adios2::Mode::Write);
+    // adios2::Engine writer = io.Open("JULEAlocalArray.bp",
+    // adios2::Mode::Append);
+
+    for (int step = 0; step < 3; step++)
+    {
+        std::cout
+            << "\n-------------------------------------------------------------"
+            << std::endl;
+        std::cout << "---------- Application: for loop [" << step
+                  << "]-------------------------" << std::endl;
+        std::cout
+            << "-------------------------------------------------------------\n"
+            << std::endl;
+
+        writer.BeginStep();
+
+        // v0
+        for (size_t i = 0; i < Nglobal; i++)
+        {
+            // v0[i] = rank * 1.0 + step * 0.1;
+            // v0[i] = 42.0 + step * 0.1;
+            v0[i] = 11 * (step + 1) + step * 0.1 + i * 100;
+            std::cout << "v0[" << i << "]: " << v0[i] << std::endl;
+        }
+        writer.Put<double>(varV0, v0.data());
+
+        std::cout << "\n---------- Application: EndStep "
+                     "-------------------------------------\n"
+                  << std::endl;
+        writer.EndStep();
+    }
+
+    std::cout << "\n---------- Application: left for loop "
+                 "-------------------------------------\n"
+              << std::endl;
+    // io.FlushAll();
+    writer.Close();
+}
+
+void read(void)
+{
+
+    // v0 has the same size on every process at every step
+    const size_t Nglobal = 2;
+    std::vector<double> v0(Nglobal);
+    adios2::ADIOS adios(adios2::DebugON);
+    adios2::IO io = adios.DeclareIO("Input");
+    // io.SetEngine("julea-kv");
+    io.SetEngine("bp3");
+
+
+    // Open file. "w" means we overwrite any existing file on disk,
+    // but Advance() will append steps to the same file.
+    adios2::Engine reader =
+        io.Open("JULEA-SimpleSteps.bp", adios2::Mode::Read);
+    // adios2::Engine writer = io.Open("JULEAlocalArray.bp",
+    // adios2::Mode::Append);
+
+    adios2::Variable<double> varV0 = io.InquireVariable<double>("v0");
+
+    size_t steps = varV0.Steps();
+
+    std::cout << "steps: " << steps << std::endl;
+
+    size_t stepsstart = varV0.StepsStart();
+
+    std::cout << "stepsstart: " << stepsstart << std::endl;
+
+    for (int step = 0; step < 3; step++)
+    {
+        double value[2];
+
+        reader.BeginStep();
+        reader.Get<double>(varV0, value, adios2::Mode::Deferred);
+        reader.EndStep();
+
+        std::cout << "step: " << step << std::endl << "v[0]: " << value[0]
+                  << std::endl << "v[1]: " << value[1] << std::endl;
+    }
+
+    varV0.SetStepSelection(adios2::Box<std::size_t>(0, 3));
+
+    double value[6];
+    reader.Get<double>(varV0, value, adios2::Mode::Sync);
+
+    for (size_t i = 0; i < 6; i++)
+        std::cout << "v[" << i << "]: " << value[i] << std::endl;
+
+    std::cout << "\n---------- Application: left for loop "
+                 "-------------------------------------\n"
+              << std::endl;
+    // io.FlushAll();
+    reader.Close();
+}
+
+int main(int argc, char *argv[])
+{
+    int rank = 0;
     std::cout << "... SimpleStepTest ... " << std::endl;
     std::cout << "... Only one process ... " << std::endl;
 
     try
     {
-
-        adios2::ADIOS adios(adios2::DebugON);
-        adios2::IO io = adios.DeclareIO("Output");
-        io.SetEngine("julea-kv");
-        /*
-         * Define local array: type, name, local size
-         * Global dimension and starting offset must be an empty vector
-         * Here the size of the local array is the same on every process
-         */
-        adios2::Variable<double> varV0 =
-            io.DefineVariable<double>("v0", {}, {}, {Nglobal});
-
-        // Open file. "w" means we overwrite any existing file on disk,
-        // but Advance() will append steps to the same file.
-        adios2::Engine writer = io.Open("JULEA-SimpleSteps.bp", adios2::Mode::Write);
-        // adios2::Engine writer = io.Open("JULEAlocalArray.bp", adios2::Mode::Append);
-
-        for (int step = 0; step < 3; step++)
-        {
-            std::cout << "\n-------------------------------------------------------------" << std::endl;
-            std::cout << "---------- Application: for loop [" << step <<"]-------------------------" << std::endl;
-            std::cout << "-------------------------------------------------------------\n" << std::endl;
-
-            writer.BeginStep();
-
-            // v0
-            for (size_t i = 0; i < Nglobal; i++)
-            {
-                // v0[i] = rank * 1.0 + step * 0.1;
-                // v0[i] = 42.0 + step * 0.1;
-                v0[i] = 11*(step+1) + step * 0.1 + i*100;
-            }
-            writer.Put<double>(varV0, v0.data());
-
-            std::cout << "\n---------- Application: EndStep -------------------------------------\n" << std::endl;
-            writer.EndStep();
-        }
-
-            std::cout << "\n---------- Application: left for loop -------------------------------------\n" << std::endl;
-        // io.FlushAll();
-        writer.Close();
+        write();
+        read();
     }
     catch (std::invalid_argument &e)
     {
@@ -124,9 +198,9 @@ int main(int argc, char *argv[])
         }
     }
 
-#ifdef ADIOS2_HAVE_MPI
-    MPI_Finalize();
-#endif
+    // #ifdef ADIOS2_HAVE_MPI
+    //     MPI_Finalize();
+    // #endif
 
     return 0;
 }
