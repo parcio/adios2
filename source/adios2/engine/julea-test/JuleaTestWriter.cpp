@@ -29,14 +29,15 @@ namespace engine
 {
 
 JuleaTestWriter::JuleaTestWriter(IO &io, const std::string &name, const Mode mode,
-                         MPI_Comm mpiComm)
-: Engine("JuleaTestWriter", io, name, mode, mpiComm)
+                         helper::Comm comm)
+: Engine("JuleaTestWriter", io, name, mode, std::move(comm))
 {
     // std::cout << "JULEA ENGINE: Constructor" << std::endl;
     // m_BP3Serializer(mpiComm, m_DebugMode),
     // m_FileDataManager(mpiComm, m_DebugMode),
     // m_EndMessage = " in call to JuleaTestWriter " + m_Name + " Open\n";
-    MPI_Comm_rank(mpiComm, &m_WriterRank);
+    // MPI_Comm_rank(mpiComm, &m_WriterRank);
+    m_WriterRank = m_Comm.Rank();
     Init();
     if (m_Verbosity == 5)
     {

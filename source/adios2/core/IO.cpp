@@ -782,19 +782,19 @@ Engine &IO::Open(const std::string &name, const Mode mode, MPI_Comm mpiComm)
     {
         if (mode == Mode::Read)
             engine = std::make_shared<engine::JuleaKVReader>(*this, name, mode,
-                                                              mpiComm);
+                                                              std::move(comm));
         else
             engine = std::make_shared<engine::JuleaKVWriter>(*this, name, mode,
-                                                              mpiComm);
+                                                              std::move(comm));
     }
     else if (engineTypeLC == "julea-test")
     {
         if (mode == Mode::Read)
             engine = std::make_shared<engine::JuleaTestReader>(*this, name, mode,
-                                                              mpiComm);
+                                                              std::move(comm));
         else
             engine = std::make_shared<engine::JuleaTestWriter>(*this, name, mode,
-                                                              mpiComm);
+                                                              std::move(comm));
     }
     // else if (engineTypeLC == "julea-db")
     // {

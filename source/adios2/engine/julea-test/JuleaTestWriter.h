@@ -12,8 +12,8 @@
 #define ADIOS2_ENGINE_JULEATESTWRITER_H_
 
 #include "adios2/core/Engine.h"
-#include "adios2/toolkit/format/bp3/BP3.h" //BP3Serializer
-#include "adios2/toolkit/format/bp3/BP3Serializer.h"
+// #include "adios2/toolkit/format/bp3/BP3.h" //BP3Serializer
+#include "adios2/toolkit/format/bp/bp3/BP3Serializer.h"
 #include "adios2/toolkit/interop/julea/JuleaSerializer.h"
 #include "adios2/toolkit/transportman/TransportMan.h" //transport::TransportsMan
 
@@ -45,7 +45,7 @@ public:
      * @param debugMode
      */
     JuleaTestWriter(IO &adios, const std::string &name, const Mode mode,
-                MPI_Comm mpiComm);
+                helper::Comm comm);
 
     ~JuleaTestWriter(); // was =default -> meaning?
 

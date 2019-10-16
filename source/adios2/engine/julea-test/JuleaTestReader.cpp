@@ -28,12 +28,13 @@ namespace engine
 //   m_BP3Deserializer(mpiComm, m_DebugMode)
 
 JuleaTestReader::JuleaTestReader(IO &io, const std::string &name, const Mode mode,
-                         MPI_Comm mpiComm)
-: Engine("JuleaTestReader", io, name, mode, mpiComm)
+                         helper::Comm comm)
+: Engine("JuleaTestReader", io, name, mode, std::move(comm))
 
 {
     // m_EndMessage = " in call to IO Open JuleaTestReader " + m_Name + "\n";
-    MPI_Comm_rank(mpiComm, &m_ReaderRank);
+    // MPI_Comm_rank(mpiComm, &m_ReaderRank);
+    m_ReaderRank = m_Comm.Rank();
     Init();
     if (m_Verbosity == 5)
     {
