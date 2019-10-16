@@ -13,8 +13,9 @@
 
 #include <gtest/gtest.h>
 
-#include "ParseArgs.h"
 #include "TestData.h"
+
+#include "ParseArgs.h"
 
 class CommonWriteTest : public ::testing::Test
 {
@@ -31,9 +32,6 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
 {
     // form a mpiSize * Nx 1D array
     int mpiRank = 0, mpiSize = 1;
-
-    // Number of steps
-    const std::size_t NSteps = 10;
 
 #ifdef ADIOS2_HAVE_MPI
     MPI_Comm_rank(testComm, &mpiRank);
@@ -66,29 +64,23 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
         adios2::Dims time_start{static_cast<unsigned int>(mpiRank)};
         adios2::Dims time_count{1};
 
-        auto scalar_r64 = io.DefineVariable<double>("scalar_r64");
-        auto var_i8 = io.DefineVariable<int8_t>("i8", shape, start, count);
-        auto var_i16 = io.DefineVariable<int16_t>("i16", shape, start, count);
-        auto var_i32 = io.DefineVariable<int32_t>("i32", shape, start, count);
-        auto var_i64 = io.DefineVariable<int64_t>("i64", shape, start, count);
+        (void)io.DefineVariable<double>("scalar_r64");
+        (void)io.DefineVariable<int8_t>("i8", shape, start, count);
+        (void)io.DefineVariable<int16_t>("i16", shape, start, count);
+        (void)io.DefineVariable<int32_t>("i32", shape, start, count);
+        (void)io.DefineVariable<int64_t>("i64", shape, start, count);
         auto var_r32 = io.DefineVariable<float>("r32", shape, start, count);
         auto var_r64 = io.DefineVariable<double>("r64", shape, start, count);
-        auto var_c32 =
-            io.DefineVariable<std::complex<float>>("c32", shape, start, count);
-        auto var_c64 =
-            io.DefineVariable<std::complex<double>>("c64", shape, start, count);
+        (void)io.DefineVariable<std::complex<float>>("c32", shape, start,
+                                                     count);
+        (void)io.DefineVariable<std::complex<double>>("c64", shape, start,
+                                                      count);
         auto var_r64_2d =
             io.DefineVariable<double>("r64_2d", shape2, start2, count2);
         auto var_r64_2d_rev =
             io.DefineVariable<double>("r64_2d_rev", shape3, start3, count3);
-        auto var_time = io.DefineVariable<int64_t>("time", time_shape,
-                                                   time_start, time_count);
-        if (CompressSz)
-        {
-            adios2::Operator SzOp = adios.DefineOperator("szCompressor", "sz");
-            // TODO: Add a large dataset for SZ test.
-            // var_r32.AddOperation(SzOp, {{"accuracy", "0.001"}});
-        }
+        (void)io.DefineVariable<int64_t>("time", time_shape, time_start,
+                                         time_count);
         if (CompressZfp)
         {
             adios2::Operator ZfpOp =
@@ -110,7 +102,7 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
     {
         adios2::Mode WriteMode;
         // Generate test data for each process uniquely
-        generateCommonTestData((int)step, mpiRank, mpiSize);
+        generateCommonTestData((int)step, mpiRank, mpiSize, (int)Nx, (int)Nx);
 
         engine.BeginStep();
         // Retrieve the variables that previously went out of scope
@@ -119,7 +111,6 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
         auto var_i16 = io.InquireVariable<int16_t>("i16");
         auto var_i32 = io.InquireVariable<int32_t>("i32");
         auto var_i64 = io.InquireVariable<int64_t>("i64");
-        auto var_u8 = io.InquireVariable<uint8_t>("u8");
         auto var_r32 = io.InquireVariable<float>("r32");
         auto var_r64 = io.InquireVariable<double>("r64");
         auto var_c32 = io.InquireVariable<std::complex<float>>("c32");
@@ -166,7 +157,7 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
         if (WriteMode == adios2::Mode::Sync)
         {
             // trash the data since it's a Sync, this should be OK.
-            data_I8.fill(0);
+            std::fill(data_I8.begin(), data_I8.end(), 0);
         }
         engine.Put(var_i16, data_I16.data(), adios2::Mode::Sync);
         engine.Put(var_i32, data_I32.data(), WriteMode);
@@ -177,9 +168,8 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
         {
             engine.Put(var_c32, data_C32.data(), adios2::Mode::Sync);
             engine.Put(var_c64, data_C64.data(), adios2::Mode::Deferred);
-            engine.Put(var_r64_2d, &data_R64_2d[0][0], WriteMode);
-            engine.Put(var_r64_2d_rev, &data_R64_2d_rev[0][0],
-                       adios2::Mode::Sync);
+            engine.Put(var_r64_2d, &data_R64_2d[0], WriteMode);
+            engine.Put(var_r64_2d_rev, &data_R64_2d_rev[0], adios2::Mode::Sync);
         }
         // Advance to the next time step
         std::time_t localtime = std::time(NULL);

@@ -13,8 +13,9 @@
 
 #include "adios2/common/ADIOSConfig.h"
 #include "adios2/core/Engine.h"
-#include "adios2/toolkit/format/bp3/BP3.h"
-#include "adios2/toolkit/transportman/TransportMan.h" //transport::TransportsMan
+#include "adios2/helper/adiosComm.h"
+#include "adios2/toolkit/format/bp/bp3/BP3Serializer.h"
+#include "adios2/toolkit/transportman/TransportMan.h"
 
 namespace adios2
 {
@@ -31,10 +32,10 @@ public:
      * Constructor for file Writer in BP format
      * @param name unique name given to the engine
      * @param openMode w (supported), r, a from OpenMode in ADIOSTypes.h
-     * @param mpiComm MPI communicator
+     * @param comm multi-process communicator
      */
     BP3Writer(IO &io, const std::string &name, const Mode mode,
-              MPI_Comm mpiComm);
+              helper::Comm comm);
 
     ~BP3Writer() = default;
 
@@ -51,6 +52,9 @@ private:
 
     /** Manage BP data files Transports from IO AddTransport */
     transportman::TransportMan m_FileDataManager;
+
+    /** future returned by m_FileDataManager at OpenFiles */
+    std::future<void> m_FutureOpenFiles;
 
     /** Manages the optional collective metadata files */
     transportman::TransportMan m_FileMetadataManager;

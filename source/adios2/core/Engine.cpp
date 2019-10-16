@@ -12,6 +12,7 @@
 #include "Engine.tcc"
 
 #include <stdexcept>
+#include <utility>
 
 #include "adios2/core/IO.h"
 
@@ -21,13 +22,13 @@ namespace core
 {
 
 Engine::Engine(const std::string engineType, IO &io, const std::string &name,
-               const Mode openMode, MPI_Comm mpiComm)
+               const Mode openMode, helper::Comm comm)
 : m_EngineType(engineType), m_IO(io), m_Name(name), m_OpenMode(openMode),
-  m_MPIComm(mpiComm), m_DebugMode(io.m_DebugMode)
+  m_Comm(std::move(comm)), m_DebugMode(io.m_DebugMode)
 {
 }
 
-Engine::~Engine(){};
+Engine::~Engine() {}
 
 Engine::operator bool() const noexcept { return !m_IsClosed; }
 
@@ -69,9 +70,7 @@ void Engine::Close(const int transportIndex)
 
     if (transportIndex == -1)
     {
-        helper::CheckMPIReturn(SMPI_Comm_free(&m_MPIComm),
-                               "freeing comm in Engine " + m_Name +
-                                   ", in call to Close");
+        m_Comm.Free("freeing comm in Engine " + m_Name + ", in call to Close");
         m_IsClosed = true;
     }
 }
@@ -83,11 +82,12 @@ size_t Engine::Steps() const { return DoSteps(); }
 void Engine::LockWriterDefinitions() noexcept
 {
     m_WriterDefinitionsLocked = true;
-};
+}
+
 void Engine::LockReaderSelections() noexcept
 {
     m_ReaderSelectionsLocked = true;
-};
+}
 
 // PROTECTED
 void Engine::Init() {}

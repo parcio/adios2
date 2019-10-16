@@ -12,8 +12,9 @@
 
 #include <gtest/gtest.h>
 
-#include "ParseArgs.h"
 #include "TestData.h"
+
+#include "ParseArgs.h"
 
 class CommonReadTest : public ::testing::Test
 {
@@ -32,8 +33,6 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
     // form a mpiSize * Nx 1D array
     int mpiRank = 0, mpiSize = 1;
 
-    // Number of steps
-    const std::size_t NSteps = 10;
     int TimeGapDetected = 0;
 #ifdef ADIOS2_HAVE_MPI
     MPI_Comm_rank(testComm, &mpiRank);
@@ -78,14 +77,16 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
         auto scalar_r64 = io.InquireVariable<double>("scalar_r64");
         EXPECT_TRUE(scalar_r64);
 
+        auto var_time = io.InquireVariable<int64_t>("time");
+        EXPECT_TRUE(var_time);
+        ASSERT_EQ(var_time.ShapeID(), adios2::ShapeID::GlobalArray);
+        writerSize = var_time.Shape()[0];
+
         auto var_i8 = io.InquireVariable<int8_t>("i8");
         EXPECT_TRUE(var_i8);
         ASSERT_EQ(var_i8.ShapeID(), adios2::ShapeID::GlobalArray);
-        /* must be a multiple of Nx */
-        ASSERT_EQ(var_i8.Shape()[0] % Nx, 0);
-
         /* take the first size as something that gives us writer size */
-        writerSize = var_i8.Shape()[0] / 10;
+        Nx = var_i8.Shape()[0] / writerSize;
 
         auto var_i16 = io.InquireVariable<int16_t>("i16");
         EXPECT_TRUE(var_i16);
@@ -143,10 +144,50 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
             EXPECT_FALSE(var_r64_2d);
             EXPECT_FALSE(var_r64_2d_rev);
         }
-        auto var_time = io.InquireVariable<int64_t>("time");
-        EXPECT_TRUE(var_time);
-        ASSERT_EQ(var_time.ShapeID(), adios2::ShapeID::GlobalArray);
-        ASSERT_EQ(var_time.Shape()[0], writerSize);
+
+        const std::vector<adios2::Variable<int8_t>::Info> i8Info =
+            engine.BlocksInfo(var_i8, engine.CurrentStep());
+        const std::vector<adios2::Variable<int16_t>::Info> i16Info =
+            engine.BlocksInfo(var_i16, engine.CurrentStep());
+        const std::vector<adios2::Variable<int32_t>::Info> i32Info =
+            engine.BlocksInfo(var_i32, engine.CurrentStep());
+        const std::vector<adios2::Variable<int64_t>::Info> i64Info =
+            engine.BlocksInfo(var_i64, engine.CurrentStep());
+        const std::vector<adios2::Variable<float>::Info> r32Info =
+            engine.BlocksInfo(var_r32, engine.CurrentStep());
+        const std::vector<adios2::Variable<double>::Info> r64Info =
+            engine.BlocksInfo(var_r64, engine.CurrentStep());
+        EXPECT_EQ(i8Info.size(), writerSize);
+        EXPECT_EQ(i16Info.size(), writerSize);
+        EXPECT_EQ(i32Info.size(), writerSize);
+        EXPECT_EQ(i64Info.size(), writerSize);
+        EXPECT_EQ(r32Info.size(), writerSize);
+        EXPECT_EQ(r64Info.size(), writerSize);
+
+        for (size_t i = 0; i < writerSize; ++i)
+        {
+            EXPECT_FALSE(i8Info[0].IsValue);
+            EXPECT_FALSE(i16Info[0].IsValue);
+            EXPECT_FALSE(i32Info[0].IsValue);
+            EXPECT_FALSE(i64Info[0].IsValue);
+            EXPECT_FALSE(r32Info[0].IsValue);
+            EXPECT_FALSE(r64Info[0].IsValue);
+        }
+
+        if (var_c32)
+        {
+            const std::vector<adios2::Variable<std::complex<float>>::Info>
+                c32Info = engine.BlocksInfo(var_c32, engine.CurrentStep());
+            const std::vector<adios2::Variable<std::complex<double>>::Info>
+                c64Info = engine.BlocksInfo(var_c64, engine.CurrentStep());
+            EXPECT_EQ(c32Info.size(), writerSize);
+            EXPECT_EQ(c64Info.size(), writerSize);
+            for (size_t i = 0; i < writerSize; ++i)
+            {
+                EXPECT_FALSE(c32Info[0].IsValue);
+                EXPECT_FALSE(c64Info[0].IsValue);
+            }
+        }
 
         long unsigned int myStart =
             (long unsigned int)(writerSize * Nx / mpiSize) * mpiRank;
@@ -155,7 +196,7 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
 
         if (myStart + myLength > writerSize * Nx)
         {
-            myLength = (long unsigned int)writerSize * Nx - myStart;
+            myLength = (long unsigned int)writerSize * (int)Nx - myStart;
         }
         const adios2::Dims start{myStart};
         const adios2::Dims count{myLength};
@@ -189,16 +230,16 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
 
         var_time.SetSelection(sel_time);
 
-        in_I8.reserve(myLength);
-        in_I16.reserve(myLength);
-        in_I32.reserve(myLength);
-        in_I64.reserve(myLength);
-        in_R32.reserve(myLength);
-        in_R64.reserve(myLength);
-        in_C32.reserve(myLength);
-        in_C64.reserve(myLength);
-        in_R64_2d.reserve(myLength * 2);
-        in_R64_2d_rev.reserve(myLength * 2);
+        in_I8.resize(myLength);
+        in_I16.resize(myLength);
+        in_I32.resize(myLength);
+        in_I64.resize(myLength);
+        in_R32.resize(myLength);
+        in_R64.resize(myLength);
+        in_C32.resize(myLength);
+        in_C64.resize(myLength);
+        in_R64_2d.resize(myLength * 2);
+        in_R64_2d_rev.resize(myLength * 2);
         engine.Get(var_i8, in_I8.data());
         engine.Get(var_i16, in_I16.data());
         engine.Get(var_i32, in_I32.data());
@@ -218,6 +259,11 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
             engine.Get(var_r64_2d_rev, in_R64_2d_rev.data());
         std::time_t write_time;
         engine.Get(var_time, (int64_t *)&write_time);
+        if (LockGeometry)
+        {
+            // we'll never change our data decomposition
+            engine.LockReaderSelections();
+        }
         engine.EndStep();
 
         EXPECT_EQ(validateCommonTestData(myStart, myLength, t, !var_c32), 0);

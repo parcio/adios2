@@ -12,8 +12,9 @@
 
 #include <gtest/gtest.h>
 
-#include "ParseArgs.h"
 #include "TestData.h"
+
+#include "ParseArgs.h"
 
 class CommonReadTest : public ::testing::Test
 {
@@ -32,8 +33,6 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
     // form a mpiSize * Nx 1D array
     int mpiRank = 0, mpiSize = 1;
 
-    // Number of steps
-    const std::size_t NSteps = 10;
     int TimeGapDetected = 0;
 #ifdef ADIOS2_HAVE_MPI
     MPI_Comm_rank(testComm, &mpiRank);
@@ -78,7 +77,7 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
         //	std::cout << "Writer size is " << writerSize << std::endl;
 
         int rankToRead = mpiRank;
-        if (writerSize < mpiSize)
+        if (writerSize < static_cast<size_t>(mpiSize))
         {
             rankToRead = mpiRank % writerSize;
         }
@@ -138,7 +137,7 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
             EXPECT_FALSE(var_r64_2d_rev);
         }
 
-        long unsigned int hisStart = rankToRead * Nx;
+        long unsigned int hisStart = rankToRead * (int)Nx;
         long unsigned int hisLength = (long unsigned int)Nx;
 
         var_i8.SetBlockSelection(rankToRead);
@@ -162,16 +161,16 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
         const adios2::Box<adios2::Dims> sel_time(start_time, count_time);
         var_time.SetSelection(sel_time);
 
-        in_I8.reserve(hisLength);
-        in_I16.reserve(hisLength);
-        in_I32.reserve(hisLength);
-        in_I64.reserve(hisLength);
-        in_R32.reserve(hisLength);
-        in_R64.reserve(hisLength);
-        in_C32.reserve(hisLength);
-        in_C64.reserve(hisLength);
-        in_R64_2d.reserve(hisLength * 2);
-        in_R64_2d_rev.reserve(hisLength * 2);
+        in_I8.resize(hisLength);
+        in_I16.resize(hisLength);
+        in_I32.resize(hisLength);
+        in_I64.resize(hisLength);
+        in_R32.resize(hisLength);
+        in_R64.resize(hisLength);
+        in_C32.resize(hisLength);
+        in_C64.resize(hisLength);
+        in_R64_2d.resize(hisLength * 2);
+        in_R64_2d_rev.resize(hisLength * 2);
         engine.Get(var_i8, in_I8.data());
         engine.Get(var_i16, in_I16.data());
         engine.Get(var_i32, in_I32.data());

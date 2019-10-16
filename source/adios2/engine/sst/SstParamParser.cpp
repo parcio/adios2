@@ -15,13 +15,21 @@ void SstParamParser::ParseParams(IO &io, struct _SstParams &Params)
         auto itKey = io.m_Parameters.find(key);
         if (itKey != io.m_Parameters.end())
         {
-            if (itKey->second == "yes" || itKey->second == "true")
+            std::string value = itKey->second;
+            std::transform(value.begin(), value.end(), value.begin(),
+                           ::tolower);
+            if (value == "yes" || value == "true" || value == "on")
             {
                 parameter = 1;
             }
-            else if (itKey->second == "no" || itKey->second == "false")
+            else if (value == "no" || value == "false" || value == "off")
             {
                 parameter = 0;
+            }
+            else
+            {
+                throw std::invalid_argument(
+                    "ERROR: Unknown Sst Boolean parameter \"" + value + "\"");
             }
         }
     };
@@ -158,7 +166,7 @@ void SstParamParser::ParseParams(IO &io, struct _SstParams &Params)
             else
             {
                 throw std::invalid_argument(
-                    "ERROR: Unknown Sst MarshalMethod parameter \"" + method +
+                    "ERROR: Unknown Sst CPCommPattern parameter \"" + method +
                     "\"");
             }
             return true;
@@ -185,8 +193,39 @@ void SstParamParser::ParseParams(IO &io, struct _SstParams &Params)
             else
             {
                 throw std::invalid_argument(
-                    "ERROR: Unknown Sst MarshalMethod parameter \"" + method +
+                    "ERROR: Unknown Sst QueueFullPolicy parameter \"" + method +
                     "\"");
+            }
+            return true;
+        }
+        return false;
+    };
+
+    auto lf_SetSpecPreloadModeParameter = [&](const std::string key,
+                                              int &parameter) {
+        auto itKey = io.m_Parameters.find(key);
+        if (itKey != io.m_Parameters.end())
+        {
+            std::string method = itKey->second;
+            std::transform(method.begin(), method.end(), method.begin(),
+                           ::tolower);
+            if (method == "off")
+            {
+                parameter = SpecPreloadOff;
+            }
+            else if (method == "on")
+            {
+                parameter = SpecPreloadOn;
+            }
+            else if (method == "auto")
+            {
+                parameter = SpecPreloadAuto;
+            }
+            else
+            {
+                throw std::invalid_argument(
+                    "ERROR: Unknown Sst SpeculativePreloadMode parameter \"" +
+                    method + "\"");
             }
             return true;
         }

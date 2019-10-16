@@ -1,13 +1,14 @@
-[![GitHub (pre-)release](https://img.shields.io/github/release/ornladios/adios2/all.svg)]()
-[![GitHub license](http://dmlc.github.io/img/apache2.svg)](./LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Documentation](https://readthedocs.org/projects/adios2/badge/?version=latest)](https://adios2.readthedocs.io/en/latest/?badge=latest)
 
+[![GitHub (pre-)release](https://img.shields.io/github/release/ornladios/adios2/all.svg)]()
+[![Spack Version](https://img.shields.io/spack/v/adios2.svg)](https://spack.readthedocs.io/en/latest/package_list.html#adios2)
 
 [![Circle CI](https://circleci.com/gh/ornladios/ADIOS2.svg?style=shield)](https://circleci.com/gh/ornladios/ADIOS2)
-[![Travis CI](https://travis-ci.org/ornladios/ADIOS2.svg)](https://travis-ci.org/ornladios/ADIOS2)
+[![Travis CI](https://api.travis-ci.com/ornladios/ADIOS2.svg)](https://travis-ci.com/ornladios/ADIOS2)
 [![AppVeyor CI](https://ci.appveyor.com/api/projects/status/0s2a3qp57hgbvlhj?svg=true)](https://ci.appveyor.com/project/ornladios/adios2)
 
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/11116/badge.svg)](https://scan.coverity.com/projects/ornladios-adios2)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/6eeb5a8ac3e34d2599cfdea5bdc3390f)](https://www.codacy.com/app/chuckatkins/ADIOS2?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ornladios/ADIOS2&amp;utm_campaign=Badge_Grade)
 
 
 # ADIOS 2 : The Adaptable Input Output System version 2
@@ -15,7 +16,7 @@ This is ADIOS 2 : The Adaptable Input/Output (I/O) System, ADIOS 2 is developed 
 
 ADIOS 2 is a framework designed for scientific data I/O to publish and subscribe (put/get) data when and where required. 
 
-ADIOS 2 transports data as groups of self-describing variables and attributes across different media types (such as files, wide-area-networks, and remote direct memory access) using a common application programming interface for all transport modes. ADIOS 2 can be used on supercomputers, commercial clouds, and personal computers.
+ADIOS 2 transports data as groups of self-describing variables and attributes across different media types (such as files, wide-area-networks, and remote direct memory access) using a common application programming interface for all transport modes. ADIOS 2 can be used on supercomputers, cloud systems, and personal computers.
 
 ADIOS 2 focuses on:
 
@@ -54,7 +55,7 @@ Please find [The ADIOS 2 User Guide at readthedocs](https://adios2.readthedocs.i
 
 ## Releases
 
-* Latest release: [v2.4.0](https://github.com/ornladios/ADIOS2/releases/tag/v2.4.0)
+* Latest release: [v2.5.0](https://github.com/ornladios/ADIOS2/releases/tag/v2.5.0)
 
 * Previous releases: [https://github.com/ornladios/ADIOS2/releases](https://github.com/ornladios/ADIOS2/releases)
 
@@ -65,7 +66,6 @@ If you found a bug, please open an [issue on ADIOS2 github repository](https://g
 ## Contributing
 
 We invite the community to contribute, see [Contributor's Guide to ADIOS 2](Contributing.md) for instructions on how to contribute. ADIOS 2 will always be free and open-source.
-
 
 ## License
 ADIOS >= 2.0 is licensed under the Apache License v2.0.  See the accompanying

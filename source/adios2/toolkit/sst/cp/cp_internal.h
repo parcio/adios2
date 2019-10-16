@@ -23,6 +23,7 @@ typedef struct _CP_GlobalInfo
     CMFormat ReaderActivateFormat;
     CMFormat ReleaseTimestepFormat;
     CMFormat LockReaderDefinitionsFormat;
+    CMFormat CommPatternLockedFormat;
     CMFormat WriterCloseFormat;
     CMFormat ReaderCloseFormat;
     int CustomStructCount;
@@ -74,6 +75,8 @@ typedef struct _WS_ReaderInfo
     long LastSentTimestep;
     int LastReleasedTimestep;
     int ReaderDefinitionsLocked;
+    int ReaderSelectionLockTimestep;
+    SstPreloadModeType PreloadMode;
     long OldestUnreleasedTimestep;
     struct _SentTimestepRec *SentTimestepList;
     void *DP_WSR_Stream;
@@ -146,7 +149,6 @@ struct _SstStream
     /* WRITER-SIDE FIELDS */
     int WriterTimestep;
     int LastReleasedTimestep;
-    int ReaderDefinitionsLocked;
     CPTimestepList QueuedTimesteps;
     int QueuedTimestepCount;
     int QueueLimit;
@@ -177,6 +179,9 @@ struct _SstStream
     int LockDefnsCount;
     struct _ReleaseRec *LockDefnsList;
     enum StreamStatus Status;
+    AssembleMetadataUpcallFunc AssembleMetadataUpcall;
+    FreeMetadataUpcallFunc FreeMetadataUpcall;
+    void *UpcallWriter;
 
     /* READER-SIDE FIELDS */
     struct _TimestepMetadataList *Timesteps;
@@ -189,14 +194,18 @@ struct _SstStream
     SstFullMetadata CurrentMetadata;
     struct _SstParams *WriterConfigParams;
     void *ParamsBlock;
+    int CommPatternLocked;
+    int CommPatternLockedTimestep;
     long DiscardPriorTimestep; /* timesteps numerically less than this will be
                                   discarded with prejudice */
+    long LastDPNotifiedTimestep;
 
     /* reader side marshal info */
     FFSContext ReaderFFSContext;
     VarSetupUpcallFunc VarSetupUpcall;
     ArraySetupUpcallFunc ArraySetupUpcall;
     AttrSetupUpcallFunc AttrSetupUpcall;
+    ArrayBlocksInfoUpcallFunc ArrayBlocksInfoUpcall;
     void *SetupUpcallReader;
     void *ReaderMarshalData;
 
@@ -262,6 +271,7 @@ struct _ReaderRegisterMsg
     void *WriterFile;
     int WriterResponseCondition;
     int ReaderCohortSize;
+    SpeculativePreloadMode SpecPreload; // should be On or Off, not Auto
     CP_ReaderInitInfo *CP_ReaderInfo;
     void **DP_ReaderInfo;
 };
@@ -276,6 +286,7 @@ typedef struct _CombinedReaderInfo
     CP_ReaderInitInfo *CP_ReaderInfo;
     void **DP_ReaderInfo;
     void *RankZeroID;
+    SpeculativePreloadMode SpecPreload; // should be On or Off, not Auto
 } * reader_data_t;
 
 /*
@@ -333,6 +344,7 @@ typedef struct _TimestepMetadataMsg
     void *RS_Stream;
     int Timestep;
     int CohortSize;
+    SstPreloadModeType PreloadMode;
     FFSFormatList Formats;
     SstData Metadata;
     SstData AttributeData;
@@ -347,6 +359,7 @@ typedef struct _TimestepMetadataDistributionMsg
 {
     int ReturnValue;
     TSMetadataMsg TSmsg;
+    int CommPatternLockedTimestep;
 } * TSMetadataDistributionMsg;
 
 /*
@@ -396,6 +409,16 @@ struct _LockReaderDefinitionsMsg
 };
 
 /*
+ * The CommPatternLocked message informs the reader that writer and the reader
+ * has agreed that the communication pattern is locked starting with Timestep.
+ */
+typedef struct _CommPatternLockedMsg
+{
+    void *RS_Stream;
+    int Timestep;
+} * CommPatternLockedMsg;
+
+/*
  * The WriterClose message informs the readers that the writer is beginning an
  * orderly shutdown
  * of the stream.  Data will still be served, but no new timesteps will be
@@ -435,8 +458,8 @@ typedef struct _MetadataPlusDPInfo *MetadataPlusDPInfo;
 extern atom_t CM_TRANSPORT_ATOM;
 
 void CP_validateParams(SstStream stream, SstParams Params, int Writer);
-extern CP_GlobalInfo CP_getCPInfo(CP_DP_Interface DPInfo);
-extern char *CP_GetContactString(SstStream s);
+extern CP_GlobalInfo CP_getCPInfo(CP_DP_Interface DPInfo, char *ControlModule);
+extern char *CP_GetContactString(SstStream s, attr_list DPAttrs);
 extern SstStream CP_newStream();
 extern void SstInternalProvideTimestep(
     SstStream s, SstData LocalMetadata, SstData Data, long Timestep,
@@ -470,6 +493,9 @@ extern void CP_ReleaseTimestepHandler(CManager cm, CMConnection conn,
 extern void CP_LockReaderDefinitionsHandler(CManager cm, CMConnection conn,
                                             void *Msg_v, void *client_data,
                                             attr_list attrs);
+extern void CP_CommPatternLockedHandler(CManager cm, CMConnection conn,
+                                        void *Msg_v, void *client_data,
+                                        attr_list attrs);
 extern void CP_WriterCloseHandler(CManager cm, CMConnection conn, void *msg_v,
                                   void *client_data, attr_list attrs);
 extern void CP_ReaderCloseHandler(CManager cm, CMConnection conn, void *msg_v,

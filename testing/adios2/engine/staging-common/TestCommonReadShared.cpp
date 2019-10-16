@@ -12,8 +12,9 @@
 
 #include <gtest/gtest.h>
 
-#include "ParseArgs.h"
 #include "TestData.h"
+
+#include "ParseArgs.h"
 
 class CommonReadTest : public ::testing::Test
 {
@@ -32,9 +33,6 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
     // form a mpiSize * Nx 1D array
     int mpiRank = 0, mpiSize = 1;
 
-    // Number of steps
-    const std::size_t NSteps = 10;
-    int TimeGapDetected = 0;
 #ifdef ADIOS2_HAVE_MPI
     MPI_Comm_rank(testComm, &mpiRank);
     MPI_Comm_size(testComm, &mpiSize);
@@ -79,7 +77,6 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
     {
         size_t writerSize;
 
-
         auto var1 = io1.InquireVariable<double>(varname1);
         auto var2 = io2.InquireVariable<double>(varname2);
 
@@ -101,7 +98,7 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
 
         if (myStart + myLength > writerSize * Nx)
         {
-            myLength = (long unsigned int)(writerSize + 1) * Nx - myStart;
+            myLength = (long unsigned int)(writerSize + 1) * (int)Nx - myStart;
         }
         const adios2::Dims start{myStart};
         const adios2::Dims count{myLength};
@@ -113,8 +110,8 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
         var1.SetSelection(sel);
         var2.SetSelection(sel);
 
-        in_R64_1.reserve(myLength);
-        in_R64_2.reserve(myLength);
+        in_R64_1.resize(myLength);
+        in_R64_2.resize(myLength);
         engine1.Get(var1, in_R64_1.data());
         engine2.Get(var2, in_R64_2.data());
         engine1.EndStep();

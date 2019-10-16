@@ -13,11 +13,11 @@
 
 #include <adios2/common/ADIOSMPI.h>
 
-#include "adios2/toolkit/format/bp3/BP3.h"
-#include "adios2/toolkit/sst/sst.h"
-
 #include "adios2/common/ADIOSConfig.h"
 #include "adios2/core/Engine.h"
+#include "adios2/helper/adiosComm.h"
+#include "adios2/toolkit/format/bp/bp3/BP3Serializer.h"
+#include "adios2/toolkit/sst/sst.h"
 
 namespace adios2
 {
@@ -31,7 +31,7 @@ class SstWriter : public Engine
 
 public:
     SstWriter(IO &io, const std::string &name, const Mode mode,
-              MPI_Comm mpiComm);
+              helper::Comm comm);
 
     virtual ~SstWriter();
 

@@ -555,8 +555,13 @@ void *arg2;
     }
     FD_SET(fd, (fd_set *) sd->fdset);
     if (fd > FD_SETSIZE) {
-	fprintf(stderr, "Internal Error, stupid WINSOCK large FD bug.\n");
-	fprintf(stderr, "Increase FD_SETSIZE.  Item not added to fdset.\n");
+	fprintf(stderr, "The file descriptor number (%d) has exceeded the capability of select() on this system\n", fd);
+#ifndef HAVE_WINDOWS_H
+	fprintf(stderr, "Increase FD_SETSIZE if possible.\n");
+#else
+        fprintf(stderr, "Try running with a different control module if possible\n");
+#endif
+        fprintf(stderr, "Item not added to fdset.\n");
     }
     svc->verbose(sd->cm, CMSelectVerbose, "Adding fd %d to select read list", fd);
     sd->select_items[fd].func = func;
@@ -614,8 +619,13 @@ void *arg2;
 	FD_CLR(fd, (fd_set *) sd->write_set);
     }
     if (fd > FD_SETSIZE) {
-	fprintf(stderr, "Internal Error, stupid WINSOCK large FD bug.\n");
-	fprintf(stderr, "Increase FD_SETSIZE.  Item not added to fdset.\n");
+	fprintf(stderr, "The file descriptor number (%d) has exceeded the capability of select() on this system\n", fd);
+#ifndef HAVE_WINDOWS_H
+	fprintf(stderr, "Increase FD_SETSIZE if possible.\n");
+#else
+        fprintf(stderr, "Try running with a different control module if possible\n");
+#endif
+        fprintf(stderr, "Item not added to fdset.\n");
     }
     sd->write_items[fd].func = func;
     sd->write_items[fd].arg1 = arg1;
@@ -1118,4 +1128,23 @@ void *client_data;
     if (*((select_data_ptr *)client_data) != NULL) {
 	(*((select_data_ptr*)client_data))->closed = 1;
     }
+}
+
+extern void
+libcmselect_init_sel_item(struct _select_item *sel_item)
+{
+    sel_item->add_select = (CMAddSelectFunc)libcmselect_LTX_add_select;
+    sel_item->remove_select = (CMRemoveSelectFunc)libcmselect_LTX_remove_select;
+    sel_item->write_select = (CMAddSelectFunc) libcmselect_LTX_write_select;
+    sel_item->add_periodic = (CMAddPeriodicFunc)libcmselect_LTX_add_periodic;
+    sel_item->add_delayed_task = 
+	 (CMAddPeriodicFunc)libcmselect_LTX_add_delayed_task;
+    sel_item->remove_periodic = (CMRemovePeriodicFunc)libcmselect_LTX_remove_periodic;
+    sel_item->wake_function = (CMWakeSelectFunc)libcmselect_LTX_wake_function;
+    sel_item->blocking_function = (CMPollFunc)libcmselect_LTX_blocking_function;
+    sel_item->polling_function =  (CMPollFunc)libcmselect_LTX_polling_function;
+    sel_item->initialize = (SelectInitFunc)libcmselect_LTX_select_initialize;
+    sel_item->shutdown = (SelectInitFunc) libcmselect_LTX_select_shutdown;
+    sel_item->free = (SelectInitFunc) libcmselect_LTX_select_free;
+    sel_item->stop = (CMWakeSelectFunc) libcmselect_LTX_select_stop;
 }

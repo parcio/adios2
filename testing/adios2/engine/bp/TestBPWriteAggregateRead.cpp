@@ -21,8 +21,7 @@ void WriteAggRead1D8(const std::string substreams)
 {
     // Each process would write a 1x8 array and all processes would
     // form a mpiSize * Nx 1D array
-    const std::string fname("ADIOS2BPWriteAggregateRead1D8_" + substreams +
-                            ".bp");
+    const std::string fname("BPWriteAggregateRead1D8_" + substreams + ".bp");
 
     int mpiRank = 0, mpiSize = 1;
     // Number of rows
@@ -79,7 +78,7 @@ void WriteAggRead1D8(const std::string substreams)
         else
         {
             // Create the BP Engine
-            io.SetEngine("BPFile");
+            io.SetEngine("File");
         }
 
         io.AddTransport("file");
@@ -322,8 +321,7 @@ void WriteAggRead2D4x2(const std::string substreams)
 {
     // Each process would write a 2x4 array and all processes would
     // form a 2D 2 * (numberOfProcess*Nx) matrix where Nx is 4 here
-    const std::string fname("ADIOS2BPWriteAggregateRead2D2x4_" + substreams +
-                            ".bp");
+    const std::string fname("BPWriteAggregateRead2D2x4_" + substreams + ".bp");
 
     int mpiRank = 0, mpiSize = 1;
     // Number of rows
@@ -386,7 +384,7 @@ void WriteAggRead2D4x2(const std::string substreams)
         else
         {
             // Create the BP Engine
-            io.SetEngine("BPFile");
+            io.SetEngine("File");
         }
 
         io.AddTransport("file");
@@ -634,8 +632,7 @@ void WriteAggRead2D2x4(const std::string substreams)
 {
     // Each process would write a 4x2 array and all processes would
     // form a 2D 4 * (NumberOfProcess * Nx) matrix where Nx is 2 here
-    const std::string fname("ADIOS2BPWriteAggregateRead2D4x2_" + substreams +
-                            ".bp");
+    const std::string fname("BPWriteAggregateRead2D4x2_" + substreams + ".bp");
 
     int mpiRank = 0, mpiSize = 1;
     // Number of rows
@@ -696,7 +693,7 @@ void WriteAggRead2D2x4(const std::string substreams)
         else
         {
             // Create the BP Engine
-            io.SetEngine("BPFile");
+            io.SetEngine("File");
         }
 
         io.AddTransport("file");

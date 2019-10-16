@@ -11,13 +11,14 @@
  *      Author: Norbert Podhorszki pnorbert@ornl.gov
  */
 
-#ifndef ADIOS2_ENGINE_INSITUMPIMPIWRITER_H_
-#define ADIOS2_ENGINE_INSITUMPIMPIWRITER_H_
+#ifndef ADIOS2_ENGINE_INSITUMPI_INSITUMPIWRITER_H_
+#define ADIOS2_ENGINE_INSITUMPI_INSITUMPIWRITER_H_
 
 #include "InSituMPISchedules.h"
 #include "adios2/common/ADIOSConfig.h"
 #include "adios2/core/Engine.h"
-#include "adios2/toolkit/format/bp3/BP3.h"
+#include "adios2/helper/adiosComm.h"
+#include "adios2/toolkit/format/bp/bp3/BP3Serializer.h"
 
 namespace adios2
 {
@@ -34,12 +35,12 @@ public:
      * Constructor for Writer writes in ADIOS 1.x BP format
      * @param name unique name given to the engine
      * @param accessMode
-     * @param mpiComm
+     * @param comm
      * @param method
      * @param debugMode
      */
     InSituMPIWriter(IO &adios, const std::string &name, const Mode openMode,
-                    MPI_Comm mpiComm);
+                    helper::Comm comm);
 
     ~InSituMPIWriter();
 
@@ -135,4 +136,4 @@ private:
 } // end namespace core
 } // end namespace adios2
 
-#endif /* ADIOS2_ENGINE_INSITUMPIMPIWRITER_H_ */
+#endif /* ADIOS2_ENGINE_INSITUMPI_INSITUMPIWRITER_H_ */

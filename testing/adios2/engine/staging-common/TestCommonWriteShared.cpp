@@ -13,8 +13,9 @@
 
 #include <gtest/gtest.h>
 
-#include "ParseArgs.h"
 #include "TestData.h"
+
+#include "ParseArgs.h"
 
 class CommonWriteTest : public ::testing::Test
 {
@@ -31,9 +32,6 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
 {
     // form a mpiSize * Nx 1D array
     int mpiRank = 0, mpiSize = 1;
-
-    // Number of steps
-    const std::size_t NSteps = 10;
 
 #ifdef ADIOS2_HAVE_MPI
     MPI_Comm_rank(testComm, &mpiRank);
@@ -70,22 +68,22 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
     // Declare 1D variables (NumOfProcesses * Nx)
     // The local process' part (start, count) can be defined now or later
     // before Write().
-    unsigned int myStart1 = Nx * mpiRank, myStart2 = Nx * mpiRank;
-    unsigned int myCount1 = Nx, myCount2 = Nx;
+    unsigned int myStart1 = (int)Nx * mpiRank, myStart2 = (int)Nx * mpiRank;
+    unsigned int myCount1 = (int)Nx, myCount2 = (int)Nx;
     if (mpiRank == 0)
     {
         /* first guy gets twice allotment var 1 */
-        myCount1 = 2 * Nx;
+        myCount1 = 2 * (int)Nx;
     }
     else
     {
         /* everyone else shifts up */
-        myStart1 += Nx;
+        myStart1 += (int)Nx;
     }
     if (mpiRank == (mpiSize - 1))
     {
         /* last guy  gets twice allotment var 2 */
-        myCount2 = 2 * Nx;
+        myCount2 = 2 * (int)Nx;
     }
     {
         adios2::Dims shape1{static_cast<unsigned int>(Nx * (mpiSize + 1))};
@@ -95,12 +93,12 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
         adios2::Dims start2{static_cast<unsigned int>(myStart2)};
         adios2::Dims count2{static_cast<unsigned int>(myCount2)};
 
-        auto var1 =
-            io1.DefineVariable<double>(varname1, shape1, start1, count1);
+        //        auto var1 =
+        (void)io1.DefineVariable<double>(varname1, shape1, start1, count1);
         if (!SharedVar)
         {
-            auto var2 =
-                io2->DefineVariable<double>(varname2, shape2, start2, count2);
+            //
+            (void)io2->DefineVariable<double>(varname2, shape2, start2, count2);
         }
     }
 
@@ -122,9 +120,9 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
         std::vector<double> data_reverse;
 
         generateSimpleForwardData(data_forward, (int)step, myStart1, myCount1,
-                                  Nx * (mpiSize + 1));
+                                  (int)Nx * (mpiSize + 1));
         generateSimpleReverseData(data_reverse, (int)step, myStart2, myCount2,
-                                  Nx * (mpiSize + 1));
+                                  (int)Nx * (mpiSize + 1));
 
         engine1.BeginStep();
         engine2.BeginStep();

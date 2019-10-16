@@ -79,15 +79,15 @@ static unsigned int ParseUintParam(const std::string &optionName, char *arg)
     return (unsigned int)retval;
 }
 
-class EngineCommon : public ::testing::Test
+class Common : public ::testing::Test
 {
 public:
-    EngineCommon() = default;
+    Common() = default;
     SmallTestData m_TestData;
 };
 
 // ADIOS2 write, read  attributes
-TEST_F(EngineCommon, NewAttributeEveryStep)
+TEST_F(Common, NewAttributeEveryStep)
 {
     std::string streamName = "attributes_" + engineName;
     if (engineName == "HDF5")
@@ -273,7 +273,7 @@ TEST_F(EngineCommon, NewAttributeEveryStep)
 
     // Separate each individual test with a big gap in time
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-};
+}
 
 void threadTimeoutRun(size_t t)
 {

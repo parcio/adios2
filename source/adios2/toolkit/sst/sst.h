@@ -135,10 +135,28 @@ typedef void *(*ArraySetupUpcallFunc)(void *Reader, const char *Name,
                                       const char *Type, int DimsCount,
                                       size_t *Shape, size_t *Start,
                                       size_t *Count);
-extern void SstReaderInitFFSCallback(SstStream stream, void *Reader,
-                                     VarSetupUpcallFunc VarCallback,
-                                     ArraySetupUpcallFunc ArrayCallback,
-                                     AttrSetupUpcallFunc AttrCallback);
+typedef void (*ArrayBlocksInfoUpcallFunc)(void *Reader, void *Variable,
+                                          const char *Type, int WriterRank,
+                                          int DimsCount, size_t *Shape,
+                                          size_t *Start, size_t *Count);
+extern void SstReaderInitFFSCallback(
+    SstStream stream, void *Reader, VarSetupUpcallFunc VarCallback,
+    ArraySetupUpcallFunc ArrayCallback, AttrSetupUpcallFunc AttrCallback,
+    ArrayBlocksInfoUpcallFunc BlocksInfoCallback);
+
+/*
+ *  Calls that support SST-external writer-side aggregation of metadata
+ */
+typedef void *(*AssembleMetadataUpcallFunc)(void *Writer, int CohortSize,
+                                            struct _SstData *Metadata,
+                                            struct _SstData *AttributeData);
+typedef void (*FreeMetadataUpcallFunc)(void *Writer, struct _SstData *Metadata,
+                                       struct _SstData *AttributeData,
+                                       void *ClientData);
+extern void
+SstWriterInitMetadataCallback(SstStream stream, void *Writer,
+                              AssembleMetadataUpcallFunc AssembleCallback,
+                              FreeMetadataUpcallFunc FreeCallback);
 
 extern void SstFFSMarshal(SstStream Stream, void *Variable, const char *Name,
                           const char *Type, size_t ElemSize, size_t DimCount,

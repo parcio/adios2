@@ -26,23 +26,60 @@ namespace engine
 {
 
 SscReader::SscReader(IO &io, const std::string &name, const Mode mode,
-                     MPI_Comm mpiComm)
-: Engine("SscReader", io, name, mode, mpiComm),
-  m_DataManSerializer(helper::IsRowMajor(io.m_HostLanguage), true,
-                      helper::IsLittleEndian(), mpiComm),
+                     helper::Comm comm)
+: Engine("SscReader", io, name, mode, std::move(comm)),
+  m_DataManSerializer(m_Comm, helper::IsRowMajor(io.m_HostLanguage)),
   m_RepliedMetadata(std::make_shared<std::vector<char>>())
 {
     TAU_SCOPED_TIMER_FUNC();
-    m_DataTransport = std::make_shared<transportman::StagingMan>(
-        mpiComm, Mode::Read, m_Timeout, 1e9);
-    m_MetadataTransport = std::make_shared<transportman::StagingMan>(
-        mpiComm, Mode::Read, m_Timeout, 1e8);
-    m_EndMessage = " in call to IO Open SscReader " + m_Name + "\n";
-    MPI_Comm_rank(mpiComm, &m_MpiRank);
-    Init();
+
+    m_MpiRank = m_Comm.Rank();
+    srand(time(NULL));
+
+    // initialize parameters from IO
+    for (const auto &pair : m_IO.m_Parameters)
+    {
+        std::string key(pair.first);
+        std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+        std::string value(pair.second);
+        std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+        if (key == "verbose")
+        {
+            m_Verbosity = std::stoi(value);
+        }
+        else if (key == "timeout")
+        {
+            m_Timeout = std::stoi(value);
+        }
+    }
+
+    // retrieve all writer addresses
+    helper::HandshakeReader(m_Comm, m_AppID, m_FullAddresses, m_Name, "ssc");
+
+    // initialize transports
+    m_DataTransport.OpenRequester(m_Timeout, m_DataReceiverBufferSize);
+    m_MetadataTransport.OpenRequester(m_Timeout, m_MetadataReceiverBufferSize);
+
+    // request attributes from writer
+    auto reply = std::make_shared<std::vector<char>>();
+    if (m_MpiRank == 0)
+    {
+        std::vector<char> request(2 * sizeof(int64_t));
+        reinterpret_cast<int64_t *>(request.data())[0] = m_AppID;
+        reinterpret_cast<int64_t *>(request.data())[1] = -3;
+        std::string address = m_FullAddresses[rand() % m_FullAddresses.size()];
+        while (reply->size() < 6)
+        {
+            reply = m_MetadataTransport.Request(request.data(), request.size(),
+                                                address);
+        }
+    }
+    m_DataManSerializer.PutAggregatedMetadata(reply, m_Comm);
+    m_DataManSerializer.GetAttributes(m_IO);
+
     if (m_Verbosity >= 5)
     {
-        std::cout << "Staging Reader " << m_MpiRank << " Open(" << m_Name
+        std::cout << "SscReader " << m_MpiRank << " Open(" << m_Name
                   << ") in constructor." << std::endl;
     }
 }
@@ -50,15 +87,7 @@ SscReader::SscReader(IO &io, const std::string &name, const Mode mode,
 SscReader::~SscReader()
 {
     TAU_SCOPED_TIMER_FUNC();
-    if (m_Verbosity >= 5)
-    {
-        std::cout << "Staging Reader " << m_MpiRank << " destructor on "
-                  << m_Name << "\n";
-    }
-    m_MetadataTransport->CloseTransport();
-    m_DataTransport->CloseTransport();
-    m_DataTransport = nullptr;
-    m_MetadataTransport = nullptr;
+    Log(5, "SscReader::~SscReader()", true, true);
 }
 
 StepStatus SscReader::BeginStepIterator(StepMode stepMode,
@@ -67,7 +96,7 @@ StepStatus SscReader::BeginStepIterator(StepMode stepMode,
     TAU_SCOPED_TIMER_FUNC();
 
     RequestMetadata();
-    m_MetaDataMap = m_DataManSerializer.GetMetaData();
+    m_MetaDataMap = m_DataManSerializer.GetFullMetadataMap();
 
     if (m_MetaDataMap.empty())
     {
@@ -86,7 +115,7 @@ StepStatus SscReader::BeginStepIterator(StepMode stepMode,
             maxStep = i.first;
         }
     }
-    if (m_CurrentStep > maxStep)
+    if (maxStep <= m_CurrentStep)
     {
         Log(50,
             "SscReader::BeginStepIterator() returned NotReady because no new "
@@ -164,8 +193,12 @@ StepStatus SscReader::BeginStep(const StepMode stepMode,
                     "timeout.",
                     true, true);
                 --m_CurrentStep;
-                return StepStatus::NotReady;
+                return StepStatus::EndOfStream;
             }
+        }
+        else
+        {
+            return StepStatus::NotReady;
         }
     }
 
@@ -225,30 +258,15 @@ void SscReader::PerformGets()
 
     for (const auto &i : *requests)
     {
-        auto reply = m_DataTransport->Request(*i.second, i.first);
-        if (reply->empty())
+        auto reply = m_DataTransport.Request(i.second->data(), i.second->size(),
+                                             i.first);
+        if (reply == nullptr or reply->size() <= 16)
         {
+            m_ConnectionLost = true;
             Log(1,
                 "Lost connection to writer. Data for the final step is "
                 "corrupted!",
                 true, true);
-            m_ConnectionLost = true;
-            return;
-        }
-        if (reply->size() <= 16)
-        {
-            std::string msg = "Step " + std::to_string(m_CurrentStep) +
-                              " received empty data package from writer " +
-                              i.first +
-                              ". This may be caused by a network failure.";
-            if (m_Tolerance)
-            {
-                Log(1, msg, true, true);
-            }
-            else
-            {
-                throw(std::runtime_error(msg));
-            }
         }
         else
         {
@@ -335,57 +353,6 @@ void SscReader::EndStep()
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
 
-void SscReader::Init()
-{
-    TAU_SCOPED_TIMER_FUNC();
-    srand(time(NULL));
-    InitParameters();
-    helper::HandshakeReader(m_MPIComm, m_AppID, m_FullAddresses, m_Name, "ssc");
-
-    format::VecPtr reply = std::make_shared<std::vector<char>>();
-    if (m_MpiRank == 0)
-    {
-        std::vector<char> request(2 * sizeof(int64_t));
-        reinterpret_cast<int64_t *>(request.data())[0] = m_AppID;
-        reinterpret_cast<int64_t *>(request.data())[1] = -3;
-        std::string address = m_FullAddresses[rand() % m_FullAddresses.size()];
-        while (reply->size() < 6)
-        {
-            reply = m_MetadataTransport->Request(request, address);
-        }
-    }
-    m_DataManSerializer.PutAggregatedMetadata(reply, m_MPIComm);
-    m_DataManSerializer.GetAttributes(m_IO);
-
-    if (m_Verbosity >= 5)
-    {
-        for (const auto &i : m_FullAddresses)
-        {
-            std::cout << i << std::endl;
-        }
-    }
-}
-
-void SscReader::InitParameters()
-{
-    TAU_SCOPED_TIMER_FUNC();
-    for (const auto &pair : m_IO.m_Parameters)
-    {
-        std::string key(pair.first);
-        std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-
-        std::string value(pair.second);
-        std::transform(value.begin(), value.end(), value.begin(), ::tolower);
-
-        if (key == "verbose")
-        {
-            m_Verbosity = std::stoi(value);
-        }
-    }
-}
-
-void SscReader::InitTransports() {}
-
 void SscReader::RequestMetadata(const int64_t step)
 {
     TAU_SCOPED_TIMER_FUNC();
@@ -396,19 +363,16 @@ void SscReader::RequestMetadata(const int64_t step)
         reinterpret_cast<int64_t *>(request.data())[0] = m_AppID;
         reinterpret_cast<int64_t *>(request.data())[1] = step;
         std::string address = m_FullAddresses[rand() % m_FullAddresses.size()];
-        reply = m_MetadataTransport->Request(request, address);
+        reply = m_MetadataTransport.Request(request.data(), request.size(),
+                                            address);
     }
-    m_DataManSerializer.PutAggregatedMetadata(reply, m_MPIComm);
+    m_DataManSerializer.PutAggregatedMetadata(reply, m_Comm);
 }
 
 void SscReader::DoClose(const int transportIndex)
 {
     TAU_SCOPED_TIMER_FUNC();
-    if (m_Verbosity >= 5)
-    {
-        std::cout << "Staging Reader " << m_MpiRank << " Close(" << m_Name
-                  << ")\n";
-    }
+    Log(5, "SscReader::DoClose()", true, true);
 }
 
 void SscReader::Log(const int level, const std::string &message, const bool mpi,

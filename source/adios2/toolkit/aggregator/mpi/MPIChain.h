@@ -26,25 +26,23 @@ public:
 
     ~MPIChain() = default;
 
-    void Init(const size_t subStreams, MPI_Comm parentComm) final;
+    void Init(const size_t subStreams, helper::Comm const &parentComm) final;
 
-    std::vector<std::vector<MPI_Request>> IExchange(BufferSTL &bufferSTL,
-                                                    const int step) final;
+    ExchangeRequests IExchange(format::Buffer &buffer, const int step) final;
 
-    std::vector<std::vector<MPI_Request>>
-    IExchangeAbsolutePosition(BufferSTL &bufferSTL, const int step) final;
+    ExchangeAbsolutePositionRequests
+    IExchangeAbsolutePosition(format::Buffer &buffer, const int step) final;
 
-    void Wait(std::vector<std::vector<MPI_Request>> &request,
-              const int step) final;
+    void Wait(ExchangeRequests &requests, const int step) final;
 
-    void WaitAbsolutePosition(std::vector<std::vector<MPI_Request>> &requests,
+    void WaitAbsolutePosition(ExchangeAbsolutePositionRequests &requests,
                               const int step) final;
 
     void SwapBuffers(const int step) noexcept final;
 
     void ResetBuffers() noexcept final;
 
-    BufferSTL &GetConsumerBuffer(BufferSTL &bufferSTL) final;
+    format::Buffer &GetConsumerBuffer(format::Buffer &buffer) final;
 
 private:
     bool m_IsInExchangeAbsolutePosition = false;
@@ -62,28 +60,28 @@ private:
      * Returns a reference to the sender buffer depending on
      * m_CurrentBufferOrder
      * flag
-     * @param bufferSTL original buffer from serializer
+     * @param buffer original buffer from serializer
      * @return reference to sender buffer
      */
-    BufferSTL &GetSender(BufferSTL &bufferSTL);
+    format::Buffer &GetSender(format::Buffer &buffer);
 
     /**
      * Returns a reference to the receiver buffer depending on
      * m_CurrentBufferOrder
      * flag
-     * @param bufferSTL original buffer from serializer
+     * @param buffer original buffer from serializer
      * @return reference to receiver buffer
      */
-    BufferSTL &GetReceiver(BufferSTL &bufferSTL);
+    format::Buffer &GetReceiver(format::Buffer &buffer);
 
     /**
-     * Resizes and updates m_Position in a bufferSTL, used for receiving buffers
+     * Resizes and updates m_Position in a buffer, used for receiving buffers
      * @param newSize new size for receiving buffer
-     * @param bufferSTL to be resized
+     * @param buffer to be resized
      * @param hint used in exception error message
      */
-    void ResizeUpdateBufferSTL(const size_t newSize, BufferSTL &bufferSTL,
-                               const std::string hint);
+    void ResizeUpdateBuffer(const size_t newSize, format::Buffer &buffer,
+                            const std::string hint);
 };
 
 } // end namespace aggregator
