@@ -39,9 +39,24 @@ if(zfp_FOUND)
   set(ADIOS2_HAVE_ZFP TRUE)
 endif()
 
-# JULEA on various machines
+# JULEA
 if(ADIOS2_USE_JULEA)
-  set(ADIOS2_HAVE_JULEA TRUE)
+  find_package(PkgConfig REQUIRED)
+  if(PKGCONFIG_FOUND)
+    # TODO: remove unused
+    pkg_check_modules(JULEA REQUIRED IMPORTED_TARGET
+      julea
+      julea-kv
+      julea-object
+      julea-item
+    )
+  endif()
+
+  if(JULEA_FOUND)
+    set(ADIOS2_HAVE_JULEA TRUE)
+  else()
+    message(FATAL_ERROR "julea not found")
+  endif()
 endif()
 
 if(ADIOS2_USE_JULEA_CLUSTER)
