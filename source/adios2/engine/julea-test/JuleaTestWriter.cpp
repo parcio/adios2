@@ -16,7 +16,6 @@
 #include "adios2/toolkit/transport/file/FileFStream.h"
 
 #include <iostream>
-#include <julea-config.h> //needed?
 #include <julea-object.h> //needed?
 
 // #include <julea-adios.h>

@@ -70,15 +70,7 @@
 #include "adios2/engine/insitumpi/InSituMPIWriter.h"
 #endif
 
-
-// #ifdef ADIOS2_HAVE_JULEA_GONDOLIN || ADIOS2_HAVE_JULEA_CLUSTER || ADIOS2_HAVE_JULEA_MINASTIRITH || ADIOS2_HAVE_JULEA_VINYAMAR || ADIOS2_HAVE_JULEA // external dependencies
-// #include "adios2/engine/julea/JuleaReader.h"
-// #include "adios2/engine/julea/JuleaWriter.h"
-// // #include "adios2/engine/julea/JuleaxClientLogic.h" //needed?
-// #endif
-
-
-#ifdef ADIOS2_HAVE_JULEA_GONDOLIN // external dependencies
+#ifdef ADIOS2_HAVE_JULEA // external dependencies
 // #include "adios2/engine/julea-original/JuleaReader.h"
 // #include "adios2/engine/julea-original/JuleaWriter.h"
 #include "adios2/engine/julea-kv/JuleaKVReader.h"
@@ -89,18 +81,37 @@
 // #include "adios2/engine/julea-db/JuleaDBWriter.h"
 #endif
 
-#ifdef ADIOS2_HAVE_JULEA_MINASTIRITH // external dependencies
-#include "adios2/engine/julea-kv/JuleaKVReader.h"
-#include "adios2/engine/julea-kv/JuleaKVWriter.h"
-#include "adios2/engine/julea-test/JuleaTestReader.h"
-#include "adios2/engine/julea-test/JuleaTestWriter.h"
-// #include "adios2/engine/julea-smd-kv/JuleaReader.h"
-// #include "adios2/engine/julea-smd-kv/JuleaWriter.h"
+
+// #ifdef ADIOS2_HAVE_JULEA_GONDOLIN || ADIOS2_HAVE_JULEA_CLUSTER || ADIOS2_HAVE_JULEA_MINASTIRITH || ADIOS2_HAVE_JULEA_VINYAMAR || ADIOS2_HAVE_JULEA // external dependencies
+// #include "adios2/engine/julea/JuleaReader.h"
+// #include "adios2/engine/julea/JuleaWriter.h"
+// // #include "adios2/engine/julea/JuleaxClientLogic.h" //needed?
+// #endif
+
+
+// #ifdef ADIOS2_HAVE_JULEA_GONDOLIN // external dependencies
+// // #include "adios2/engine/julea-original/JuleaReader.h"
+// // #include "adios2/engine/julea-original/JuleaWriter.h"
+// #include "adios2/engine/julea-kv/JuleaKVReader.h"
+// #include "adios2/engine/julea-kv/JuleaKVWriter.h"
 // #include "adios2/engine/julea-test/JuleaTestReader.h"
 // #include "adios2/engine/julea-test/JuleaTestWriter.h"
-// #include "adios2/engine/julea-db/JuleaDBReader.h"
-// #include "adios2/engine/julea-db/JuleaDBWriter.h"
-#endif
+// // #include "adios2/engine/julea-db/JuleaDBReader.h"
+// // #include "adios2/engine/julea-db/JuleaDBWriter.h"
+// #endif
+
+// #ifdef ADIOS2_HAVE_JULEA_MINASTIRITH // external dependencies
+// #include "adios2/engine/julea-kv/JuleaKVReader.h"
+// #include "adios2/engine/julea-kv/JuleaKVWriter.h"
+// #include "adios2/engine/julea-test/JuleaTestReader.h"
+// #include "adios2/engine/julea-test/JuleaTestWriter.h"
+// // #include "adios2/engine/julea-smd-kv/JuleaReader.h"
+// // #include "adios2/engine/julea-smd-kv/JuleaWriter.h"
+// // #include "adios2/engine/julea-test/JuleaTestReader.h"
+// // #include "adios2/engine/julea-test/JuleaTestWriter.h"
+// // #include "adios2/engine/julea-db/JuleaDBReader.h"
+// // #include "adios2/engine/julea-db/JuleaDBWriter.h"
+// #endif
 
 namespace adios2
 {
@@ -780,21 +791,31 @@ Engine &IO::Open(const std::string &name, const Mode mode, MPI_Comm mpiComm)
     // }
     else if (engineTypeLC == "julea-kv")
     {
+#ifdef ADIOS2_HAVE_JULEA
         if (mode == Mode::Read)
             engine = std::make_shared<engine::JuleaKVReader>(*this, name, mode,
                                                               std::move(comm));
         else
             engine = std::make_shared<engine::JuleaKVWriter>(*this, name, mode,
                                                               std::move(comm));
+#else
+        throw std::invalid_argument("ERROR: this version didn't compile with "
+                                    "JULEA, can't use JuleaKV engine\n");
+#endif
     }
     else if (engineTypeLC == "julea-test")
     {
+#ifdef ADIOS2_HAVE_JULEA
         if (mode == Mode::Read)
             engine = std::make_shared<engine::JuleaTestReader>(*this, name, mode,
                                                               std::move(comm));
         else
             engine = std::make_shared<engine::JuleaTestWriter>(*this, name, mode,
                                                               std::move(comm));
+#else
+        throw std::invalid_argument("ERROR: this version didn't compile with "
+                                    "JULEA, can't use JuleaTest engine\n");
+#endif
     }
     // else if (engineTypeLC == "julea-db")
     // {
@@ -805,6 +826,7 @@ Engine &IO::Open(const std::string &name, const Mode mode, MPI_Comm mpiComm)
     //         engine = std::make_shared<engine::JuleaDBWriter>(*this, name, mode,
     //                                                           mpiComm);
     // }
+
     else
     {
         if (m_DebugMode)

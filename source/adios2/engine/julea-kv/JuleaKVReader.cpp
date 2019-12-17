@@ -251,7 +251,7 @@ void JuleaKVReader::Init()
         std::cout << "Julea Reader " << m_ReaderRank << " Init()\n";
     }
 
-    j_init();
+    // j_init();
     m_JuleaSemantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
 
     InitParameters();

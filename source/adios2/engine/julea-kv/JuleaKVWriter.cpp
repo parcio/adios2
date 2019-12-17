@@ -21,7 +21,6 @@
 #include "adios2/toolkit/transport/file/FileFStream.h"
 
 #include <iostream>
-#include <julea-config.h> //needed?
 #include <julea-object.h> //needed?
 
 // #include <julea-adios.h>
@@ -248,7 +247,7 @@ void JuleaKVWriter::Init()
 
     m_JuleaSemantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
 
-    j_init();
+    // j_init();
     InitParameters();
     InitTransports();
     InitVariables();
