@@ -82,7 +82,7 @@ def readDataToNumpyArray(f, typeName, nElements):
         return np.zeros(1, dtype=np.uint32)
 
 
-def ReadCharacteristicsFromData(f, limit, typeID):
+def ReadCharacteristicsFromData(f, limit, typeID, ndim):
     cStartPosition = f.tell()
     dataTypeName = bp4dbg_utils.GetTypeName(typeID)
     # 1 byte NCharacteristics
@@ -114,6 +114,34 @@ def ReadCharacteristicsFromData(f, limit, typeID):
         elif cName == 'time_index' or cName == 'file_index':
             data = readDataToNumpyArray(f, 'unsigned_integer', 1)
             print("          Value       : {0}".format(data[0]))
+        elif cName == 'minmax':
+            nBlocks = np.fromfile(f,
+                                  dtype=np.uint16, count=1)[0]
+            print("          nBlocks     : {0}".format(nBlocks))
+            bminmax = readDataToNumpyArray(f, dataTypeName, 2)
+            print("          Min/max     : {0} / {1}".format(
+                bminmax[0], bminmax[1]))
+            if nBlocks > 1:
+                method = np.fromfile(f, dtype=np.uint8,
+                                     count=1)[0]
+                print("          Division method: {0}".format(method))
+                blockSize = np.fromfile(f, dtype=np.uint64,
+                                        count=1)[0]
+                print("          Block size     : {0}".format(blockSize))
+                div = np.fromfile(f, dtype=np.uint16,
+                                  count=ndim)
+                print("          Division vector: (", end="")
+                for d in range(ndim):
+                    print("{0}".format(div[d]), end="")
+                    if d < ndim - 1:
+                        print(", ", end="")
+                    else:
+                        print(")")
+                minmax = readDataToNumpyArray(
+                    f, dataTypeName, 2 * nBlocks)
+                for i in range(nBlocks):
+                    print("          Min/max        : {0} / {1}".format(
+                        minmax[2 * i], minmax[2 * i + 1]))
         else:
             print("                ERROR: could not understand this "
                   "characteristics type '{0}' id {1}".format(cName, cID))
@@ -141,10 +169,10 @@ def ReadStringVarData(f, expectedSize,
 # Read Variable data
 
 
-def ReadVarData(f, nElements, typeID, ldims, expectedSize,
+def ReadVarData(f, nElements, typeID, ldims, varLen,
                 varsStartPosition, varsTotalLength):
     if typeID == 9:  # string type
-        return ReadStringVarData(f, expectedSize, varsStartPosition)
+        return ReadStringVarData(f, varLen, varsStartPosition)
     typeSize = bp4dbg_utils.GetTypeSize(typeID)
     if (typeSize == 0):
         print("ERROR: Cannot process variable data block with "
@@ -153,35 +181,31 @@ def ReadVarData(f, nElements, typeID, ldims, expectedSize,
 
     currentPosition = f.tell()
     print("      Payload offset  : {0}".format(currentPosition))
-    nBytes = np.ones(1, dtype=np.uint64)
-    nBytes[0] = nElements * typeSize
-    if (currentPosition + nBytes[0] > varsStartPosition + varsTotalLength):
+
+    if (currentPosition + varLen > varsStartPosition + varsTotalLength):
         print("ERROR: Variable data block of size would reach beyond all "
               "variable blocks")
         print("VarsStartPosition = {0} varsTotalLength = {1}".format(
             varsStartPosition, varsTotalLength))
         print("current Position = {0} var block length = {1}".format(
-            currentPosition, nBytes[0]))
-        # return False
-    if (nBytes[0] != expectedSize):
-        print("ERROR: Variable data block size does not equal the size "
-              "calculated from var block length")
-        print("Expected size = {0}  calculated size from dimensions = {1}".
-              format(expectedSize, nBytes[0]))
+            currentPosition, varLen))
+        return False
+
+    nBytes = int(varLen.item())
 
     if nElements == 1:
         # single value. read and print
         value = readDataToNumpyArray(f, bp4dbg_utils.GetTypeName(typeID),
                                      nElements)
         print("      Payload (value) : {0} ({1} bytes)".format(
-            value[0], nBytes[0]))
+            value[0], nBytes))
     else:
         # seek instead of reading for now
-        f.read(nBytes[0])
-        # f.seek(nBytes[0], 1)
+        # f.read(nBytes)
+        f.seek(nBytes, 1)
         # data = readDataToNumpyArray(f, bp4dbg_utils.GetTypeName(typeID),
         #                            nElements)
-        print("      Payload (array) : {0} bytes".format(nBytes[0]))
+        print("      Payload (array) : {0} bytes".format(nBytes))
 
     return True
 
@@ -227,11 +251,24 @@ def ReadVMD(f, varidx, varsStartPosition, varsTotalLength):
     print("      Var Name        : " + varname)
 
     # VAR PATH, 2 bytes length + string without \0
-    sizeLimit = expectedVarBlockLength - (f.tell() - startPosition)
-    status, varpath = ReadEncodedString(f, "Var Path", sizeLimit)
-    if not status:
+    # sizeLimit = expectedVarBlockLength - (f.tell() - startPosition)
+    # status, varpath = ReadEncodedString(f, "Var Path", sizeLimit)
+    # if not status:
+    #     return False
+    # print("      Var Path        : " + varpath)
+
+    # 1 byte ORDER (K, C, F)
+    order = f.read(1)
+    if (order != b'K' and order != b'C' and order != b'F'):
+        print(
+            "ERROR: Next byte for Order must be 'K', 'C', or 'F' "
+            "but it isn't = {0}".format(order))
         return False
-    print("      Var Path        : " + varpath)
+    print("        Order           : " + order.decode('ascii'))
+
+    # 1 byte UNUSED
+    unused = f.read(1)
+    print("        Unused byte     : {0}".format(ord(unused)))
 
     # 1 byte TYPE
     typeID = np.fromfile(f, dtype=np.uint8, count=1)[0]
@@ -309,7 +346,7 @@ def ReadVMD(f, varidx, varsStartPosition, varsTotalLength):
         print("           offset dim : {0}".format(offset))
 
     sizeLimit = expectedVarBlockLength - (f.tell() - startPosition)
-    status = ReadCharacteristicsFromData(f, sizeLimit, typeID)
+    status = ReadCharacteristicsFromData(f, sizeLimit, typeID, ndims)
     if not status:
         return False
 

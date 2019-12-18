@@ -11,9 +11,9 @@
 
 # Blosc
 if(ADIOS2_USE_Blosc STREQUAL AUTO)
-  find_package(Blosc)
+  find_package(Blosc 1.7)
 elseif(ADIOS2_USE_Blosc)
-  find_package(Blosc REQUIRED)
+  find_package(Blosc 1.7 REQUIRED)
 endif()
 if(BLOSC_FOUND)
   set(ADIOS2_HAVE_Blosc TRUE)
@@ -31,33 +31,32 @@ endif()
 
 # ZFP
 if(ADIOS2_USE_ZFP STREQUAL AUTO)
-  find_package(ZFP)
+  find_package(zfp 0.5.1 CONFIG)
 elseif(ADIOS2_USE_ZFP)
-  find_package(ZFP REQUIRED)
+  find_package(zfp 0.5.1 REQUIRED CONFIG)
 endif()
-if(ZFP_FOUND)
+if(zfp_FOUND)
   set(ADIOS2_HAVE_ZFP TRUE)
 endif()
 
-# JULEA on various machines
+# JULEA
 if(ADIOS2_USE_JULEA)
-  set(ADIOS2_HAVE_JULEA TRUE)
-endif()
+  find_package(PkgConfig REQUIRED)
+  if(PKGCONFIG_FOUND)
+    # TODO: remove unused
+    pkg_check_modules(JULEA REQUIRED IMPORTED_TARGET
+      julea
+      julea-kv
+      julea-object
+      julea-item
+    )
+  endif()
 
-if(ADIOS2_USE_JULEA_CLUSTER)
-  set(ADIOS2_HAVE_JULEA_CLUSTER TRUE)
-endif()
-
-if(ADIOS2_USE_JULEA_GONDOLIN)
-  set(ADIOS2_HAVE_JULEA_GONDOLIN TRUE)
-endif()
-
-if(ADIOS2_USE_JULEA_MINASTIRITH)
-  set(ADIOS2_HAVE_JULEA_MINASTIRITH TRUE)
-endif()
-
-if(ADIOS2_USE_JULEA_VINYAMAR)
-  set(ADIOS2_HAVE_JULEA_VINYAMAR TRUE)
+  if(JULEA_FOUND)
+    set(ADIOS2_HAVE_JULEA TRUE)
+  else()
+    message(FATAL_ERROR "julea not found")
+  endif()
 endif()
 
 # SZ
@@ -152,6 +151,27 @@ if(NOT (CMAKE_CXX_COMPILER_ID STREQUAL "PGI") AND NOT MSVC)
     endif()
 endif()
 
+# Table
+if(NOT (CMAKE_CXX_COMPILER_ID STREQUAL "PGI") AND NOT MSVC)
+    if(ZeroMQ_FOUND AND ADIOS2_HAVE_MPI)
+        if(ADIOS2_USE_Table STREQUAL AUTO)
+            set(ADIOS2_HAVE_Table TRUE)
+        elseif(ADIOS2_USE_Table)
+            set(ADIOS2_HAVE_Table TRUE)
+        endif()
+    endif()
+endif()
+
+# DataSpaces
+if(ADIOS2_USE_DataSpaces STREQUAL AUTO)
+  find_package(DataSpaces 1.8)
+elseif(ADIOS2_USE_DataSpaces)
+  find_package(DataSpaces 1.8 REQUIRED)
+endif()
+if(DATASPACES_FOUND)
+  set(ADIOS2_HAVE_DataSpaces TRUE)
+endif()
+
 # HDF5
 if(ADIOS2_USE_HDF5 STREQUAL AUTO)
   find_package(HDF5 COMPONENTS C)
@@ -210,9 +230,14 @@ if(ADIOS2_USE_SST AND NOT MSVC)
   if(LIBFABRIC_FOUND)
     set(ADIOS2_SST_HAVE_LIBFABRIC TRUE)
     find_package(CrayDRC)
-    if(CRAY_DRC_FOUND)
+    if(CrayDRC_FOUND)
       set(ADIOS2_SST_HAVE_CRAY_DRC TRUE)
     endif()
+  endif()
+  find_package(NVSTREAM)
+  if(NVSTREAM_FOUND)
+    find_package(Boost OPTIONAL_COMPONENTS thread log filesystem system)
+    set(ADIOS2_SST_HAVE_NVSTREAM TRUE)
   endif()
 endif()
 

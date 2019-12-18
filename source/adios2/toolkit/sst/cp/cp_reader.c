@@ -79,7 +79,13 @@ redo:
     else
     {
         char Tmp[strlen(SSTMAGICV0)];
-        fread(Tmp, strlen(SSTMAGICV0), 1, WriterInfo);
+        if (fread(Tmp, strlen(SSTMAGICV0), 1, WriterInfo) != 1)
+        {
+            fprintf(stderr,
+                    "Filesystem read failed in SST Open, failing operation\n");
+            fclose(WriterInfo);
+            Badfile++;
+        }
         Size -= strlen(SSTMAGICV0);
         if (strncmp(Tmp, SSTMAGICV0, strlen(SSTMAGICV0)) != 0)
         {
@@ -99,8 +105,11 @@ redo:
     char *Buffer = calloc(1, Size + 1);
     if (fread(Buffer, Size, 1, WriterInfo) != 1)
     {
-        fprintf(stderr, "Filesystem read failed, exiting\n");
-        exit(1);
+        fprintf(stderr,
+                "Filesystem read failed in SST Open, failing operation\n");
+        free(Buffer);
+        fclose(WriterInfo);
+        return NULL;
     }
     fclose(WriterInfo);
     return Buffer;
@@ -141,12 +150,13 @@ static char *readContactInfo(const char *Name, SstStream Stream, int Timeout)
     }
 }
 
-static void ReaderConnCloseHandler(CManager cm, CMConnection ClosedConn,
+extern void ReaderConnCloseHandler(CManager cm, CMConnection ClosedConn,
                                    void *client_data)
 {
     TAU_START_FUNC();
     SstStream Stream = (SstStream)client_data;
     int FailedPeerRank = -1;
+    CP_verbose(Stream, "Reader-side close handler invoked\n");
     for (int i = 0; i < Stream->WriterCohortSize; i++)
     {
         if (Stream->ConnectionsToWriter[i].CMconn == ClosedConn)
@@ -215,7 +225,7 @@ static void **ParticipateInReaderInitDataExchange(SstStream Stream,
 
     struct _CP_DP_PairInfo **pointers;
 
-    cpInfo.ContactInfo = CP_GetContactString(Stream);
+    cpInfo.ContactInfo = CP_GetContactString(Stream, NULL);
     cpInfo.ReaderID = Stream;
 
     combined_init.CP_Info = (void **)&cpInfo;
@@ -258,6 +268,73 @@ static int HasAllPeers(SstStream Stream)
     }
 }
 
+attr_list ContactWriter(SstStream Stream, char *Filename, SstParams Params,
+                        MPI_Comm comm, CMConnection *conn_p,
+                        void **WriterFileID_p)
+{
+    int DataSize = 0;
+    attr_list RetVal = NULL;
+
+    if (Stream->Rank == 0)
+    {
+        char *Writer0Contact =
+            readContactInfo(Filename, Stream, Params->OpenTimeoutSecs);
+        char *CMContactString;
+        CMConnection conn = NULL;
+        attr_list WriterRank0Contact;
+
+        if (Writer0Contact)
+        {
+
+            CMContactString =
+                malloc(strlen(Writer0Contact)); /* at least long enough */
+            sscanf(Writer0Contact, "%p:%s", WriterFileID_p, CMContactString);
+            //        printf("Writer contact info is fileID %p, contact info
+            //        %s\n",
+            //               WriterFileID, CMContactString);
+            free(Writer0Contact);
+
+            if (globalNetinfoCallback)
+            {
+                (globalNetinfoCallback)(1, CP_GetContactString(Stream, NULL),
+                                        IPDiagString);
+                (globalNetinfoCallback)(2, CMContactString, NULL);
+            }
+            WriterRank0Contact = attr_list_from_string(CMContactString);
+            conn = CMget_conn(Stream->CPInfo->cm, WriterRank0Contact);
+            free_attr_list(WriterRank0Contact);
+        }
+        if (conn)
+        {
+            DataSize = strlen(CMContactString);
+            *conn_p = conn;
+        }
+        else
+        {
+            DataSize = 0;
+            *conn_p = NULL;
+        }
+        SMPI_Bcast(&DataSize, 1, MPI_INT, 0, Stream->mpiComm);
+        if (DataSize != 0)
+        {
+            SMPI_Bcast(CMContactString, DataSize, MPI_CHAR, 0, Stream->mpiComm);
+            RetVal = attr_list_from_string(CMContactString);
+        }
+    }
+    else
+    {
+        SMPI_Bcast(&DataSize, 1, MPI_INT, 0, Stream->mpiComm);
+        if (DataSize != 0)
+        {
+            char *Buffer = malloc(DataSize);
+            SMPI_Bcast(Buffer, DataSize, MPI_CHAR, 0, Stream->mpiComm);
+            RetVal = attr_list_from_string(Buffer);
+            free(Buffer);
+        }
+    }
+    return RetVal;
+}
+
 SstStream SstReaderOpen(const char *Name, SstParams Params, MPI_Comm comm)
 {
     SstStream Stream;
@@ -270,6 +347,7 @@ SstStream SstReaderOpen(const char *Name, SstParams Params, MPI_Comm comm)
     struct timeval Start, Stop, Diff;
     char *Filename = strdup(Name);
     CMConnection rank0_to_rank0_conn = NULL;
+    void *WriterFileID;
 
     Stream = CP_newStream();
     Stream->Role = ReaderRole;
@@ -283,121 +361,95 @@ SstStream SstReaderOpen(const char *Name, SstParams Params, MPI_Comm comm)
 
     Stream->DP_Interface = SelectDP(&Svcs, Stream, Stream->ConfigParams);
 
-    Stream->CPInfo = CP_getCPInfo(Stream->DP_Interface);
+    Stream->CPInfo =
+        CP_getCPInfo(Stream->DP_Interface, Stream->ConfigParams->ControlModule);
 
     Stream->FinalTimestep = INT_MAX; /* set this on close */
+    Stream->LastDPNotifiedTimestep = -1;
 
-    Stream->DP_Stream = Stream->DP_Interface->initReader(&Svcs, Stream, &dpInfo,
-                                                         Stream->ConfigParams);
+    gettimeofday(&Start, NULL);
+
+    attr_list WriterContactAttributes = ContactWriter(
+        Stream, Filename, Params, comm, &rank0_to_rank0_conn, &WriterFileID);
+
+    if (WriterContactAttributes == NULL)
+        return NULL;
+
+    Stream->DP_Stream = Stream->DP_Interface->initReader(
+        &Svcs, Stream, &dpInfo, Stream->ConfigParams, WriterContactAttributes);
 
     pointers = (struct _CP_DP_PairInfo **)ParticipateInReaderInitDataExchange(
         Stream, dpInfo, &data_block);
 
-    gettimeofday(&Start, NULL);
-
     if (Stream->Rank == 0)
     {
-        char *Writer0Contact =
-            readContactInfo(Filename, Stream, Params->OpenTimeoutSecs);
-        void *WriterFileID;
-        char *CMContactString;
         struct _CombinedWriterInfo WriterData;
-        CMConnection conn = NULL;
-        attr_list WriterRank0Contact;
+        struct _ReaderRegisterMsg ReaderRegister;
 
-        memset(&WriterData, 0, sizeof(WriterData));
-        if (!Writer0Contact)
+        memset(&ReaderRegister, 0, sizeof(ReaderRegister));
+        ReaderRegister.WriterFile = WriterFileID;
+        ReaderRegister.WriterResponseCondition =
+            CMCondition_get(Stream->CPInfo->cm, rank0_to_rank0_conn);
+        ReaderRegister.ReaderCohortSize = Stream->CohortSize;
+        switch (Stream->ConfigParams->SpeculativePreloadMode)
         {
-            /* The file didn't appear prior to the timeout, notify the other
-             * ranks of failure */
-            WriterData.WriterCohortSize = -1;
+        case SpecPreloadOff:
+        case SpecPreloadOn:
+            ReaderRegister.SpecPreload =
+                Stream->ConfigParams->SpeculativePreloadMode;
+            break;
+        case SpecPreloadAuto:
+            ReaderRegister.SpecPreload = SpecPreloadOff;
+            if (Stream->CohortSize <=
+                Stream->ConfigParams->SpecAutoNodeThreshold)
+            {
+                ReaderRegister.SpecPreload = SpecPreloadOn;
+            }
+            break;
         }
-        else
+
+        ReaderRegister.CP_ReaderInfo =
+            malloc(ReaderRegister.ReaderCohortSize * sizeof(void *));
+        ReaderRegister.DP_ReaderInfo =
+            malloc(ReaderRegister.ReaderCohortSize * sizeof(void *));
+        for (int i = 0; i < ReaderRegister.ReaderCohortSize; i++)
         {
-
-            CMContactString =
-                malloc(strlen(Writer0Contact)); /* at least long enough */
-            sscanf(Writer0Contact, "%p:%s", &WriterFileID, CMContactString);
-            //        printf("Writer contact info is fileID %p, contact info
-            //        %s\n",
-            //               WriterFileID, CMContactString);
-            free(Writer0Contact);
-
-            if (globalNetinfoCallback)
-            {
-                (globalNetinfoCallback)(1, CP_GetContactString(Stream),
-                                        IPDiagString);
-                (globalNetinfoCallback)(2, CMContactString, NULL);
-            }
-            WriterRank0Contact = attr_list_from_string(CMContactString);
-            conn = CMget_conn(Stream->CPInfo->cm, WriterRank0Contact);
-            free_attr_list(WriterRank0Contact);
+            ReaderRegister.CP_ReaderInfo[i] =
+                (CP_ReaderInitInfo)pointers[i]->CP_Info;
+            ReaderRegister.DP_ReaderInfo[i] = pointers[i]->DP_Info;
         }
-        if (conn)
+        /* the response value is set in the handler */
+        struct _WriterResponseMsg *response = NULL;
+        CMCondition_set_client_data(Stream->CPInfo->cm,
+                                    ReaderRegister.WriterResponseCondition,
+                                    &response);
+
+        if (CMwrite(rank0_to_rank0_conn, Stream->CPInfo->ReaderRegisterFormat,
+                    &ReaderRegister) != 1)
         {
-            /* success!   We have a connection to the writer! */
-            struct _ReaderRegisterMsg ReaderRegister;
-
-            memset(&ReaderRegister, 0, sizeof(ReaderRegister));
-            ReaderRegister.WriterFile = WriterFileID;
-            ReaderRegister.WriterResponseCondition =
-                CMCondition_get(Stream->CPInfo->cm, conn);
-            ReaderRegister.ReaderCohortSize = Stream->CohortSize;
-            ReaderRegister.CP_ReaderInfo =
-                malloc(ReaderRegister.ReaderCohortSize * sizeof(void *));
-            ReaderRegister.DP_ReaderInfo =
-                malloc(ReaderRegister.ReaderCohortSize * sizeof(void *));
-            for (int i = 0; i < ReaderRegister.ReaderCohortSize; i++)
-            {
-                ReaderRegister.CP_ReaderInfo[i] =
-                    (CP_ReaderInitInfo)pointers[i]->CP_Info;
-                ReaderRegister.DP_ReaderInfo[i] = pointers[i]->DP_Info;
-            }
-            /* the response value is set in the handler */
-            struct _WriterResponseMsg *response = NULL;
-            CMCondition_set_client_data(Stream->CPInfo->cm,
-                                        ReaderRegister.WriterResponseCondition,
-                                        &response);
-
-            if (CMwrite(conn, Stream->CPInfo->ReaderRegisterFormat,
-                        &ReaderRegister) != 1)
-            {
-                CP_verbose(
-                    Stream,
-                    "Message failed to send to writer in SstReaderOpen\n");
-            }
-            free(ReaderRegister.CP_ReaderInfo);
-            free(ReaderRegister.DP_ReaderInfo);
-
-            /* wait for "go" from writer */
-            CP_verbose(
-                Stream,
-                "Waiting for writer response message in SstReadOpen(\"%s\")\n",
-                Filename, ReaderRegister.WriterResponseCondition);
-            CMCondition_wait(Stream->CPInfo->cm,
-                             ReaderRegister.WriterResponseCondition);
             CP_verbose(Stream,
-                       "finished wait writer response message in read_open\n");
-
-            if (response)
-            {
-                WriterData.WriterCohortSize = response->WriterCohortSize;
-                WriterData.WriterConfigParams = response->WriterConfigParams;
-                WriterData.StartingStepNumber = response->NextStepNumber;
-                WriterData.CP_WriterInfo = response->CP_WriterInfo;
-                WriterData.DP_WriterInfo = response->DP_WriterInfo;
-                rank0_to_rank0_conn = conn;
-            }
-            else
-            {
-                WriterData.WriterCohortSize = -1;
-            }
+                       "Message failed to send to writer in SstReaderOpen\n");
         }
-        else
+        free(ReaderRegister.CP_ReaderInfo);
+        free(ReaderRegister.DP_ReaderInfo);
+
+        /* wait for "go" from writer */
+        CP_verbose(
+            Stream,
+            "Waiting for writer response message in SstReadOpen(\"%s\")\n",
+            Filename, ReaderRegister.WriterResponseCondition);
+        CMCondition_wait(Stream->CPInfo->cm,
+                         ReaderRegister.WriterResponseCondition);
+        CP_verbose(Stream,
+                   "finished wait writer response message in read_open\n");
+
+        if (response)
         {
-            /* there was no contact with the writer at that location, notify the
-             * other ranks */
-            WriterData.WriterCohortSize = -1;
+            WriterData.WriterCohortSize = response->WriterCohortSize;
+            WriterData.WriterConfigParams = response->WriterConfigParams;
+            WriterData.StartingStepNumber = response->NextStepNumber;
+            WriterData.CP_WriterInfo = response->CP_WriterInfo;
+            WriterData.DP_WriterInfo = response->DP_WriterInfo;
         }
         ReturnData = CP_distributeDataFromRankZero(
             Stream, &WriterData, Stream->CPInfo->CombinedWriterInfoFormat,
@@ -770,6 +822,24 @@ extern void CP_WriterCloseHandler(CManager cm, CMConnection conn, void *Msg_v,
     pthread_cond_signal(&Stream->DataCondition);
     pthread_mutex_unlock(&Stream->DataLock);
     TAU_STOP_FUNC();
+}
+
+extern void CP_CommPatternLockedHandler(CManager cm, CMConnection conn,
+                                        void *Msg_v, void *client_data,
+                                        attr_list attrs)
+{
+    CommPatternLockedMsg Msg = (CommPatternLockedMsg)Msg_v;
+    SstStream Stream = (SstStream)Msg->RS_Stream;
+
+    CP_verbose(
+        Stream,
+        "Received a CommPatternLocked message, beginning with Timestep %d.\n",
+        Msg->Timestep);
+
+    pthread_mutex_lock(&Stream->DataLock);
+    Stream->CommPatternLocked = 1;
+    Stream->CommPatternLockedTimestep = Msg->Timestep;
+    pthread_mutex_unlock(&Stream->DataLock);
 }
 
 static long MaxQueuedMetadata(SstStream Stream)
@@ -1163,7 +1233,6 @@ extern void SstReaderDefinitionLock(SstStream Stream, long EffectiveTimestep)
 {
     long Timestep = Stream->ReaderTimestep;
     struct _LockReaderDefinitionsMsg Msg;
-    Stream->ReaderDefinitionsLocked = 1;
 
     memset(&Msg, 0, sizeof(Msg));
     Msg.Timestep = EffectiveTimestep;
@@ -1209,11 +1278,29 @@ extern void SstReleaseStep(SstStream Stream)
     TAU_STOP_FUNC();
 }
 
+static void NotifyDPArrivedMetadataPeer(SstStream Stream)
+{
+    struct _TimestepMetadataList *TS;
+    TS = Stream->Timesteps;
+    while (TS)
+    {
+        if ((TS->MetadataMsg->Metadata != NULL) &&
+            (TS->MetadataMsg->Timestep > Stream->LastDPNotifiedTimestep))
+        {
+            Stream->DP_Interface->timestepArrived(&Svcs, Stream->DP_Stream,
+                                                  TS->MetadataMsg->Timestep,
+                                                  TS->MetadataMsg->PreloadMode);
+            Stream->LastDPNotifiedTimestep = TS->MetadataMsg->Timestep;
+        }
+        TS = TS->Next;
+    }
+}
+
 /*
  * wait for metadata for Timestep indicated to arrive, or fail with EndOfStream
  * or Error
  */
-extern SstStatusValue SstAdvanceStepPeer(SstStream Stream, SstStepMode mode,
+static SstStatusValue SstAdvanceStepPeer(SstStream Stream, SstStepMode mode,
                                          const float timeout_sec)
 {
 
@@ -1244,8 +1331,8 @@ extern SstStatusValue SstAdvanceStepPeer(SstStream Stream, SstStepMode mode,
         my_info.LatestTimestep = MaxQueuedMetadata(Stream);
         my_info.timeout_sec = timeout_sec;
         my_info.mode = mode;
-        SMPI_Gather(&my_info, sizeof(my_info), MPI_BYTE, global_info,
-                    sizeof(my_info), MPI_BYTE, 0, Stream->mpiComm);
+        SMPI_Gather(&my_info, sizeof(my_info), MPI_CHAR, global_info,
+                    sizeof(my_info), MPI_CHAR, 0, Stream->mpiComm);
         if (Stream->Rank == 0)
         {
             long Biggest = -1;
@@ -1381,6 +1468,7 @@ extern SstStatusValue SstAdvanceStepPeer(SstStream Stream, SstStepMode mode,
 
     TAU_STOP("Waiting on metadata per rank per timestep");
 
+    NotifyDPArrivedMetadataPeer(Stream);
     if (Entry)
     {
         if (Stream->WriterConfigParams->MarshalMethod == SstMarshalFFS)
@@ -1431,7 +1519,7 @@ extern SstStatusValue SstAdvanceStepPeer(SstStream Stream, SstStepMode mode,
     }
 }
 
-extern SstStatusValue SstAdvanceStepMin(SstStream Stream, SstStepMode mode,
+static SstStatusValue SstAdvanceStepMin(SstStream Stream, SstStepMode mode,
                                         const float timeout_sec)
 {
     TSMetadataDistributionMsg ReturnData;
@@ -1448,6 +1536,11 @@ extern SstStatusValue SstAdvanceStepMin(SstStream Stream, SstStepMode mode,
 
         memset(&msg, 0, sizeof(msg));
         msg.TSmsg = NULL;
+        msg.CommPatternLockedTimestep = -1;
+        if (Stream->CommPatternLocked == 1)
+        {
+            msg.CommPatternLockedTimestep = Stream->CommPatternLockedTimestep;
+        }
         if ((timeout_sec >= 0.0) || (mode == SstLatestAvailable))
         {
             long NextTimestep = -1;
@@ -1542,6 +1635,14 @@ extern SstStatusValue SstAdvanceStepMin(SstStream Stream, SstStepMode mode,
                 releasePriorTimesteps(Stream, NextTimestep);
             }
         }
+        if (Stream->Status == PeerFailed)
+        {
+            CP_verbose(Stream,
+                       "SstAdvanceStepMin returning FatalError because of "
+                       "conn failure at timestep %d\n",
+                       Stream->ReaderTimestep);
+            return_value = SstFatalError;
+        }
         if (return_value == SstSuccess)
         {
             RootEntry = waitForNextMetadata(Stream, Stream->ReaderTimestep);
@@ -1580,6 +1681,7 @@ extern SstStatusValue SstAdvanceStepMin(SstStream Stream, SstStepMode mode,
                 msg.ReturnValue = return_value;
             }
         }
+        //        AddArrivedMetadataInfo(Stream, &msg);
         ReturnData = CP_distributeDataFromRankZero(
             Stream, &msg, Stream->CPInfo->TimestepDistributionFormat,
             &free_block);
@@ -1591,6 +1693,8 @@ extern SstStatusValue SstAdvanceStepMin(SstStream Stream, SstStepMode mode,
             &free_block);
     }
     ret = ReturnData->ReturnValue;
+
+    //    NotifyDPArrivedMetadataMin(Stream, ReturnData);
 
     if (ReturnData->ReturnValue != SstSuccess)
     {
@@ -1608,6 +1712,17 @@ extern SstStatusValue SstAdvanceStepMin(SstStream Stream, SstStepMode mode,
         return ret;
     }
     MetadataMsg = ReturnData->TSmsg;
+    if (ReturnData->CommPatternLockedTimestep != -1)
+    {
+        Stream->CommPatternLockedTimestep =
+            ReturnData->CommPatternLockedTimestep;
+        Stream->CommPatternLocked = 2;
+        if (Stream->DP_Interface->RSreadPatternLocked)
+        {
+            Stream->DP_Interface->RSreadPatternLocked(
+                &Svcs, Stream->DP_Stream, Stream->CommPatternLockedTimestep);
+        }
+    }
     if (MetadataMsg)
     {
         if (Stream->WriterConfigParams->MarshalMethod == SstMarshalFFS)
@@ -1698,7 +1813,7 @@ extern void SstReaderClose(SstStream Stream)
     if (Stream->Stats)
         Stream->Stats->ValidTimeSecs = (double)Diff.tv_usec / 1e6 + Diff.tv_sec;
 
-    CMsleep(Stream->CPInfo->cm, 1);
+    CMusleep(Stream->CPInfo->cm, 100000);
     if (Stream->CurrentMetadata != NULL)
     {
         if (Stream->CurrentMetadata->FreeBlock)

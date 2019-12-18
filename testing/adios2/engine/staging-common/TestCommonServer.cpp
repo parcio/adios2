@@ -18,8 +18,9 @@
 
 #include <gtest/gtest.h>
 
-#include "ParseArgs.h"
 #include "TestData.h"
+
+#include "ParseArgs.h"
 
 class CommonServerTest : public ::testing::Test
 {
@@ -40,8 +41,6 @@ inline bool file_exists(const std::string &name)
 TEST_F(CommonServerTest, ADIOS2CommonServer)
 {
     int mpiRank = 0, mpiSize = 1;
-
-    // Number of steps
 
     std::remove(shutdown_name.c_str());
 #ifdef ADIOS2_HAVE_MPI
@@ -101,7 +100,7 @@ TEST_F(CommonServerTest, ADIOS2CommonServer)
     while ((std::time(NULL) < EndTime) && !GlobalCloseNow)
     {
         // Generate test data for each process uniquely
-        generateCommonTestData((int)step, mpiRank, mpiSize);
+        generateCommonTestData((int)step, mpiRank, mpiSize, (int)Nx, (int)Nx);
 
         engine.BeginStep();
         // Retrieve the variables that previously went out of scope
@@ -110,7 +109,6 @@ TEST_F(CommonServerTest, ADIOS2CommonServer)
         auto var_i16 = io.InquireVariable<int16_t>("i16");
         auto var_i32 = io.InquireVariable<int32_t>("i32");
         auto var_i64 = io.InquireVariable<int64_t>("i64");
-        auto var_u8 = io.InquireVariable<uint8_t>("u8");
         auto var_r32 = io.InquireVariable<float>("r32");
         auto var_r64 = io.InquireVariable<double>("r64");
         auto var_c32 = io.InquireVariable<std::complex<float>>("c32");
@@ -152,11 +150,16 @@ TEST_F(CommonServerTest, ADIOS2CommonServer)
         engine.Put(var_r64, data_R64.data(), sync);
         engine.Put(var_c32, data_C32.data(), sync);
         engine.Put(var_c64, data_C64.data(), sync);
-        engine.Put(var_r64_2d, &data_R64_2d[0][0], sync);
-        engine.Put(var_r64_2d_rev, &data_R64_2d_rev[0][0], sync);
+        engine.Put(var_r64_2d, &data_R64_2d[0], sync);
+        engine.Put(var_r64_2d_rev, &data_R64_2d_rev[0], sync);
         // Advance to the next time step
         std::time_t localtime = std::time(NULL);
         engine.Put(var_time, (int64_t *)&localtime);
+        if (LockGeometry)
+        {
+            // we'll never change our data decomposition
+            engine.LockWriterDefinitions();
+        }
         engine.EndStep();
         std::this_thread::sleep_for(std::chrono::milliseconds(
             DelayMS)); /* sleep for DelayMS milliseconds */
@@ -186,7 +189,7 @@ int main(int argc, char **argv)
     MPI_Init(nullptr, nullptr);
 #endif
 
-    int result, bare_args = 0;
+    int result;
     ::testing::InitGoogleTest(&argc, argv);
 
     ParseArgs(argc, argv);

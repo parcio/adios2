@@ -32,10 +32,10 @@ add_library(adios2
   operator/callback/Signature2.cpp
 
 #helper
+  helper/adiosComm.h  helper/adiosComm.cpp
   helper/adiosDynamicBinder.h  helper/adiosDynamicBinder.cpp
   helper/adiosMath.cpp
   helper/adiosMemory.cpp
-  helper/adiosMPIFunctions.cpp
   helper/adiosNetwork.cpp
   helper/adiosString.cpp helper/adiosString.tcc
   helper/adiosSystem.cpp
@@ -59,25 +59,39 @@ add_library(adios2
 
   engine/nullcore/NullCoreWriter.cpp engine/nullcore/NullCoreWriter.tcc
 #toolkit
-  toolkit/format/BufferSTL.cpp
+  toolkit/format/buffer/Buffer.cpp
+  toolkit/format/buffer/heap/BufferSTL.cpp
 
-  toolkit/format/bp3/BP3Base.cpp toolkit/format/bp3/BP3Base.tcc
-  toolkit/format/bp3/BP3Serializer.cpp toolkit/format/bp3/BP3Serializer.tcc
-  toolkit/format/bp3/BP3Deserializer.cpp toolkit/format/bp3/BP3Deserializer.tcc
+  toolkit/format/bp/BPBase.cpp toolkit/format/bp/BPBase.tcc
+  toolkit/format/bp/BPSerializer.cpp toolkit/format/bp/BPSerializer.tcc
 
-  toolkit/format/bp4/BP4Base.cpp toolkit/format/bp4/BP4Base.tcc
-  toolkit/format/bp4/BP4Serializer.cpp toolkit/format/bp4/BP4Serializer.tcc
-  toolkit/format/bp4/BP4Deserializer.cpp toolkit/format/bp4/BP4Deserializer.tcc
+  toolkit/format/bp/bp3/BP3Base.cpp
+  toolkit/format/bp/bp3/BP3Serializer.cpp toolkit/format/bp/bp3/BP3Serializer.tcc
+  toolkit/format/bp/bp3/BP3Deserializer.cpp toolkit/format/bp/bp3/BP3Deserializer.tcc
 
-  toolkit/format/bpOperation/BPOperation.cpp toolkit/format/bpOperation/BPOperation.tcc
-  toolkit/format/bpOperation/compress/BPZFP.cpp toolkit/format/bpOperation/compress/BPZFP.tcc
-  toolkit/format/bpOperation/compress/BPSZ.cpp
-  toolkit/format/bpOperation/compress/BPMGARD.cpp
-  toolkit/format/bpOperation/compress/BPPNG.cpp
-  toolkit/format/bpOperation/compress/BPBZIP2.cpp toolkit/format/bpOperation/compress/BPBZIP2.tcc
-  toolkit/format/bpOperation/compress/BPBlosc.cpp
+  toolkit/format/bp/bp4/BP4Base.cpp
+  toolkit/format/bp/bp4/BP4Serializer.cpp toolkit/format/bp/bp4/BP4Serializer.tcc
+  toolkit/format/bp/bp4/BP4Deserializer.cpp toolkit/format/bp/bp4/BP4Deserializer.tcc
+
+  toolkit/format/bp/bpOperation/BPOperation.cpp
+  toolkit/format/bp/bpOperation/BPOperation.tcc
+  toolkit/format/bp/bpOperation/compress/BPZFP.cpp
+  toolkit/format/bp/bpOperation/compress/BPZFP.tcc
+  toolkit/format/bp/bpOperation/compress/BPSZ.cpp
+  toolkit/format/bp/bpOperation/compress/BPMGARD.cpp
+  toolkit/format/bp/bpOperation/compress/BPPNG.cpp
+  toolkit/format/bp/bpOperation/compress/BPBZIP2.cpp
+  toolkit/format/bp/bpOperation/compress/BPBZIP2.tcc
+  toolkit/format/bp/bpOperation/compress/BPBlosc.cpp
 
   toolkit/profiling/iochrono/Timer.cpp
+  toolkit/profiling/iochrono/IOChrono.cpp
+
+  toolkit/query/Query.cpp
+  toolkit/query/Worker.cpp
+  toolkit/query/XmlUtil.cpp
+  toolkit/query/XmlWorker.cpp
+  toolkit/query/BlockIndex.cpp
 
   toolkit/transport/Transport.cpp
   toolkit/transport/file/FileStdio.cpp
@@ -104,100 +118,20 @@ if(UNIX)
 endif()
 
 if(ADIOS2_HAVE_SysVShMem)
+  target_sources(adios2 PRIVATE toolkit/format/buffer/ipc/BufferSystemV.cpp)
+
   target_sources(adios2 PRIVATE toolkit/transport/shm/ShmSystemV.cpp)
 endif()
 
 if(ADIOS2_HAVE_ZeroMQ)
     target_sources(adios2 PRIVATE
-        toolkit/transport/socket/SocketZmq.cpp
-        toolkit/transport/socket/SocketZmqReqRep.cpp
-        toolkit/transport/socket/SocketZmqPubSub.cpp
-        toolkit/transportman/wanman/WANMan.cpp
-        toolkit/transportman/stagingman/StagingMan.cpp
+        toolkit/zmq/zmqreqrep/ZmqReqRep.cpp
+        toolkit/zmq/zmqpubsub/ZmqPubSub.cpp
         )
     target_link_libraries(adios2 PRIVATE ZeroMQ::ZMQ)
 endif()
 
-
-#options for all machines I need to compile this on
-if(ADIOS2_HAVE_JULEA_GONDOLIN)
-  target_sources(adios2 PRIVATE
-      engine/julea-kv/JuleaKVReader.cpp
-      engine/julea-kv/JuleaKVReader.tcc
-      engine/julea-kv/JuleaKVWriter.cpp
-      engine/julea-kv/JuleaKVWriter.tcc
-      engine/julea-kv/JuleaClientLogic-legacy.cpp
-      engine/julea-kv/JuleaInteractionWriter.cpp
-      engine/julea-kv/JuleaInteractionReader.cpp
-      #engine/julea-kv/JuleaInteractionReaderTEST.cpp
-      engine/julea-kv/JuleaFormatWriter.cpp
-      engine/julea-kv/JuleaFormatReader.cpp
-      engine/julea-kv/JuleaFormatWriter-legacy.cpp
-
-      # engine/julea-original/JuleaReader.cpp
-      # engine/julea-original/JuleaReader.tcc
-      # engine/julea-original/JuleaWriter.cpp
-      # engine/julea-original/JuleaWriter.tcc
-      # engine/julea-original/JuleaClientLogic.cpp
-      # engine/julea-original/JuleaFormatWriter.cpp
-
-      engine/julea-test/JuleaTestReader.cpp
-      engine/julea-test/JuleaTestReader.tcc
-      engine/julea-test/JuleaTestWriter.cpp
-      engine/julea-test/JuleaTestWriter.tcc
-
-      toolkit/interop/julea/JuleaSerializer.cpp
-      toolkit/interop/julea/JuleaSerializer.tcc
-      toolkit/interop/julea/JuleaDeserializer.cpp
-      toolkit/interop/julea/JuleaDeserializer.tcc
-  )
-  target_include_directories(adios2 PRIVATE
-    /home/elentari/Documents/julea/include
-    /home/elentari/Documents/julea/build/include
-    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-8.3.0/glib-2.56.3-uvahvjcdaze4h2ju6uma3y53xslhvb2q/lib
-    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-8.3.0/glib-2.56.3-uvahvjcdaze4h2ju6uma3y53xslhvb2q/include/glib-2.0
-    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-8.3.0/glib-2.56.3-uvahvjcdaze4h2ju6uma3y53xslhvb2q/lib/glib-2.0/include
-    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-8.3.0/libbson-1.9.1-u3z27mm3bm2otccigjqspyxkjgopwhqo/lib
-    /home/elentari/Documents/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-8.3.0/libbson-1.9.1-u3z27mm3bm2otccigjqspyxkjgopwhqo/include/libbson-1.0
-    )
-  target_link_libraries(adios2 PRIVATE
-     # /home/elentari/Documents/julea/build/lib/
-      /home/elentari/Documents/julea/build/lib/libjulea.so
-      /home/elentari/Documents/julea/build/lib/libjulea-item.so
-      /home/elentari/Documents/julea/build/lib/libjulea-object.so
-      /home/elentari/Documents/julea/build/lib/libjulea-kv.so
-    #-lpthread -lm
-    #${CMAKE_THREAD_LIBS_INIT}
-    )
-endif()
-
-# if(ADIOS2_HAVE_JULEA)
-#   target_sources(adios2 PRIVATE
-#       engine/julea/JuleaReader.cpp
-#       engine/julea/JuleaReader.h
-#       engine/julea/JuleaReader.tcc
-#       engine/julea/JuleaWriter.cpp
-#       engine/julea/JuleaWriter.h
-#       engine/julea/JuleaWriter.tcc
-#   )
-#   target_link_libraries(adios2 PRIVATE /home/elentari/Documents/Promotion/Code/julea/build/lib/libjulea.so)
-# endif()
-
-
-# if(ADIOS2_HAVE_JULEA_CLUSTER)
-#   target_sources(adios2 PRIVATE
-#       engine/julea/JuleaReader.cpp
-#       engine/julea/JuleaReader.h
-#       engine/julea/JuleaReader.tcc
-#       engine/julea/JuleaWriter.cpp
-#       engine/julea/JuleaWriter.h
-#       engine/julea/JuleaWriter.tcc
-#   )
-#   #target_link_libraries(adios2 PRIVATE /home/duwe/Promotion/Code/julea/build/lib/libjulea.so)
-#   target_link_libraries(adios2 PRIVATE ../../julea/build/lib/libjulea.so)
-# endif()
-
-if(ADIOS2_HAVE_JULEA_MINASTIRITH)
+if(ADIOS2_HAVE_JULEA)
   target_sources(adios2 PRIVATE
       engine/julea-kv/JuleaKVReader.cpp
       engine/julea-kv/JuleaKVReader.tcc
@@ -210,13 +144,6 @@ if(ADIOS2_HAVE_JULEA_MINASTIRITH)
       engine/julea-kv/JuleaFormatReader.cpp
       engine/julea-kv/JuleaFormatWriter-legacy.cpp
 
-      # engine/julea-original/JuleaReader.cpp
-      # engine/julea-original/JuleaReader.tcc
-      # engine/julea-original/JuleaWriter.cpp
-      # engine/julea-original/JuleaWriter.tcc
-      # engine/julea-original/JuleaClientLogic.cpp
-      # engine/julea-original/JuleaFormatWriter.cpp
-
       engine/julea-test/JuleaTestReader.cpp
       engine/julea-test/JuleaTestReader.tcc
       engine/julea-test/JuleaTestWriter.cpp
@@ -228,47 +155,40 @@ if(ADIOS2_HAVE_JULEA_MINASTIRITH)
       toolkit/interop/julea/JuleaDeserializer.tcc
   )
   target_include_directories(adios2 PRIVATE
-  /home/kira/Dokumente/julea/include
-  /home/kira/Dokumente/julea/build/include
-  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-8.3.0/glib-2.56.3-uvahvjcdaze4h2ju6uma3y53xslhvb2q/lib
-  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-8.3.0/glib-2.56.3-uvahvjcdaze4h2ju6uma3y53xslhvb2q/include/glib-2.0
-  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-8.3.0/glib-2.56.3-uvahvjcdaze4h2ju6uma3y53xslhvb2q/lib/glib-2.0/include
-  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-8.3.0/libbson-1.9.1-u3z27mm3bm2otccigjqspyxkjgopwhqo/lib
-  /home/kira/Dokumente/julea/dependencies/opt/spack/linux-ubuntu18.04-x86_64/gcc-8.3.0/libbson-1.9.1-u3z27mm3bm2otccigjqspyxkjgopwhqo/include/libbson-1.0
+    ${JULEA_INCLUDE_DIRS}
   )
   target_link_libraries(adios2 PRIVATE
-  /home/kira/Dokumente/julea/build/lib/                     # does not suffice... to include here
-  /home/kira/Dokumente/julea/build/lib/libjulea.so
-  /home/kira/Dokumente/julea/build/lib/libjulea-item.so
-  /home/kira/Dokumente/julea/build/lib/libjulea-object.so
-  /home/kira/Dokumente/julea/build/lib/libjulea-kv.so
-  )
+    PkgConfig::JULEA
+    )
 endif()
 
 
-# if(ADIOS2_HAVE_JULEA_VINYAMAR)
-#   target_sources(adios2 PRIVATE
-#       engine/julea/JuleaReader.cpp
-#       engine/julea/JuleaReader.h
-#       engine/julea/JuleaReader.tcc
-#       engine/julea/JuleaWriter.cpp
-#       engine/julea/JuleaWriter.h
-#       engine/julea/JuleaWriter.tcc
-#   )
-#   target_link_libraries(adios2 PRIVATE /home/elentari/Documents/Promotion/Code/julea/build/lib/libjulea.so)
-# endif()
+#if (ADIOS2_HAVE_JSON)
+if (ADIOS2_HAVE_DataMan)
+
+    target_sources(adios2 PRIVATE
+	toolkit/query/JsonWorker.cpp
+   	)
+    target_link_libraries(adios2 PRIVATE nlohmann_json)
+endif()
+
+if(ADIOS2_HAVE_DataMan OR ADIOS2_HAVE_WDM OR ADIOS2_HAVE_Table)
+    target_sources(adios2 PRIVATE
+       	toolkit/format/dataman/DataManSerializer.cpp
+        toolkit/format/dataman/DataManSerializer.tcc
+        )
+    target_link_libraries(adios2 PRIVATE nlohmann_json)
+endif()
+
 
 if(ADIOS2_HAVE_DataMan)
     target_sources(adios2 PRIVATE
-        toolkit/format/dataman/DataManSerializer.cpp
-        toolkit/format/dataman/DataManSerializer.tcc
         engine/dataman/DataManCommon.cpp
         engine/dataman/DataManReader.cpp
         engine/dataman/DataManReader.tcc
         engine/dataman/DataManWriter.cpp
         engine/dataman/DataManWriter.tcc
         )
-    target_link_libraries(adios2 PRIVATE nlohmann_json)
 endif()
 
 if(ADIOS2_HAVE_SSC)
@@ -280,9 +200,14 @@ if(ADIOS2_HAVE_SSC)
         engine/ssc/SscWriter.cpp
         engine/ssc/SscWriter.tcc
         )
-    target_link_libraries(adios2 PRIVATE nlohmann_json)
 endif()
 
+if(ADIOS2_HAVE_Table)
+    target_sources(adios2 PRIVATE
+        engine/table/TableWriter.cpp
+        engine/table/TableWriter.tcc
+        )
+endif()
 
 if(ADIOS2_HAVE_SST)
   add_subdirectory(toolkit/sst)
@@ -292,6 +217,15 @@ if(ADIOS2_HAVE_SST)
     engine/sst/SstParamParser.cpp
   )
   target_link_libraries(adios2 PRIVATE sst)
+endif()
+
+if(ADIOS2_HAVE_DataSpaces)
+  target_sources(adios2 PRIVATE
+     toolkit/dataspaces/ds_writer.c
+     engine/dataspaces/DataSpacesWriter.cpp engine/dataspaces/DataSpacesWriter.tcc
+     engine/dataspaces/DataSpacesReader.cpp engine/dataspaces/DataSpacesReader.tcc
+  )
+  target_link_libraries(adios2 PRIVATE DataSpaces::DataSpaces)
 endif()
 
 if(ADIOS2_HAVE_Blosc)
@@ -364,7 +298,7 @@ endif()
 
 # Set library version information
 set_target_properties(adios2 PROPERTIES
-  VERSION ${ADIOS2_VERSION}
+  VERSION ${ADIOS2_LIBRARY_VERSION}
   SOVERSION ${ADIOS2_VERSION_MAJOR}
 )
 

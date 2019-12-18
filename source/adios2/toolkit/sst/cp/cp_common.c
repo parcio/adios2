@@ -116,6 +116,37 @@ void CP_validateParams(SstStream Stream, SstParams Params, int Writer)
     }
     CP_verbose(Stream, "Sst set to use %s as a Control Transport\n",
                Params->ControlTransport);
+    if (Params->ControlModule != NULL)
+    {
+        int i;
+        char *SelectedModule = malloc(strlen(Params->ControlModule) + 1);
+        for (i = 0; Params->ControlModule[i] != 0; i++)
+        {
+            SelectedModule[i] = tolower(Params->ControlModule[i]);
+        }
+        SelectedModule[i] = 0;
+
+        /* canonicalize SelectedModule */
+        if (strcmp(SelectedModule, "select") == 0)
+        {
+            Params->ControlModule = strdup("select");
+        }
+        else if (strcmp(SelectedModule, "epoll") == 0)
+        {
+            Params->ControlModule = strdup("epoll");
+        }
+        else
+        {
+            fprintf(stderr,
+                    "Invalid ControlModule parameter (%s) for SST Stream %s\n",
+                    Params->ControlModule, Stream->Filename);
+        }
+        free(SelectedModule);
+    }
+    else
+    {
+        Params->ControlModule = strdup("select");
+    }
 }
 
 static char *SstRegStr[] = {"File", "Screen", "Cloud"};
@@ -123,6 +154,7 @@ static char *SstMarshalStr[] = {"FFS", "BP"};
 static char *SstQueueFullStr[] = {"Block", "Discard"};
 static char *SstCompressStr[] = {"None", "ZFP"};
 static char *SstCommPatternStr[] = {"Min", "Peer"};
+static char *SstPreloadModeStr[] = {"Off", "On", "Auto"};
 
 extern void CP_dumpParams(SstStream Stream, struct _SstParams *Params,
                           int ReaderSide)
@@ -130,51 +162,58 @@ extern void CP_dumpParams(SstStream Stream, struct _SstParams *Params,
     if (!Stream->CPVerbose)
         return;
 
-    fprintf(stderr, "Param -   RegistrationMethod:%s\n",
+    fprintf(stderr, "Param -   RegistrationMethod=%s\n",
             SstRegStr[Params->RegistrationMethod]);
     if (!ReaderSide)
     {
-        fprintf(stderr, "Param -   RendezvousReaderCount:%d\n",
+        fprintf(stderr, "Param -   RendezvousReaderCount=%d\n",
                 Params->RendezvousReaderCount);
-        fprintf(stderr, "Param -   QueueLimit:%d %s\n", Params->QueueLimit,
+        fprintf(stderr, "Param -   QueueLimit=%d %s\n", Params->QueueLimit,
                 (Params->QueueLimit == 0) ? "(unlimited)" : "");
-        fprintf(stderr, "Param -   QueueFullPolicy:%s\n",
+        fprintf(stderr, "Param -   QueueFullPolicy=%s\n",
                 SstQueueFullStr[Params->QueueFullPolicy]);
     }
-    fprintf(stderr, "Param -   DataTransport:%s\n",
+    fprintf(stderr, "Param -   DataTransport=%s\n",
             Params->DataTransport ? Params->DataTransport : "");
-    fprintf(stderr, "Param -   ControlTransport:%s\n",
+    fprintf(stderr, "Param -   ControlTransport=%s\n",
             Params->ControlTransport);
-    fprintf(stderr, "Param -   NetworkInterface:%s\n",
+    fprintf(stderr, "Param -   NetworkInterface=%s\n",
             Params->NetworkInterface ? Params->NetworkInterface : "(default)");
-    fprintf(stderr, "Param -   ControlInterface:%s\n",
+    fprintf(stderr, "Param -   ControlInterface=%s\n",
             Params->ControlInterface
                 ? Params->ControlInterface
                 : "(default to NetworkInterface if applicable)");
-    fprintf(stderr, "Param -   DataInterface:%s\n",
+    fprintf(stderr, "Param -   DataInterface=%s\n",
             Params->DataInterface
                 ? Params->DataInterface
                 : "(default to NetworkInterface if applicable)");
     if (!ReaderSide)
     {
-        fprintf(stderr, "Param -   CompressionMethod:%s\n",
+        fprintf(stderr, "Param -   CompressionMethod=%s\n",
                 SstCompressStr[Params->CompressionMethod]);
-        fprintf(stderr, "Param -   CPCommPattern:%s\n",
+        fprintf(stderr, "Param -   CPCommPattern=%s\n",
                 SstCommPatternStr[Params->CPCommPattern]);
-        fprintf(stderr, "Param -   MarshalMethod:%s\n",
+        fprintf(stderr, "Param -   MarshalMethod=%s\n",
                 SstMarshalStr[Params->MarshalMethod]);
-        fprintf(stderr, "Param -   FirstTimestepPrecious:%s\n",
+        fprintf(stderr, "Param -   FirstTimestepPrecious=%s\n",
                 Params->FirstTimestepPrecious ? "True" : "False");
-        fprintf(stderr, "Param -   IsRowMajor:%d  (not user settable) \n",
+        fprintf(stderr, "Param -   IsRowMajor=%d  (not user settable) \n",
                 Params->IsRowMajor);
     }
     if (ReaderSide)
     {
-        fprintf(stderr, "Param -   AlwaysProvideLatestTimestep:%s\n",
+        fprintf(stderr, "Param -   AlwaysProvideLatestTimestep=%s\n",
                 Params->AlwaysProvideLatestTimestep ? "True" : "False");
     }
-    fprintf(stderr, "Param -   OpenTimeoutSecs:%d (seconds)\n",
+    fprintf(stderr, "Param -   OpenTimeoutSecs=%d (seconds)\n",
             Params->OpenTimeoutSecs);
+    fprintf(stderr, "Param -   SpeculativePreloadMode=%s\n",
+            SstPreloadModeStr[Params->SpeculativePreloadMode]);
+    fprintf(stderr, "Param -   SpecAutoNodeThreshold=%d\n",
+            Params->SpecAutoNodeThreshold);
+    fprintf(stderr, "Param -   ControlModule=%s\n",
+            Params->ControlModule ? Params->ControlModule
+                                  : " (default - Advanced param)");
 }
 
 static FMField CP_SstParamsList_RAW[] = {
@@ -230,6 +269,8 @@ static FMField CP_DP_ArrayReaderList[] = {
      FMOffset(struct _CombinedReaderInfo *, DP_ReaderInfo)},
     {"RankZeroID", "integer", sizeof(void *),
      FMOffset(struct _CombinedReaderInfo *, RankZeroID)},
+    {"SpecPreload", "integer", sizeof(int),
+     FMOffset(struct _CombinedReaderInfo *, SpecPreload)},
     {NULL, NULL, 0, 0}};
 
 static FMStructDescRec CP_DP_ReaderArrayStructs[] = {
@@ -264,6 +305,8 @@ static FMField CP_ReaderRegisterList[] = {
      FMOffset(struct _ReaderRegisterMsg *, WriterResponseCondition)},
     {"ReaderCohortSize", "integer", sizeof(int),
      FMOffset(struct _ReaderRegisterMsg *, ReaderCohortSize)},
+    {"SpecPreload", "integer", sizeof(int),
+     FMOffset(struct _ReaderRegisterMsg *, SpecPreload)},
     {"CP_ReaderInfo", "(*CP_STRUCT)[ReaderCohortSize]",
      sizeof(struct _CP_ReaderInitInfo),
      FMOffset(struct _ReaderRegisterMsg *, CP_ReaderInfo)},
@@ -342,6 +385,8 @@ static FMField TimestepMetadataList[] = {
      FMOffset(struct _TimestepMetadataMsg *, Timestep)},
     {"cohort_size", "integer", sizeof(int),
      FMOffset(struct _TimestepMetadataMsg *, CohortSize)},
+    {"preload_mode", "integer", sizeof(int),
+     FMOffset(struct _TimestepMetadataMsg *, PreloadMode)},
     {"formats", "*FFSFormatBlock", sizeof(struct FFSFormatBlock),
      FMOffset(struct _TimestepMetadataMsg *, Formats)},
     {"metadata", "SstBlock[cohort_size]", sizeof(struct _SstBlock),
@@ -424,6 +469,13 @@ static FMField LockReaderDefinitionsList[] = {
      FMOffset(struct _LockReaderDefinitionsMsg *, WSR_Stream)},
     {"Timestep", "integer", sizeof(int),
      FMOffset(struct _LockReaderDefinitionsMsg *, Timestep)},
+    {NULL, NULL, 0, 0}};
+
+static FMField CommPatternLockedList[] = {
+    {"RS_Stream", "integer", sizeof(void *),
+     FMOffset(struct _CommPatternLockedMsg *, RS_Stream)},
+    {"Timestep", "integer", sizeof(int),
+     FMOffset(struct _CommPatternLockedMsg *, Timestep)},
     {NULL, NULL, 0, 0}};
 
 static FMField PeerSetupList[] = {
@@ -882,6 +934,11 @@ static void doFormatRegistration(CP_GlobalInfo CPInfo, CP_DP_Interface DPInfo)
         sizeof(struct _LockReaderDefinitionsMsg));
     CMregister_handler(CPInfo->LockReaderDefinitionsFormat,
                        CP_LockReaderDefinitionsHandler, NULL);
+    CPInfo->CommPatternLockedFormat = CMregister_simple_format(
+        CPInfo->cm, "CommPatternLocked", CommPatternLockedList,
+        sizeof(struct _CommPatternLockedMsg));
+    CMregister_handler(CPInfo->CommPatternLockedFormat,
+                       CP_CommPatternLockedHandler, NULL);
     CPInfo->WriterCloseFormat =
         CMregister_simple_format(CPInfo->cm, "WriterClose", WriterCloseList,
                                  sizeof(struct _WriterCloseMsg));
@@ -1033,6 +1090,7 @@ extern void SstStreamDestroy(SstStream Stream)
         {
             free(CPInfo->LastCallFreeList[i]);
         }
+        free(CPInfo->LastCallFreeList);
         free(CPInfo);
         CPInfo = NULL;
         if (CP_SstParamsList)
@@ -1042,7 +1100,7 @@ extern void SstStreamDestroy(SstStream Stream)
     CP_verbose(&StackStream, "SstStreamDestroy successful, returning\n");
 }
 
-extern char *CP_GetContactString(SstStream Stream)
+extern char *CP_GetContactString(SstStream Stream, attr_list DPAttrs)
 {
     attr_list ListenList = create_attr_list(), ContactList;
     set_string_attr(ListenList, CM_TRANSPORT_ATOM,
@@ -1062,12 +1120,16 @@ extern char *CP_GetContactString(SstStream Stream)
     {
         set_int_attr(ContactList, CM_ENET_CONN_TIMEOUT, 60000); /* 60 seconds */
     }
+    if (DPAttrs)
+    {
+        attr_merge_lists(ContactList, DPAttrs);
+    }
     char *ret = attr_list_to_string(ContactList);
     free_attr_list(ListenList);
     return ret;
 }
 
-extern CP_GlobalInfo CP_getCPInfo(CP_DP_Interface DPInfo)
+extern CP_GlobalInfo CP_getCPInfo(CP_DP_Interface DPInfo, char *ControlModule)
 {
 
     if (CPInfo)
@@ -1081,7 +1143,7 @@ extern CP_GlobalInfo CP_getCPInfo(CP_DP_Interface DPInfo)
     CPInfo = malloc(sizeof(*CPInfo));
     memset(CPInfo, 0, sizeof(*CPInfo));
 
-    CPInfo->cm = CManager_create();
+    CPInfo->cm = CManager_create_control(ControlModule);
     if (CMfork_comm_thread(CPInfo->cm) == 0)
     {
         fprintf(stderr, "ADIOS2 SST Engine failed to fork a communication "
@@ -1177,8 +1239,8 @@ SstStream CP_newStream()
 
 static void DP_verbose(SstStream Stream, char *Format, ...);
 static CManager CP_getCManager(SstStream Stream);
-static void CP_sendToPeer(SstStream Stream, CP_PeerCohort cohort, int rank,
-                          CMFormat Format, void *data);
+static int CP_sendToPeer(SstStream Stream, CP_PeerCohort cohort, int rank,
+                         CMFormat Format, void *data);
 static MPI_Comm CP_getMPIComm(SstStream Stream);
 
 struct _CP_Services Svcs = {
@@ -1335,8 +1397,12 @@ static CManager CP_getCManager(SstStream Stream) { return Stream->CPInfo->cm; }
 
 static MPI_Comm CP_getMPIComm(SstStream Stream) { return Stream->mpiComm; }
 
-static void CP_sendToPeer(SstStream s, CP_PeerCohort Cohort, int Rank,
-                          CMFormat Format, void *Data)
+extern void WriterConnCloseHandler(CManager cm, CMConnection closed_conn,
+                                   void *client_data);
+extern void ReaderConnCloseHandler(CManager cm, CMConnection ClosedConn,
+                                   void *client_data);
+static int CP_sendToPeer(SstStream s, CP_PeerCohort Cohort, int Rank,
+                         CMFormat Format, void *Data)
 {
     CP_PeerConnection *Peers = (CP_PeerConnection *)Cohort;
     if (Peers[Rank].CMconn == NULL)
@@ -1347,14 +1413,44 @@ static void CP_sendToPeer(SstStream s, CP_PeerCohort Cohort, int Rank,
             CP_error(s,
                      "Connection failed in CP_sendToPeer! Contact list was:\n");
             CP_error(s, attr_list_to_string(Peers[Rank].ContactList));
-            return;
+            return 0;
+        }
+        if (s->Role == ReaderRole)
+        {
+            CP_verbose(
+                s,
+                "Registering reader close handler for peer %d CONNECTION %p\n",
+                Rank, Peers[Rank].CMconn);
+            CMconn_register_close_handler(Peers[Rank].CMconn,
+                                          ReaderConnCloseHandler, (void *)s);
+        }
+        else
+        {
+            for (int i = 0; i < s->ReaderCount; i++)
+            {
+                if (Peers == s->Readers[i]->Connections)
+                {
+                    CP_verbose(s,
+                               "Registering writer close handler for peer %d, "
+                               "CONNECTION %p\n",
+                               Rank, Peers[Rank].CMconn);
+                    CMconn_register_close_handler(Peers[Rank].CMconn,
+                                                  WriterConnCloseHandler,
+                                                  (void *)s->Readers[i]);
+                    break;
+                }
+            }
         }
     }
     if (CMwrite(Peers[Rank].CMconn, Format, Data) != 1)
     {
-        CP_verbose(s, "Message failed to send to peer %d in CP_sendToPeer()\n",
-                   Rank);
+        CP_verbose(s,
+                   "Message failed to send to peer %d CONNECTION %p in "
+                   "CP_sendToPeer()\n",
+                   Rank, Peers[Rank].CMconn);
+        return 0;
     }
+    return 1;
 }
 
 CPNetworkInfoFunc globalNetinfoCallback = NULL;

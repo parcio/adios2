@@ -26,10 +26,10 @@ namespace engine
 {
 
 BP3Writer::BP3Writer(IO &io, const std::string &name, const Mode mode,
-                     MPI_Comm mpiComm)
-: Engine("BP3", io, name, mode, mpiComm), m_BP3Serializer(mpiComm, m_DebugMode),
-  m_FileDataManager(mpiComm, m_DebugMode),
-  m_FileMetadataManager(mpiComm, m_DebugMode)
+                     helper::Comm comm)
+: Engine("BP3", io, name, mode, std::move(comm)),
+  m_BP3Serializer(m_Comm, m_DebugMode), m_FileDataManager(m_Comm, m_DebugMode),
+  m_FileMetadataManager(m_Comm, m_DebugMode)
 {
     TAU_SCOPED_TIMER("BP3Writer::Open");
     m_IO.m_ReadStreaming = false;
@@ -76,6 +76,7 @@ void BP3Writer::PerformPuts()
             variableName, "in call to PerformPuts, EndStep or Close");         \
         PerformPutCommon(variable);                                            \
     }
+
         ADIOS2_FOREACH_PRIMITIVE_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
     }
@@ -94,7 +95,7 @@ void BP3Writer::EndStep()
     m_BP3Serializer.SerializeData(m_IO, true);
 
     const size_t currentStep = CurrentStep();
-    const size_t flushStepsCount = m_BP3Serializer.m_FlushStepsCount;
+    const size_t flushStepsCount = m_BP3Serializer.m_Parameters.FlushStepsCount;
 
     if (currentStep % flushStepsCount == 0)
     {
@@ -108,7 +109,7 @@ void BP3Writer::Flush(const int transportIndex)
     DoFlush(false, transportIndex);
     m_BP3Serializer.ResetBuffer(m_BP3Serializer.m_Data);
 
-    if (m_BP3Serializer.m_CollectiveMetadata)
+    if (m_BP3Serializer.m_Parameters.CollectiveMetadata)
     {
         WriteCollectiveMetadataFile();
     }
@@ -128,7 +129,7 @@ void BP3Writer::Init()
                           const size_t bufferID, const T &value)               \
     {                                                                          \
         TAU_SCOPED_TIMER("BP3Writer::Put");                                    \
-        return PutCommon(variable, span, bufferID, value);                     \
+        PutCommon(variable, span, bufferID, value);                            \
     }
 
 ADIOS2_FOREACH_PRIMITIVE_STDTYPE_1ARG(declare_type)
@@ -152,7 +153,7 @@ ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 
 void BP3Writer::InitParameters()
 {
-    m_BP3Serializer.InitParameters(m_IO.m_Parameters);
+    m_BP3Serializer.Init(m_IO.m_Parameters, "in call to BP3::Open for writing");
 }
 
 void BP3Writer::InitTransports()
@@ -179,16 +180,25 @@ void BP3Writer::InitTransports()
         bpSubStreamNames = m_BP3Serializer.GetBPSubStreamNames(transportsNames);
     }
 
-    m_BP3Serializer.ProfilerStart("mkdir");
+    m_BP3Serializer.m_Profiler.Start("mkdir");
     m_FileDataManager.MkDirsBarrier(bpSubStreamNames,
-                                    m_BP3Serializer.m_NodeLocal);
-    m_BP3Serializer.ProfilerStop("mkdir");
+                                    m_BP3Serializer.m_Parameters.NodeLocal);
+    m_BP3Serializer.m_Profiler.Stop("mkdir");
 
     if (m_BP3Serializer.m_Aggregator.m_IsConsumer)
     {
-        m_FileDataManager.OpenFiles(bpSubStreamNames, m_OpenMode,
-                                    m_IO.m_TransportsParameters,
-                                    m_BP3Serializer.m_Profiler.IsActive);
+        if (m_BP3Serializer.m_Parameters.AsyncTasks)
+        {
+            m_FutureOpenFiles = m_FileDataManager.OpenFilesAsync(
+                bpSubStreamNames, m_OpenMode, m_IO.m_TransportsParameters,
+                m_BP3Serializer.m_Profiler.m_IsActive);
+        }
+        else
+        {
+            m_FileDataManager.OpenFiles(bpSubStreamNames, m_OpenMode,
+                                        m_IO.m_TransportsParameters,
+                                        m_BP3Serializer.m_Profiler.m_IsActive);
+        }
     }
 }
 
@@ -235,13 +245,13 @@ void BP3Writer::DoClose(const int transportIndex)
         m_FileDataManager.CloseFiles(transportIndex);
     }
 
-    if (m_BP3Serializer.m_CollectiveMetadata &&
+    if (m_BP3Serializer.m_Parameters.CollectiveMetadata &&
         m_FileDataManager.AllTransportsClosed())
     {
         WriteCollectiveMetadataFile(true);
     }
 
-    if (m_BP3Serializer.m_Profiler.IsActive &&
+    if (m_BP3Serializer.m_Profiler.m_IsActive &&
         m_FileDataManager.AllTransportsClosed())
     {
         WriteProfilingJSONFile();
@@ -273,7 +283,7 @@ void BP3Writer::WriteProfilingJSONFile()
 
     if (m_BP3Serializer.m_RankMPI == 0)
     {
-        transport::FileFStream profilingJSONStream(m_MPIComm, m_DebugMode);
+        transport::FileFStream profilingJSONStream(m_Comm, m_DebugMode);
         auto bpBaseNames = m_BP3Serializer.GetBPBaseNames({m_Name});
         profilingJSONStream.Open(bpBaseNames[0] + "/profiling.json",
                                  Mode::Write);
@@ -286,7 +296,7 @@ void BP3Writer::WriteCollectiveMetadataFile(const bool isFinal)
 {
     TAU_SCOPED_TIMER("BP3Writer::WriteCollectiveMetadataFile");
     m_BP3Serializer.AggregateCollectiveMetadata(
-        m_MPIComm, m_BP3Serializer.m_Metadata, true);
+        m_Comm, m_BP3Serializer.m_Metadata, true);
 
     if (m_BP3Serializer.m_RankMPI == 0)
     {
@@ -300,7 +310,7 @@ void BP3Writer::WriteCollectiveMetadataFile(const bool isFinal)
 
         m_FileMetadataManager.OpenFiles(bpMetadataFileNames, m_OpenMode,
                                         m_IO.m_TransportsParameters,
-                                        m_BP3Serializer.m_Profiler.IsActive);
+                                        m_BP3Serializer.m_Profiler.m_IsActive);
 
         m_FileMetadataManager.WriteFiles(
             m_BP3Serializer.m_Metadata.m_Buffer.data(),
@@ -330,6 +340,11 @@ void BP3Writer::WriteData(const bool isFinal, const int transportIndex)
         m_BP3Serializer.CloseStream(m_IO);
     }
 
+    if (m_FutureOpenFiles.valid())
+    {
+        m_FutureOpenFiles.get();
+    }
+
     m_FileDataManager.WriteFiles(m_BP3Serializer.m_Data.m_Buffer.data(),
                                  dataSize, transportIndex);
 
@@ -344,21 +359,27 @@ void BP3Writer::AggregateWriteData(const bool isFinal, const int transportIndex)
     // async?
     for (int r = 0; r < m_BP3Serializer.m_Aggregator.m_Size; ++r)
     {
-        std::vector<std::vector<MPI_Request>> dataRequests =
+        aggregator::MPIAggregator::ExchangeRequests dataRequests =
             m_BP3Serializer.m_Aggregator.IExchange(m_BP3Serializer.m_Data, r);
 
-        std::vector<std::vector<MPI_Request>> absolutePositionRequests =
-            m_BP3Serializer.m_Aggregator.IExchangeAbsolutePosition(
-                m_BP3Serializer.m_Data, r);
+        aggregator::MPIAggregator::ExchangeAbsolutePositionRequests
+            absolutePositionRequests =
+                m_BP3Serializer.m_Aggregator.IExchangeAbsolutePosition(
+                    m_BP3Serializer.m_Data, r);
 
         if (m_BP3Serializer.m_Aggregator.m_IsConsumer)
         {
-            const BufferSTL &bufferSTL =
+            const format::Buffer &bufferSTL =
                 m_BP3Serializer.m_Aggregator.GetConsumerBuffer(
                     m_BP3Serializer.m_Data);
 
-            m_FileDataManager.WriteFiles(bufferSTL.m_Buffer.data(),
-                                         bufferSTL.m_Position, transportIndex);
+            if (m_FutureOpenFiles.valid())
+            {
+                m_FutureOpenFiles.get();
+            }
+
+            m_FileDataManager.WriteFiles(bufferSTL.Data(), bufferSTL.m_Position,
+                                         transportIndex);
 
             m_FileDataManager.FlushFiles(transportIndex);
         }
@@ -374,7 +395,7 @@ void BP3Writer::AggregateWriteData(const bool isFinal, const int transportIndex)
 
     if (isFinal) // Write metadata footer
     {
-        BufferSTL &bufferSTL = m_BP3Serializer.m_Data;
+        format::BufferSTL &bufferSTL = m_BP3Serializer.m_Data;
         m_BP3Serializer.ResetBuffer(bufferSTL, false, false);
 
         m_BP3Serializer.AggregateCollectiveMetadata(

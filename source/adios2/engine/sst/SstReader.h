@@ -17,6 +17,8 @@
 
 #include "adios2/core/Engine.h"
 #include "adios2/core/IO.h"
+#include "adios2/helper/adiosComm.h"
+#include "adios2/toolkit/format/bp/bp3/BP3Deserializer.h"
 
 namespace adios2
 {
@@ -34,13 +36,13 @@ public:
      * @param adios
      * @param name
      * @param accessMode
-     * @param mpiComm
+     * @param comm
      * @param method
      * @param debugMode
      * @param nthreads
      */
     SstReader(IO &io, const std::string &name, const Mode mode,
-              MPI_Comm mpiComm);
+              helper::Comm comm);
 
     virtual ~SstReader();
 
@@ -61,6 +63,7 @@ private:
     SstStream m_Input;
     SstMarshalMethod m_WriterMarshalMethod;
     bool m_DefinitionsNotified = false;
+    bool m_BetweenStepPairs = false;
 
     /* --- Used only with BP marshaling --- */
     SstFullMetadata m_CurrentStepMetaData = NULL;

@@ -12,6 +12,7 @@
 #include "IO.tcc"
 
 #include <sstream>
+#include <utility> // std::pair
 
 #include "adios2/common/ADIOSMPI.h"
 #include "adios2/common/ADIOSMacros.h"
@@ -27,6 +28,7 @@
 #include "adios2/engine/skeleton/SkeletonReader.h"
 #include "adios2/engine/skeleton/SkeletonWriter.h"
 
+#include "adios2/helper/adiosComm.h"
 #include "adios2/helper/adiosFunctions.h" //BuildParametersMap
 #include "adios2/toolkit/profiling/taustubs/tautimer.hpp"
 #include <adios2sys/SystemTools.hxx> // FileIsDirectory()
@@ -41,9 +43,18 @@
 #include "adios2/engine/ssc/SscWriter.h"
 #endif
 
+#ifdef ADIOS2_HAVE_TABLE // external dependencies
+#include "adios2/engine/table/TableWriter.h"
+#endif
+
 #ifdef ADIOS2_HAVE_SST // external dependencies
 #include "adios2/engine/sst/SstReader.h"
 #include "adios2/engine/sst/SstWriter.h"
+#endif
+
+#ifdef ADIOS2_HAVE_DATASPACES // external dependencies
+#include "adios2/engine/dataspaces/DataSpacesReader.h"
+#include "adios2/engine/dataspaces/DataSpacesWriter.h"
 #endif
 
 #ifdef ADIOS2_HAVE_HDF5 // external dependencies
@@ -59,15 +70,7 @@
 #include "adios2/engine/insitumpi/InSituMPIWriter.h"
 #endif
 
-
-// #ifdef ADIOS2_HAVE_JULEA_GONDOLIN || ADIOS2_HAVE_JULEA_CLUSTER || ADIOS2_HAVE_JULEA_MINASTIRITH || ADIOS2_HAVE_JULEA_VINYAMAR || ADIOS2_HAVE_JULEA // external dependencies
-// #include "adios2/engine/julea/JuleaReader.h"
-// #include "adios2/engine/julea/JuleaWriter.h"
-// // #include "adios2/engine/julea/JuleaxClientLogic.h" //needed?
-// #endif
-
-
-#ifdef ADIOS2_HAVE_JULEA_GONDOLIN // external dependencies
+#ifdef ADIOS2_HAVE_JULEA // external dependencies
 // #include "adios2/engine/julea-original/JuleaReader.h"
 // #include "adios2/engine/julea-original/JuleaWriter.h"
 #include "adios2/engine/julea-kv/JuleaKVReader.h"
@@ -78,38 +81,71 @@
 // #include "adios2/engine/julea-db/JuleaDBWriter.h"
 #endif
 
-#ifdef ADIOS2_HAVE_JULEA_MINASTIRITH // external dependencies
-#include "adios2/engine/julea-kv/JuleaKVReader.h"
-#include "adios2/engine/julea-kv/JuleaKVWriter.h"
-#include "adios2/engine/julea-test/JuleaTestReader.h"
-#include "adios2/engine/julea-test/JuleaTestWriter.h"
-// #include "adios2/engine/julea-smd-kv/JuleaReader.h"
-// #include "adios2/engine/julea-smd-kv/JuleaWriter.h"
-// #include "adios2/engine/julea-test/JuleaTestReader.h"
-// #include "adios2/engine/julea-test/JuleaTestWriter.h"
-// #include "adios2/engine/julea-db/JuleaDBReader.h"
-// #include "adios2/engine/julea-db/JuleaDBWriter.h"
-#endif
-
 namespace adios2
 {
 namespace core
 {
 
-IO::IO(ADIOS &adios, const std::string name, MPI_Comm mpiComm,
-       const bool inConfigFile, const std::string hostLanguage,
-       const bool debugMode)
-: m_ADIOS(adios), m_Name(name), m_MPIComm(mpiComm),
-  m_InConfigFile(inConfigFile), m_HostLanguage(hostLanguage),
-  m_DebugMode(debugMode)
+IO::IO(ADIOS &adios, const std::string name, const bool inConfigFile,
+       const std::string hostLanguage, const bool debugMode)
+: m_ADIOS(adios), m_Name(name), m_InConfigFile(inConfigFile),
+  m_HostLanguage(hostLanguage), m_DebugMode(debugMode)
 {
 }
 
 void IO::SetEngine(const std::string engineType) noexcept
 {
-    m_EngineType = engineType;
+    auto lf_InsertParam = [&](const std::string &key,
+                              const std::string &value) {
+        m_Parameters.insert(std::pair<std::string, std::string>(key, value));
+    };
+
+    /* First step in handling virtual engine names */
+    std::string finalEngineType;
+    std::string engineTypeLC = engineType;
+    std::transform(engineTypeLC.begin(), engineTypeLC.end(),
+                   engineTypeLC.begin(), ::tolower);
+    if (engineTypeLC == "insituviz" || engineTypeLC == "insituvisualization")
+    {
+        finalEngineType = "SST";
+        lf_InsertParam("FirstTimestepPrecious", "true");
+        lf_InsertParam("RendezvousReaderCount", "0");
+        lf_InsertParam("QueueLimit", "3");
+        lf_InsertParam("QueueFullPolicy", "Discard");
+        lf_InsertParam("AlwaysProvideLatestTimestep", "false");
+    }
+    else if (engineTypeLC == "insituanalysis")
+    {
+        finalEngineType = "SST";
+        lf_InsertParam("FirstTimestepPrecious", "false");
+        lf_InsertParam("RendezvousReaderCount", "1");
+        lf_InsertParam("QueueLimit", "1");
+        lf_InsertParam("QueueFullPolicy", "Block");
+        lf_InsertParam("AlwaysProvideLatestTimestep", "false");
+    }
+    else if (engineTypeLC == "codecoupling")
+    {
+        finalEngineType = "SST";
+        lf_InsertParam("FirstTimestepPrecious", "false");
+        lf_InsertParam("RendezvousReaderCount", "1");
+        lf_InsertParam("QueueLimit", "1");
+        lf_InsertParam("QueueFullPolicy", "Block");
+        lf_InsertParam("AlwaysProvideLatestTimestep", "false");
+    }
+    else if (engineTypeLC == "filestream")
+    {
+        finalEngineType = "BP4";
+        lf_InsertParam("OpenTimeoutSecs", "3600");
+    }
+    /* "file" is handled entirely in IO::Open() as it needs the name */
+    else
+    {
+        finalEngineType = engineType;
+    }
+
+    m_EngineType = finalEngineType;
 }
-void IO::SetIOMode(const IOMode ioMode) { m_IOMode = ioMode; };
+void IO::SetIOMode(const IOMode ioMode) { m_IOMode = ioMode; }
 
 void IO::SetParameters(const Params &parameters) noexcept
 {
@@ -190,9 +226,9 @@ const DataMap &IO::GetAttributesDataMap() const noexcept
     return m_Attributes;
 }
 
-bool IO::InConfigFile() const noexcept { return m_InConfigFile; };
+bool IO::InConfigFile() const noexcept { return m_InConfigFile; }
 
-void IO::SetDeclared() noexcept { m_IsDeclared = true; };
+void IO::SetDeclared() noexcept { m_IsDeclared = true; }
 
 bool IO::IsDeclared() const noexcept { return m_IsDeclared; }
 
@@ -310,8 +346,6 @@ std::map<std::string, Params> IO::GetAvailableVariables() noexcept
         if (variable.m_SingleValue)                                            \
         {                                                                      \
             variablesInfo[name]["SingleValue"] = "true";                       \
-            variablesInfo[name]["Value"] =                                     \
-                helper::ValueToString(variable.m_Value);                       \
         }                                                                      \
         else                                                                   \
         {                                                                      \
@@ -449,8 +483,7 @@ size_t IO::AddOperation(Operator &op, const Params &parameters) noexcept
     return m_Operations.size() - 1;
 }
 
-Engine &IO::Open(const std::string &name, const Mode mode,
-                 MPI_Comm mpiComm_orig)
+Engine &IO::Open(const std::string &name, const Mode mode, MPI_Comm mpiComm)
 {
     TAU_SCOPED_TIMER("IO::Open");
     auto itEngineFound = m_Engines.find(name);
@@ -482,8 +515,7 @@ Engine &IO::Open(const std::string &name, const Mode mode,
         }
     }
 
-    MPI_Comm mpiComm;
-    SMPI_Comm_dup(mpiComm_orig, &mpiComm);
+    auto comm = helper::Comm::Duplicate(mpiComm);
     std::shared_ptr<Engine> engine;
     const bool isDefaultEngine = m_EngineType.empty() ? true : false;
     std::string engineTypeLC = m_EngineType;
@@ -493,11 +525,17 @@ Engine &IO::Open(const std::string &name, const Mode mode,
                        engineTypeLC.begin(), ::tolower);
     }
 
+    /* Second step in handling virtual engines */
     /* BPFile for read needs to use BP4 or BP3 depending on the file's version
      */
-    if ((engineTypeLC == "bpfile" || engineTypeLC == "bp" || isDefaultEngine))
+    if ((engineTypeLC == "file" || engineTypeLC == "bpfile" ||
+         engineTypeLC == "bp" || isDefaultEngine))
     {
-        if (mode == Mode::Read)
+        if (helper::EndsWith(name, ".h5", false))
+        {
+            engineTypeLC = "hdf5";
+        }
+        else if (mode == Mode::Read)
         {
             if (adios2sys::SystemTools::FileIsDirectory(name))
             {
@@ -505,12 +543,29 @@ Engine &IO::Open(const std::string &name, const Mode mode,
             }
             else
             {
-                engineTypeLC = "bp3";
+                if (helper::EndsWith(name, ".bp", false))
+                {
+                    engineTypeLC = "bp3";
+                }
+                else
+                {
+                    /* We need to figure out the type of file
+                     * from the file itself
+                     */
+                    if (helper::IsHDF5File(name, comm, m_TransportsParameters))
+                    {
+                        engineTypeLC = "hdf5";
+                    }
+                    else
+                    {
+                        engineTypeLC = "bp3";
+                    }
+                }
             }
         }
         else
         {
-            engineTypeLC = "bp3";
+            engineTypeLC = "bp4";
         }
     }
 
@@ -518,26 +573,26 @@ Engine &IO::Open(const std::string &name, const Mode mode,
     {
         if (mode == Mode::Read)
         {
-            engine =
-                std::make_shared<engine::BP3Reader>(*this, name, mode, mpiComm);
+            engine = std::make_shared<engine::BP3Reader>(*this, name, mode,
+                                                         std::move(comm));
         }
         else
         {
-            engine =
-                std::make_shared<engine::BP3Writer>(*this, name, mode, mpiComm);
+            engine = std::make_shared<engine::BP3Writer>(*this, name, mode,
+                                                         std::move(comm));
         }
     }
     else if (engineTypeLC == "bp4")
     {
         if (mode == Mode::Read)
         {
-            engine =
-                std::make_shared<engine::BP4Reader>(*this, name, mode, mpiComm);
+            engine = std::make_shared<engine::BP4Reader>(*this, name, mode,
+                                                         std::move(comm));
         }
         else
         {
-            engine =
-                std::make_shared<engine::BP4Writer>(*this, name, mode, mpiComm);
+            engine = std::make_shared<engine::BP4Writer>(*this, name, mode,
+                                                         std::move(comm));
         }
     }
     else if (engineTypeLC == "hdfmixer")
@@ -546,10 +601,10 @@ Engine &IO::Open(const std::string &name, const Mode mode,
 #if H5_VERSION_GE(1, 11, 0)
         if (mode == Mode::Read)
             engine = std::make_shared<engine::HDF5ReaderP>(*this, name, mode,
-                                                           mpiComm);
+                                                           std::move(comm));
         else
-            engine =
-                std::make_shared<engine::HDFMixer>(*this, name, mode, mpiComm);
+            engine = std::make_shared<engine::HDFMixer>(*this, name, mode,
+                                                        std::move(comm));
 #else
         throw std::invalid_argument(
             "ERROR: update HDF5 >= 1.11 to support VDS.");
@@ -564,10 +619,10 @@ Engine &IO::Open(const std::string &name, const Mode mode,
 #ifdef ADIOS2_HAVE_DATAMAN
         if (mode == Mode::Read)
             engine = std::make_shared<engine::DataManReader>(*this, name, mode,
-                                                             mpiComm);
+                                                             std::move(comm));
         else
             engine = std::make_shared<engine::DataManWriter>(*this, name, mode,
-                                                             mpiComm);
+                                                             std::move(comm));
 #else
         throw std::invalid_argument(
             "ERROR: this version didn't compile with "
@@ -578,28 +633,59 @@ Engine &IO::Open(const std::string &name, const Mode mode,
     {
 #ifdef ADIOS2_HAVE_SSC
         if (mode == Mode::Read)
-            engine =
-                std::make_shared<engine::SscReader>(*this, name, mode, mpiComm);
+            engine = std::make_shared<engine::SscReader>(*this, name, mode,
+                                                         std::move(comm));
         else
-            engine =
-                std::make_shared<engine::SscWriter>(*this, name, mode, mpiComm);
+            engine = std::make_shared<engine::SscWriter>(*this, name, mode,
+                                                         std::move(comm));
 #else
         throw std::invalid_argument("ERROR: this version didn't compile with "
                                     "SSC library, can't use SSC engine\n");
+#endif
+    }
+    else if (engineTypeLC == "table")
+    {
+#ifdef ADIOS2_HAVE_TABLE
+        if (mode == Mode::Write)
+            engine = std::make_shared<engine::TableWriter>(*this, name, mode,
+                                                           std::move(comm));
+        else
+            throw std::invalid_argument(
+                "ERROR: Table engine only supports Write. It uses other "
+                "engines as backend. Please use corresponding engines for "
+                "Read\n");
+#else
+        throw std::invalid_argument("ERROR: this version didn't compile with "
+                                    "Table library, can't use Table engine\n");
 #endif
     }
     else if (engineTypeLC == "sst" || engineTypeLC == "effis")
     {
 #ifdef ADIOS2_HAVE_SST
         if (mode == Mode::Read)
-            engine =
-                std::make_shared<engine::SstReader>(*this, name, mode, mpiComm);
+            engine = std::make_shared<engine::SstReader>(*this, name, mode,
+                                                         std::move(comm));
         else
-            engine =
-                std::make_shared<engine::SstWriter>(*this, name, mode, mpiComm);
+            engine = std::make_shared<engine::SstWriter>(*this, name, mode,
+                                                         std::move(comm));
 #else
         throw std::invalid_argument("ERROR: this version didn't compile with "
                                     "Sst library, can't use Sst engine\n");
+#endif
+    }
+    else if (engineTypeLC == "dataspaces")
+    {
+#ifdef ADIOS2_HAVE_DATASPACES
+        if (mode == Mode::Read)
+            engine = std::make_shared<engine::DataSpacesReader>(
+                *this, name, mode, std::move(comm));
+        else
+            engine = std::make_shared<engine::DataSpacesWriter>(
+                *this, name, mode, std::move(comm));
+#else
+        throw std::invalid_argument(
+            "ERROR: this version didn't compile with "
+            "DataSpaces library, can't use DataSpaces engine\n");
 #endif
     }
     else if (engineTypeLC == "hdf5")
@@ -607,10 +693,10 @@ Engine &IO::Open(const std::string &name, const Mode mode,
 #ifdef ADIOS2_HAVE_HDF5
         if (mode == Mode::Read)
             engine = std::make_shared<engine::HDF5ReaderP>(*this, name, mode,
-                                                           mpiComm);
+                                                           std::move(comm));
         else
             engine = std::make_shared<engine::HDF5WriterP>(*this, name, mode,
-                                                           mpiComm);
+                                                           std::move(comm));
 #else
         throw std::invalid_argument("ERROR: this version didn't compile with "
                                     "HDF5 library, can't use HDF5 engine\n");
@@ -620,11 +706,11 @@ Engine &IO::Open(const std::string &name, const Mode mode,
     {
 #ifdef ADIOS2_HAVE_MPI
         if (mode == Mode::Read)
-            engine = std::make_shared<engine::InSituMPIReader>(*this, name,
-                                                               mode, mpiComm);
+            engine = std::make_shared<engine::InSituMPIReader>(
+                *this, name, mode, std::move(comm));
         else
-            engine = std::make_shared<engine::InSituMPIWriter>(*this, name,
-                                                               mode, mpiComm);
+            engine = std::make_shared<engine::InSituMPIWriter>(
+                *this, name, mode, std::move(comm));
 #else
         throw std::invalid_argument("ERROR: this version didn't compile with "
                                     "MPI, can't use InSituMPI engine\n");
@@ -634,24 +720,24 @@ Engine &IO::Open(const std::string &name, const Mode mode,
     {
         if (mode == Mode::Read)
             engine = std::make_shared<engine::SkeletonReader>(*this, name, mode,
-                                                              mpiComm);
+                                                              std::move(comm));
         else
             engine = std::make_shared<engine::SkeletonWriter>(*this, name, mode,
-                                                              mpiComm);
+                                                              std::move(comm));
     }
     else if (engineTypeLC == "inline")
     {
         if (mode == Mode::Read)
             engine = std::make_shared<engine::InlineReader>(*this, name, mode,
-                                                            mpiComm);
+                                                            std::move(comm));
         else
             engine = std::make_shared<engine::InlineWriter>(*this, name, mode,
-                                                            mpiComm);
+                                                            std::move(comm));
     }
     else if (engineTypeLC == "null")
     {
-        engine =
-            std::make_shared<engine::NullEngine>(*this, name, mode, mpiComm);
+        engine = std::make_shared<engine::NullEngine>(*this, name, mode,
+                                                      std::move(comm));
     }
     else if (engineTypeLC == "nullcore")
     {
@@ -660,7 +746,7 @@ Engine &IO::Open(const std::string &name, const Mode mode,
                 "ERROR: nullcore engine does not support read mode");
         else
             engine = std::make_shared<engine::NullCoreWriter>(*this, name, mode,
-                                                              mpiComm);
+                                                              std::move(comm));
     }
     // else if (engineTypeLC == "julea-original")
     // {
@@ -673,21 +759,31 @@ Engine &IO::Open(const std::string &name, const Mode mode,
     // }
     else if (engineTypeLC == "julea-kv")
     {
+#ifdef ADIOS2_HAVE_JULEA
         if (mode == Mode::Read)
             engine = std::make_shared<engine::JuleaKVReader>(*this, name, mode,
-                                                              mpiComm);
+                                                              std::move(comm));
         else
             engine = std::make_shared<engine::JuleaKVWriter>(*this, name, mode,
-                                                              mpiComm);
+                                                              std::move(comm));
+#else
+        throw std::invalid_argument("ERROR: this version didn't compile with "
+                                    "JULEA, can't use JuleaKV engine\n");
+#endif
     }
     else if (engineTypeLC == "julea-test")
     {
+#ifdef ADIOS2_HAVE_JULEA
         if (mode == Mode::Read)
             engine = std::make_shared<engine::JuleaTestReader>(*this, name, mode,
-                                                              mpiComm);
+                                                              std::move(comm));
         else
             engine = std::make_shared<engine::JuleaTestWriter>(*this, name, mode,
-                                                              mpiComm);
+                                                              std::move(comm));
+#else
+        throw std::invalid_argument("ERROR: this version didn't compile with "
+                                    "JULEA, can't use JuleaTest engine\n");
+#endif
     }
     // else if (engineTypeLC == "julea-db")
     // {
@@ -698,6 +794,7 @@ Engine &IO::Open(const std::string &name, const Mode mode,
     //         engine = std::make_shared<engine::JuleaDBWriter>(*this, name, mode,
     //                                                           mpiComm);
     // }
+
     else
     {
         if (m_DebugMode)
@@ -726,7 +823,7 @@ Engine &IO::Open(const std::string &name, const Mode mode,
 
 Engine &IO::Open(const std::string &name, const Mode mode)
 {
-    return Open(name, mode, m_MPIComm);
+    return Open(name, mode, m_ADIOS.GetComm().AsMPI());
 }
 
 Engine &IO::GetEngine(const std::string &name)

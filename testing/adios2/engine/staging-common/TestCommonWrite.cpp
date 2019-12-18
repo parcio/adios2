@@ -13,8 +13,9 @@
 
 #include <gtest/gtest.h>
 
-#include "ParseArgs.h"
 #include "TestData.h"
+
+#include "ParseArgs.h"
 
 class CommonWriteTest : public ::testing::Test
 {
@@ -32,9 +33,6 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
     // form a mpiSize * Nx 1D array
     int mpiRank = 0, mpiSize = 1;
 
-    // Number of steps
-    const std::size_t NSteps = 10;
-
 #ifdef ADIOS2_HAVE_MPI
     MPI_Comm_rank(testComm, &mpiRank);
     MPI_Comm_size(testComm, &mpiSize);
@@ -49,12 +47,30 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
 #endif
     adios2::IO io = adios.DeclareIO("TestIO");
 
+    std::size_t r64_Nx = Nx;
+    if (ZeroDataVar)
+    {
+        assert(mpiSize >= 2);
+        if (mpiRank == 0)
+        {
+            r64_Nx = 0;
+        }
+        else if (mpiRank == 1)
+        {
+            r64_Nx = 2 * Nx;
+        }
+    }
+    std::cout << "Nx is set to " << r64_Nx << " on Rank " << mpiRank
+              << std::endl;
+
     // Declare 1D variables (NumOfProcesses * Nx)
     // The local process' part (start, count) can be defined now or later
     // before Write().
     {
         adios2::Dims shape{static_cast<unsigned int>(Nx * mpiSize)};
         adios2::Dims start{static_cast<unsigned int>(Nx * mpiRank)};
+        adios2::Dims count_r64{static_cast<unsigned int>(r64_Nx)};
+        adios2::Dims start_r64{static_cast<unsigned int>(Nx * mpiRank)};
         adios2::Dims count{static_cast<unsigned int>(Nx)};
         adios2::Dims shape2{static_cast<unsigned int>(Nx * mpiSize), 2};
         adios2::Dims start2{static_cast<unsigned int>(Nx * mpiRank), 0};
@@ -66,29 +82,31 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
         adios2::Dims time_start{static_cast<unsigned int>(mpiRank)};
         adios2::Dims time_count{1};
 
-        auto scalar_r64 = io.DefineVariable<double>("scalar_r64");
-        auto var_i8 = io.DefineVariable<int8_t>("i8", shape, start, count);
-        auto var_i16 = io.DefineVariable<int16_t>("i16", shape, start, count);
-        auto var_i32 = io.DefineVariable<int32_t>("i32", shape, start, count);
-        auto var_i64 = io.DefineVariable<int64_t>("i64", shape, start, count);
+        if (ZeroDataVar)
+        {
+            if (mpiRank == 1)
+            {
+                start_r64[0] = 0;
+            }
+        }
+        (void)io.DefineVariable<double>("scalar_r64");
+        (void)io.DefineVariable<int8_t>("i8", shape, start, count);
+        (void)io.DefineVariable<int16_t>("i16", shape, start, count);
+        (void)io.DefineVariable<int32_t>("i32", shape, start, count);
+        (void)io.DefineVariable<int64_t>("i64", shape, start, count);
         auto var_r32 = io.DefineVariable<float>("r32", shape, start, count);
-        auto var_r64 = io.DefineVariable<double>("r64", shape, start, count);
-        auto var_c32 =
-            io.DefineVariable<std::complex<float>>("c32", shape, start, count);
-        auto var_c64 =
-            io.DefineVariable<std::complex<double>>("c64", shape, start, count);
+        auto var_r64 =
+            io.DefineVariable<double>("r64", shape, start_r64, count_r64);
+        (void)io.DefineVariable<std::complex<float>>("c32", shape, start,
+                                                     count);
+        (void)io.DefineVariable<std::complex<double>>("c64", shape, start,
+                                                      count);
         auto var_r64_2d =
             io.DefineVariable<double>("r64_2d", shape2, start2, count2);
         auto var_r64_2d_rev =
             io.DefineVariable<double>("r64_2d_rev", shape3, start3, count3);
-        auto var_time = io.DefineVariable<int64_t>("time", time_shape,
-                                                   time_start, time_count);
-        if (CompressSz)
-        {
-            adios2::Operator SzOp = adios.DefineOperator("szCompressor", "sz");
-            // TODO: Add a large dataset for SZ test.
-            // var_r32.AddOperation(SzOp, {{"accuracy", "0.001"}});
-        }
+        (void)io.DefineVariable<int64_t>("time", time_shape, time_start,
+                                         time_count);
         if (CompressZfp)
         {
             adios2::Operator ZfpOp =
@@ -109,7 +127,8 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
     for (size_t step = 0; step < NSteps; ++step)
     {
         // Generate test data for each process uniquely
-        generateCommonTestData((int)step, mpiRank, mpiSize);
+        generateCommonTestData((int)step, mpiRank, mpiSize, (int)Nx,
+                               (int)r64_Nx);
 
         engine.BeginStep();
         // Retrieve the variables that previously went out of scope
@@ -118,7 +137,6 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
         auto var_i16 = io.InquireVariable<int16_t>("i16");
         auto var_i32 = io.InquireVariable<int32_t>("i32");
         auto var_i64 = io.InquireVariable<int64_t>("i64");
-        auto var_u8 = io.InquireVariable<uint8_t>("u8");
         auto var_r32 = io.InquireVariable<float>("r32");
         auto var_r64 = io.InquireVariable<double>("r64");
         auto var_c32 = io.InquireVariable<std::complex<float>>("c32");
@@ -130,16 +148,25 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
         // Make a 1D selection to describe the local dimensions of the
         // variable we write and its offsets in the global spaces
         adios2::Box<adios2::Dims> sel({mpiRank * Nx}, {Nx});
+        adios2::Box<adios2::Dims> sel_r64({mpiRank * Nx}, {r64_Nx});
         adios2::Box<adios2::Dims> sel2({mpiRank * Nx, 0}, {Nx, 2});
         adios2::Box<adios2::Dims> sel3({0, mpiRank * Nx}, {2, Nx});
         adios2::Box<adios2::Dims> sel_time(
             {static_cast<unsigned long>(mpiRank)}, {1});
+        if (ZeroDataVar)
+        {
+            if (mpiRank == 1)
+            {
+                sel_r64.first[0] = 0;
+            }
+        }
+
         var_i8.SetSelection(sel);
         var_i16.SetSelection(sel);
         var_i32.SetSelection(sel);
         var_i64.SetSelection(sel);
         var_r32.SetSelection(sel);
-        var_r64.SetSelection(sel);
+        var_r64.SetSelection(sel_r64);
         var_c32.SetSelection(sel);
         var_c64.SetSelection(sel);
         var_r64_2d.SetSelection(sel2);
@@ -161,11 +188,16 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
         engine.Put(var_r64, data_R64.data(), sync);
         engine.Put(var_c32, data_C32.data(), sync);
         engine.Put(var_c64, data_C64.data(), sync);
-        engine.Put(var_r64_2d, &data_R64_2d[0][0], sync);
-        engine.Put(var_r64_2d_rev, &data_R64_2d_rev[0][0], sync);
+        engine.Put(var_r64_2d, &data_R64_2d[0], sync);
+        engine.Put(var_r64_2d_rev, &data_R64_2d_rev[0], sync);
         // Advance to the next time step
         std::time_t localtime = std::time(NULL);
         engine.Put(var_time, (int64_t *)&localtime);
+        if (LockGeometry)
+        {
+            // we'll never change our data decomposition
+            engine.LockWriterDefinitions();
+        }
         engine.EndStep();
     }
 

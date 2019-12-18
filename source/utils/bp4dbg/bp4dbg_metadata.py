@@ -5,14 +5,18 @@ from os import fstat
 import bp4dbg_utils
 
 
-def ReadEncodedStringFromBuffer(buf, pos, ID, limit):
-    # 2 bytes length + string without \0
-    namelen = np.frombuffer(buf, dtype=np.uint16, count=1, offset=pos)[0]
-    pos = pos + 2
-    if (namelen > limit - 2):
+def ReadEncodedStringFromBuffer(buf, pos, ID, limit, lenbytes=2):
+    # 'lenbytes' bytes length + string without \0
+    if lenbytes == 1:
+        dt = np.dtype(np.uint8)
+    else:
+        dt = np.dtype(np.uint16)
+    namelen = np.frombuffer(buf, dtype=dt, count=1, offset=pos)[0]
+    pos = pos + lenbytes
+    if (namelen > limit - lenbytes):
         print("ERROR: " + ID + " string length ({0}) is longer than the "
               "limit to stay inside the block ({1})".format(
-                  namelen, limit - 2))
+                  namelen, limit - lenbytes))
         return False, "", namelen, pos
     name = buf[pos:pos + namelen].decode('ascii')
     pos = pos + namelen
@@ -45,7 +49,6 @@ def ReadHeader(f):
 def ReadDimensionCharacteristics(buf, pos):
     ndim = np.frombuffer(buf, dtype=np.uint8, count=1, offset=pos)[0]
     pos = pos + 1
-    print("                # of Dims   : {0}".format(ndim))
     lgo = np.zeros(ndim, dtype=np.uint64)
     dimLen = np.frombuffer(buf, dtype=np.uint16, count=1, offset=pos)[0]
     pos = pos + 2
@@ -59,36 +62,49 @@ def ReadDimensionCharacteristics(buf, pos):
     return True, pos, ndim, lgo
 
 
-def bDataToNumpyArray(cData, typeName, nElements):
+def bDataToNumpyArray(cData, typeName, nElements, startPos=0):
     if typeName == 'byte':
-        return np.frombuffer(cData, dtype=np.int8, count=nElements)
+        return np.frombuffer(cData, dtype=np.int8, count=nElements,
+                             offset=startPos)
     elif typeName == 'short':
-        return np.frombuffer(cData, dtype=np.int16, count=nElements)
+        return np.frombuffer(cData, dtype=np.int16, count=nElements,
+                             offset=startPos)
     elif typeName == 'integer':
-        return np.frombuffer(cData, dtype=np.int32, count=nElements)
+        return np.frombuffer(cData, dtype=np.int32, count=nElements,
+                             offset=startPos)
     elif typeName == 'long':
-        return np.frombuffer(cData, dtype=np.int64, count=nElements)
+        return np.frombuffer(cData, dtype=np.int64, count=nElements,
+                             offset=startPos)
 
     elif typeName == 'unsigned_byte':
-        return np.frombuffer(cData, dtype=np.uint8, count=nElements)
+        return np.frombuffer(cData, dtype=np.uint8, count=nElements,
+                             offset=startPos)
     elif typeName == 'unsigned_short':
-        return np.frombuffer(cData, dtype=np.uint16, count=nElements)
+        return np.frombuffer(cData, dtype=np.uint16, count=nElements,
+                             offset=startPos)
     elif typeName == 'unsigned_integer':
-        return np.frombuffer(cData, dtype=np.uint32, count=nElements)
+        return np.frombuffer(cData, dtype=np.uint32, count=nElements,
+                             offset=startPos)
     elif typeName == 'unsigned_long':
-        return np.frombuffer(cData, dtype=np.uint64, count=nElements)
+        return np.frombuffer(cData, dtype=np.uint64, count=nElements,
+                             offset=startPos)
 
     elif typeName == 'real':
-        return np.frombuffer(cData, dtype=np.float32, count=nElements)
+        return np.frombuffer(cData, dtype=np.float32, count=nElements,
+                             offset=startPos)
     elif typeName == 'double':
-        return np.frombuffer(cData, dtype=np.float64, count=nElements)
+        return np.frombuffer(cData, dtype=np.float64, count=nElements,
+                             offset=startPos)
     elif typeName == 'long_double':
-        return np.frombuffer(cData, dtype=np.float128, count=nElements)
+        return np.frombuffer(cData, dtype=np.float128, count=nElements,
+                             offset=startPos)
 
     elif typeName == 'complex':
-        return np.frombuffer(cData, dtype=np.complex64, count=nElements)
+        return np.frombuffer(cData, dtype=np.complex64, count=nElements,
+                             offset=startPos)
     elif typeName == 'double_complex':
-        return np.frombuffer(cData, dtype=np.complex128, count=nElements)
+        return np.frombuffer(cData, dtype=np.complex128, count=nElements,
+                             offset=startPos)
 
     else:
         return np.zeros(1, dtype=np.uint32)
@@ -120,7 +136,7 @@ def ReadCharacteristicsFromMetaData(buf, idx, pos, limit, typeID,
         cID = np.frombuffer(buf, dtype=np.uint8, count=1, offset=pos)[0]
         pos = pos + 1
         cName = bp4dbg_utils.GetCharacteristicName(cID)
-        print("                Type        : {0} ({1}) ".format(
+        print("                Type           : {0} ({1}) ".format(
             cName, cID))
         cLen = bp4dbg_utils.GetCharacteristicDataLength(cID, typeID)
 
@@ -128,8 +144,9 @@ def ReadCharacteristicsFromMetaData(buf, idx, pos, limit, typeID,
             status, pos, ndim, lgo = ReadDimensionCharacteristics(buf, pos)
             if not status:
                 return status, pos
+            print("                # of Dims      : {0}".format(ndim))
             if ndim > 0:
-                print("                Dims (lgo)  : (", end="")
+                print("                Dims (lgo)     : (", end="")
                 for d in range(ndim):
                     p = 3 * d
                     nElems = int(nElems * lgo[p])  # need for value later
@@ -147,7 +164,7 @@ def ReadCharacteristicsFromMetaData(buf, idx, pos, limit, typeID,
                     buf, pos, "String Value", namelimit)
                 if not status:
                     return False, pos
-                print("                Value       : '" + s +
+                print("                Value          : '" + s +
                       "' ({0} bytes)".format(sLen))
             elif dataTypeName == 'string_array':
                 namelimit = limit - (pos - cStartPosition)
@@ -155,7 +172,7 @@ def ReadCharacteristicsFromMetaData(buf, idx, pos, limit, typeID,
                     buf, pos, "String Array", namelimit, lgo[0])
                 if not status:
                     return False, pos
-                print("                Value       : [", end="")
+                print("                Value          : [", end="")
                 for j in range(len(strList)):
                     print("'" + strList[j] + "'", end="")
                     if j < len(strList) - 1:
@@ -167,7 +184,7 @@ def ReadCharacteristicsFromMetaData(buf, idx, pos, limit, typeID,
                     cData = buf[pos:pos + cLen]
                     pos = pos + cLen
                     data = bDataToNumpyArray(cData, dataTypeName, 1)
-                    print("                Value       : {0}"
+                    print("                Value          : {0}"
                           "  ({1} bytes)".format(data[0], cLen))
                 else:  # attribute value characteristics are different
                     dataTypeSize = bp4dbg_utils.GetTypeSize(typeID)
@@ -175,7 +192,7 @@ def ReadCharacteristicsFromMetaData(buf, idx, pos, limit, typeID,
                     cData = buf[pos:pos + nBytes]
                     pos = pos + nBytes
                     data = bDataToNumpyArray(cData, dataTypeName, nElems)
-                    print("                Value       : [", end="")
+                    print("                Value          : [", end="")
                     for j in range(nElems):
                         print("{0}".format(data[j]), end="")
                         if j < nElems - 1:
@@ -186,14 +203,86 @@ def ReadCharacteristicsFromMetaData(buf, idx, pos, limit, typeID,
             cData = buf[pos:pos + cLen]
             pos = pos + cLen
             data = bDataToNumpyArray(cData, 'unsigned_long', 1)
-            print("                Value       : {0}  ({1} bytes)".format(
+            print("                Value          : {0}  ({1} bytes)".format(
                   data[0], cLen))
         elif cName == 'time_index' or cName == 'file_index':
             cData = buf[pos:pos + cLen]
             pos = pos + cLen
             data = bDataToNumpyArray(cData, 'unsigned_integer', 1)
-            print("                Value       : {0}  ({1} bytes)".format(
+            print("                Value          : {0}  ({1} bytes)".format(
                 data[0], cLen))
+        elif cName == 'minmax':
+            nBlocks = np.frombuffer(
+                buf, dtype=np.uint16, count=1, offset=pos)[0]
+            print("                nBlocks        : {0}".format(nBlocks))
+            pos = pos + 2
+            bminmax = bDataToNumpyArray(buf, dataTypeName, 2, pos)
+            pos = pos + 2 * cLen
+            print("                Min/max        : {0} / {1}".format(
+                bminmax[0], bminmax[1]))
+            if nBlocks > 1:
+                method = np.frombuffer(buf, dtype=np.uint8,
+                                       count=1, offset=pos)[0]
+                pos = pos + 1
+                print("                Division method: {0}".format(method))
+                blockSize = np.frombuffer(buf, dtype=np.uint64,
+                                          count=1, offset=pos)[0]
+                pos = pos + 8
+                print("                Block size     : {0}".format(blockSize))
+                div = np.frombuffer(buf, dtype=np.uint16,
+                                    count=ndim, offset=pos)
+                pos = pos + 2 * ndim
+                print("                Division vector: (", end="")
+                for d in range(ndim):
+                    print("{0}".format(div[d]), end="")
+                    if d < ndim - 1:
+                        print(", ", end="")
+                    else:
+                        print(")")
+                minmax = bDataToNumpyArray(buf, dataTypeName, 2 * nBlocks, pos)
+                pos = pos + 2 * nBlocks * cLen
+                for i in range(nBlocks):
+                    print("                Min/max        : {0} / {1}".format(
+                        minmax[2 * i], minmax[2 * i + 1]))
+        elif cName == "transform_type":
+            # Operator name (8 bit length)
+            namelimit = limit - (pos - cStartPosition)
+            status, s, sLen, pos = ReadEncodedStringFromBuffer(
+                buf, pos, "Operator Name", namelimit, lenbytes=1)
+            if not status:
+                return False, pos
+            print("                Operator       : '" + s +
+                  "' ({0} bytes)".format(sLen))
+
+            # 1 byte TYPE
+            typeID = buf[pos]
+            pos = pos + 1
+            print("                Pre-type       : {0} ({1}) ".format(
+                bp4dbg_utils.GetTypeName(typeID), typeID))
+
+            # Pre-transform dimenstions
+            status, pos, ndim, lgo = ReadDimensionCharacteristics(buf, pos)
+            if not status:
+                return status, pos
+            print("                Pre-# of dims  : {0}".format(ndim))
+            if ndim > 0:
+                print("                Pre-Dims (lgo) : (", end="")
+                for d in range(ndim):
+                    p = 3 * d
+                    nElems = int(nElems * lgo[p])  # need for value later
+                    print("{0}:{1}:{2}".format(lgo[p], lgo[p + 1], lgo[p + 2]),
+                          end="")
+                    if d < ndim - 1:
+                        print(", ", end="")
+                    else:
+                        print(")")
+
+            # Operator specific metadata
+            omdlen = np.frombuffer(buf, dtype=np.uint16,
+                                   count=1, offset=pos)[0]
+            pos = pos + 2
+            print("                Op. data length: {0}".format(omdlen))
+            pos = pos + omdlen
         else:
             print("                ERROR: could not understand this "
                   "characteristics type '{0}' id {1}".format(cName, cID))
@@ -307,13 +396,29 @@ def ReadVarMD(buf, idx, pos, limit, varStartOffset):
           "' ({0} bytes)".format(varNameLen))
 
     # print("        Current offset : {0}".format(varStartOffset + pos))
-    namelimit = limit - (pos - varStartPosition)
-    status, varPath, varPathLen, pos = ReadEncodedStringFromBuffer(
-        buf, pos, "Var Path", namelimit)
-    if not status:
-        return False, pos
-    print("        Var Path        : '" + varPath +
-          "' ({0} bytes)".format(varPathLen))
+    # namelimit = limit - (pos - varStartPosition)
+    # status, varPath, varPathLen, pos = ReadEncodedStringFromBuffer(
+    #     buf, pos, "Var Path", namelimit)
+    # if not status:
+    #     return False, pos
+    # print("        Var Path        : '" + varPath +
+    #       "' ({0} bytes)".format(varPathLen))
+
+    # 1 byte ORDER (K, C, F)
+    order = buf[pos]  # this is an integer value
+    pos = pos + 1
+    if (order != ord('K') and order != ord('C') and order != ord('F')):
+        print(
+            "ERROR: Next byte for Order must be 'K', 'C', or 'F' "
+            "but it isn't = {0} (={1})".format(
+                chr(order), order))
+        return False
+    print("        Order           : " + chr(order))
+
+    # 1 byte UNUSED
+    unused = buf[pos]  # this is an integer value
+    pos = pos + 1
+    print("        Unused byte     : {0}".format(unused))
 
     # 1 byte TYPE
     typeID = buf[pos]

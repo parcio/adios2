@@ -15,8 +15,8 @@
 #include "adios2/core/ADIOS.h"
 #include "adios2/core/Engine.h"
 #include "adios2/helper/adiosFunctions.h"
-#include "adios2/toolkit/format/bp3/BP3.h" //BP3Deserializer
-#include "adios2/toolkit/format/bp3/BP3Serializer.h"
+// #include "adios2/toolkit/format/bp3/BP3.h" //BP3Deserializer
+#include "adios2/toolkit/format/bp/bp3/BP3Serializer.h"
 #include "adios2/toolkit/transportman/TransportMan.h" //transport::TransportsMan
 
 #include <complex.h>
@@ -45,7 +45,7 @@ public:
      * @param hostLanguage
      */
     JuleaTestReader(IO &adios, const std::string &name, const Mode mode,
-                MPI_Comm mpiComm);
+               helper::Comm comm);
 
     ~JuleaTestReader();
     // StepStatus BeginStep(StepMode mode = StepMode::NextAvailable,

@@ -63,7 +63,7 @@ void BP4Reader::GetDeferredCommon(Variable<T> &variable, T *data)
 template <class T>
 void BP4Reader::ReadVariableBlocks(Variable<T> &variable)
 {
-    const bool profile = m_BP4Deserializer.m_Profiler.IsActive;
+    const bool profile = m_BP4Deserializer.m_Profiler.m_IsActive;
 
     for (typename Variable<T>::Info &blockInfo : variable.m_BlocksInfo)
     {
@@ -80,15 +80,15 @@ void BP4Reader::ReadVariableBlocks(Variable<T> &variable)
                 }
 
                 // check if subfile is already opened
-                if (m_SubFileManager.m_Transports.count(
+                if (m_DataFileManager.m_Transports.count(
                         subStreamBoxInfo.SubStreamID) == 0)
                 {
                     const std::string subFileName =
                         m_BP4Deserializer.GetBPSubFileName(
                             m_Name, subStreamBoxInfo.SubStreamID,
-                            m_BP4Deserializer.m_Minifooter.HasSubFiles);
+                            m_BP4Deserializer.m_Minifooter.HasSubFiles, true);
 
-                    m_SubFileManager.OpenFileID(
+                    m_DataFileManager.OpenFileID(
                         subFileName, subStreamBoxInfo.SubStreamID, Mode::Read,
                         {{"transport", "File"}}, profile);
                 }
@@ -100,8 +100,8 @@ void BP4Reader::ReadVariableBlocks(Variable<T> &variable)
                                               subStreamBoxInfo, buffer,
                                               payloadSize, payloadStart, 0);
 
-                m_SubFileManager.ReadFile(buffer, payloadSize, payloadStart,
-                                          subStreamBoxInfo.SubStreamID);
+                m_DataFileManager.ReadFile(buffer, payloadSize, payloadStart,
+                                           subStreamBoxInfo.SubStreamID);
 
                 m_BP4Deserializer.PostDataRead(
                     variable, blockInfo, subStreamBoxInfo,

@@ -10,15 +10,17 @@
 
 #include "TransportMan.h"
 
-/// \cond EXCLUDE_FROM_DOXYGEN
 #include <set>
-/// \endcond
 
 #include "adios2/helper/adiosFunctions.h" //CreateDirectory
 
 /// transports
 #ifndef _WIN32
 #include "adios2/toolkit/transport/file/FilePOSIX.h"
+#endif
+
+#ifdef _WIN32
+#pragma warning(disable : 4503) // length of std::function inside std::async
 #endif
 
 #include "adios2/toolkit/transport/file/FileFStream.h"
@@ -30,8 +32,8 @@ namespace adios2
 namespace transportman
 {
 
-TransportMan::TransportMan(MPI_Comm mpiComm, const bool debugMode)
-: m_MPIComm(mpiComm), m_DebugMode(debugMode)
+TransportMan::TransportMan(helper::Comm const &comm, const bool debugMode)
+: m_Comm(comm), m_DebugMode(debugMode)
 {
 }
 
@@ -58,15 +60,13 @@ void TransportMan::MkDirsBarrier(const std::vector<std::string> &fileNames,
     }
     else
     {
-        int rank;
-        SMPI_Comm_rank(m_MPIComm, &rank);
+        int rank = m_Comm.Rank();
         if (rank == 0)
         {
             lf_CreateDirectories(fileNames);
         }
 
-        helper::CheckMPIReturn(SMPI_Barrier(m_MPIComm),
-                               "Barrier in TransportMan.MkDirsBarrier");
+        m_Comm.Barrier("Barrier in TransportMan.MkDirsBarrier");
     }
 }
 
@@ -75,23 +75,44 @@ void TransportMan::OpenFiles(const std::vector<std::string> &fileNames,
                              const std::vector<Params> &parametersVector,
                              const bool profile)
 {
-
     for (size_t i = 0; i < fileNames.size(); ++i)
     {
         const Params &parameters = parametersVector[i];
-        const std::string type(parameters.at("transport"));
+        const std::string type = parameters.at("transport");
 
-        if (type == "File" || type == "file") // need to create directory
+        if (type == "File" || type == "file")
         {
             std::shared_ptr<Transport> file =
                 OpenFileTransport(fileNames[i], openMode, parameters, profile);
             m_Transports.insert({i, file});
-            int rank;
-            SMPI_Comm_rank(m_MPIComm, &rank);
-            // std::cout << "rank " << rank << ": " << i << ", " << fileNames[i]
-            // << std::endl;
         }
     }
+}
+
+std::future<void> TransportMan::OpenFilesAsync(
+    const std::vector<std::string> &fileNames, const Mode openMode,
+    const std::vector<Params> &parametersVector, const bool profile)
+{
+    auto lf_OpenFiles =
+        [&](const std::vector<std::string> &fileNames, const Mode openMode,
+            const std::vector<Params> &parametersVector, const bool profile) {
+            for (size_t i = 0; i < fileNames.size(); ++i)
+            {
+                const Params &parameters = parametersVector[i];
+                const std::string type = parameters.at("transport");
+
+                if (type == "File" || type == "file")
+                {
+                    std::shared_ptr<Transport> file = OpenFileTransport(
+                        fileNames[i], openMode, parameters, profile);
+                    // TODO might need mutex for multiple files
+                    m_Transports.insert({i, file});
+                }
+            }
+        };
+
+    return std::async(std::launch::async, lf_OpenFiles, std::move(fileNames),
+                      openMode, std::cref(parametersVector), profile);
 }
 
 void TransportMan::OpenFileID(const std::string &name, const size_t id,
@@ -316,24 +337,24 @@ TransportMan::OpenFileTransport(const std::string &fileName,
         if (library == "stdio")
         {
             transport =
-                std::make_shared<transport::FileStdio>(m_MPIComm, m_DebugMode);
+                std::make_shared<transport::FileStdio>(m_Comm, m_DebugMode);
         }
         else if (library == "fstream")
         {
-            transport = std::make_shared<transport::FileFStream>(m_MPIComm,
-                                                                 m_DebugMode);
+            transport =
+                std::make_shared<transport::FileFStream>(m_Comm, m_DebugMode);
         }
 #ifndef _WIN32
         else if (library == "POSIX" || library == "posix")
         {
             transport =
-                std::make_shared<transport::FilePOSIX>(m_MPIComm, m_DebugMode);
+                std::make_shared<transport::FilePOSIX>(m_Comm, m_DebugMode);
         }
 #endif
         else if (library == "NULL" || library == "null")
         {
-            transport = std::make_shared<transport::NullTransport>(m_MPIComm,
-                                                                   m_DebugMode);
+            transport =
+                std::make_shared<transport::NullTransport>(m_Comm, m_DebugMode);
         }
         else
         {

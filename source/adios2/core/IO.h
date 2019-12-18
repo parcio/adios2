@@ -53,10 +53,6 @@ public:
     /** unique identifier */
     const std::string m_Name;
 
-    /** from ADIOS class passed to Engine created with Open
-     *  if no new communicator is passed */
-    MPI_Comm m_MPIComm;
-
     /** true: extra exceptions checks */
     const bool m_DebugMode = false;
 
@@ -81,7 +77,7 @@ public:
     std::vector<Operation> m_Operations;
 
     /** BP3 engine default if unknown */
-    std::string m_EngineType = "BP3";
+    std::string m_EngineType = "File";
 
     /** at read for file engines: true: in streaming (step-by-step) mode, or
      * false: random-access mode (files) */
@@ -99,14 +95,12 @@ public:
      * Not to be used direclty in applications.
      * @param adios reference to ADIOS object that owns current IO
      * @param name unique identifier for this IO object
-     * @param mpiComm MPI communicator from ADIOS factory class
      * @param inConfigFile IO defined in config file (XML)
      * @param hostLanguage current language using the adios2 library
      * @param debugMode true: extra exception checks (recommended)
      */
-    IO(ADIOS &adios, const std::string name, MPI_Comm mpiComm,
-       const bool inConfigFile, const std::string hostLanguage,
-       const bool debugMode);
+    IO(ADIOS &adios, const std::string name, const bool inConfigFile,
+       const std::string hostLanguage, const bool debugMode);
 
     ~IO() = default;
 

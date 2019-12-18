@@ -14,8 +14,10 @@
 #include "JuleaMetadata.h"
 
 #include "adios2/core/Engine.h"
-#include "adios2/toolkit/format/bp3/BP3.h" //BP3Serializer
-#include "adios2/toolkit/format/bp3/BP3Serializer.h"
+// #include "adios2/toolkit/format/bp3/BP3.h" //BP3Serializer
+// #include "adios2/toolkit/format/bp/BPBase.h"
+#include "adios2/toolkit/format/buffer/heap/BufferSTL.h"
+#include "adios2/toolkit/format/bp/bp3/BP3Serializer.h"
 #include "adios2/toolkit/interop/julea/JuleaSerializer.h"
 #include "adios2/toolkit/transportman/TransportMan.h" //transport::TransportsMan
 
@@ -47,7 +49,7 @@ public:
      * @param debugMode
      */
     JuleaKVWriter(IO &adios, const std::string &name, const Mode mode,
-                  MPI_Comm mpiComm);
+                  helper::Comm comm);
 
     ~JuleaKVWriter(); // was =default -> meaning?
 
@@ -119,10 +121,10 @@ private:
     unsigned int m_StatsLevel = 0;
 
     /** contains data buffer for this rank */
-    BufferSTL m_Data;
+    format::BufferSTL m_Data;
 
     /** contains collective metadata buffer, only used by rank 0 */
-    BufferSTL m_Metadata;
+    format::BufferSTL m_Metadata;
 
     // DESIGN
     /** Manage BP data files Transports from IO AddTransport */

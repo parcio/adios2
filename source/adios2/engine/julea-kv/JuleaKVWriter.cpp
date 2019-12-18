@@ -21,7 +21,6 @@
 #include "adios2/toolkit/transport/file/FileFStream.h"
 
 #include <iostream>
-#include <julea-config.h> //needed?
 #include <julea-object.h> //needed?
 
 // #include <julea-adios.h>
@@ -34,15 +33,17 @@ namespace engine
 {
 
 JuleaKVWriter::JuleaKVWriter(IO &io, const std::string &name, const Mode mode,
-                             MPI_Comm mpiComm)
-: Engine("JuleaKVWriter", io, name, mode, mpiComm)
+                            helper::Comm comm)
+: Engine("JuleaKVWriter", io, name, mode, std::move(comm))
 // : Engine("JuleaKVWriter", io, name, mode, mpiComm), m_Julea(io.m_DebugMode)
 {
     // std::cout << "JULEA ENGINE: Constructor" << std::endl;
     // m_BP3Serializer(mpiComm, m_DebugMode),
     // m_FileDataManager(mpiComm, m_DebugMode),
     // m_EndMessage = " in call to JuleaKVWriter " + m_Name + " Open\n";
-    MPI_Comm_rank(mpiComm, &m_WriterRank);
+
+    // MPI_Comm_rank(mpiComm, &m_WriterRank); //TODO: changed in release_25
+    m_WriterRank = m_Comm.Rank();
     Init();
     if (m_Verbosity == 5)
     {
@@ -245,7 +246,7 @@ void JuleaKVWriter::Init()
 
     m_JuleaSemantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
 
-    j_init();
+    // j_init();
     InitParameters();
     InitTransports();
     InitVariables();

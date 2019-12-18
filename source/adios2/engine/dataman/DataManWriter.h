@@ -6,14 +6,12 @@
  *
  *  Created on: Jan 10, 2017
  *      Author: Jason Wang
- *              William F Godoy
  */
 
-#ifndef ADIOS2_ENGINE_DATAMAN_DATAMAN_WRITER_H_
-#define ADIOS2_ENGINE_DATAMAN_DATAMAN_WRITER_H_
+#ifndef ADIOS2_ENGINE_DATAMAN_DATAMANWRITER_H_
+#define ADIOS2_ENGINE_DATAMAN_DATAMANWRITER_H_
 
 #include "DataManCommon.h"
-#include "adios2/toolkit/transportman/stagingman/StagingMan.h"
 
 namespace adios2
 {
@@ -27,8 +25,8 @@ class DataManWriter : public DataManCommon
 
 public:
     DataManWriter(IO &io, const std::string &name, const Mode mode,
-                  MPI_Comm mpiComm);
-    ~DataManWriter() = default;
+                  helper::Comm comm);
+    virtual ~DataManWriter();
 
     StepStatus BeginStep(StepMode mode,
                          const float timeoutSeconds = -1.0) final;
@@ -38,19 +36,14 @@ public:
     void Flush(const int transportIndex = -1) final;
 
 private:
-    size_t m_BufferSize = 1024 * 1024 * 1024;
-    bool m_Listening = true;
-    format::VecPtr m_AggregatedMetadata = nullptr;
-    std::mutex m_AggregatedMetadataMutex;
-    int m_AppID = 0;
-    int m_Port = 12307;
-    std::vector<std::string> m_FullAddresses;
+    std::string m_DataAddress;
+    std::string m_ControlAddress;
+    std::string m_AllAddresses;
 
-    std::vector<std::shared_ptr<format::DataManSerializer>> m_DataManSerializer;
+    adios2::zmq::ZmqPubSub m_DataPublisher;
 
-    void Init();
-    void MetadataThread(const std::string &address);
-    std::thread m_MetadataThread;
+    void ReplyThread(const std::string &address);
+    std::thread m_ReplyThread;
 
 #define declare_type(T)                                                        \
     void DoPutSync(Variable<T> &, const T *) final;                            \
@@ -71,4 +64,4 @@ private:
 } // end namespace core
 } // end namespace adios2
 
-#endif /* ADIOS2_ENGINE_DATAMAN_DATAMAN_WRITER_H_ */
+#endif /* ADIOS2_ENGINE_DATAMAN_DATAMANWRITER_H_ */

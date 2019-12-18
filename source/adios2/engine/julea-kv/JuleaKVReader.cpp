@@ -32,12 +32,14 @@ namespace engine
 //   m_BP3Deserializer(mpiComm, m_DebugMode)
 
 JuleaKVReader::JuleaKVReader(IO &io, const std::string &name, const Mode mode,
-                             MPI_Comm mpiComm)
-: Engine("JuleaReader", io, name, mode, mpiComm)
+                             helper::Comm comm)
+: Engine("JuleaReader", io, name, mode, std::move(comm))
 
 {
     // m_EndMessage = " in call to IO Open JuleaReader " + m_Name + "\n";
-    MPI_Comm_rank(mpiComm, &m_ReaderRank);
+
+    // MPI_Comm_rank(mpiComm, &m_ReaderRank); //TODO: change in release_25
+    m_ReaderRank = m_Comm.Rank();
     Init();
     if (m_Verbosity == 5)
     {
@@ -249,7 +251,7 @@ void JuleaKVReader::Init()
         std::cout << "Julea Reader " << m_ReaderRank << " Init()\n";
     }
 
-    j_init();
+    // j_init();
     m_JuleaSemantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
 
     InitParameters();

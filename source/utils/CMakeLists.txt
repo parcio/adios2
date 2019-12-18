@@ -19,6 +19,14 @@ file(GENERATE
   INPUT ${PROJECT_BINARY_DIR}/bpls.cmake.gen
 )
 
+
+# BPSPLIT
+#add_executable(bpsplit ./bpsplit/bpsplit.cpp)
+#target_link_libraries(bpsplit adios2 adios2sys_interface pugixml)
+#install(TARGETS bpsplit EXPORT adios2
+#  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+#)
+
 # ADIOS_REORGANIZE
 add_executable(adios_reorganize 
                ./adios_reorganize/main.cpp 
@@ -42,3 +50,5 @@ endif()
 install(PROGRAMS bp4dbg/bp4dbg.py bp4dbg/bp4dbg_data.py bp4dbg/bp4dbg_utils.py 
         bp4dbg/bp4dbg_metadata.py bp4dbg/bp4dbg_idxtable.py
         DESTINATION ${CMAKE_INSTALL_BINDIR}/bp4dbg)
+
+install(PROGRAMS adios_deactivate_bp.sh DESTINATION ${CMAKE_INSTALL_BINDIR})

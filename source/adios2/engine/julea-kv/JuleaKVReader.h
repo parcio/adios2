@@ -17,8 +17,15 @@
 #include "adios2/core/ADIOS.h"
 #include "adios2/core/Engine.h"
 #include "adios2/helper/adiosFunctions.h"
-#include "adios2/toolkit/format/bp3/BP3.h" //BP3Deserializer
-#include "adios2/toolkit/format/bp3/BP3Serializer.h"
+// #include "adios2/toolkit/format/bp/bp3/BP3.h" //BP3Deserializer
+#include "adios2/toolkit/format/bp/BPBase.h"
+
+// #include "adios2/toolkit/format/bp/bpOperation/BPOperation.h"
+
+// #include "adios2/toolkit/format/buffer/Buffer.h"
+#include "adios2/toolkit/format/buffer/heap/BufferSTL.h"
+
+#include "adios2/toolkit/format/bp/bp3/BP3Serializer.h"
 #include "adios2/toolkit/transportman/TransportMan.h" //transport::TransportsMan
 
 #include <complex.h>
@@ -51,7 +58,7 @@ public:
      * @param hostLanguage
      */
     JuleaKVReader(IO &adios, const std::string &name, const Mode mode,
-                  MPI_Comm mpiComm);
+                  helper::Comm comm);
 
     ~JuleaKVReader();
     // StepStatus BeginStep(StepMode mode = StepMode::NextAvailable,
@@ -94,10 +101,10 @@ private:
     unsigned int m_StatsLevel = 0;
 
     /** contains data buffer for this rank */
-    BufferSTL m_Data;
+    format::BufferSTL m_Data;
 
     /** contains collective metadata buffer, only used by rank 0 */
-    BufferSTL m_Metadata;
+    format::BufferSTL m_Metadata;
 
     // HELP! how do I actually get the compiler to accept MetadataSet as a type?
     /** contains bp1 format metadata indices*/ // DESIGN: needed?

@@ -150,7 +150,7 @@ Box<Dims> IntersectionStartCount(const Dims &start1, const Dims &count1,
     Box<Dims> intersectionStartCount;
     const size_t dimensionsSize = start1.size();
 
-    for (auto d = 0; d < dimensionsSize; ++d)
+    for (size_t d = 0; d < dimensionsSize; ++d)
     {
         // Don't intercept
         const size_t end1 = start1[d] + count1[d] - 1;
@@ -165,7 +165,7 @@ Box<Dims> IntersectionStartCount(const Dims &start1, const Dims &count1,
     intersectionStartCount.first.reserve(dimensionsSize);
     intersectionStartCount.second.reserve(dimensionsSize);
 
-    for (auto d = 0; d < dimensionsSize; ++d)
+    for (size_t d = 0; d < dimensionsSize; ++d)
     {
         const size_t intersectionStart =
             (start1[d] < start2[d]) ? start2[d] : start1[d];
@@ -226,7 +226,7 @@ bool IsIntersectionContiguousSubarray(const Box<Dims> &blockBox,
         dSlowest = static_cast<int>(dimensionsSize - 1);
     }
 
-    for (size_t d = dStart; d <= dEnd; ++d)
+    for (int d = dStart; d <= dEnd; ++d)
     {
         if (blockBox.first[d] != intersectionBox.first[d] ||
             blockBox.second[d] != intersectionBox.second[d])
@@ -263,7 +263,7 @@ size_t LinearIndex(const Dims &start, const Dims &count, const Dims &point,
         size_t linearIndex = normalizedPoint[0]; // fastest
         size_t product = 1;
 
-        for (auto p = 1; p < countSize; ++p)
+        for (size_t p = 1; p < countSize; ++p)
         {
             product *= count[p - 1];
             linearIndex += normalizedPoint[p] * product;
@@ -323,6 +323,132 @@ size_t GetDistance(const size_t end, const size_t start, const bool debugMode,
     }
 
     return end - start;
+}
+
+void CalculateSubblockInfo(const Dims &count, BlockDivisionInfo &info) noexcept
+{
+    const int ndim = static_cast<int>(count.size());
+    info.Rem.resize(ndim, 0);
+    info.ReverseDivProduct.resize(ndim, 0);
+    uint16_t n = 1;
+    // remainders + nBlocks calculation
+    for (int j = 0; j < ndim; ++j)
+    {
+        info.Rem[j] = count[j] % info.Div[j];
+        n = n * info.Div[j];
+    }
+    info.NBlocks = n;
+
+    // division vector for calculating N-dim blockIDs from blockID
+    uint16_t d = 1; // div[n-2] * div[n-3] * ... div[0]
+    for (int j = ndim - 1; j >= 0; --j)
+    {
+        info.ReverseDivProduct[j] = d;
+        d = d * info.Div[j];
+    }
+}
+
+BlockDivisionInfo DivideBlock(const Dims &count, const size_t subblockSize,
+                              const BlockDivisionMethod divisionMethod)
+{
+    if (divisionMethod != BlockDivisionMethod::Contiguous)
+    {
+        throw std::invalid_argument("ERROR: adios2::helper::DivideBlock() only "
+                                    "works with Contiguous division method");
+    }
+    const size_t ndim = count.size();
+    const size_t nElems = helper::GetTotalSize(count);
+    size_t nBlocks64 = nElems / subblockSize;
+    if (nElems > nBlocks64 * subblockSize)
+    {
+        ++nBlocks64;
+    }
+    if (nBlocks64 > 4096)
+    {
+        std::cerr
+            << "ADIOS WARNING: The StatsBlockSize parameter is causing a "
+               "data block to be divided up to more than 4096 sub-blocks. "
+               " This is an artificial limit to avoid metadata explosion."
+            << std::endl;
+        nBlocks64 = 4096;
+    }
+
+    BlockDivisionInfo info;
+    info.SubBlockSize = subblockSize;
+    info.DivisionMethod = divisionMethod;
+    info.Div.resize(ndim, 1);
+    info.Rem.resize(ndim, 0);
+    info.ReverseDivProduct.resize(ndim, 1);
+    info.NBlocks = static_cast<uint16_t>(nBlocks64);
+    if (info.NBlocks == 0)
+    {
+        info.NBlocks = 1;
+    }
+
+    if (info.NBlocks > 1)
+    {
+        /* Split the block into 'nBlocks' subblocks */
+        /* FIXME: What about column-major dimension order here? */
+        int i = 0;
+        uint16_t n = info.NBlocks;
+        size_t dim;
+        uint16_t div = 1;
+        while (n > 1 && i < ndim)
+        {
+            dim = count[i];
+            if (n < dim)
+            {
+                div = n;
+                n = 1;
+            }
+            else
+            {
+                div = static_cast<uint16_t>(dim);
+                n = static_cast<uint16_t>(n / dim); // calming VS++
+            }
+            info.Div[i] = div;
+            ++i;
+        }
+        CalculateSubblockInfo(count, info);
+    }
+    return info;
+}
+
+Box<Dims> GetSubBlock(const Dims &count, const BlockDivisionInfo &info,
+                      const int blockID) noexcept
+{
+    const size_t ndim = count.size();
+
+    // calculate N-dim blockIDs from b
+    std::vector<uint16_t> blockIds(ndim, 0); // blockID in N-dim
+    for (int j = 0; j < ndim; ++j)
+    {
+        blockIds[j] = blockID / info.ReverseDivProduct[j];
+        if (j > 0)
+        {
+            blockIds[j] = blockIds[j] % info.Div[j];
+        }
+    }
+
+    // calcute b-th subblock start/count
+    Dims sbCount(ndim, 1);
+    Dims sbStart(ndim, 0);
+    for (int j = 0; j < ndim; ++j)
+    {
+        sbCount[j] = count[j] / info.Div[j];
+        sbStart[j] = sbCount[j] * blockIds[j];
+        if (blockIds[j] < info.Rem[j])
+        {
+            sbCount[j] += 1;
+            sbStart[j] += blockIds[j];
+        }
+        else
+        {
+            sbStart[j] += info.Rem[j];
+        }
+    }
+
+    return std::make_pair(sbStart, sbCount);
 }
 
 } // end namespace helper

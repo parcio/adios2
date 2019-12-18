@@ -132,6 +132,7 @@ void Reorganize::Run()
     core::Engine &rStream = io.Open(infilename, adios2::Mode::Read);
     // rStream.FixedSchedule();
 
+    io.ClearParameters();
     io.SetEngine(wmethodname);
     io.SetParameters(wmethodparams);
     core::Engine &wStream = io.Open(outfilename, adios2::Mode::Write);
@@ -140,15 +141,24 @@ void Reorganize::Run()
     int curr_step = -1;
     while (true)
     {
-        adios2::StepStatus status = rStream.BeginStep(adios2::StepMode::Read);
-        if (status != adios2::StepStatus::OK)
+        adios2::StepStatus status =
+            rStream.BeginStep(adios2::StepMode::Read, 10.0);
+        if (status == adios2::StepStatus::NotReady)
+        {
+            if (!rank)
+            {
+                std::cout << " No new steps arrived in a while " << std::endl;
+            }
+            continue;
+        }
+        else if (status != adios2::StepStatus::OK)
         {
             break;
         }
 
         steps++; // start counting from 1
 
-        if (rStream.CurrentStep() != curr_step + 1)
+        if (rStream.CurrentStep() != static_cast<size_t>(curr_step + 1))
         {
             // we missed some steps
             std::cout << "rank " << rank << " WARNING: steps " << curr_step
@@ -449,8 +459,10 @@ int Reorganize::ProcessMetadata(core::Engine &rStream, core::IO &io,
             if (variable->GetShape().size() > 0)
             {
                 std::cout << "[" << variable->GetShape()[0];
-                for (int j = 1; j < variable->GetShape().size(); j++)
+                for (size_t j = 1; j < variable->GetShape().size(); j++)
+                {
                     std::cout << ", " << variable->GetShape()[j];
+                }
                 std::cout << "]" << std::endl;
             }
             else

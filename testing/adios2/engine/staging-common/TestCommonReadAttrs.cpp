@@ -12,8 +12,9 @@
 
 #include <gtest/gtest.h>
 
-#include "ParseArgs.h"
 #include "TestData.h"
+
+#include "ParseArgs.h"
 
 class CommonReadTest : public ::testing::Test
 {
@@ -32,8 +33,6 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
     // form a mpiSize * Nx 1D array
     int mpiRank = 0, mpiSize = 1;
 
-    // Number of steps
-    const std::size_t NSteps = 10;
     int TimeGapDetected = 0;
 #ifdef ADIOS2_HAVE_MPI
     MPI_Comm_rank(testComm, &mpiRank);
@@ -80,17 +79,13 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
 
         size_t writerSize;
 
+        generateCommonTestData((int)0, mpiRank, mpiSize, (int)Nx, (int)Nx);
         auto attr_s1 = io.InquireAttribute<std::string>(s1_Single);
-        auto attr_s1a = io.InquireAttribute<std::string>(s1_Array);
+        //        auto attr_s1a = io.InquireAttribute<std::string>(s1_Array);
         auto attr_i8 = io.InquireAttribute<int8_t>(i8_Single);
         auto attr_i16 = io.InquireAttribute<int16_t>(i16_Single);
         auto attr_i32 = io.InquireAttribute<int32_t>(i32_Single);
         auto attr_i64 = io.InquireAttribute<int64_t>(i64_Single);
-
-        auto attr_u8 = io.InquireAttribute<uint8_t>(u8_Single);
-        auto attr_u16 = io.InquireAttribute<uint16_t>(u16_Single);
-        auto attr_u32 = io.InquireAttribute<uint32_t>(u32_Single);
-        auto attr_u64 = io.InquireAttribute<uint64_t>(u64_Single);
 
         auto attr_r32 = io.InquireAttribute<float>(r32_Single);
         auto attr_r64 = io.InquireAttribute<double>(r64_Single);
@@ -130,30 +125,6 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
         ASSERT_EQ(attr_i64.Data().size() == 1, true);
         ASSERT_EQ(attr_i64.Type(), adios2::GetType<int64_t>());
         ASSERT_EQ(attr_i64.Data().front(), data_I64.front());
-
-        EXPECT_TRUE(attr_u8);
-        ASSERT_EQ(attr_u8.Name(), u8_Single);
-        ASSERT_EQ(attr_u8.Data().size() == 1, true);
-        ASSERT_EQ(attr_u8.Type(), adios2::GetType<uint8_t>());
-        ASSERT_EQ(attr_u8.Data().front(), data_U8.front());
-
-        EXPECT_TRUE(attr_u16);
-        ASSERT_EQ(attr_u16.Name(), u16_Single);
-        ASSERT_EQ(attr_u16.Data().size() == 1, true);
-        ASSERT_EQ(attr_u16.Type(), adios2::GetType<uint16_t>());
-        ASSERT_EQ(attr_u16.Data().front(), data_U16.front());
-
-        EXPECT_TRUE(attr_u32);
-        ASSERT_EQ(attr_u32.Name(), u32_Single);
-        ASSERT_EQ(attr_u32.Data().size() == 1, true);
-        ASSERT_EQ(attr_u32.Type(), adios2::GetType<uint32_t>());
-        ASSERT_EQ(attr_u32.Data().front(), data_U32.front());
-
-        EXPECT_TRUE(attr_u64);
-        ASSERT_EQ(attr_u64.Name(), u64_Single);
-        ASSERT_EQ(attr_u64.Data().size() == 1, true);
-        ASSERT_EQ(attr_u64.Type(), adios2::GetType<uint64_t>());
-        ASSERT_EQ(attr_u64.Data().front(), data_U64.front());
 
         EXPECT_TRUE(attr_r32);
         ASSERT_EQ(attr_r32.Name(), r32_Single);
@@ -247,7 +218,7 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
 
         if (myStart + myLength > writerSize * Nx)
         {
-            myLength = (long unsigned int)writerSize * Nx - myStart;
+            myLength = (long unsigned int)writerSize * (int)Nx - myStart;
         }
         const adios2::Dims start{myStart};
         const adios2::Dims count{myLength};
@@ -281,16 +252,16 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
 
         var_time.SetSelection(sel_time);
 
-        in_I8.reserve(myLength);
-        in_I16.reserve(myLength);
-        in_I32.reserve(myLength);
-        in_I64.reserve(myLength);
-        in_R32.reserve(myLength);
-        in_R64.reserve(myLength);
-        in_C32.reserve(myLength);
-        in_C64.reserve(myLength);
-        in_R64_2d.reserve(myLength * 2);
-        in_R64_2d_rev.reserve(myLength * 2);
+        in_I8.resize(myLength);
+        in_I16.resize(myLength);
+        in_I32.resize(myLength);
+        in_I64.resize(myLength);
+        in_R32.resize(myLength);
+        in_R64.resize(myLength);
+        in_C32.resize(myLength);
+        in_C64.resize(myLength);
+        in_R64_2d.resize(myLength * 2);
+        in_R64_2d_rev.resize(myLength * 2);
         engine.Get(var_i8, in_I8.data());
         engine.Get(var_i16, in_I16.data());
         engine.Get(var_i32, in_I32.data());
