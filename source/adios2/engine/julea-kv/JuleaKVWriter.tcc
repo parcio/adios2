@@ -133,7 +133,8 @@ void JuleaKVWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
 
     if (variable.m_SingleValue)
     {
-    std::cout << "variable.m_SingleValue: " << variable.m_SingleValue << std::endl;
+        std::cout << "variable.m_SingleValue: " << variable.m_SingleValue
+                  << std::endl;
         DoPutSync(variable, data);
         return;
     }

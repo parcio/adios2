@@ -79,11 +79,15 @@ int main(int argc, char *argv[])
         bpReaderIO.InquireVariable<unsigned int>("gndy");
     // gndy = vgndy.GetData()[0];
 
+    adios2::Variable<double> T_test =
+        bpReaderIO.InquireVariable<double>("T");
+
     if (rank == 0)
     {
         std::cout << "gndx       = " << gndx << std::endl;
         std::cout << "gndy       = " << gndy << std::endl;
-        std::cout << "# of steps = " << vgndy.Steps() << std::endl;
+        // std::cout << "# of steps = " << vgndy.Steps() << std::endl;
+        std::cout << "# of steps = " << T_test.Steps() << std::endl;
     }
 
     // 1D decomposition of the columns, which is inefficient for reading!

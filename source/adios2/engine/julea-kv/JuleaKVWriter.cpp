@@ -114,16 +114,17 @@ void JuleaKVWriter::EndStep()
     // if (m_NeedPerformPuts)
     if (m_DeferredVariables.size() > 0)
     {
-        std::cout << "m_DeferredVariables.size() = " << m_DeferredVariables.size() <<std::endl;
-        PerformPuts(); //FIXME
+        std::cout << "m_DeferredVariables.size() = "
+                  << m_DeferredVariables.size() << std::endl;
+        PerformPuts(); // FIXME
     }
     if (m_Verbosity == 5)
     {
         std::cout << "\n______________EndStep _____________________"
-              << std::endl;
+                  << std::endl;
         // std::cout << "Julea Writer " << m_WriterRank << "   EndStep()\n";
     }
-    //TODO
+    // TODO
     // SerializeData in BP3
     // - Profiler ?!
     // - SerializeDataBuffer (write attributes?!)
@@ -131,7 +132,6 @@ void JuleaKVWriter::EndStep()
     // --- attributesSizeInData
     // -
     PutAttributes(m_IO);
-
 
     /* advance step */
     // ++m_MetadataSet.TimeStep;
@@ -203,8 +203,7 @@ void JuleaKVWriter::PerformPuts()
 // void JuleaKVWriter::Flush()
 void JuleaKVWriter::Flush(const int transportIndex)
 {
-    std::cout << "\n______________Flush  _____________________"
-              << std::endl;
+    std::cout << "\n______________Flush  _____________________" << std::endl;
     DoFlush(false);
     // ResetBuffer(m_Data);
 
@@ -228,8 +227,8 @@ void JuleaKVWriter::Init()
 {
     if (m_OpenMode == Mode::Append)
     {
-        throw std::invalid_argument(
-            "JuleaKVWriter: OpenMode   -- Append --   hasn't been implemented, yet");
+        throw std::invalid_argument("JuleaKVWriter: OpenMode   -- Append --   "
+                                    "hasn't been implemented, yet");
     }
     std::cout << "\n*********************** JULEA ENGINE WRITER "
                  "*************************"
@@ -318,7 +317,6 @@ void JuleaKVWriter::InitVariables()
     {
         std::cout << "Julea Writer " << m_WriterRank << " InitVariables()\n";
     }
-
 }
 
 /**TODO
@@ -367,15 +365,16 @@ void JuleaKVWriter::DoClose(const int transportIndex)
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "\n______________DoClose_____________________" << std::endl;
+        std::cout << "\n______________DoClose_____________________"
+                  << std::endl;
         // std::cout << "Julea Writer " << m_WriterRank << " Close(" << m_Name
-                  // << ")\n";
+        // << ")\n";
     }
     // TODO: free semantics
     /* Write deferred variables*/
     if (m_DeferredVariables.size() > 0)
     {
-        PerformPuts(); //TODO: correct?
+        PerformPuts(); // TODO: correct?
     }
     DoFlush(true, transportIndex);
     // TODO: Close Transports?!
@@ -391,7 +390,8 @@ void JuleaKVWriter::DoFlush(const bool isFinal, const int transportIndex)
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "\n______________DoFlush_____________________" << std::endl;
+        std::cout << "\n______________DoFlush_____________________"
+                  << std::endl;
         // std::cout << "Julea Writer " << m_WriterRank << " DoFlush \n";
     }
     if (m_Aggregator.m_IsActive)
@@ -460,7 +460,8 @@ void JuleaKVWriter::WriteData(const bool isFinal, const int transportIndex)
 void JuleaKVWriter::AggregateWriteData(const bool isFinal,
                                        const int transportIndex)
 {
-    std::cout << "\n______________AggregateWriteData_____________________" << std::endl;
+    std::cout << "\n______________AggregateWriteData_____________________"
+              << std::endl;
     // DESIGN: check BP3Writer
     if (m_Verbosity == 5)
     {
@@ -504,7 +505,8 @@ void JuleaKVWriter::AggregateWriteData(const bool isFinal,
  */
 void JuleaKVWriter::PutAttributes(core::IO &io)
 {
-    std::cout << "\n______________PutAttributes_____________________" << std::endl;
+    std::cout << "\n______________PutAttributes_____________________"
+              << std::endl;
 
     const auto attributesDataMap = io.GetAttributesDataMap();
 
@@ -558,7 +560,6 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
         // delete(&attrName);
     } // end for
 }
-
 
 void JuleaKVWriter::InitParameterFlushStepsCount(const std::string value)
 {

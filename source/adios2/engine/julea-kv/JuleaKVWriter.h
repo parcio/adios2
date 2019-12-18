@@ -67,8 +67,8 @@ private:
     JSemantics *m_JuleaSemantics;
     StepMode m_StepMode = StepMode::Append;
 
-    int m_Verbosity = 5;       // changed for debugging info from 0 to 5
-    int m_WriterRank;          // my rank in the writers' comm
+    int m_Verbosity = 5; // changed for debugging info from 0 to 5
+    int m_WriterRank;    // my rank in the writers' comm
 
     /** EndStep must call PerformPuts if necessary */
     // bool m_NeedPerformPuts = false; // DESIGN: suggested in SkeletonWriter,
@@ -86,18 +86,17 @@ private:
     /** Default: write collective metadata in Capsule metadata. */
     bool m_CollectiveMetadata = true;
 
-
     /* -------------- see BP3Base MetadataSet struct ------------------------*/
 
     /**
-    * updated with EndStep, if append it will be updated to last,
-    * starts with one in ADIOS1 BP3 format!
-    */
-    uint32_t m_TimeStep = 1;    //starts at 1
+     * updated with EndStep, if append it will be updated to last,
+     * starts with one in ADIOS1 BP3 format!
+     */
+    uint32_t m_TimeStep = 1; // starts at 1
 
     /** Similar to TimeStep, but uses uint64_t and start from zero. Used for
-    * streaming a large number of steps */
-    size_t m_CurrentStep = 0;   //starts at 0
+     * streaming a large number of steps */
+    size_t m_CurrentStep = 0; // starts at 0
 
     /** Parameter to flush transports at every number of steps, to be used at
      * EndStep */
