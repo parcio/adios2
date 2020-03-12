@@ -62,9 +62,13 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
     auto dataObject = j_object_new(stringDataObject, varName);
 
     std::cout << "-- Datasize = " << dataSize << std::endl;
-
+    std::cout << "get var data from julea v[0]" << data[0] << std::endl;
+    std::cout << "v[1]" << data[1] << std::endl;
     j_object_read(dataObject, data, dataSize, 0, &bytesRead, batch);
     j_batch_execute(batch);
+
+    std::cout << "v[0]" << data[0] << std::endl;
+    std::cout << "v[1]" << data[1] << std::endl;
 
     if (bytesRead == dataSize)
     {

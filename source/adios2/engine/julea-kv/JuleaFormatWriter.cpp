@@ -225,7 +225,9 @@ void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata)
     }
 
     bson_append_int64(bsonMetadata, "steps_start", -1, variable.m_StepsStart);
+    std::cout << "DEBUG: steps_start" << variable.m_StepsStart << std::endl;
     bson_append_int64(bsonMetadata, "steps_count", -1, variable.m_StepsCount);
+    std::cout << "DEBUG: steps_count" << variable.m_StepsCount << std::endl;
 
     bson_append_int64(bsonMetadata, "block_id", -1, variable.m_BlockID);
     bson_append_int64(bsonMetadata, "index_start", -1, variable.m_IndexStart);

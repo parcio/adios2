@@ -185,6 +185,7 @@ void JuleaKVWriter::PerformPuts()
     {                                                                          \
         Variable<T> &variable = FindVariable<T>(                               \
             variableName, "in call to PerformPuts, EndStep or Close");         \
+        std::cout << "ATTENTION" << std::endl;\
                                                                                \
         PerformPutCommon(variable);                                            \
     }

@@ -364,7 +364,7 @@ void PutVariableMetadataToJuleaSmall(Variable<T> &variable,
 
 void WriteDataToJuleaObjectStore(std::string objName, std::string paramName,
                                  std::string nameSpace, unsigned int dataSize,
-                                 const void *data)
+                                 const void *data, size_t currStep)
 {
     guint64 bytesWritten = 0;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -376,8 +376,8 @@ void WriteDataToJuleaObjectStore(std::string objName, std::string paramName,
      * printf("%s_variables_%s", nameSpace, name)*/
 
     auto stringDataObject =
-        g_strdup_printf("%s_%s_%s", nameSpace.c_str(), objName.c_str(), name);
-    // std::cout << "stringDataObject " << stringDataObject << std::endl;
+        g_strdup_printf("%s_%s_%s_%d", nameSpace.c_str(), objName.c_str(), name, currStep);
+    std::cout << "stringDataObject " << stringDataObject << std::endl;
     auto dataObject = j_object_new(stringDataObject, name);
 
     j_object_create(dataObject, batch);
@@ -404,15 +404,18 @@ void WriteDataToJuleaObjectStore(std::string objName, std::string paramName,
 
 template <class T>
 void PutVariableDataToJuleaSmall(Variable<T> &variable, const T *data,
-                                 const std::string nameSpace)
+                                 const std::string nameSpace, size_t currStep )
 {
 
     std::string objName = "variables";
     auto numberElements = adios2::helper::GetTotalSize(variable.m_Count);
     auto dataSize = variable.m_ElementSize * numberElements;
 
+    // auto currentStep = m_CurrentStep;
+
+
     WriteDataToJuleaObjectStore(objName, variable.m_Name, nameSpace.c_str(),
-                                dataSize, data);
+                                dataSize, data, currStep);
     std::cout << "++ Julea Interaction: PutVariableDataToJuleaSmall"
               << std::endl;
 }
@@ -761,7 +764,7 @@ void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetaData,
     template void PutVariableDataToJulea(Variable<T> &variable, const T *data, \
                                          const std::string nameSpace);         \
     template void PutVariableDataToJuleaSmall(                                 \
-        Variable<T> &variable, const T *data, const std::string nameSpace);    \
+        Variable<T> &variable, const T *data, const std::string nameSpace, size_t currentStep);    \
     template void PutVariableMetadataToJulea(Variable<T> &variable,            \
                                              bson_t *bsonMetaData,             \
                                              const std::string nameSpacee);    \

@@ -104,6 +104,8 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
               << " Variable name: " << variable.m_Name << std::endl;
     SetMinMax(variable, data);
 
+    std::cout << "DEBUG: CurrentStep" << m_CurrentStep << std::endl;
+
     ParseVariableToBSON(variable, bsonMetadata);
     ParseVarTypeToBSON(variable, data, bsonMetadata);
 
@@ -111,7 +113,9 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
     //                                 m_Name);
     PutVariableMetadataToJuleaSmall(variable, bsonMetadata, m_Name);
     // PutVariableDataToJulea(variable, data, m_Name);
-    PutVariableDataToJuleaSmall(variable, data, m_Name);
+    //
+    // PutVariableDataToJuleaSmall(variable, data, m_Name);
+    PutVariableDataToJuleaSmall(variable, data, m_Name, m_CurrentStep);
 
     bson_destroy(bsonMetadata);
 

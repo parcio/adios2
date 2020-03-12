@@ -53,8 +53,8 @@ void write(void)
     std::vector<double> v0(Nglobal);
     adios2::ADIOS adios(adios2::DebugON);
     adios2::IO io = adios.DeclareIO("Output");
-    // io.SetEngine("julea-kv");
-    io.SetEngine("bp3");
+    io.SetEngine("julea-kv");
+    // io.SetEngine("bp3");
     /*
      * Define local array: type, name, local size
      * Global dimension and starting offset must be an empty vector
@@ -70,7 +70,7 @@ void write(void)
     // adios2::Engine writer = io.Open("JULEAlocalArray.bp",
     // adios2::Mode::Append);
 
-    for (int step = 0; step < 3; step++)
+    for (int step = 0; step < 5; step++)
     {
         std::cout
             << "\n-------------------------------------------------------------"
@@ -114,8 +114,8 @@ void read(void)
     std::vector<double> v0(Nglobal);
     adios2::ADIOS adios(adios2::DebugON);
     adios2::IO io = adios.DeclareIO("Input");
-    // io.SetEngine("julea-kv");
-    io.SetEngine("bp3");
+    io.SetEngine("julea-kv");
+    // io.SetEngine("bp3");
 
 
     // Open file. "w" means we overwrite any existing file on disk,
@@ -129,13 +129,13 @@ void read(void)
 
     size_t steps = varV0.Steps();
 
-    std::cout << "steps: " << steps << std::endl;
+    std::cout << "SIMPLE_STEPS: steps: " << steps << std::endl;
 
     size_t stepsstart = varV0.StepsStart();
 
     std::cout << "stepsstart: " << stepsstart << std::endl;
 
-    for (int step = 0; step < 3; step++)
+    for (int step = 0; step < 2; step++)
     {
         double value[2];
 
@@ -152,8 +152,10 @@ void read(void)
     double value[6];
     reader.Get<double>(varV0, value, adios2::Mode::Sync);
 
-    for (size_t i = 0; i < 6; i++)
+    for (size_t i = 0; i < Nglobal; i++)
+    {
         std::cout << "v[" << i << "]: " << value[i] << std::endl;
+    }
 
     std::cout << "\n---------- Application: left for loop "
                  "-------------------------------------\n"
