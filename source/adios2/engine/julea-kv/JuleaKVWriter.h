@@ -92,7 +92,7 @@ private:
 
     /**
      * updated with EndStep, if append it will be updated to last,
-     * starts with one in ADIOS1 BP3 format!
+     * starts with one in BPBase! legacy of Adios 1?!
      */
     uint32_t m_TimeStep = 1; // starts at 1
 
@@ -109,6 +109,7 @@ private:
 
     /** tracks Put and Get variables in deferred mode */
     std::set<std::string> m_DeferredVariables;
+
     /** tracks the overall size of deferred variables */
     size_t m_DeferredVariablesDataSize = 0; // TODO: needed?
 
@@ -124,7 +125,7 @@ private:
     format::BufferSTL m_Data;
 
     /** contains collective metadata buffer, only used by rank 0 */
-    format::BufferSTL m_Metadata;
+    format::BufferSTL m_Metadata; //FIXME: needed? useful for julea?
 
     // DESIGN
     /** Manage BP data files Transports from IO AddTransport */
