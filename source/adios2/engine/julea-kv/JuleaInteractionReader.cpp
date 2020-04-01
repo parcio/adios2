@@ -58,7 +58,9 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
     auto batch = j_batch_new(semantics);
 
     auto stringDataObject =
-        g_strdup_printf("%s_variables_%s", nameSpace.c_str(), varName);
+        g_strdup_printf("%s_variables", nameSpace.c_str());
+    std::cout << "stringDataObject: " << stringDataObject << std::endl;
+        // g_strdup_printf("%s_variables_%s", nameSpace.c_str(), varName);
     auto dataObject = j_object_new(stringDataObject, varName);
 
     std::cout << "-- Datasize = " << dataSize << std::endl;
@@ -109,7 +111,9 @@ void GetNamesBSONFromJulea(const std::string nameSpace, bson_t **bsonNames,
     auto batch = j_batch_new(semantics);
 
     // auto kv_object = j_kv_new("variable_names", nameSpace.c_str());
+    // auto kvObject = j_kv_new(nameSpace.c_str(),kvName.c_str());
     auto kvObject = j_kv_new(kvName.c_str(), nameSpace.c_str());
+    std::cout << "kvName :" << kvName << std::endl;
 
     j_kv_get(kvObject, &namesBuf, &valueLen, batch);
     j_batch_execute(batch);
@@ -156,7 +160,8 @@ void GetVariableBSONFromJulea(const std::string nameSpace,
 
     std::cout << "-- GetVariableBSONFromJulea ---- " << std::endl;
 
-    auto stringMetadataKV = g_strdup_printf("variables_%s", nameSpace.c_str());
+    auto stringMetadataKV = g_strdup_printf("%s_variables", nameSpace.c_str());
+    std::cout << "stringMetadataKV: " << stringMetadataKV << std::endl;
     auto kvObject = j_kv_new(stringMetadataKV, varName.c_str());
 
     j_kv_get(kvObject, &metaDataBuf, &valueLen, batch);
@@ -267,7 +272,8 @@ void GetAttributeDataFromJulea(const std::string attrName, T *data,
     // auto batch = j_batch_new(m_JuleaSemantics);
 
     auto stringDataObject = g_strdup_printf(
-        "%s_attributes_%s", nameSpace.c_str(), attrName.c_str());
+        "%s_attributes", nameSpace.c_str());
+        // "%s_attributes_%s", nameSpace.c_str(), attrName.c_str());
     auto dataObject = j_object_new(stringDataObject, attrName.c_str());
 
     // std::cout << "-- stringDataObject: " << stringDataObject << std::endl;
@@ -307,7 +313,8 @@ void GetAttributeStringDataFromJulea(const std::string attrName, char *data,
     // void *dataBuf;
 
     auto stringDataObject = g_strdup_printf(
-        "%s_attributes_%s", nameSpace.c_str(), attrName.c_str());
+        "%s_attributes", nameSpace.c_str());
+        // "%s_attributes_%s", nameSpace.c_str(), attrName.c_str());
     auto dataObject = j_object_new(stringDataObject, attrName.c_str());
 
     // std::cout << "-- stringDataObject: " << stringDataObject << std::endl;

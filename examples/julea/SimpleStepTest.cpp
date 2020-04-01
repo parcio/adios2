@@ -51,6 +51,9 @@ void write(void)
     // v0 has the same size on every process at every step
     const size_t Nglobal = 2;
     std::vector<double> v0(Nglobal);
+    std::vector<double> v1(Nglobal);
+    std::vector<double> v2(Nglobal);
+
     adios2::ADIOS adios(adios2::DebugON);
     adios2::IO io = adios.DeclareIO("Output");
     io.SetEngine("julea-kv");
@@ -62,6 +65,10 @@ void write(void)
      */
     adios2::Variable<double> varV0 =
         io.DefineVariable<double>("v0", {}, {}, {Nglobal});
+    adios2::Variable<double> varV1 =
+        io.DefineVariable<double>("v1", {}, {}, {Nglobal});
+    adios2::Variable<double> varV2 =
+        io.DefineVariable<double>("v2", {}, {}, {Nglobal});
 
     // Open file. "w" means we overwrite any existing file on disk,
     // but Advance() will append steps to the same file.
@@ -70,7 +77,7 @@ void write(void)
     // adios2::Engine writer = io.Open("JULEAlocalArray.bp",
     // adios2::Mode::Append);
 
-    for (int step = 0; step < 5; step++)
+    for (int step = 0; step < 3; step++)
     {
         std::cout
             << "\n-------------------------------------------------------------"
@@ -89,9 +96,22 @@ void write(void)
             // v0[i] = rank * 1.0 + step * 0.1;
             // v0[i] = 42.0 + step * 0.1;
             v0[i] = 11 * (step + 1) + step * 0.1 + i * 100;
+            v1[i] = 11 * (step + 1) + step * 0.1 + i * 100;
+            v2[i] = 22 * (step + 1) + step * 0.1 + i * 100;
             std::cout << "v0[" << i << "]: " << v0[i] << std::endl;
+            std::cout << "v1[" << i << "]: " << v1[i] << std::endl;
+            std::cout << "v2[" << i << "]: " << v1[i] << std::endl;
         }
         writer.Put<double>(varV0, v0.data());
+        writer.Put<double>(varV2, v0.data()); //test what happens when writing v2 more than once
+        writer.Put<double>(varV2, v2.data());
+
+
+        if(step == 2)
+        {
+
+        writer.Put<double>(varV1, v1.data());
+        }
 
         std::cout << "\n---------- Application: EndStep "
                      "-------------------------------------\n"
@@ -173,7 +193,7 @@ int main(int argc, char *argv[])
     try
     {
         write();
-        read();
+        // read();
     }
     catch (std::invalid_argument &e)
     {

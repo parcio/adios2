@@ -106,16 +106,27 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 
     std::cout << "DEBUG: CurrentStep" << m_CurrentStep << std::endl;
 
-    ParseVariableToBSON(variable, bsonMetadata);
-    ParseVarTypeToBSON(variable, data, bsonMetadata);
+
+    std::cout << "variable.m_BlocksInfo.Step: " << variable.m_BlocksInfo[0].Step << std::endl;
+    std::cout << "variable.m_BlocksInfo.StepsStart: " << variable.m_BlocksInfo[0].StepsStart << std::endl;
+    std::cout << "variable.m_BlocksInfo.StepsCount: " << variable.m_BlocksInfo[0].StepsCount << std::endl;
+    std::cout << "variable.m_AvailableStepsStart: " << variable.m_AvailableStepsStart << std::endl;
+    std::cout << "variable.m_AvailableStepsCount: " << variable.m_AvailableStepsCount << std::endl;
+    std::cout << "variable.m_StepsStart: " << variable.m_StepsStart << std::endl;
+    std::cout << "variable.m_StepsCount: " << variable.m_StepsCount << std::endl;
+
+    std::cout << "---------------------\n" << std::endl;
+
+//   ParseVariableToBSON(variable, bsonMetadata);
+//   ParseVarTypeToBSON(variable, data, bsonMetadata);
 
     // PutVariableMetadataToJulea(variable, bsonMetadata,
     //                                 m_Name);
-    PutVariableMetadataToJuleaSmall(variable, bsonMetadata, m_Name);
+//   PutVariableMetadataToJuleaSmall(variable, bsonMetadata, m_Name);
     // PutVariableDataToJulea(variable, data, m_Name);
     //
     // PutVariableDataToJuleaSmall(variable, data, m_Name);
-    PutVariableDataToJuleaSmall(variable, data, m_Name, m_CurrentStep);
+// PutVariableDataToJuleaSmall(variable, data, m_Name, m_CurrentStep);
 
     bson_destroy(bsonMetadata);
 
@@ -173,6 +184,17 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
               << std::endl;
     for (size_t i = 0; i < variable.m_BlocksInfo.size(); ++i)
     {
+        std::cout << "------- TEST for different info block sizes ----------------" << std::endl;
+        std::cout << "variable:" << variable.m_Name << std::endl;
+        std::cout << "i = " << i << std::endl;
+        std::cout << "variable.m_BlocksInfo.Step: " << variable.m_BlocksInfo[i].Step << std::endl;
+        std::cout << "variable.m_BlocksInfo.StepsStart " << i << "= " << variable.m_BlocksInfo[i].StepsStart << std::endl;
+        std::cout << "variable.m_BlocksInfo.StepsCount " << i << "= " << variable.m_BlocksInfo[i].StepsCount << std::endl;
+        std::cout << "variable.m_AvailableStepsStart: " << i << "= " << variable.m_AvailableStepsStart << std::endl;
+        std::cout << "variable.m_AvailableStepsCount: " << variable.m_AvailableStepsCount << std::endl;
+        std::cout << "variable.m_StepsStart: " << variable.m_StepsStart << std::endl;
+        std::cout << "variable.m_StepsCount: " << variable.m_StepsCount << std::endl;
+
         // PutSyncCommon(variable, variable.m_BlocksInfo[i]);
         PutSyncCommon(variable, variable.m_BlocksInfo[i].Data);
 
