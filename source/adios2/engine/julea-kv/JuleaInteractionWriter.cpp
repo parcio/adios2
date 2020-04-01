@@ -338,6 +338,7 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
     // bson_destroy(bsonNames);
 }
 
+//FIXME: needs currentStep as param
 template <class T>
 void PutVariableMetadataToJuleaSmall(Variable<T> &variable,
                                      bson_t *bsonMetaData,
@@ -347,11 +348,21 @@ void PutVariableMetadataToJuleaSmall(Variable<T> &variable,
 
     const char *kvNames = "variable_names";
     const char *kvMD = "variables";
+    //TODO third kv
+    //one for the names
+    //one for all variables with their max number of steps + steps bitmap
+    //one for all the steps of a variable
 
     WriteNameToJuleaKV(variable.m_Name, nameSpace.c_str(), kvNames);
 
     WriteMetadataToJuleaKV(kvMD, variable.m_Name, nameSpace.c_str(),
                            bsonMetaData);
+
+    //TODO
+    // WriteStepsToJuleaKV();
+
+
+
     // WriteMetadataToJuleaKV(kvMD, variable.m_Name, nameSpace.c_str(),
     // bsonNames, bsonMetaData, kvObjectNames);
 
@@ -383,6 +394,7 @@ void PutVariableMetadataToJuleaSmall(Variable<T> &variable,
 }
 
 /** ------------------------- DATA ------------------------------------------**/
+//FIXME
 void WriteDataStepsToJuleaObjectStore(std::string objName, std::string paramName,
                                  std::string nameSpace, unsigned int dataSize,
                                  const void *data, size_t currStep)
@@ -472,7 +484,9 @@ template <class T>
 void PutVariableDataToJuleaSmall(Variable<T> &variable, const T *data,
                                  const std::string nameSpace, size_t currStep )
 {
-
+    //no distinction necessary. every variable treated as if it was first step
+    //-> varName_0 ist always used for every variable
+    //FIXME:
     std::string objName = "variables";
     std::string objName2 = "variablesteps";
     auto numberElements = adios2::helper::GetTotalSize(variable.m_Count);

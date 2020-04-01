@@ -117,17 +117,21 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 
     std::cout << "---------------------\n" << std::endl;
 
-//   ParseVariableToBSON(variable, bsonMetadata);
-//   ParseVarTypeToBSON(variable, data, bsonMetadata);
+  ParseVariableToBSON(variable, bsonMetadata);
+  ParseVarTypeToBSON(variable, data, bsonMetadata);
+
+  //FIXME: create bson storing max number of steps + steps bitmap
 
     // PutVariableMetadataToJulea(variable, bsonMetadata,
     //                                 m_Name);
-//   PutVariableMetadataToJuleaSmall(variable, bsonMetadata, m_Name);
+  PutVariableMetadataToJuleaSmall(variable, bsonMetadata, m_Name); //FIXME: for every step
     // PutVariableDataToJulea(variable, data, m_Name);
     //
     // PutVariableDataToJuleaSmall(variable, data, m_Name);
-// PutVariableDataToJuleaSmall(variable, data, m_Name, m_CurrentStep);
+PutVariableDataToJuleaSmall(variable, data, m_Name, m_CurrentStep);
 
+  //FIXME: store bson in variables kv
+  //
     bson_destroy(bsonMetadata);
 
     if (m_Verbosity == 5)
@@ -194,6 +198,7 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
         std::cout << "variable.m_AvailableStepsCount: " << variable.m_AvailableStepsCount << std::endl;
         std::cout << "variable.m_StepsStart: " << variable.m_StepsStart << std::endl;
         std::cout << "variable.m_StepsCount: " << variable.m_StepsCount << std::endl;
+        std::cout << "variable.m_StepsCount: " << variable.m_BlocksSpan[i]. << std::endl;
 
         // PutSyncCommon(variable, variable.m_BlocksInfo[i]);
         PutSyncCommon(variable, variable.m_BlocksInfo[i].Data);
