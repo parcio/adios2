@@ -76,10 +76,11 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
     auto bsonMetadata = bson_new();
     SetMinMax(variable, blockInfo.Data);
 
-    ParseVariableToBSON(variable, bsonMetadata);
-    ParseVarTypeToBSON(variable, blockInfo.Data, bsonMetadata);
-    PutVariableMetadataToJuleaSmall(variable, bsonMetadata, m_Name);
-    PutVariableDataToJuleaSmall(variable, blockInfo.Data, m_Name);
+    //FIXME
+    // ParseVariableToBSON(variable, bsonMetadata);
+    // ParseVarTypeToBSON(variable, blockInfo.Data, bsonMetadata);
+    // PutVariableMetadataToJuleaSmall(variable, bsonMetadata, m_Name);
+    // PutVariableDataToJuleaSmall(variable, blockInfo.Data, m_Name);
     // TODO: free memory
     bson_destroy(bsonMetadata);
 
@@ -117,18 +118,18 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 
     std::cout << "---------------------\n" << std::endl;
 
-  ParseVariableToBSON(variable, bsonMetadata);
-  ParseVarTypeToBSON(variable, data, bsonMetadata);
+// ParseVariableToBSON(variable, bsonMetadata);
+// ParseVarTypeToBSON(variable, data, bsonMetadata);
 
   //FIXME: create bson storing max number of steps + steps bitmap
 
     // PutVariableMetadataToJulea(variable, bsonMetadata,
     //                                 m_Name);
-  PutVariableMetadataToJuleaSmall(variable, bsonMetadata, m_Name); //FIXME: for every step
+// PutVariableMetadataToJuleaSmall(variable, bsonMetadata, m_Name); //FIXME: for every step
     // PutVariableDataToJulea(variable, data, m_Name);
     //
     // PutVariableDataToJuleaSmall(variable, data, m_Name);
-PutVariableDataToJuleaSmall(variable, data, m_Name, m_CurrentStep);
+// PutVariableDataToJuleaSmall(variable, data, m_Name, m_CurrentStep);
 
   //FIXME: store bson in variables kv
   //
@@ -202,15 +203,23 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
         // PutSyncCommon(variable, variable.m_BlocksInfo[i]);
         PutSyncCommon(variable, variable.m_BlocksInfo[i].Data);
 
-        // auto itSpanBlock = variable.m_BlocksSpan.find(b);
-        // if (itSpanBlock == variable.m_BlocksSpan.end())
-        // {
-        //     PutSyncCommon(variable, variable.m_BlocksInfo[b]);
-        // }
+        auto itSpanBlock = variable.m_BlocksSpan.find(i);
+        if (itSpanBlock == variable.m_BlocksSpan.end())
+        {
+            PutSyncCommon(variable, variable.m_BlocksInfo[i]);
+        }
         // else
         // {
         //     m_BP3Serializer.PutSpanMetadata(variable, itSpanBlock->second);
         // }
+
+        std::cout << "variable.m_BlocksInfo.Step: " << variable.m_BlocksInfo[i].Step << std::endl;
+        std::cout << "variable.m_BlocksInfo.StepsStart " << i << "= " << variable.m_BlocksInfo[i].StepsStart << std::endl;
+        std::cout << "variable.m_BlocksInfo.StepsCount " << i << "= " << variable.m_BlocksInfo[i].StepsCount << std::endl;
+        std::cout << "variable.m_AvailableStepsStart: " << i << "= " << variable.m_AvailableStepsStart << std::endl;
+        std::cout << "variable.m_AvailableStepsCount: " << variable.m_AvailableStepsCount << std::endl;
+        std::cout << "variable.m_StepsStart: " << variable.m_StepsStart << std::endl;
+        std::cout << "variable.m_StepsCount: " << variable.m_StepsCount << std::endl;
         std::cout << "Mode: " << m_OpenMode << std::endl;
     }
 

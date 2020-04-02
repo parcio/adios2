@@ -69,6 +69,9 @@ void write_simple(std::string engine, std::string fileName)
     // adios2::Engine writer = io.Open("JULEAlocalArray.bp",
     // adios2::Mode::Append);
 
+    v0[0] = -42;
+    v0[1] = 42;
+    writer.Put<double>(varV0, v0.data());
 
     for (int step = 0; step < 3; step++)
     {
@@ -99,8 +102,6 @@ void write_simple(std::string engine, std::string fileName)
         if(step == 2)
         {
             writer.Put<double>(varV1, v1.data());
-            writer.Put<double>(varV4, v1.data());
-            writer.Put<double>(varV5, v1.data());
         }
 
         std::cout << "\n---------- Application: EndStep "
@@ -290,8 +291,9 @@ int main(int argc, char *argv[])
 
     try
     {
-        // write("bp3", "SimpleSteps.bp");
-        write("julea-kv", "SimpleSteps.jv");
+        // write_complex("julea-kv", "SimpleSteps.jv");
+        write_simple("bp3", "SimpleSteps.bp");
+        // write_simple("julea-kv", "SimpleSteps.jv");
         // write("julea-kv", "SimpleSteps.bp");
         // write();
         // read();
