@@ -1152,6 +1152,28 @@ std::vector<std::string> getEnginesList(const std::string path)
         list.push_back("BPFile");
         list.push_back("HDF5");
     }
+#elif defined ADIOS2_HAVE_JULEA
+    std::cout << "bpls -- DEBUG: ADIOS2_HAVE_JULEA " << std::endl;
+    //FIXME: make possible to still read .bp and .h5 files without "pseudo file formats"
+    //jv for julea-kv
+    //jb for julea-db
+    size_t slen = path.length();
+    if (slen >= 3 && path.compare(slen - 3, 3, ".h5") == 0)
+    {
+        list.push_back("HDF5");
+        list.push_back("BPFile");
+    }
+    else if (slen >= 3 && path.compare(slen - 3, 3, ".jv") == 0)
+    {
+        list.push_back("julea-kv");
+        list.push_back("BPFile");
+        list.push_back("HDF5");
+    }
+    else
+    {
+        list.push_back("BPFile");
+        list.push_back("HDF5");
+    }
 #else
     list.push_back("BPFile");
 #endif
