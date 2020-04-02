@@ -53,11 +53,14 @@ void write(void)
     std::vector<double> v0(Nglobal);
     std::vector<double> v1(Nglobal);
     std::vector<double> v2(Nglobal);
+    std::vector<double> v3(Nglobal);
+    std::vector<double> v4(Nglobal);
+    std::vector<double> v5(Nglobal);
 
     adios2::ADIOS adios(adios2::DebugON);
     adios2::IO io = adios.DeclareIO("Output");
-    io.SetEngine("julea-kv");
-    // io.SetEngine("bp3");
+    // io.SetEngine("julea-kv");
+    io.SetEngine("bp3");
     /*
      * Define local array: type, name, local size
      * Global dimension and starting offset must be an empty vector
@@ -69,6 +72,10 @@ void write(void)
         io.DefineVariable<double>("v1", {}, {}, {Nglobal});
     adios2::Variable<double> varV2 =
         io.DefineVariable<double>("v2", {}, {}, {Nglobal});
+    adios2::Variable<double> varV4 =
+        io.DefineVariable<double>("v4", {}, {}, {Nglobal});
+    adios2::Variable<double> varV5 =
+        io.DefineVariable<double>("v5", {}, {}, {Nglobal});
 
     // Open file. "w" means we overwrite any existing file on disk,
     // but Advance() will append steps to the same file.
@@ -76,6 +83,15 @@ void write(void)
         io.Open("JULEA-SimpleSteps.bp", adios2::Mode::Write);
     // adios2::Engine writer = io.Open("JULEAlocalArray.bp",
     // adios2::Mode::Append);
+
+
+    v4[0] = -666;
+    v4[1] = 666;
+
+    v5[0] = -123;
+    v5[1] = 123;
+    writer.Put<double>(varV4, v4.data());
+    writer.Put<double>(varV5, v5.data(), adios2::Mode::Sync);
 
     for (int step = 0; step < 3; step++)
     {
@@ -98,19 +114,27 @@ void write(void)
             v0[i] = 11 * (step + 1) + step * 0.1 + i * 100;
             v1[i] = 11 * (step + 1) + step * 0.1 + i * 100;
             v2[i] = 22 * (step + 1) + step * 0.1 + i * 100;
+            v3[i] = 42;
+            // v3[i] = 33 * (step + 1) + step * 0.1 + i * 100;
             std::cout << "v0[" << i << "]: " << v0[i] << std::endl;
             std::cout << "v1[" << i << "]: " << v1[i] << std::endl;
-            std::cout << "v2[" << i << "]: " << v1[i] << std::endl;
+            std::cout << "v2[" << i << "]: " << v2[i] << std::endl;
+            std::cout << "v3[" << i << "]: " << v3[i] << std::endl;
+            std::cout << "v4[" << i << "]: " << v4[i] << std::endl;
+            std::cout << "v5[" << i << "]: " << v5[i] << std::endl;
         }
         writer.Put<double>(varV0, v0.data());
-        writer.Put<double>(varV2, v0.data()); //test what happens when writing v2 more than once
+        writer.Put<double>(varV2, v3.data()); //test what happens when writing v2 more than once
         writer.Put<double>(varV2, v2.data());
+        writer.Put<double>(varV5, v3.data());
 
 
         if(step == 2)
         {
 
         writer.Put<double>(varV1, v1.data());
+        writer.Put<double>(varV4, v1.data());
+        writer.Put<double>(varV5, v1.data());
         }
 
         std::cout << "\n---------- Application: EndStep "

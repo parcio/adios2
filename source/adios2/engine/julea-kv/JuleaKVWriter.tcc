@@ -198,7 +198,6 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
         std::cout << "variable.m_AvailableStepsCount: " << variable.m_AvailableStepsCount << std::endl;
         std::cout << "variable.m_StepsStart: " << variable.m_StepsStart << std::endl;
         std::cout << "variable.m_StepsCount: " << variable.m_StepsCount << std::endl;
-        std::cout << "variable.m_StepsCount: " << variable.m_BlocksSpan[i]. << std::endl;
 
         // PutSyncCommon(variable, variable.m_BlocksInfo[i]);
         PutSyncCommon(variable, variable.m_BlocksInfo[i].Data);
