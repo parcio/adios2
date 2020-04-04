@@ -11,7 +11,7 @@
 #include "JuleaKVWriter.h"
 #include "JuleaKVWriter.tcc"
 
-#include "JuleaClientLogic-legacy.h" //TODO: replace with new functionality
+// #include "JuleaClientLogic-legacy.h" //TODO: replace with new functionality
 
 #include "JuleaFormatWriter.h"
 #include "JuleaInteractionWriter.h"

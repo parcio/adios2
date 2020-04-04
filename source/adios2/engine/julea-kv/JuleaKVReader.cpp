@@ -11,7 +11,7 @@
 #include "JuleaKVReader.h"
 #include "JuleaKVReader.tcc"
 
-#include "JuleaClientLogic-legacy.h"
+// #include "JuleaClientLogic-legacy.h"
 #include "JuleaFormatReader.h"
 #include "JuleaInteractionReader.h"
 
