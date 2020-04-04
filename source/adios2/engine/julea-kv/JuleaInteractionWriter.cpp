@@ -17,7 +17,6 @@
 #include <string.h>
 
 #include <iostream>
-// #include <julea-internal.h>
 #include <julea-kv.h>
 #include <julea-object.h>
 #include <julea.h>

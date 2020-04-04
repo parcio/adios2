@@ -11,14 +11,11 @@
 #ifndef ADIOS2_ENGINE_JULEAREADER_TCC_
 #define ADIOS2_ENGINE_JULEAREADER_TCC_
 
-// #include "JuleaClientLogic-legacy.h"
 #include "JuleaFormatReader.h"
 #include "JuleaInteractionReader.h"
 #include "JuleaKVReader.h"
 
 #include <iostream>
-// #include <fstream>
-// #include <string>
 
 namespace adios2
 {

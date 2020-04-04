@@ -11,8 +11,6 @@
 #include "JuleaKVWriter.h"
 #include "JuleaKVWriter.tcc"
 
-// #include "JuleaClientLogic-legacy.h" //TODO: replace with new functionality
-
 #include "JuleaFormatWriter.h"
 #include "JuleaInteractionWriter.h"
 
@@ -22,8 +20,6 @@
 
 #include <iostream>
 #include <julea-object.h> //needed?
-
-// #include <julea-adios.h>
 
 namespace adios2
 {

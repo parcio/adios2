@@ -14,8 +14,6 @@
 #include "JuleaMetadata.h"
 
 #include "adios2/core/Engine.h"
-// #include "adios2/toolkit/format/bp3/BP3.h" //BP3Serializer
-// #include "adios2/toolkit/format/bp/BPBase.h"
 #include "adios2/toolkit/format/buffer/heap/BufferSTL.h"
 #include "adios2/toolkit/format/bp/bp3/BP3Serializer.h"
 #include "adios2/toolkit/interop/julea/JuleaSerializer.h"
@@ -24,10 +22,6 @@
 #include <complex.h>
 #include <glib.h>
 #include <julea.h>
-
-// #include "julea.h"
-
-//#include <jgmm.h>
 
 namespace adios2
 {
