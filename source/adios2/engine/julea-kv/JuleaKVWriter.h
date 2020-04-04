@@ -64,6 +64,8 @@ public:
     // void Flush();
 
 private:
+    format::BP3Serializer m_BPSerializer;
+
     // JuleaInfo *m_JuleaInfo;
     // interop::JuleaSerializer m_Julea;
     JSemantics *m_JuleaSemantics;

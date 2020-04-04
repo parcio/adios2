@@ -34,7 +34,7 @@ namespace engine
 
 JuleaKVWriter::JuleaKVWriter(IO &io, const std::string &name, const Mode mode,
                             helper::Comm comm)
-: Engine("JuleaKVWriter", io, name, mode, std::move(comm))
+: Engine("JuleaKVWriter", io, name, mode, std::move(comm)), m_BPSerializer(m_Comm,m_DebugMode)
 // : Engine("JuleaKVWriter", io, name, mode, mpiComm), m_Julea(io.m_DebugMode)
 {
     // std::cout << "JULEA ENGINE: Constructor" << std::endl;

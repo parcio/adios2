@@ -293,7 +293,7 @@ int main(int argc, char *argv[])
     {
         // write_complex("julea-kv", "SimpleSteps.jv");
         write_simple("bp3", "SimpleSteps.bp");
-        // write_simple("julea-kv", "SimpleSteps.jv");
+        write_simple("julea-kv", "SimpleSteps.jv");
         // write("julea-kv", "SimpleSteps.bp");
         // write();
         // read();

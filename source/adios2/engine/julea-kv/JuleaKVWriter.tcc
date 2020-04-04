@@ -212,6 +212,11 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
         // {
         //     m_BP3Serializer.PutSpanMetadata(variable, itSpanBlock->second);
         // }
+        auto &position = m_BPSerializer.m_Data.m_Position;
+        auto &absolutePosition = m_BPSerializer.m_Data.m_AbsolutePosition;
+
+        std::cout << "position: " << position << std::endl;
+        std::cout << "absolutePosition: " << absolutePosition << std::endl;
 
         std::cout << "variable.m_BlocksInfo.Step: " << variable.m_BlocksInfo[i].Step << std::endl;
         std::cout << "variable.m_BlocksInfo.StepsStart " << i << "= " << variable.m_BlocksInfo[i].StepsStart << std::endl;
