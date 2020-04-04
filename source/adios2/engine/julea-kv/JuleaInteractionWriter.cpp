@@ -36,90 +36,90 @@ namespace engine
  * kvName = variables/attributes
  * paramName = variableName/attributeName
  */
-void CheckIfAlreadyInKV(std::string kvName, std::string paramName,
-                        std::string nameSpace, bson_t **bsonNames,
-                        JKV *kvObjectNames, bool *IsAlreadyInKV)
-{
-    std::cout << "-- CheckIfAlreadyInKV -----" << std::endl;
-    // guint64 bytesWritten = 0;
-    // guint32 valueLen = 0;
+// void CheckIfAlreadyInKV(std::string kvName, std::string paramName,
+//                         std::string nameSpace, bson_t **bsonNames,
+//                         JKV *kvObjectNames, bool *IsAlreadyInKV)
+// {
+//     std::cout << "-- CheckIfAlreadyInKV -----" << std::endl;
+//     // guint64 bytesWritten = 0;
+//     // guint32 valueLen = 0;
 
-    // bson_iter_t bIter;
-    // // bson_t *bsonNames;
-    // void *namesBuf = NULL;
-    // auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    // auto batch = j_batch_new(semantics);
-    // auto name = strdup(paramName.c_str());
+//     // bson_iter_t bIter;
+//     // // bson_t *bsonNames;
+//     // void *namesBuf = NULL;
+//     // auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+//     // auto batch = j_batch_new(semantics);
+//     // auto name = strdup(paramName.c_str());
 
-    // j_kv_get(kvObjectNames, &namesBuf, &valueLen, batch);
-    // j_batch_execute(batch);
+//     // j_kv_get(kvObjectNames, &namesBuf, &valueLen, batch);
+//     // j_batch_execute(batch);
 
-    // std::cout << "-- namesKV: valueLen = " << valueLen << std::endl;
+//     // std::cout << "-- namesKV: valueLen = " << valueLen << std::endl;
 
-    // if (valueLen == 0)
-    // {
-    //     *bsonNames = bson_new();
-    //     // std::cout << "++ Julea Interaction Writer: new bsonNames " <<
-    //     // std::endl;
-    // }
-    // else
-    // {
-    //     *bsonNames = bson_new_from_data((const uint8_t *)namesBuf, valueLen);
-    // }
+//     // if (valueLen == 0)
+//     // {
+//     //     *bsonNames = bson_new();
+//     //     // std::cout << "++ Julea Interaction Writer: new bsonNames " <<
+//     //     // std::endl;
+//     // }
+//     // else
+//     // {
+//     //     *bsonNames = bson_new_from_data((const uint8_t *)namesBuf, valueLen);
+//     // }
 
-    // /* Check if variable name is already in kv store */
-    // if (!bson_iter_init_find(&bIter, *bsonNames, name))
-    // {
-    //     *IsAlreadyInKV = false;
-    //     // std::cout << "-- bsonNames length: " << (*bsonNames)->len <<
-    //     // std::endl;
-    // }
-    // else
-    // {
-    //     *IsAlreadyInKV = true;
-    //     std::cout << "++ Julea Interaction Writer:  " << name
-    //               << " already in kv store. " << std::endl;
-    //     // std::cout << "-- bsonNames length: " << (*bsonNames)->len <<
-    //     // std::endl;
-    // }
-    // // j_kv_unref(kvObjectNames); //FIXME: still needed afterwards in write
-    // // metadata j_kv_unref(kvObjectMetadata);
-    // j_batch_unref(batch);
-    // free(name);
-    // free(namesBuf);
-    // // j_batch_unref(batch2);
-    // // bson_destroy(bsonNames);
-    // j_semantics_unref(semantics);
-}
+//     // /* Check if variable name is already in kv store */
+//     // if (!bson_iter_init_find(&bIter, *bsonNames, name))
+//     // {
+//     //     *IsAlreadyInKV = false;
+//     //     // std::cout << "-- bsonNames length: " << (*bsonNames)->len <<
+//     //     // std::endl;
+//     // }
+//     // else
+//     // {
+//     //     *IsAlreadyInKV = true;
+//     //     std::cout << "++ Julea Interaction Writer:  " << name
+//     //               << " already in kv store. " << std::endl;
+//     //     // std::cout << "-- bsonNames length: " << (*bsonNames)->len <<
+//     //     // std::endl;
+//     // }
+//     // // j_kv_unref(kvObjectNames); //FIXME: still needed afterwards in write
+//     // // metadata j_kv_unref(kvObjectMetadata);
+//     // j_batch_unref(batch);
+//     // free(name);
+//     // free(namesBuf);
+//     // // j_batch_unref(batch2);
+//     // // bson_destroy(bsonNames);
+//     // j_semantics_unref(semantics);
+// }
 
-/*
- *   Writes the variable/attribute name into the separate names kv store which
- *   was necessary as the julea kv iterator did not return the key. Maybe fixed
- * by now.
- */
-void WriteNameToJuleaKVOld(std::string kvName, std::string paramName,
-                           std::string nameSpace, bson_t *bsonNames,
-                           JKV *kvObjectNames)
-{
-    // auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    // auto batch = j_batch_new(semantics);
-    // auto name = strdup(paramName.c_str());
+// /*
+//  *   Writes the variable/attribute name into the separate names kv store which
+//  *   was necessary as the julea kv iterator did not return the key. Maybe fixed
+//  * by now.
+//  */
+// void WriteNameToJuleaKVOld(std::string kvName, std::string paramName,
+//                            std::string nameSpace, bson_t *bsonNames,
+//                            JKV *kvObjectNames)
+// {
+//     // auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+//     // auto batch = j_batch_new(semantics);
+//     // auto name = strdup(paramName.c_str());
 
-    // std::cout << "WriteNameToJuleaKV "
-    //           << "-- bsonNames length: " << bsonNames->len << std::endl;
-    // bson_append_int32(bsonNames, name, -1, 42); // TODO: type?
-    // std::cout << "-- WriteNameToJuleaKV ------" << std::endl;
-    // std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
+//     // std::cout << "WriteNameToJuleaKV "
+//     //           << "-- bsonNames length: " << bsonNames->len << std::endl;
+//     // bson_append_int32(bsonNames, name, -1, 42); // TODO: type?
+//     // std::cout << "-- WriteNameToJuleaKV ------" << std::endl;
+//     // std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
 
-    // auto namesBuf = g_memdup(bson_get_data(bsonNames), bsonNames->len);
-    // j_kv_put(kvObjectNames, namesBuf, bsonNames->len, g_free, batch);
-    // j_batch_execute(batch);
+//     // auto namesBuf = g_memdup(bson_get_data(bsonNames), bsonNames->len);
+//     // j_kv_put(kvObjectNames, namesBuf, bsonNames->len, g_free, batch);
+//     // j_batch_execute(batch);
 
-    // free(name);
-    // j_kv_unref(kvObjectNames);
-    // j_batch_unref(batch);
-    // j_semantics_unref(semantics);
-}
+//     // free(name);
+//     // j_kv_unref(kvObjectNames);
+//     // j_batch_unref(batch);
+//     // j_semantics_unref(semantics);
+// }
 
 /**
  *  Writes name of variable/attribute to Julea KV. Also checks if name is already in kv.

@@ -13,7 +13,6 @@
 
 #include "JuleaKVReader.h"
 #include "JuleaMetadata.h"
-// #include <julea.h>
 
 namespace adios2
 {
