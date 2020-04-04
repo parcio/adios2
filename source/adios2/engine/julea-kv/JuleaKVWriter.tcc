@@ -118,21 +118,16 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 
     std::cout << "---------------------\n" << std::endl;
 
-// ParseVariableToBSON(variable, bsonMetadata);
-// ParseVarTypeToBSON(variable, data, bsonMetadata);
+    // ParseVariableToBSON(variable, bsonMetadata);
+    // ParseVarTypeToBSON(variable, data, bsonMetadata);
 
-  //FIXME: create bson storing max number of steps + steps bitmap
+    //FIXME: create bson storing max number of steps + steps bitmap
 
-    // PutVariableMetadataToJulea(variable, bsonMetadata,
-    //                                 m_Name);
-// PutVariableMetadataToJuleaSmall(variable, bsonMetadata, m_Name); //FIXME: for every step
-    // PutVariableDataToJulea(variable, data, m_Name);
-    //
-    // PutVariableDataToJuleaSmall(variable, data, m_Name);
-// PutVariableDataToJuleaSmall(variable, data, m_Name, m_CurrentStep);
+    // PutVariableMetadataToJulea(variable, bsonMetadata, m_Name); //FIXME: for every step
+    // PutVariableDataToJulea(variable, data, m_Name, m_CurrentStep);
 
-  //FIXME: store bson in variables kv
-  //
+    //FIXME: store bson in variables kv
+
     bson_destroy(bsonMetadata);
 
     if (m_Verbosity == 5)

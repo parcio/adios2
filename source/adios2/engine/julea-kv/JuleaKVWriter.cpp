@@ -548,7 +548,7 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
                   << std::endl;                                                \
         ParseAttributeToBSON(attribute, bsonMetadata);                         \
         ParseAttrTypeToBSON(attribute, bsonMetadata);                          \
-        PutAttributeMetadataToJuleaSmall(attribute, bsonMetadata, m_Name);     \
+        PutAttributeMetadataToJulea(attribute, bsonMetadata, m_Name);     \
         PutAttributeDataToJulea(attribute, m_Name);                            \
         bson_destroy(bsonMetadata);                                            \
     }
