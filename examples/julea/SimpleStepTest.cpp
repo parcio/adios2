@@ -50,7 +50,11 @@ void write_simple(std::string engine, std::string fileName)
     const size_t Nglobal = 2;
     std::vector<double> v0(Nglobal);
     std::vector<double> v1(Nglobal);
-
+    std::vector<double> v2(Nglobal);
+    std::vector<double> v3(Nglobal);
+    std::vector<double> v4(Nglobal);
+    std::vector<double> v5(Nglobal);
+    std::vector<double> v6(Nglobal);
 
     adios2::ADIOS adios(adios2::DebugON);
     adios2::IO io = adios.DeclareIO("Output");
@@ -63,17 +67,33 @@ void write_simple(std::string engine, std::string fileName)
 
     // Open file. "w" means we overwrite any existing file on disk,
     // but Advance() will append steps to the same file.
-    adios2::Engine writer =
-        io.Open(fileName, adios2::Mode::Write);
-        // io.Open("JULEA-SimpleSteps.bp", adios2::Mode::Write);
+    adios2::Engine writer = io.Open(fileName, adios2::Mode::Write);
+    // adios2::Engine writer = io.Open("SimpleSteps-APPEND-MODE", adios2::Mode::Append);
+    // io.Open("JULEA-SimpleSteps.bp", adios2::Mode::Write);
     // adios2::Engine writer = io.Open("JULEAlocalArray.bp",
     // adios2::Mode::Append);
 
-    v0[0] = -42;
-    v0[1] = 42;
-    writer.Put<double>(varV0, v0.data());
+    // v1[0] = -42;
+    // v1[1] = 42;
+    // v2[0] = -222;
+    // v2[1] = 222;
+    v3[0] = -333;
+    v3[1] = 333;
+    // v4[0] = -444;
+    // v4[1] = -444;
+    // v5[0] = -555;
+    // v5[1] = 555;
+    v6[0] = -666;
+    v6[1] = 666;
 
-    for (int step = 0; step < 3; step++)
+    // writer.Put<double>(varV0, v6.data());
+    // writer.Put<double>(varV0, v2.data());
+    writer.Put<double>(varV0, v3.data(), adios2::Mode::Sync);
+    // writer.Put<double>(varV0, v4.data());
+    // writer.Put<double>(varV0, v1.data(), adios2::Mode::Sync);
+    // writer.Put<double>(varV0, v5.data());
+
+    for (int step = 0; step < 2; step++)
     {
         std::cout
             << "\n-------------------------------------------------------------"
@@ -92,16 +112,18 @@ void write_simple(std::string engine, std::string fileName)
             // v0[i] = rank * 1.0 + step * 0.1;
             // v0[i] = 42.0 + step * 0.1;
             v0[i] = 11 * (step + 1) + step * 0.1 + i * 100;
-            v1[i] = 11 * (step + 1) + step * 0.1 + i * 100;
+            // v1[i] = 22 * (step + 1) + step * 0.1 + i * 100;
 
             std::cout << "v0[" << i << "]: " << v0[i] << std::endl;
             std::cout << "v1[" << i << "]: " << v1[i] << std::endl;
         }
+        writer.Put<double>(varV0, v6.data(), adios2::Mode::Sync);
         writer.Put<double>(varV0, v0.data());
+        // writer.Put<double>(varV0, v1.data(), adios2::Mode::Sync);
 
-        if(step == 2)
+        if (step == 2)
         {
-            writer.Put<double>(varV1, v1.data());
+            // writer.Put<double>(varV1, v1.data());
         }
 
         std::cout << "\n---------- Application: EndStep "
@@ -152,12 +174,10 @@ void write_complex(std::string engine, std::string fileName)
 
     // Open file. "w" means we overwrite any existing file on disk,
     // but Advance() will append steps to the same file.
-    adios2::Engine writer =
-        io.Open(fileName, adios2::Mode::Write);
-        // io.Open("JULEA-SimpleSteps.bp", adios2::Mode::Write);
+    adios2::Engine writer = io.Open(fileName, adios2::Mode::Write);
+    // io.Open("JULEA-SimpleSteps.bp", adios2::Mode::Write);
     // adios2::Engine writer = io.Open("JULEAlocalArray.bp",
     // adios2::Mode::Append);
-
 
     v4[0] = -666;
     v4[1] = 666;
@@ -165,7 +185,9 @@ void write_complex(std::string engine, std::string fileName)
     v5[0] = -123;
     v5[1] = 123;
     writer.Put<double>(varV4, v4.data());
+    writer.Put<double>(varV5, v4.data());
     writer.Put<double>(varV5, v5.data(), adios2::Mode::Sync);
+    writer.Put<double>(varV5, v4.data());
 
     for (int step = 0; step < 3; step++)
     {
@@ -198,12 +220,13 @@ void write_complex(std::string engine, std::string fileName)
             std::cout << "v5[" << i << "]: " << v5[i] << std::endl;
         }
         writer.Put<double>(varV0, v0.data());
-        writer.Put<double>(varV2, v3.data()); //test what happens when writing v2 more than once
+        writer.Put<double>(
+            varV2,
+            v3.data()); // test what happens when writing v2 more than once
         writer.Put<double>(varV2, v2.data());
         writer.Put<double>(varV5, v3.data());
 
-
-        if(step == 2)
+        if (step == 2)
         {
             writer.Put<double>(varV1, v1.data());
             writer.Put<double>(varV4, v1.data());
@@ -235,12 +258,10 @@ void read(std::string engine, std::string fileName)
     io.SetEngine(engine);
     // io.SetEngine("bp3");
 
-
     // Open file. "w" means we overwrite any existing file on disk,
     // but Advance() will append steps to the same file.
-    adios2::Engine reader =
-        io.Open(fileName, adios2::Mode::Read);
-        // io.Open("JULEA-SimpleSteps.bp", adios2::Mode::Read);
+    adios2::Engine reader = io.Open(fileName, adios2::Mode::Read);
+    // io.Open("JULEA-SimpleSteps.bp", adios2::Mode::Read);
     // adios2::Engine writer = io.Open("JULEAlocalArray.bp",
     // adios2::Mode::Append);
 
@@ -262,8 +283,9 @@ void read(std::string engine, std::string fileName)
         reader.Get<double>(varV0, value, adios2::Mode::Deferred);
         reader.EndStep();
 
-        std::cout << "step: " << step << std::endl << "v[0]: " << value[0]
-                  << std::endl << "v[1]: " << value[1] << std::endl;
+        std::cout << "step: " << step << std::endl
+                  << "v[0]: " << value[0] << std::endl
+                  << "v[1]: " << value[1] << std::endl;
     }
 
     varV0.SetStepSelection(adios2::Box<std::size_t>(0, 3));
@@ -292,6 +314,7 @@ int main(int argc, char *argv[])
     try
     {
         // write_complex("julea-kv", "SimpleSteps.jv");
+        // write_complex("bp3", "SimpleSteps.bp");
         write_simple("bp3", "SimpleSteps.bp");
         write_simple("julea-kv", "SimpleSteps.jv");
         // write("julea-kv", "SimpleSteps.bp");

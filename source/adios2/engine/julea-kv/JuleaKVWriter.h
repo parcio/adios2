@@ -57,6 +57,20 @@ public:
     Flush(const int transportIndex = -1) final; // TODO: transportindex needed?
     // void Flush();
 
+    /** Step related metadata for a variable:  */
+    struct StepMetadata
+    {
+        size_t numberSteps = 0;
+        size_t *blocks = nullptr;
+    };
+
+    template <size_t N>
+    struct StepMetadata2
+    {
+        size_t numberSteps = 0;
+        size_t blocks[N];
+    };
+
 private:
     format::BP3Serializer m_BPSerializer;
 

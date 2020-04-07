@@ -109,23 +109,24 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
     auto itVariableWritten = m_WrittenVariableNames.find(variable.m_Name);
     if (itVariableWritten == m_WrittenVariableNames.end())
     {
-        PutVariableMetadataToJulea(variable, bsonMetadata, m_Name, m_CurrentStep, false); //FIXME: for
+        PutVariableMetadataToJulea(variable, bsonMetadata, m_Name,
+                                   m_CurrentStep, false);
         m_WrittenVariableNames.insert(variable.m_Name);
     }
     else
     {
-        PutVariableMetadataToJulea(variable, bsonMetadata, m_Name, m_CurrentStep, true); //FIXME: for
+        PutVariableMetadataToJulea(variable, bsonMetadata, m_Name,
+                                   m_CurrentStep, true);
     }
 
     std::cout << "Variable names written to the names kv: " << std::endl;
-    for (auto it=m_WrittenVariableNames.begin(); it!=m_WrittenVariableNames.end(); ++it)
+    for (auto it = m_WrittenVariableNames.begin();
+         it != m_WrittenVariableNames.end(); ++it)
     {
         std::cout << ' ' << *it << std::endl;
     }
 
     // every step PutVariableDataToJulea(variable, data, m_Name, m_CurrentStep);
-
-
 
     // FIXME: store bson in variables kv
     bson_destroy(bsonMetadata);
@@ -195,6 +196,7 @@ void JuleaKVWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
 
     std::cout << "variable.m_Data: " << variable.m_Data << std::endl;
     std::cout << "data[0]: " << data[0] << std::endl;
+    std::cout << "data[1]: " << data[1] << std::endl;
 
     if (variable.m_SingleValue)
     {
@@ -208,9 +210,11 @@ void JuleaKVWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
         variable.SetBlockInfo(data, CurrentStep());
 
     std::cout << "variable.m_BlocksInfo[0].Data: "
-              << variable.m_BlocksInfo[0].Data << std::endl;
-    std::cout << "blockInfo.Data: " << blockInfo.Data << std::endl;
-    std::cout << "blockInfo.Data[0]: " << blockInfo.Data[0] << std::endl;
+              << variable.m_BlocksInfo[0].Data[0] << std::endl;
+    std::cout << "variable.m_BlocksInfo[0].Data: "
+              << variable.m_BlocksInfo[0].Data[1] << std::endl;
+    // std::cout << "blockInfo.Data: " << blockInfo.Data << std::endl;
+    // std::cout << "blockInfo.Data[0]: " << blockInfo.Data[0] << std::endl;
     if (m_Verbosity == 5)
     {
         std::cout << "Julea Writer " << m_WriterRank << "     PutDeferred("
@@ -251,12 +255,22 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
         //           << variable.m_AvailableStepsCount << std::endl;
         // std::cout << "variable.m_StepsStart: " << variable.m_StepsStart
         //           << std::endl;
-        // std::cout << "variable.m_StepsCount: " << variable.m_StepsCount
-        //           << std::endl;
+        std::cout << "variable.m_StepsCount: " << variable.m_StepsCount
+                  << std::endl;
+        // std::cout << "variable.m_StepsCount: " <<
+        // variable.m_AvailableStepBlockIndexOffsets[0] << std::endl;
+
+        std::cout << "Map size = "
+                  << variable.m_AvailableStepBlockIndexOffsets.size()
+                  << std::endl;
+
+        variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].push_back(
+            variable.m_BlocksInfo.size());
 
         // PutSyncCommon(variable, variable.m_BlocksInfo[i]);
-        PutSyncCommon(variable, variable.m_BlocksInfo[i].Data);
+        // PutSyncCommon(variable, variable.m_BlocksInfo[i].Data);
 
+        /** if there are no SpanBlocks simply put every variable */
         auto itSpanBlock = variable.m_BlocksSpan.find(i);
         if (itSpanBlock == variable.m_BlocksSpan.end())
         {
@@ -266,13 +280,24 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
         // {
         //     m_BP3Serializer.PutSpanMetadata(variable, itSpanBlock->second);
         // }
-        auto &position = m_BPSerializer.m_Data.m_Position;
-        auto &absolutePosition = m_BPSerializer.m_Data.m_AbsolutePosition;
 
-        std::cout << "position: " << position << std::endl;
-        std::cout << "absolutePosition: " << absolutePosition << std::endl;
-        std::cout << "Mode: " << m_OpenMode << std::endl;
+        std::cout << "Map size = "
+                  << variable.m_AvailableStepBlockIndexOffsets.size()
+                  << std::endl;
+        // DEBUG:
+        if (variable.m_AvailableStepBlockIndexOffsets.size() > 0)
+        {
+            auto it = variable.m_AvailableStepBlockIndexOffsets.begin();
+        }
+        // std::cout << "variable.m_StepsCount: " << it->second << std::endl;
+        // auto &position = m_BPSerializer.m_Data.m_Position;
+        // auto &absolutePosition = m_BPSerializer.m_Data.m_AbsolutePosition;
+
+        // std::cout << "position: " << position << std::endl;
+        // std::cout << "absolutePosition: " << absolutePosition << std::endl;
+        // std::cout << "Mode: " << m_OpenMode << std::endl;
     }
+    std::cout << "BlockInfo.size = " << variable.m_BlocksInfo.size();
 
     variable.m_BlocksInfo.clear();
     variable.m_BlocksSpan.clear();

@@ -407,6 +407,20 @@ void JuleaKVWriter::DoFlush(const bool isFinal, const int transportIndex)
     }
 }
 
+// void JuleaKVWriter::GetStepMetadata(variable, )
+// {
+//     struct StepMetadata *md;
+//     md.numberSteps = variable.m_AvailableStepBlockIndexOffsets.size();
+//     size_t blocks[m_CurrentStep+1];
+//     for (uint i = 0; i <= m_CurrentStep; i++)
+//     {
+//         //only one element in vector -> number of blocks for this step
+//         blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].at(0);
+//         std::cout << "i: " << i << "  blocks: " << blocks[i] << std::endl;
+//     }
+//     size_t len = (currStep+1) * sizeof(size_t);
+// }
+
 /**
  * TODO
  * [JuleaWriter::WriteData description]
