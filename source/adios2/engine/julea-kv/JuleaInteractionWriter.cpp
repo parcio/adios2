@@ -146,6 +146,51 @@ void WriteMetadataToJuleaKV(std::string kvName, std::string paramName,
 }
 
 
+//FIXME: bson for each block
+template <class T>
+void WriteBlockMetadataToJuleaKV(Variable<T> &variable, const std::string nameSpace, bson_t *bsonMetaData,
+                            size_t currStep)
+{
+    // void *namesBuf = NULL;
+    void *metaDataBuf = NULL;
+
+    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
+
+    std::cout << "nameSpace " << nameSpace << std::endl;
+    std::string stepBlockID;
+
+    auto stringMetadataKV =
+        g_strdup_printf("%s_%s", nameSpace.c_str(), "variableblocks");
+    // g_strdup_printf("%s_%s", kvName.c_str(), nameSpace.c_str());
+    std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
+
+    size_t blockCount = variable.m_AvailableStepBlockIndexOffsets[currStep].at(0);
+
+    //probably this iterating is done a few layers above! //FIXME
+    for (uint i = 0; i < blockCount ; i++)
+    {
+        stepBlockID = g_strdup_printf("%d_%d", currStep,i);
+        // auto kvObjectMetadata = j_kv_new(stringMetadataKV, stepBlockID.c_str());
+        // metaDataBuf = g_memdup(bson_get_data(bsonMetaData), bsonMetaData->len);
+        // j_kv_put(kvObjectMetadata, metaDataBuf, bsonMetaData->len, g_free,
+        //      batch); // FIXME: block BSON
+
+    }
+        auto kvObjectMetadata = j_kv_new(stringMetadataKV, stepBlockID.c_str());
+        metaDataBuf = g_memdup(bson_get_data(bsonMetaData), bsonMetaData->len);
+        j_kv_put(kvObjectMetadata, metaDataBuf, bsonMetaData->len, g_free,
+             batch); // FIXME: block BSON
+    j_batch_execute(batch);
+
+    // free(metaDataBuf);
+    // free(namesBuf);
+    g_free(stringMetadataKV);
+    j_kv_unref(kvObjectMetadata);
+    j_batch_unref(batch);
+    j_semantics_unref(semantics);
+}
+
 
 template <class T>
 void WriteVarMetadataToJuleaKV(Variable<T> &variable,
@@ -364,6 +409,7 @@ void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
     // bsonMetaData, currStep);
 
     WriteVarMetadataToJuleaKV(variable, nameSpace.c_str(), currStep);
+    WriteBlockMetadataToJuleaKV(variable,nameSpace.c_str(), bsonMetaData, currStep); //FIXME bson
     // Test(variable, nameSpace.c_str(), currStep);
 
     // WriteBlocksMetadataToJuleaKV("blocks", nameSpace.c_str(), bsonMetaData,

@@ -274,7 +274,7 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
         auto itSpanBlock = variable.m_BlocksSpan.find(i);
         if (itSpanBlock == variable.m_BlocksSpan.end())
         {
-            PutSyncCommon(variable, variable.m_BlocksInfo[i]);
+            PutSyncCommon(variable, variable.m_BlocksInfo[i]); //FIXME: check BSON stuff
         }
         // else
         // {
