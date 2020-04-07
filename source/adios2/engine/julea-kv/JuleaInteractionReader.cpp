@@ -57,10 +57,9 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
-    auto stringDataObject =
-        g_strdup_printf("%s_variables", nameSpace.c_str());
+    auto stringDataObject = g_strdup_printf("%s_variables", nameSpace.c_str());
     std::cout << "stringDataObject: " << stringDataObject << std::endl;
-        // g_strdup_printf("%s_variables_%s", nameSpace.c_str(), varName);
+    // g_strdup_printf("%s_variables_%s", nameSpace.c_str(), varName);
     auto dataObject = j_object_new(stringDataObject, varName);
 
     std::cout << "-- Datasize = " << dataSize << std::endl;
@@ -271,9 +270,8 @@ void GetAttributeDataFromJulea(const std::string attrName, T *data,
     auto batch = j_batch_new(semantics);
     // auto batch = j_batch_new(m_JuleaSemantics);
 
-    auto stringDataObject = g_strdup_printf(
-        "%s_attributes", nameSpace.c_str());
-        // "%s_attributes_%s", nameSpace.c_str(), attrName.c_str());
+    auto stringDataObject = g_strdup_printf("%s_attributes", nameSpace.c_str());
+    // "%s_attributes_%s", nameSpace.c_str(), attrName.c_str());
     auto dataObject = j_object_new(stringDataObject, attrName.c_str());
 
     // std::cout << "-- stringDataObject: " << stringDataObject << std::endl;
@@ -312,9 +310,8 @@ void GetAttributeStringDataFromJulea(const std::string attrName, char *data,
     auto batch = j_batch_new(semantics);
     // void *dataBuf;
 
-    auto stringDataObject = g_strdup_printf(
-        "%s_attributes", nameSpace.c_str());
-        // "%s_attributes_%s", nameSpace.c_str(), attrName.c_str());
+    auto stringDataObject = g_strdup_printf("%s_attributes", nameSpace.c_str());
+    // "%s_attributes_%s", nameSpace.c_str(), attrName.c_str());
     auto dataObject = j_object_new(stringDataObject, attrName.c_str());
 
     // std::cout << "-- stringDataObject: " << stringDataObject << std::endl;

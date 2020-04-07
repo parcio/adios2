@@ -24,12 +24,12 @@ namespace engine
 /* Variable Functions */
 template <class T>
 void PutVariableDataToJulea(Variable<T> &variable, const T *data,
-                                 const std::string nameSpace, size_t currentStep);
+                            const std::string nameSpace, size_t currentStep);
 
 template <class T>
-void PutVariableMetadataToJulea(Variable<T> &variable,
-                                     bson_t *bsonMetadata,
-                                     const std::string nameSpace);
+void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetadata,
+                                const std::string nameSpace,
+                                size_t currentStep, bool isNameWritten);
 
 /* Attribute Functions */
 template <class T>
@@ -49,12 +49,13 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
                                       const std::string nameSpace);
 
 #define declare_template_instantiation(T)                                      \
-    extern template void PutVariableDataToJulea(                          \
-        Variable<T> &variable, const T *data, const std::string nameSpace, size_t currentStep);    \
-    extern template void PutVariableMetadataToJulea(                      \
+    extern template void PutVariableDataToJulea(                               \
+        Variable<T> &variable, const T *data, const std::string nameSpace,     \
+        size_t currentStep);                                                   \
+    extern template void PutVariableMetadataToJulea(                           \
         Variable<T> &variable, bson_t *bsonMetadata,                           \
-        const std::string nameSpace);                                          \
-                                                                              \
+        const std::string nameSpace, size_t currentStep, bool isNameWritten);                      \
+                                                                               \
     extern template void PutAttributeDataToJulea(Attribute<T> &attribute,      \
                                                  const std::string nameSpace); \
     extern template void PutAttributeDataToJuleaSmall(                         \

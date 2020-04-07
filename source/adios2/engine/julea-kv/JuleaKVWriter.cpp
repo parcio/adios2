@@ -29,8 +29,9 @@ namespace engine
 {
 
 JuleaKVWriter::JuleaKVWriter(IO &io, const std::string &name, const Mode mode,
-                            helper::Comm comm)
-: Engine("JuleaKVWriter", io, name, mode, std::move(comm)), m_BPSerializer(m_Comm,m_DebugMode)
+                             helper::Comm comm)
+: Engine("JuleaKVWriter", io, name, mode, std::move(comm)),
+  m_BPSerializer(m_Comm, m_DebugMode)
 // : Engine("JuleaKVWriter", io, name, mode, mpiComm), m_Julea(io.m_DebugMode)
 {
     // std::cout << "JULEA ENGINE: Constructor" << std::endl;
@@ -181,7 +182,7 @@ void JuleaKVWriter::PerformPuts()
     {                                                                          \
         Variable<T> &variable = FindVariable<T>(                               \
             variableName, "in call to PerformPuts, EndStep or Close");         \
-        std::cout << "ATTENTION" << std::endl;\
+        std::cout << "ATTENTION" << std::endl;                                 \
                                                                                \
         PerformPutCommon(variable);                                            \
     }
@@ -548,7 +549,7 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
                   << std::endl;                                                \
         ParseAttributeToBSON(attribute, bsonMetadata);                         \
         ParseAttrTypeToBSON(attribute, bsonMetadata);                          \
-        PutAttributeMetadataToJulea(attribute, bsonMetadata, m_Name);     \
+        PutAttributeMetadataToJulea(attribute, bsonMetadata, m_Name);          \
         PutAttributeDataToJulea(attribute, m_Name);                            \
         bson_destroy(bsonMetadata);                                            \
     }

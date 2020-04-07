@@ -18,8 +18,8 @@
 #include "adios2/helper/adiosFunctions.h"
 #include "adios2/toolkit/format/bp/BPBase.h"
 
-#include "adios2/toolkit/format/buffer/heap/BufferSTL.h"
 #include "adios2/toolkit/format/bp/bp3/BP3Serializer.h"
+#include "adios2/toolkit/format/buffer/heap/BufferSTL.h"
 #include "adios2/toolkit/transportman/TransportMan.h" //transport::TransportsMan
 
 #include <complex.h>

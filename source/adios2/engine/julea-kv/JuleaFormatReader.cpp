@@ -492,7 +492,7 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
             // if (variable.GetType() == INT32)
             // {
             // variable.m_Min = bson_iter_int32(&b_iter);
-            variable.m_Min = 42; //FIXME
+            variable.m_Min = 42; // FIXME
             // }
             // else if (variable.m_var_type == INT64)
             // {

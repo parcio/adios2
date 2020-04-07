@@ -14,8 +14,8 @@
 #include "JuleaMetadata.h"
 
 #include "adios2/core/Engine.h"
-#include "adios2/toolkit/format/buffer/heap/BufferSTL.h"
 #include "adios2/toolkit/format/bp/bp3/BP3Serializer.h"
+#include "adios2/toolkit/format/buffer/heap/BufferSTL.h"
 #include "adios2/toolkit/interop/julea/JuleaSerializer.h"
 #include "adios2/toolkit/transportman/TransportMan.h" //transport::TransportsMan
 
@@ -106,6 +106,9 @@ private:
     /** tracks Put and Get variables in deferred mode */
     std::set<std::string> m_DeferredVariables;
 
+    /** tracks all variables written (not BP, new for JULEA) */
+    std::set<std::string> m_WrittenVariableNames;
+
     /** tracks the overall size of deferred variables */
     size_t m_DeferredVariablesDataSize = 0; // TODO: needed?
 
@@ -121,7 +124,7 @@ private:
     format::BufferSTL m_Data;
 
     /** contains collective metadata buffer, only used by rank 0 */
-    format::BufferSTL m_Metadata; //FIXME: needed? useful for julea?
+    format::BufferSTL m_Metadata; // FIXME: needed? useful for julea?
 
     // DESIGN
     /** Manage BP data files Transports from IO AddTransport */

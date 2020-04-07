@@ -73,15 +73,61 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
 
     std::cout << "\n______________PutSync BlockInfo_____________________"
               << std::endl;
+    std::cout << "Julea Writer " << m_WriterRank
+              << " Reached Get Sync Common (T, T)" << std::endl;
+    std::cout << "Julea Writer " << m_WriterRank << " Namespace: " << m_Name
+              << std::endl;
+    std::cout << "Julea Writer " << m_WriterRank
+              << " Variable name: " << variable.m_Name << std::endl;
+
     auto bsonMetadata = bson_new();
     SetMinMax(variable, blockInfo.Data);
 
-    //FIXME
-    // ParseVariableToBSON(variable, bsonMetadata);
-    // ParseVarTypeToBSON(variable, blockInfo.Data, bsonMetadata);
-    // PutVariableMetadataToJuleaSmall(variable, bsonMetadata, m_Name);
-    // PutVariableDataToJuleaSmall(variable, blockInfo.Data, m_Name);
-    // TODO: free memory
+    std::cout << "DEBUG: CurrentStep" << m_CurrentStep << std::endl;
+
+    // std::cout << "variable.m_BlocksInfo.Step: " <<
+    // variable.m_BlocksInfo[0].Step << std::endl; std::cout <<
+    // "variable.m_BlocksInfo.StepsStart: " <<
+    // variable.m_BlocksInfo[0].StepsStart << std::endl; std::cout <<
+    // "variable.m_BlocksInfo.StepsCount: " <<
+    // variable.m_BlocksInfo[0].StepsCount << std::endl; std::cout <<
+    // "variable.m_AvailableStepsStart: " << variable.m_AvailableStepsStart <<
+    // std::endl; std::cout << "variable.m_AvailableStepsCount: " <<
+    // variable.m_AvailableStepsCount << std::endl; std::cout <<
+    // "variable.m_StepsStart: " << variable.m_StepsStart << std::endl;
+    // std::cout << "variable.m_StepsCount: " << variable.m_StepsCount <<
+    // std::endl;
+
+    std::cout << "---------------------\n" << std::endl;
+
+    ParseVariableToBSON(variable, bsonMetadata);
+    ParseVarTypeToBSON(variable, blockInfo.Data, bsonMetadata);
+
+    // FIXME: create bson storing max number of steps + steps bitmap
+
+    // check whether variable name is already in variable_names kv
+    auto itVariableWritten = m_WrittenVariableNames.find(variable.m_Name);
+    if (itVariableWritten == m_WrittenVariableNames.end())
+    {
+        PutVariableMetadataToJulea(variable, bsonMetadata, m_Name, m_CurrentStep, false); //FIXME: for
+        m_WrittenVariableNames.insert(variable.m_Name);
+    }
+    else
+    {
+        PutVariableMetadataToJulea(variable, bsonMetadata, m_Name, m_CurrentStep, true); //FIXME: for
+    }
+
+    std::cout << "Variable names written to the names kv: " << std::endl;
+    for (auto it=m_WrittenVariableNames.begin(); it!=m_WrittenVariableNames.end(); ++it)
+    {
+        std::cout << ' ' << *it << std::endl;
+    }
+
+    // every step PutVariableDataToJulea(variable, data, m_Name, m_CurrentStep);
+
+
+
+    // FIXME: store bson in variables kv
     bson_destroy(bsonMetadata);
 
     if (m_Verbosity == 5)
@@ -107,26 +153,30 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 
     std::cout << "DEBUG: CurrentStep" << m_CurrentStep << std::endl;
 
-
-    std::cout << "variable.m_BlocksInfo.Step: " << variable.m_BlocksInfo[0].Step << std::endl;
-    std::cout << "variable.m_BlocksInfo.StepsStart: " << variable.m_BlocksInfo[0].StepsStart << std::endl;
-    std::cout << "variable.m_BlocksInfo.StepsCount: " << variable.m_BlocksInfo[0].StepsCount << std::endl;
-    std::cout << "variable.m_AvailableStepsStart: " << variable.m_AvailableStepsStart << std::endl;
-    std::cout << "variable.m_AvailableStepsCount: " << variable.m_AvailableStepsCount << std::endl;
-    std::cout << "variable.m_StepsStart: " << variable.m_StepsStart << std::endl;
-    std::cout << "variable.m_StepsCount: " << variable.m_StepsCount << std::endl;
+    // std::cout << "variable.m_BlocksInfo.Step: " <<
+    // variable.m_BlocksInfo[0].Step << std::endl; std::cout <<
+    // "variable.m_BlocksInfo.StepsStart: " <<
+    // variable.m_BlocksInfo[0].StepsStart << std::endl; std::cout <<
+    // "variable.m_BlocksInfo.StepsCount: " <<
+    // variable.m_BlocksInfo[0].StepsCount << std::endl; std::cout <<
+    // "variable.m_AvailableStepsStart: " << variable.m_AvailableStepsStart <<
+    // std::endl; std::cout << "variable.m_AvailableStepsCount: " <<
+    // variable.m_AvailableStepsCount << std::endl; std::cout <<
+    // "variable.m_StepsStart: " << variable.m_StepsStart << std::endl;
+    // std::cout << "variable.m_StepsCount: " << variable.m_StepsCount <<
+    // std::endl;
 
     std::cout << "---------------------\n" << std::endl;
 
     // ParseVariableToBSON(variable, bsonMetadata);
     // ParseVarTypeToBSON(variable, data, bsonMetadata);
 
-    //FIXME: create bson storing max number of steps + steps bitmap
+    // FIXME: create bson storing max number of steps + steps bitmap
 
-    // PutVariableMetadataToJulea(variable, bsonMetadata, m_Name); //FIXME: for every step
-    // PutVariableDataToJulea(variable, data, m_Name, m_CurrentStep);
+    // PutVariableMetadataToJulea(variable, bsonMetadata, m_Name); //FIXME: for
+    // every step PutVariableDataToJulea(variable, data, m_Name, m_CurrentStep);
 
-    //FIXME: store bson in variables kv
+    // FIXME: store bson in variables kv
 
     bson_destroy(bsonMetadata);
 
@@ -184,16 +234,25 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
               << std::endl;
     for (size_t i = 0; i < variable.m_BlocksInfo.size(); ++i)
     {
-        std::cout << "------- TEST for different info block sizes ----------------" << std::endl;
+        std::cout
+            << "------- TEST for different info block sizes ----------------"
+            << std::endl;
         std::cout << "variable:" << variable.m_Name << std::endl;
         std::cout << "i = " << i << std::endl;
-        std::cout << "variable.m_BlocksInfo.Step: " << variable.m_BlocksInfo[i].Step << std::endl;
-        std::cout << "variable.m_BlocksInfo.StepsStart " << i << "= " << variable.m_BlocksInfo[i].StepsStart << std::endl;
-        std::cout << "variable.m_BlocksInfo.StepsCount " << i << "= " << variable.m_BlocksInfo[i].StepsCount << std::endl;
-        std::cout << "variable.m_AvailableStepsStart: " << i << "= " << variable.m_AvailableStepsStart << std::endl;
-        std::cout << "variable.m_AvailableStepsCount: " << variable.m_AvailableStepsCount << std::endl;
-        std::cout << "variable.m_StepsStart: " << variable.m_StepsStart << std::endl;
-        std::cout << "variable.m_StepsCount: " << variable.m_StepsCount << std::endl;
+        // std::cout << "variable.m_BlocksInfo.Step: "
+        //           << variable.m_BlocksInfo[i].Step << std::endl;
+        // std::cout << "variable.m_BlocksInfo.StepsStart: "
+        //           << variable.m_BlocksInfo[i].StepsStart << std::endl;
+        // std::cout << "variable.m_BlocksInfo.StepsCount: "
+        //           << variable.m_BlocksInfo[i].StepsCount << std::endl;
+        // std::cout << "variable.m_AvailableStepsStart: "
+        //           << variable.m_AvailableStepsStart << std::endl;
+        // std::cout << "variable.m_AvailableStepsCount: "
+        //           << variable.m_AvailableStepsCount << std::endl;
+        // std::cout << "variable.m_StepsStart: " << variable.m_StepsStart
+        //           << std::endl;
+        // std::cout << "variable.m_StepsCount: " << variable.m_StepsCount
+        //           << std::endl;
 
         // PutSyncCommon(variable, variable.m_BlocksInfo[i]);
         PutSyncCommon(variable, variable.m_BlocksInfo[i].Data);
@@ -212,14 +271,6 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
 
         std::cout << "position: " << position << std::endl;
         std::cout << "absolutePosition: " << absolutePosition << std::endl;
-
-        std::cout << "variable.m_BlocksInfo.Step: " << variable.m_BlocksInfo[i].Step << std::endl;
-        std::cout << "variable.m_BlocksInfo.StepsStart " << i << "= " << variable.m_BlocksInfo[i].StepsStart << std::endl;
-        std::cout << "variable.m_BlocksInfo.StepsCount " << i << "= " << variable.m_BlocksInfo[i].StepsCount << std::endl;
-        std::cout << "variable.m_AvailableStepsStart: " << i << "= " << variable.m_AvailableStepsStart << std::endl;
-        std::cout << "variable.m_AvailableStepsCount: " << variable.m_AvailableStepsCount << std::endl;
-        std::cout << "variable.m_StepsStart: " << variable.m_StepsStart << std::endl;
-        std::cout << "variable.m_StepsCount: " << variable.m_StepsCount << std::endl;
         std::cout << "Mode: " << m_OpenMode << std::endl;
     }
 
