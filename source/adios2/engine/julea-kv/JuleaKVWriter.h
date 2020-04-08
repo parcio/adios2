@@ -265,23 +265,16 @@ private:
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
 
-    /**
-     * TODO: why has skeleton engine Info struct as param when this is only used
-     * by inline engine? Common function for primitive PutSync, puts variables
-     * in buffer
-     * @param variable
-     * @param values
-     */
     template <class T>
     void PutSyncCommon(Variable<T> &variable,
                        const typename Variable<T>::Info &blockInfo);
 
-    /**
-     * Probably this is more useful than the version with the Info struct as
-     * param
-     */
+
     template <class T>
     void PutSyncCommon(Variable<T> &variable, const T *values);
+
+        template <class T>
+    void PutSyncToJulea(Variable<T> &variable, const T *values);
 
     template <class T>
     void PutDeferredCommon(Variable<T> &variable, const T *values);
