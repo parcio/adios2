@@ -102,26 +102,27 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
     // ParseVariableToBSON(variable, bsonMetadata);
     // ParseVarTypeToBSON(variable, blockInfo.Data, bsonMetadata);
 
-
-
     // FIXME: implement
-    md_buffer = SetMetadata(variable, buffer_len);
-    // auto metadata = SetMetadata(variable);
-    // auto characteristics = ParseVariableToCharacteristics(variable);
+    md_buffer =
+        SetMetadata(variable, buffer_len, m_CurrentStep, m_CurrentBlockID);
 
     // check whether variable name is already in variable_names kv
     auto itVariableWritten = m_WrittenVariableNames.find(variable.m_Name);
     if (itVariableWritten == m_WrittenVariableNames.end())
     {
         // PutVariableMetadataBSONToJulea(variable, bsonMetadata, m_Name,
-        //                                m_CurrentStep, m_CurrentBlockID, false);
-        PutVariableMetadataToJulea(variable, md_buffer, buffer_len, m_Name, m_CurrentStep, m_CurrentBlockID, false);
+        //                                m_CurrentStep, m_CurrentBlockID,
+        //                                false);
+        PutVariableMetadataToJulea(variable, md_buffer, buffer_len, m_Name,
+                                   m_CurrentStep, m_CurrentBlockID, false);
         m_WrittenVariableNames.insert(variable.m_Name);
     }
     else
     {
-        PutVariableMetadataBSONToJulea(variable, bsonMetadata, m_Name,
-                                       m_CurrentStep, m_CurrentBlockID, true);
+        // PutVariableMetadataBSONToJulea(variable, bsonMetadata, m_Name,
+        // m_CurrentStep, m_CurrentBlockID, true);
+        PutVariableMetadataToJulea(variable, md_buffer, buffer_len, m_Name,
+                                   m_CurrentStep, m_CurrentBlockID, true);
     }
 
     std::cout << "Variable names written to the names kv: " << std::endl;

@@ -91,29 +91,39 @@ public:
         Dims MemoryStart;
         Dims MemoryCount;
 
-        std::vector<Operation> Operations;
-        std::vector<T> Values;
-        std::vector<T> MinMaxs; // sub-block level min-max
+        // std::vector<core::IO::Operation> Operations;
+        std::vector<core::VariableBase::Operation> Operations;
+        // std::vector<T> Values;
+        // std::vector<T> MinMaxs; // sub-block level min-max
 
-        size_t Step = 0;
+        // size_t Step = 0; // TODO: currentStep? variable has no Step itself
         size_t StepsStart = 0;
         size_t StepsCount = 0;
         size_t BlockID = 0;
 
-        T *Data = nullptr;
+        size_t CurrentStep = 0; // Julea Engine
+        size_t BlockNumber = 0; // Julea Engine
+
+        // T *Data = nullptr;
         T Min = T();
         T Max = T();
-        T Value = T();
+        // T Value = T();   //TODO: not set in variable?!
 
-        int WriterID = 0;
+        // int WriterID = 0; //TODO: what exactly is this and when used?
 
-        bool IsValue = false;
-        bool IsReverseDims = false;
         /** Global array was written as Joined array, so read accordingly */
-        bool m_ReadAsJoined = false;
+        bool IsReadAsJoined = false;
 
         /** Global array was written as Local value, so read accordingly */
-        bool m_ReadAsLocalValue = false;
+        bool IsReadAsLocalValue = false;
+
+        /** For read mode, false: streaming */
+        bool IsRandomAccess = true;
+
+        /** is single value or array */
+        bool IsValue = false;
+          /** if reader and writer have different ordering (column vs row major) */
+        bool IsReverseDimensions = false;
     };
 
     // /** Fields for statistics characteristic ID = 10 */
