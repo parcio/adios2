@@ -28,7 +28,6 @@ namespace core
 namespace engine
 {
 
-
 /** -------------------------------------------------------------------------**/
 /** -------------- TESTING GENERIC FUNCTIONS --------------------------------**/
 /** -------------------------------------------------------------------------**/
@@ -141,36 +140,40 @@ void WriteMetadataToJuleaKV(std::string kvName, std::string paramName,
     j_semantics_unref(semantics);
 }
 
-// FIXME: pass stats and characteristics along
-template <class T>
-void WriteBlockMetadataToJuleaKV(Variable<T> &variable,
-                                 const std::string nameSpace,
-                                 bson_t *bsonMetaData, size_t currStep,
-                                 size_t blockID)
+// template <class T>
+// void WriteBlockMetadataToJuleaKV(Variable<T> &variable,
+//                                  const std::string nameSpace,
+//                                  JuleaKVWriter::Metadata<T> &md,
+//                                  size_t currStep, size_t blockID)
+void WriteBlockMetadataToJuleaKV(const std::string nameSpace,
+                                 gpointer &md, guint32 valueLen,
+                                 const std::string stepBlockID)
 {
     // void *namesBuf = NULL;
-    void *metaDataBuf = NULL;
+    // guint32 valueLen = 0;
+    // void *metaDataBuf = NULL;
 
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
     std::cout << "nameSpace " << nameSpace << std::endl;
-    std::string stepBlockID;
+    // std::string stepBlockID;
 
     auto stringMetadataKV =
         g_strdup_printf("%s_%s", nameSpace.c_str(), "variableblocks");
     std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
 
-    stepBlockID = g_strdup_printf("%d_%d", currStep, blockID);
-    std::cout << "stepBlockID: " << stepBlockID << std::endl;
+    // stepBlockID = g_strdup_printf("%d_%d", currStep, blockID);
+    // std::cout << "stepBlockID: " << stepBlockID << std::endl;
 
     auto kvObjectMetadata = j_kv_new(stringMetadataKV, stepBlockID.c_str());
+    // valueLen = sizeof(md);
 
     // FIXME: store structs
-    // metaDataBuf = g_memdup(bson_get_data(bsonMetaData), bsonMetaData->len);
-    // j_kv_put(kvObjectMetadata, metaDataBuf, bsonMetaData->len, g_free,
-    // batch);
-    // j_batch_execute(batch);
+    // metaDataBuf = g_memdup(md, valueLen);
+    j_kv_put(kvObjectMetadata, md, valueLen, g_free, batch);
+    // j_kv_put(kvObjectMetadata, (gpointer *) metaDataBuf, valueLen, g_free, batch);
+    j_batch_execute(batch);
 
     // free(metaDataBuf);
     // free(namesBuf);
@@ -378,10 +381,40 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
     // bson_destroy(bsonNames);
 }
 
+//FIXME: params for writeblockmetadata!
+// template <class T>
+// void PutVariableMetadataToJulea(Variable<T> &variable,
+//                                 JuleaKVWriter::Metadata<T> &md,
+//                                 const std::string nameSpace, size_t currStep,
+//                                 size_t blockID, bool isNameWritten)
 template <class T>
-void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
+void PutVariableMetadataToJulea(Variable<T> &variable,
+                                gpointer &md, guint32 valueLen,
                                 const std::string nameSpace, size_t currStep,
                                 size_t blockID, bool isNameWritten)
+{
+    const char *kvNames = "variable_names";
+    const char *kvMD = "variables";
+    auto stepBlockID = g_strdup_printf("%d_%d", currStep, blockID);
+    std::cout << "stepBlockID: " << stepBlockID << std::endl;
+
+    if (!isNameWritten)
+    {
+        WriteNameToJuleaKV(variable.m_Name, nameSpace.c_str(), kvNames);
+    }
+
+    WriteVarMetadataToJuleaKV(variable, nameSpace.c_str(), currStep, blockID);
+    // WriteBlockMetadataToJuleaKV(variable, nameSpace.c_str(), md, currStep,
+                                // blockID);
+
+    WriteBlockMetadataToJuleaKV(nameSpace.c_str(), md, valueLen, stepBlockID);
+}
+
+template <class T>
+void PutVariableMetadataBSONToJulea(Variable<T> &variable, bson_t *bsonMetaData,
+                                    const std::string nameSpace,
+                                    size_t currStep, size_t blockID,
+                                    bool isNameWritten)
 {
     bson_t *bsonNames;
 
@@ -397,13 +430,12 @@ void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
         WriteNameToJuleaKV(variable.m_Name, nameSpace.c_str(), kvNames);
     }
 
-    // FIXME: change to block version
     // WriteMetadataToJuleaKV(kvMD, variable.m_Name, nameSpace.c_str(),
     // bsonMetaData, currStep);
 
-    WriteVarMetadataToJuleaKV(variable, nameSpace.c_str(), currStep, blockID);
-    WriteBlockMetadataToJuleaKV(variable, nameSpace.c_str(), bsonMetaData,
-                                currStep, blockID); // FIXME bson
+    // WriteVarMetadataToJuleaKV(variable, nameSpace.c_str(), currStep,
+    // blockID); WriteBlockMetadataToJuleaKV(variable, nameSpace.c_str(),
+    // bsonMetaData, currStep, blockID); // FIXME bson
     // Test(variable, nameSpace.c_str(), currStep);
 
     // WriteBlocksMetadataToJuleaKV("blocks", nameSpace.c_str(), bsonMetaData,
@@ -806,8 +838,12 @@ void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetaData,
     template void PutVariableDataToJulea(Variable<T> &variable, const T *data, \
                                          const std::string nameSpace,          \
                                          size_t currentStep);                  \
-    template void PutVariableMetadataToJulea(                                  \
+    template void PutVariableMetadataBSONToJulea(                              \
         Variable<T> &variable, bson_t *bsonMetaData,                           \
+        const std::string nameSpace, size_t currentStep, size_t blockID,       \
+        bool isNameWritten);                                                   \
+    template void PutVariableMetadataToJulea(                                  \
+        Variable<T> &variable, gpointer &md, guint32 valueLen,                 \
         const std::string nameSpace, size_t currentStep, size_t blockID,       \
         bool isNameWritten);                                                   \
                                                                                \

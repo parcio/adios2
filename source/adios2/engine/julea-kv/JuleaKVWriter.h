@@ -76,13 +76,12 @@ public:
         Params Info;
     };
 
-    /** extended Stats struct to store in Julea for every block */
     template <class T>
     struct Metadata
     {
-        //TODO: needed?
+        // TODO: needed?
         // std::map<size_t, std::vector<helper::SubStreamBoxInfo>>
-            // StepBlockSubStreamsInfo;
+        // StepBlockSubStreamsInfo;
         // struct helper::BlockDivisionInfo SubBlockInfo;
         // SelectionType Selection = SelectionType::BoundingBox;
 

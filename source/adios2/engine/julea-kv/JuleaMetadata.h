@@ -75,7 +75,7 @@ typedef union value_type value_type;
  * in ADIOS.
  *
  */
-struct Metadata
+struct CMetadata
 {
     char *name;
 
@@ -123,7 +123,7 @@ struct Metadata
     // TODO: Operations Map
     // size_t m_IndexStart = 0; TODO: needed?
 };
-typedef struct Metadata Metadata;
+typedef struct CMetadata CMetadata;
 
 struct AttributeMetadata
 {

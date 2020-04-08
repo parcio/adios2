@@ -109,14 +109,14 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
     auto itVariableWritten = m_WrittenVariableNames.find(variable.m_Name);
     if (itVariableWritten == m_WrittenVariableNames.end())
     {
-        PutVariableMetadataToJulea(variable, bsonMetadata, m_Name,
-                                   m_CurrentStep, m_CurrentBlockID, false);
+        PutVariableMetadataBSONToJulea(variable, bsonMetadata, m_Name,
+                                       m_CurrentStep, m_CurrentBlockID, false);
         m_WrittenVariableNames.insert(variable.m_Name);
     }
     else
     {
-        PutVariableMetadataToJulea(variable, bsonMetadata, m_Name,
-                                   m_CurrentStep, m_CurrentBlockID, true);
+        PutVariableMetadataBSONToJulea(variable, bsonMetadata, m_Name,
+                                       m_CurrentStep, m_CurrentBlockID, true);
     }
 
     std::cout << "Variable names written to the names kv: " << std::endl;

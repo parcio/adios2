@@ -452,8 +452,7 @@ void ParseVarTypeToBSON<std::complex<double>>(
     template void SetMinMax(Variable<T> &variable, const T *data);             \
     template void ParseVariableToBSON(core::Variable<T> &,                     \
                                       bson_t *bsonMetadata);                   \
-    template JuleaKVWriter::Metadata<T> *SetMetadata(                    \
-        Variable<T> &variable);
+    template JuleaKVWriter::Metadata<T> *SetMetadata(Variable<T> &variable);
 
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
