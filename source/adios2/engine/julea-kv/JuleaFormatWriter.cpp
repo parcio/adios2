@@ -41,6 +41,12 @@ void SetMinMax(Variable<T> &variable, const T *data)
 }
 
 template <class T>
+JuleaKVWriter::Metadata<T> *SetMetadata(Variable<T> &variable)
+{
+    return NULL;
+}
+
+template <class T>
 void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
 {
     // std::cout << "-- ParseAttributeToBSON ------ " << std::endl;
@@ -287,6 +293,13 @@ void ParseVarTypeToBSON<int8_t>(Variable<int8_t> &variable, const int8_t *data,
 
     std::cout << "ParseVarTypeToBSON int8_t: min = " << variable.Min()
               << std::endl;
+
+    // TESTING
+    // JuleaKVWriter::Stats<int8_t> *stats = (JuleaKVWriter::Stats<int8_t> *)
+    // g_slice_alloc(sizeof(JuleaKVWriter::Stats<int8_t>));
+    JuleaKVWriter::Metadata<int8_t> *md =
+        (JuleaKVWriter::Metadata<int8_t> *)g_slice_new(
+            JuleaKVWriter::Metadata<int8_t>);
 }
 
 template <>
@@ -434,10 +447,13 @@ void ParseVarTypeToBSON<std::complex<double>>(
               << variable.Min() << std::endl;
 }
 
+// FIXME: ParseVariableToBSON why core:: and no variable?
 #define variable_template_instantiation(T)                                     \
     template void SetMinMax(Variable<T> &variable, const T *data);             \
     template void ParseVariableToBSON(core::Variable<T> &,                     \
-                                      bson_t *bsonMetadata);
+                                      bson_t *bsonMetadata);                   \
+    template JuleaKVWriter::Metadata<T> *SetMetadata(                    \
+        Variable<T> &variable);
 
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation

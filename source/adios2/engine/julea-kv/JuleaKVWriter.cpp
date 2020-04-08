@@ -432,7 +432,7 @@ void JuleaKVWriter::WriteData(const bool isFinal, const int transportIndex)
 {
     std::cout << "\n______________WriteData_____________________" << std::endl;
 
-    Metadata *metadata;
+    // Metadata *metadata;
     // TODO: parse variable from buffer to metadata struct members
     // DESIGN: check BP3Writer
     size_t dataSize = m_Data.m_Position;

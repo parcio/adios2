@@ -64,46 +64,99 @@ public:
         size_t *blocks = nullptr;
     };
 
-    /** Fields for statistics characteristic ID = 10 */
-    template <class T>
-    struct Stats
+    /** Operators metadata info */
+    struct Operation
     {
-        std::vector<T> Values;
-        std::vector<T> MinMaxs; // sub-block level min-max
-        struct helper::BlockDivisionInfo SubBlockInfo;
-        double BitSum = 0.;
-        double BitSumSquare = 0.;
-        uint64_t Offset = 0;
-        uint64_t PayloadOffset = 0;
-        T Min;
-        T Max;
-        T Value;
-        uint32_t Step = 0;
-        uint32_t FileIndex = 0;
-        uint32_t MemberID = 0;
-        uint32_t BitCount = 0;
-        std::bitset<32> Bitmap;
-        uint8_t BitFinite = 0;
-        bool IsValue = false;
-        // BPOpInfo Op;
-
-        Stats() : Min(), Max(), Value() {}
+        /** reference to object derived from Operator class,
+         *  needs a pointer to enable assignment operator (C++ class) */
+        core::Operator *Op;
+        /** Variable specific parameters */
+        Params Parameters;
+        /** resulting information from executing Operation (e.g. buffer size) */
+        Params Info;
     };
 
-    /**
-     * Fields for all characteristics in BP buffer
-     */
+    /** extended Stats struct to store in Julea for every block */
     template <class T>
-    struct Characteristics
+    struct Metadata
     {
-        Stats<T> Statistics;
+        //TODO: needed?
+        // std::map<size_t, std::vector<helper::SubStreamBoxInfo>>
+            // StepBlockSubStreamsInfo;
+        // struct helper::BlockDivisionInfo SubBlockInfo;
+        // SelectionType Selection = SelectionType::BoundingBox;
+
         Dims Shape;
         Dims Start;
         Dims Count;
-        ShapeID EntryShapeID = ShapeID::Unknown;
-        uint32_t EntryLength = 0;
-        uint8_t EntryCount = 0;
+        Dims MemoryStart;
+        Dims MemoryCount;
+
+        std::vector<Operation> Operations;
+        std::vector<T> Values;
+        std::vector<T> MinMaxs; // sub-block level min-max
+
+        size_t Step = 0;
+        size_t StepsStart = 0;
+        size_t StepsCount = 0;
+        size_t BlockID = 0;
+
+        T *Data = nullptr;
+        T Min = T();
+        T Max = T();
+        T Value = T();
+
+        int WriterID = 0;
+
+        bool IsValue = false;
+        bool IsReverseDims = false;
+        /** Global array was written as Joined array, so read accordingly */
+        bool m_ReadAsJoined = false;
+
+        /** Global array was written as Local value, so read accordingly */
+        bool m_ReadAsLocalValue = false;
     };
+
+    // /** Fields for statistics characteristic ID = 10 */
+    // template <class T>
+    // struct Stats
+    // {
+    //     std::vector<T> Values;
+    //     std::vector<T> MinMaxs; // sub-block level min-max
+    //     struct helper::BlockDivisionInfo SubBlockInfo;
+    //     double BitSum = 0.;
+    //     double BitSumSquare = 0.;
+    //     uint64_t Offset = 0;
+    //     uint64_t PayloadOffset = 0;
+    //     T Min;
+    //     T Max;
+    //     T Value;
+    //     uint32_t Step = 0;
+    //     uint32_t FileIndex = 0;
+    //     uint32_t MemberID = 0;
+    //     uint32_t BitCount = 0;
+    //     std::bitset<32> Bitmap;
+    //     uint8_t BitFinite = 0;
+    //     bool IsValue = false;
+    //     // BPOpInfo Op;
+
+    //     Stats() : Min(), Max(), Value() {}
+    // };
+
+    // /**
+    //  * Fields for all characteristics in BP buffer
+    //  */
+    // template <class T>
+    // struct Characteristics
+    // {
+    //     Stats<T> Statistics;
+    //     Dims Shape;
+    //     Dims Start;
+    //     Dims Count;
+    //     ShapeID EntryShapeID = ShapeID::Unknown;
+    //     uint32_t EntryLength = 0;
+    //     uint8_t EntryCount = 0;
+    // };
 
 private:
     format::BP3Serializer m_BPSerializer;

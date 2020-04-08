@@ -79,12 +79,6 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
               << std::endl;
     std::cout << "Julea Writer " << m_WriterRank
               << " Variable name: " << variable.m_Name << std::endl;
-
-    auto bsonMetadata = bson_new();
-    SetMinMax(variable, blockInfo.Data);
-
-    std::cout << "DEBUG: CurrentStep" << m_CurrentStep << std::endl;
-
     // std::cout << "variable.m_BlocksInfo.Step: " <<
     // variable.m_BlocksInfo[0].Step << std::endl; std::cout <<
     // "variable.m_BlocksInfo.StepsStart: " <<
@@ -98,12 +92,18 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
     // std::cout << "variable.m_StepsCount: " << variable.m_StepsCount <<
     // std::endl;
 
+    std::cout << "DEBUG: CurrentStep" << m_CurrentStep << std::endl;
     std::cout << "---------------------\n" << std::endl;
+
+    auto bsonMetadata = bson_new();
+    SetMinMax(variable, blockInfo.Data);
 
     ParseVariableToBSON(variable, bsonMetadata);
     ParseVarTypeToBSON(variable, blockInfo.Data, bsonMetadata);
 
-    // FIXME: create bson storing max number of steps + steps bitmap
+    // FIXME: implement
+    auto metadata = SetMetadata(variable);
+    // auto characteristics = ParseVariableToCharacteristics(variable);
 
     // check whether variable name is already in variable_names kv
     auto itVariableWritten = m_WrittenVariableNames.find(variable.m_Name);
@@ -128,7 +128,6 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
 
     // every step PutVariableDataToJulea(variable, data, m_Name, m_CurrentStep);
 
-    // FIXME: store bson in variables kv
     bson_destroy(bsonMetadata);
 
     if (m_Verbosity == 5)

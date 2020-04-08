@@ -28,10 +28,6 @@ namespace core
 namespace engine
 {
 
-template <class T>
-void Test(Variable<T> &variable, const std::string nameSpace, size_t currStep)
-{
-}
 
 /** -------------------------------------------------------------------------**/
 /** -------------- TESTING GENERIC FUNCTIONS --------------------------------**/
@@ -145,7 +141,7 @@ void WriteMetadataToJuleaKV(std::string kvName, std::string paramName,
     j_semantics_unref(semantics);
 }
 
-// FIXME: bson for each block
+// FIXME: pass stats and characteristics along
 template <class T>
 void WriteBlockMetadataToJuleaKV(Variable<T> &variable,
                                  const std::string nameSpace,
@@ -164,30 +160,17 @@ void WriteBlockMetadataToJuleaKV(Variable<T> &variable,
     auto stringMetadataKV =
         g_strdup_printf("%s_%s", nameSpace.c_str(), "variableblocks");
     std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
-    JuleaKVWriter::StepMetadata *md = g_slice_new(JuleaKVWriter::StepMetadata);
-
-
-
-    // size_t blockCount =
-    //     variable.m_AvailableStepBlockIndexOffsets[currStep].at(0);
-    // // probably this iterating is done a few layers above! //FIXME
-    // for (uint i = 0; i < blockCount; i++)
-    // {
-    //     stepBlockID = g_strdup_printf("%d_%d", currStep, i);
-    //     // auto kvObjectMetadata = j_kv_new(stringMetadataKV,
-    //     // stepBlockID.c_str()); metaDataBuf =
-    //     // g_memdup(bson_get_data(bsonMetaData), bsonMetaData->len);
-    //     // j_kv_put(kvObjectMetadata, metaDataBuf, bsonMetaData->len, g_free,
-    //     //      batch); // FIXME: block BSON
-    // }
 
     stepBlockID = g_strdup_printf("%d_%d", currStep, blockID);
     std::cout << "stepBlockID: " << stepBlockID << std::endl;
+
     auto kvObjectMetadata = j_kv_new(stringMetadataKV, stepBlockID.c_str());
-    metaDataBuf = g_memdup(bson_get_data(bsonMetaData), bsonMetaData->len);
-    j_kv_put(kvObjectMetadata, metaDataBuf, bsonMetaData->len, g_free,
-             batch); // FIXME: block BSON
-    j_batch_execute(batch);
+
+    // FIXME: store structs
+    // metaDataBuf = g_memdup(bson_get_data(bsonMetaData), bsonMetaData->len);
+    // j_kv_put(kvObjectMetadata, metaDataBuf, bsonMetaData->len, g_free,
+    // batch);
+    // j_batch_execute(batch);
 
     // free(metaDataBuf);
     // free(namesBuf);
