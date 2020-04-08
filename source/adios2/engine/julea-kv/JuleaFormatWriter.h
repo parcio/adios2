@@ -33,8 +33,12 @@ void SetMinMax(Variable<T> &variable, const T *data);
 template <class T>
 void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata);
 
+// template <class T>
+// JuleaKVWriter::Metadata<T> *SetMetadata(Variable<T> &variable);
+
 template <class T>
-JuleaKVWriter::Metadata<T> *SetMetadata(Variable<T> &variable);
+gpointer SetMetadata(Variable<T> &variable, guint32 &buffer_len);
+
 
 /* also sets m_Min, m_Max, m_Value; therefore the data pointer needs to be
  * passed */
@@ -54,7 +58,7 @@ void ParseVarTypeToBSON(Variable<T> &variable, const T *data,
     SetMinMax(Variable<T> &variable, const T *data);                               \
     extern template void ParseVariableToBSON(Variable<T> &variable,                \
                                              bson_t *bsonMetadata);                \
-    extern template JuleaKVWriter::Metadata<T>* SetMetadata(Variable<T> &variable,            \
+    extern template gpointer SetMetadata(Variable<T> &variable, guint32 &buffer_len);            \
     ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 

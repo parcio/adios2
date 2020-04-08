@@ -96,21 +96,26 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
     std::cout << "---------------------\n" << std::endl;
 
     auto bsonMetadata = bson_new();
+    guint32 buffer_len = 0;
     SetMinMax(variable, blockInfo.Data);
+    gpointer md_buffer = NULL;
+    // ParseVariableToBSON(variable, bsonMetadata);
+    // ParseVarTypeToBSON(variable, blockInfo.Data, bsonMetadata);
 
-    ParseVariableToBSON(variable, bsonMetadata);
-    ParseVarTypeToBSON(variable, blockInfo.Data, bsonMetadata);
+
 
     // FIXME: implement
-    auto metadata = SetMetadata(variable);
+    md_buffer = SetMetadata(variable, buffer_len);
+    // auto metadata = SetMetadata(variable);
     // auto characteristics = ParseVariableToCharacteristics(variable);
 
     // check whether variable name is already in variable_names kv
     auto itVariableWritten = m_WrittenVariableNames.find(variable.m_Name);
     if (itVariableWritten == m_WrittenVariableNames.end())
     {
-        PutVariableMetadataBSONToJulea(variable, bsonMetadata, m_Name,
-                                       m_CurrentStep, m_CurrentBlockID, false);
+        // PutVariableMetadataBSONToJulea(variable, bsonMetadata, m_Name,
+        //                                m_CurrentStep, m_CurrentBlockID, false);
+        PutVariableMetadataToJulea(variable, md_buffer, buffer_len, m_Name, m_CurrentStep, m_CurrentBlockID, false);
         m_WrittenVariableNames.insert(variable.m_Name);
     }
     else

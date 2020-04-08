@@ -40,107 +40,147 @@ void SetMinMax(Variable<T> &variable, const T *data)
     variable.m_Max = max;
 }
 
-template <class T>
-JuleaKVWriter::Metadata<T> *SetMetadata(Variable<T> &variable)
+// template <class T>
+// JuleaKVWriter::Metadata<T> *SetMetadata(Variable<T> &variable)
+// {
+//     // JuleaKVWriter::Metadata
+//     return NULL;
+// }
+
+template <>
+gpointer SetMetadata(Variable<std::string> &variable, guint32 &buffer_len)
 {
     // JuleaKVWriter::Metadata
     return NULL;
 }
 
 template <>
-JuleaKVWriter::Metadata<std::string> *SetMetadata(Variable<std::string> &variable)
+gpointer SetMetadata(Variable<int8_t> &variable, guint32 &buffer_len)
 {
     // JuleaKVWriter::Metadata
     return NULL;
 }
 
 template <>
-JuleaKVWriter::Metadata<int8_t> *SetMetadata(Variable<int8_t> &variable)
+gpointer SetMetadata(Variable<uint8_t> &variable, guint32 &buffer_len)
 {
     // JuleaKVWriter::Metadata
     return NULL;
 }
 
 template <>
-JuleaKVWriter::Metadata<uint8_t> *SetMetadata(Variable<uint8_t> &variable)
+gpointer SetMetadata(Variable<int16_t> &variable, guint32 &buffer_len)
 {
     // JuleaKVWriter::Metadata
     return NULL;
 }
 
 template <>
-JuleaKVWriter::Metadata<int16_t> *SetMetadata(Variable<int16_t> &variable)
+gpointer SetMetadata(Variable<uint16_t> &variable, guint32 &buffer_len)
 {
     // JuleaKVWriter::Metadata
     return NULL;
 }
 
 template <>
-JuleaKVWriter::Metadata<uint16_t> *SetMetadata(Variable<uint16_t> &variable)
+gpointer SetMetadata(Variable<int32_t> &variable, guint32 &buffer_len)
 {
     // JuleaKVWriter::Metadata
     return NULL;
 }
 
 template <>
-JuleaKVWriter::Metadata<int32_t> *SetMetadata(Variable<int32_t> &variable)
+gpointer SetMetadata(Variable<uint32_t> &variable, guint32 &buffer_len)
 {
     // JuleaKVWriter::Metadata
     return NULL;
 }
 
 template <>
-JuleaKVWriter::Metadata<uint32_t> *SetMetadata(Variable<uint32_t> &variable)
+gpointer SetMetadata(Variable<int64_t> &variable, guint32 &buffer_len)
 {
     // JuleaKVWriter::Metadata
     return NULL;
 }
 
 template <>
-JuleaKVWriter::Metadata<int64_t> *SetMetadata(Variable<int64_t> &variable)
+gpointer SetMetadata(Variable<uint64_t> &variable, guint32 &buffer_len)
 {
     // JuleaKVWriter::Metadata
     return NULL;
 }
 
 template <>
-JuleaKVWriter::Metadata<uint64_t> *SetMetadata(Variable<uint64_t> &variable)
+gpointer SetMetadata(Variable<float> &variable, guint32 &buffer_len)
 {
     // JuleaKVWriter::Metadata
     return NULL;
 }
 
 template <>
-JuleaKVWriter::Metadata<float> *SetMetadata(Variable<float> &variable)
+gpointer SetMetadata(Variable<double> &variable, guint32 &buffer_len)
+{
+    return NULL;
+}
+
+// template <>
+// JuleaKVWriter::Metadata<double> *SetMetadata(Variable<double> &variable)
+// {
+//     JuleaKVWriter::Metadata<double> *md = g_slice_new(JuleaKVWriter::Metadata<double>);
+//     void *buf = NULL;
+
+//     buf = g_memdup(md, sizeof(md));
+//     md->Shape = variable.m_Shape;
+//     md->Start = variable.m_Start;
+//     md->Count = variable.m_Count;
+//     md->MemoryStart = variable.m_MemoryStart;
+//     md->MemoryCount = variable.m_MemoryCount;
+
+
+//         // std::vector<Operation> Operations;
+//         // std::vector<T> Values;
+//         // std::vector<T> MinMaxs; // sub-block level min-max
+
+//         // size_t Step = 0;
+//         // size_t StepsStart = 0;
+//         // size_t StepsCount = 0;
+//         // size_t BlockID = 0;
+
+//         // T *Data = nullptr;
+//         // T Min = T();
+//         // T Max = T();
+//         // T Value = T();
+
+//         // int WriterID = 0;
+
+//         // bool IsValue = false;
+//         // bool IsReverseDims = false;
+//         // /** Global array was written as Joined array, so read accordingly */
+//         // bool m_ReadAsJoined = false;
+
+//         // /** Global array was written as Local value, so read accordingly */
+//         // bool m_ReadAsLocalValue = false;
+
+//     return NULL;
+// }
+
+template <>
+gpointer SetMetadata(Variable<long double> &variable, guint32 &buffer_len)
+{
+    // JuleaKVWriter::Metadata
+    return NULL;
+}
+
+
+template <>
+gpointer SetMetadata(Variable<std::complex<float>> &variable, guint32 &buffer_len)
 {
     // JuleaKVWriter::Metadata
     return NULL;
 }
 
 template <>
-JuleaKVWriter::Metadata<double> *SetMetadata(Variable<double> &variable)
-{
-    // JuleaKVWriter::Metadata
-    return NULL;
-}
-
-template <>
-JuleaKVWriter::Metadata<long double> *SetMetadata(Variable<long double> &variable)
-{
-    // JuleaKVWriter::Metadata
-    return NULL;
-}
-
-
-template <>
-JuleaKVWriter::Metadata<std::complex<float>> *SetMetadata(Variable<std::complex<float>> &variable)
-{
-    // JuleaKVWriter::Metadata
-    return NULL;
-}
-
-template <>
-JuleaKVWriter::Metadata<std::complex<double>> *SetMetadata(Variable<std::complex<double>> &variable)
+gpointer SetMetadata(Variable<std::complex<double>> &variable, guint32 &buffer_len)
 {
     // JuleaKVWriter::Metadata
     return NULL;
@@ -552,7 +592,7 @@ void ParseVarTypeToBSON<std::complex<double>>(
     template void SetMinMax(Variable<T> &variable, const T *data);             \
     template void ParseVariableToBSON(core::Variable<T> &,                     \
                                       bson_t *bsonMetadata);                   \
-    template JuleaKVWriter::Metadata<T> *SetMetadata(Variable<T> &variable);
+    template gpointer SetMetadata(Variable<T> &variable, guint32 &buffer_len);
 
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
