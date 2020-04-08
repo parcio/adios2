@@ -251,69 +251,6 @@ void WriteVarMetadataToJuleaKV(Variable<T> &variable,
     j_semantics_unref(semantics);
 }
 
-// void UpdateMetadataInJuleaKV(std::string kvName, std::string paramName,
-//                             std::string nameSpace, bson_t *bsonNames,
-//                             bson_t *bsonMetaData, JKV *kvObjectNames)
-// {
-//     guint32 valueLen = 0;
-//     void *namesBuf = NULL;
-//     void *metaDataBuf = NULL;
-
-//     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-//     auto batch = j_batch_new(semantics);
-
-//     /* Put name to names kv */
-//     // namesBuf = g_memdup(bson_get_data(bsonNames), bsonNames->len);
-//     // j_kv_put(kvObjectNames, namesBuf, bsonNames->len, g_free, batch);
-
-//     // std::cout << "_____________________________________________" <<
-//     std::endl; std::cout << "kvName " << kvName << std::endl; std::cout <<
-//     "paramName " << paramName << std::endl; std::cout << "nameSpace " <<
-//     nameSpace << std::endl; auto stringMetadataKV =
-//         g_strdup_printf("%s_%s", kvName.c_str(), nameSpace.c_str());
-//     std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
-//     auto kvObjectMetadata = j_kv_new(stringMetadataKV, paramName.c_str());
-
-//     j_kv_get(kvObjectMetadata, &metaDataBuf, &valueLen, batch);
-//     j_batch_execute(batch);
-
-//     // auto kvObjectNames = j_kv_new("variable_names", nameSpace.c_str());
-//     // j_kv_get(kvObjectNames, &namesBuf, &valueLen, batch);
-//     // j_batch_execute(batch);
-
-//     // std::cout << "-- namesKV: valueLen = " << valueLen << std::endl;
-//     // if (valueLen == 0)
-//     // {
-//     //     bsonNames = bson_new();
-//     // }
-//     // else
-//     // {
-//     //     bsonNames = bson_new_from_data((const uint8_t *)namesBuf,
-//     valueLen);
-//     // }
-
-//     /* Write metadata struct to kv store*/
-//     // auto stringMetadataKV = g_strdup_printf("attributes_%s", nameSpace);
-//     auto stringMetadataKV =
-//         g_strdup_printf("%s_%s", kvName.c_str(), nameSpace.c_str());
-//     std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
-//     auto kvObjectMetadata = j_kv_new(stringMetadataKV, paramName.c_str());
-//     // std::cout << "-- DEBUG 1 " << std::endl;
-
-//     metaDataBuf = g_memdup(bson_get_data(bsonMetaData), bsonMetaData->len);
-//     // std::cout << "-- DEBUG 2 " << std::endl;
-//     j_kv_put(kvObjectMetadata, metaDataBuf, bsonMetaData->len, g_free,
-//     batch); //FIXME: reading issue
-
-//     // std::cout << "-- DEBUG 3 " << std::endl;
-//     j_batch_execute(batch);
-//     // std::cout << "-- DEBUG 4 " << std::endl;
-//     j_kv_unref(kvObjectMetadata);
-//     j_batch_unref(batch);
-
-//     // j_kv_unref(kvObjectNames);
-//     // g_free(stringMetadataKV);
-// }
 
 template <class T>
 void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
@@ -389,116 +326,8 @@ void PutVariableMetadataToJulea(Variable<T> &variable, gpointer &md,
     WriteBlockMetadataToJuleaKV(nameSpace.c_str(), md, valueLen, stepBlockID);
 }
 
-template <class T>
-void PutVariableMetadataBSONToJulea(Variable<T> &variable, bson_t *bsonMetaData,
-                                    const std::string nameSpace,
-                                    size_t currStep, size_t blockID,
-                                    bool isNameWritten)
-{
-    bson_t *bsonNames;
-
-    const char *kvNames = "variable_names";
-    const char *kvMD = "variables";
-
-    // TODO third kv
-    // one for the names
-    // one for all variables with their max number of steps + steps bitmap
-    // one for all the steps of a variable
-    if (!isNameWritten)
-    {
-        WriteNameToJuleaKV(variable.m_Name, nameSpace.c_str(), kvNames);
-    }
-
-    // WriteMetadataToJuleaKV(kvMD, variable.m_Name, nameSpace.c_str(),
-    // bsonMetaData, currStep);
-
-    // WriteVarMetadataToJuleaKV(variable, nameSpace.c_str(), currStep,
-    // blockID); WriteBlockMetadataToJuleaKV(variable, nameSpace.c_str(),
-    // bsonMetaData, currStep, blockID); // FIXME bson
-    // Test(variable, nameSpace.c_str(), currStep);
-
-    // WriteBlocksMetadataToJuleaKV("blocks", nameSpace.c_str(), bsonMetaData,
-    // currStep);
-
-    // TODO
-    // WriteStepsToJuleaKV();
-
-    // WriteMetadataToJuleaKV(kvMD, variable.m_Name, nameSpace.c_str(),
-    // bsonNames, bsonMetaData, kvObjectNames);
-
-    // TODO: check if update version is necessary!
-    /* names_kv = kv holding all variable names */
-    // auto kvObjectNames = j_kv_new(kvNames, nameSpace.c_str());
-
-    // bool IsAlreadyInKV = false;
-    // CheckIfAlreadyInKV(kvMD, variable.m_Name, nameSpace.c_str(), &bsonNames,
-    //                    kvObjectNames, &IsAlreadyInKV);
-    // if (!IsAlreadyInKV)
-    // {
-    //     WriteNameToJuleaKVOld(kvMD, variable.m_Name, nameSpace.c_str(),
-    //     bsonNames,
-    //                        kvObjectNames);
-    //     std::cout << "Test IsAlreadyInKV " << IsAlreadyInKV << std::endl;
-    // }
-    // else
-    // {
-    //     // UpdateMetadataInKV(kvMD, variable.m_Name, nameSpace.c_str(),
-    //     //                    bsonNames, bsonMetaData, kvObjectNames);
-    //     std::cout << "___ NEEDS UPDATE ___ " << std::endl;
-    // }
-    // WriteMetadataToJuleaKV(kvMD, variable.m_Name, nameSpace.c_str(),
-    // bsonMetaData);
-
-    // j_kv_unref(kvObjectNames);
-    // bson_destroy(bsonNames);
-}
 
 /** ------------------------- DATA ------------------------------------------**/
-// FIXME
-void WriteDataStepsToJuleaObjectStore(std::string objName,
-                                      std::string paramName,
-                                      std::string nameSpace,
-                                      unsigned int dataSize, const void *data,
-                                      size_t currStep)
-{
-    guint64 bytesWritten = 0;
-    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    auto batch = j_batch_new(semantics);
-
-    auto name = strdup(paramName.c_str());
-
-    /* Write data pointer to object store:
-     * printf("%s_variables_%s", nameSpace, name)*/
-    std::cout << "** DEBUG: objName: " << objName << std::endl;
-    auto stringDataObject =
-        g_strdup_printf("%s_%s_%s", nameSpace.c_str(), objName.c_str(), name);
-    // g_strdup_printf("%s_%s_%s_%d", nameSpace.c_str(), objName.c_str(), name,
-    // currStep); g_strdup_printf("%s_%s", nameSpace.c_str(), objName.c_str());
-    std::cout << "** DEBUG: stringDataObject " << stringDataObject << std::endl;
-    auto dataObject = j_object_new(stringDataObject, name);
-
-    j_object_create(dataObject, batch);
-    j_object_write(dataObject, data, dataSize, 0, &bytesWritten, batch);
-
-    j_batch_execute(batch);
-    if (bytesWritten == dataSize)
-    {
-        std::cout << "++ Julea Interaction Writer: Data written for:  " << name
-                  << std::endl;
-    }
-    else
-    {
-        std::cout << "WARNING: only " << bytesWritten
-                  << " bytes written instead of " << dataSize << " bytes! "
-                  << std::endl;
-    }
-    free(name);
-    g_free(stringDataObject);
-    j_object_unref(dataObject);
-    j_batch_unref(batch);
-    j_semantics_unref(semantics);
-}
-
 void WriteDataToJuleaObjectStore(std::string objName, std::string paramName,
                                  std::string nameSpace, unsigned int dataSize,
                                  const void *data, size_t currStep)
@@ -544,26 +373,47 @@ void WriteDataToJuleaObjectStore(std::string objName, std::string paramName,
 
 template <class T>
 void PutVariableDataToJulea(Variable<T> &variable, const T *data,
-                            const std::string nameSpace, size_t currStep)
+                            const std::string nameSpace, size_t currStep, size_t block)
 {
-    // no distinction necessary. every variable treated as if it was first step
-    //-> varName_0 ist always used for every variable
-    // FIXME:
-    std::string objName = "variables";
-    std::string objName2 = "variablesteps";
+    guint64 bytesWritten = 0;
     auto numberElements = adios2::helper::GetTotalSize(variable.m_Count);
     auto dataSize = variable.m_ElementSize * numberElements;
 
-    // auto currentStep = m_CurrentStep;
-    std::cout << "PutVariableDataToJulea: " << data[0] << std::endl;
-    std::cout << "PutVariableDataToJulea: " << data[1] << std::endl;
+    std::string objName = "variableblocks";
+    auto stepBlockID = g_strdup_printf("%d_%d", currStep, block);
+    std::cout << "stepBlockID: " << stepBlockID << std::endl;
+    auto stringDataObject =
+        g_strdup_printf("%s_%s", nameSpace.c_str(), objName.c_str());
+    std::cout << "stringDataObject " << stringDataObject << std::endl;
 
-    WriteDataToJuleaObjectStore(objName, variable.m_Name, nameSpace.c_str(),
-                                dataSize, data, currStep);
-    WriteDataStepsToJuleaObjectStore(
-        objName2, variable.m_Name, nameSpace.c_str(), dataSize, data, currStep);
-    std::cout << "++ Julea Interaction: PutVariableDataToJuleaSmall"
+    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
+
+    auto dataObject = j_object_new(stringDataObject, stepBlockID);
+
+    j_object_create(dataObject, batch);
+    j_object_write(dataObject, data, dataSize, 0, &bytesWritten, batch);
+
+    j_batch_execute(batch);
+    if (bytesWritten == dataSize)
+    {
+        std::cout << "++ Julea Interaction Writer: Data written for:  " << stepBlockID
+                  << std::endl;
+    }
+    else
+    {
+        std::cout << "WARNING: only " << bytesWritten
+                  << " bytes written instead of " << dataSize << " bytes! "
+                  << std::endl;
+    }
+    g_free(stringDataObject);
+    j_object_unref(dataObject);
+    j_batch_unref(batch);
+    j_semantics_unref(semantics);
+
+    std::cout << "++ Julea Interaction: PutVariableDataToJulea"
               << std::endl;
+
 }
 
 // FIXME: not yet implemented correctly! need to differentiate between strings
@@ -816,11 +666,7 @@ void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetaData,
 #define declare_template_instantiation(T)                                      \
     template void PutVariableDataToJulea(Variable<T> &variable, const T *data, \
                                          const std::string nameSpace,          \
-                                         size_t currentStep);                  \
-    template void PutVariableMetadataBSONToJulea(                              \
-        Variable<T> &variable, bson_t *bsonMetaData,                           \
-        const std::string nameSpace, size_t currentStep, size_t blockID,       \
-        bool isNameWritten);                                                   \
+                                         size_t currentStep, size_t blockID);                  \
     template void PutVariableMetadataToJulea(                                  \
         Variable<T> &variable, gpointer &md, guint32 valueLen,                 \
         const std::string nameSpace, size_t currentStep, size_t blockID,       \

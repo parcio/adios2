@@ -133,6 +133,7 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
     }
 
     // every step PutVariableDataToJulea(variable, data, m_Name, m_CurrentStep);
+    PutVariableDataToJulea(variable, blockInfo.Data, m_Name, m_CurrentStep, m_CurrentBlockID);
 
     bson_destroy(bsonMetadata);
 
