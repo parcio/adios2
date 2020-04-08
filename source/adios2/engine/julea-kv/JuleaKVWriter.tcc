@@ -104,7 +104,7 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
 
     // FIXME: implement
     md_buffer =
-        SetMetadata(variable, buffer_len, m_CurrentStep, m_CurrentBlockID);
+        GetMetadataBuffer(variable, buffer_len, m_CurrentStep, m_CurrentBlockID);
 
     // check whether variable name is already in variable_names kv
     auto itVariableWritten = m_WrittenVariableNames.find(variable.m_Name);

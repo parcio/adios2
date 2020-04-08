@@ -37,7 +37,7 @@ void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata);
 // JuleaKVWriter::Metadata<T> *SetMetadata(Variable<T> &variable);
 
 template <class T>
-gpointer SetMetadata(Variable<T> &variable, guint32 &buffer_len, size_t step,
+gpointer GetMetadataBuffer(Variable<T> &variable, guint32 &buffer_len, size_t step,
                      size_t block);
 
 /* also sets m_Min, m_Max, m_Value; therefore the data pointer needs to be
@@ -58,7 +58,7 @@ void ParseVarTypeToBSON(Variable<T> &variable, const T *data,
     SetMinMax(Variable<T> &variable, const T *data);                           \
     extern template void ParseVariableToBSON(Variable<T> &variable,            \
                                              bson_t *bsonMetadata);            \
-    extern template gpointer SetMetadata(Variable<T> &variable,                \
+    extern template gpointer GetMetadataBuffer(Variable<T> &variable,                \
                                          guint32 &buffer_len, size_t step,     \
                                          size_t block);                        \
     ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
