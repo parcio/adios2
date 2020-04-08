@@ -29,7 +29,7 @@ void PutVariableDataToJulea(Variable<T> &variable, const T *data,
 template <class T>
 void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetadata,
                                 const std::string nameSpace, size_t currentStep,
-                                bool isNameWritten);
+                                size_t blockID, bool isNameWritten);
 // template <class T>
 // void WriteVarMetadataToJuleaKV(Variable<T> &variable, const std::string
 // nameSpace, size_t currStep);
@@ -58,7 +58,8 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
         size_t currentStep);                                                   \
     extern template void PutVariableMetadataToJulea(                           \
         Variable<T> &variable, bson_t *bsonMetadata,                           \
-        const std::string nameSpace, size_t currentStep, bool isNameWritten);  \
+        const std::string nameSpace, size_t currentStep, size_t blockID,       \
+        bool isNameWritten);                                                   \
                                                                                \
     extern template void PutAttributeDataToJulea(Attribute<T> &attribute,      \
                                                  const std::string nameSpace); \

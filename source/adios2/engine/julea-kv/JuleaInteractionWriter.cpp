@@ -145,11 +145,12 @@ void WriteMetadataToJuleaKV(std::string kvName, std::string paramName,
     j_semantics_unref(semantics);
 }
 
-
-//FIXME: bson for each block
+// FIXME: bson for each block
 template <class T>
-void WriteBlockMetadataToJuleaKV(Variable<T> &variable, const std::string nameSpace, bson_t *bsonMetaData,
-                            size_t currStep)
+void WriteBlockMetadataToJuleaKV(Variable<T> &variable,
+                                 const std::string nameSpace,
+                                 bson_t *bsonMetaData, size_t currStep,
+                                 size_t blockID)
 {
     // void *namesBuf = NULL;
     void *metaDataBuf = NULL;
@@ -162,24 +163,29 @@ void WriteBlockMetadataToJuleaKV(Variable<T> &variable, const std::string nameSp
 
     auto stringMetadataKV =
         g_strdup_printf("%s_%s", nameSpace.c_str(), "variableblocks");
-    // g_strdup_printf("%s_%s", kvName.c_str(), nameSpace.c_str());
     std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
+    JuleaKVWriter::StepMetadata *md = g_slice_new(JuleaKVWriter::StepMetadata);
 
-    size_t blockCount = variable.m_AvailableStepBlockIndexOffsets[currStep].at(0);
 
-    //probably this iterating is done a few layers above! //FIXME
-    for (uint i = 0; i < blockCount ; i++)
-    {
-        stepBlockID = g_strdup_printf("%d_%d", currStep,i);
-        // auto kvObjectMetadata = j_kv_new(stringMetadataKV, stepBlockID.c_str());
-        // metaDataBuf = g_memdup(bson_get_data(bsonMetaData), bsonMetaData->len);
-        // j_kv_put(kvObjectMetadata, metaDataBuf, bsonMetaData->len, g_free,
-        //      batch); // FIXME: block BSON
 
-    }
-        auto kvObjectMetadata = j_kv_new(stringMetadataKV, stepBlockID.c_str());
-        metaDataBuf = g_memdup(bson_get_data(bsonMetaData), bsonMetaData->len);
-        j_kv_put(kvObjectMetadata, metaDataBuf, bsonMetaData->len, g_free,
+    // size_t blockCount =
+    //     variable.m_AvailableStepBlockIndexOffsets[currStep].at(0);
+    // // probably this iterating is done a few layers above! //FIXME
+    // for (uint i = 0; i < blockCount; i++)
+    // {
+    //     stepBlockID = g_strdup_printf("%d_%d", currStep, i);
+    //     // auto kvObjectMetadata = j_kv_new(stringMetadataKV,
+    //     // stepBlockID.c_str()); metaDataBuf =
+    //     // g_memdup(bson_get_data(bsonMetaData), bsonMetaData->len);
+    //     // j_kv_put(kvObjectMetadata, metaDataBuf, bsonMetaData->len, g_free,
+    //     //      batch); // FIXME: block BSON
+    // }
+
+    stepBlockID = g_strdup_printf("%d_%d", currStep, blockID);
+    std::cout << "stepBlockID: " << stepBlockID << std::endl;
+    auto kvObjectMetadata = j_kv_new(stringMetadataKV, stepBlockID.c_str());
+    metaDataBuf = g_memdup(bson_get_data(bsonMetaData), bsonMetaData->len);
+    j_kv_put(kvObjectMetadata, metaDataBuf, bsonMetaData->len, g_free,
              batch); // FIXME: block BSON
     j_batch_execute(batch);
 
@@ -191,10 +197,10 @@ void WriteBlockMetadataToJuleaKV(Variable<T> &variable, const std::string nameSp
     j_semantics_unref(semantics);
 }
 
-
 template <class T>
 void WriteVarMetadataToJuleaKV(Variable<T> &variable,
-                               const std::string nameSpace, const size_t currStep)
+                               const std::string nameSpace, size_t currStep,
+                               size_t blockID)
 {
     std::cout << "--- WriteVarMetadataToJuleaKV ---" << std::endl;
 
@@ -213,9 +219,10 @@ void WriteVarMetadataToJuleaKV(Variable<T> &variable,
     JuleaKVWriter::StepMetadata *md = g_slice_new(JuleaKVWriter::StepMetadata);
 
     /* ------------------------------ DEBUG START ---------------------------*/
-    //try to write, then read, then write new stuff
+    // try to write, then read, then write new stuff
     // std::cout << "======== DEBUG =====================" << std::endl;
-    // JuleaKVWriter::StepMetadata *md2 = g_slice_new(JuleaKVWriter::StepMetadata);
+    // JuleaKVWriter::StepMetadata *md2 =
+    // g_slice_new(JuleaKVWriter::StepMetadata);
 
     // md2->numberSteps = currStep + 1;
     // md2->blocks = (size_t*) g_slice_alloc(md2->numberSteps*sizeof(size_t));
@@ -224,11 +231,12 @@ void WriteVarMetadataToJuleaKV(Variable<T> &variable,
     // {
     //     // only one element in vector -> number of blocks for this step
     //     md2->blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].at(0);
-    //     std::cout << "md2: i: " << i << "  blocks: " << md2->blocks[i] << std::endl;
+    //     std::cout << "md2: i: " << i << "  blocks: " << md2->blocks[i] <<
+    //     std::endl;
     // }
 
-    // size_t len = sizeof(JuleaKVWriter::StepMetadata) + (currStep+1)*sizeof(size_t);
-    // std::cout << "len " << len << std::endl;
+    // size_t len = sizeof(JuleaKVWriter::StepMetadata) +
+    // (currStep+1)*sizeof(size_t); std::cout << "len " << len << std::endl;
 
     // metaDataBuf = g_memdup(md2, len);
 
@@ -237,8 +245,7 @@ void WriteVarMetadataToJuleaKV(Variable<T> &variable,
 
     /* ------------------------------ DEBUG END ---------------------------*/
 
-
-    j_kv_get(kvVarMetadata, (gpointer *) &md, &valueLen, batch);
+    j_kv_get(kvVarMetadata, (gpointer *)&md, &valueLen, batch);
     j_batch_execute(batch);
 
     std::cout << "md->numberSteps: " << md->numberSteps << std::endl;
@@ -251,8 +258,11 @@ void WriteVarMetadataToJuleaKV(Variable<T> &variable,
     {
         // md = metaDataBuf;
         md->numberSteps = currStep + 1;
-        md->blocks = (size_t*) g_slice_alloc(md->numberSteps*sizeof(size_t));
+        md->blocks = (size_t *)g_slice_alloc(md->numberSteps * sizeof(size_t));
 
+        // TODO: check whether this is called too often.
+        // it is called in KVWriter.tcc for every block but every block change
+        // needs to update variable. so it must be ok
         std::cout << "md->numberSteps: " << md->numberSteps << std::endl;
         for (uint i = 0; i <= currStep; i++)
         {
@@ -260,13 +270,13 @@ void WriteVarMetadataToJuleaKV(Variable<T> &variable,
             // blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].at(0);
             md->blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].at(0);
             // md->blocks = blocks;
-            std::cout << "i: " << i << "  blocks: " << md->blocks[i] << std::endl;
+            std::cout << "i: " << i << "  blocks: " << md->blocks[i]
+                      << std::endl;
         }
         size_t len = sizeof(JuleaKVWriter::StepMetadata);
         metaDataBuf = g_memdup(md, len);
 
-        j_kv_put(kvVarMetadata, metaDataBuf, len, g_free,
-                 batch);
+        j_kv_put(kvVarMetadata, metaDataBuf, len, g_free, batch);
         j_batch_execute(batch);
     }
 
@@ -388,7 +398,7 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
 template <class T>
 void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
                                 const std::string nameSpace, size_t currStep,
-                                bool isNameWritten)
+                                size_t blockID, bool isNameWritten)
 {
     bson_t *bsonNames;
 
@@ -408,8 +418,9 @@ void PutVariableMetadataToJulea(Variable<T> &variable, bson_t *bsonMetaData,
     // WriteMetadataToJuleaKV(kvMD, variable.m_Name, nameSpace.c_str(),
     // bsonMetaData, currStep);
 
-    WriteVarMetadataToJuleaKV(variable, nameSpace.c_str(), currStep);
-    WriteBlockMetadataToJuleaKV(variable,nameSpace.c_str(), bsonMetaData, currStep); //FIXME bson
+    WriteVarMetadataToJuleaKV(variable, nameSpace.c_str(), currStep, blockID);
+    WriteBlockMetadataToJuleaKV(variable, nameSpace.c_str(), bsonMetaData,
+                                currStep, blockID); // FIXME bson
     // Test(variable, nameSpace.c_str(), currStep);
 
     // WriteBlocksMetadataToJuleaKV("blocks", nameSpace.c_str(), bsonMetaData,
@@ -814,7 +825,8 @@ void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetaData,
                                          size_t currentStep);                  \
     template void PutVariableMetadataToJulea(                                  \
         Variable<T> &variable, bson_t *bsonMetaData,                           \
-        const std::string nameSpace, size_t currentStep, bool isNameWritten);  \
+        const std::string nameSpace, size_t currentStep, size_t blockID,       \
+        bool isNameWritten);                                                   \
                                                                                \
     template void PutAttributeDataToJulea(Attribute<T> &attribute,             \
                                           const std::string nameSpace);        \

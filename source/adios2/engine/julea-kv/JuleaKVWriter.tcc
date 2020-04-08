@@ -110,13 +110,13 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
     if (itVariableWritten == m_WrittenVariableNames.end())
     {
         PutVariableMetadataToJulea(variable, bsonMetadata, m_Name,
-                                   m_CurrentStep, false);
+                                   m_CurrentStep, m_CurrentBlockID, false);
         m_WrittenVariableNames.insert(variable.m_Name);
     }
     else
     {
         PutVariableMetadataToJulea(variable, bsonMetadata, m_Name,
-                                   m_CurrentStep, true);
+                                   m_CurrentStep, m_CurrentBlockID, true);
     }
 
     std::cout << "Variable names written to the names kv: " << std::endl;
@@ -274,7 +274,9 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
         auto itSpanBlock = variable.m_BlocksSpan.find(i);
         if (itSpanBlock == variable.m_BlocksSpan.end())
         {
-            PutSyncCommon(variable, variable.m_BlocksInfo[i]); //FIXME: check BSON stuff
+            m_CurrentBlockID = i;
+            PutSyncCommon(variable,
+                          variable.m_BlocksInfo[i]); // FIXME: check BSON stuff
         }
         // else
         // {

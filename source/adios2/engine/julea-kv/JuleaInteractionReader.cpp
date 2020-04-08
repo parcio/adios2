@@ -45,7 +45,8 @@ void GetVariableMetadataFromJulea(Variable<T> &variable,
 }
 
 template <class T>
-void ReadVarMetadataFromJuleaKV(Variable<T> &variable, const std::string nameSpace, size_t currStep)
+void ReadVarMetadataFromJuleaKV(Variable<T> &variable,
+                                const std::string nameSpace, size_t currStep)
 {
     // guint32 valueLen = 0;
     // void *metaDataBuf = NULL;
@@ -59,7 +60,8 @@ void ReadVarMetadataFromJuleaKV(Variable<T> &variable, const std::string nameSpa
     // // std::cout << "nameSpace " << nameSpace << std::endl;
     // // std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
 
-    // JuleaKVWriter::StepMetadata *md = g_slice_new(JuleaKVWriter::StepMetadata);
+    // JuleaKVWriter::StepMetadata *md =
+    // g_slice_new(JuleaKVWriter::StepMetadata);
 
     // j_kv_get(kvVarMetadata, (gpointer *) &md, &valueLen, batch);
     // j_batch_execute(batch);
