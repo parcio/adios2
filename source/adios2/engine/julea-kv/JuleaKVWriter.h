@@ -127,54 +127,7 @@ public:
         bool IsReverseDimensions = false;
     };
 
-    // /** Fields for statistics characteristic ID = 10 */
-    // template <class T>
-    // struct Stats
-    // {
-    //     std::vector<T> Values;
-    //     std::vector<T> MinMaxs; // sub-block level min-max
-    //     struct helper::BlockDivisionInfo SubBlockInfo;
-    //     double BitSum = 0.;
-    //     double BitSumSquare = 0.;
-    //     uint64_t Offset = 0;
-    //     uint64_t PayloadOffset = 0;
-    //     T Min;
-    //     T Max;
-    //     T Value;
-    //     uint32_t Step = 0;
-    //     uint32_t FileIndex = 0;
-    //     uint32_t MemberID = 0;
-    //     uint32_t BitCount = 0;
-    //     std::bitset<32> Bitmap;
-    //     uint8_t BitFinite = 0;
-    //     bool IsValue = false;
-    //     // BPOpInfo Op;
-
-    //     Stats() : Min(), Max(), Value() {}
-    // };
-
-    // /**
-    //  * Fields for all characteristics in BP buffer
-    //  */
-    // template <class T>
-    // struct Characteristics
-    // {
-    //     Stats<T> Statistics;
-    //     Dims Shape;
-    //     Dims Start;
-    //     Dims Count;
-    //     ShapeID EntryShapeID = ShapeID::Unknown;
-    //     uint32_t EntryLength = 0;
-    //     uint8_t EntryCount = 0;
-    // };
-
 private:
-    format::BP3Serializer m_BPSerializer;
-
-    // format::BPBase::Characteristics m_BlockCharacteristics;
-    // Stats<T> m_Stats;
-
-    // JuleaInfo *m_JuleaInfo;
     // interop::JuleaSerializer m_Julea;
     JSemantics *m_JuleaSemantics;
     StepMode m_StepMode = StepMode::Append;

@@ -178,7 +178,7 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
                       << std::endl;
             PutSyncCommon(variable,
                           variable.m_BlocksInfo[i]); // FIXME: check BSON stuff
-            m_CurrentBlockID = m_CurrentBlockID + i;
+            m_CurrentBlockID = m_CurrentBlockID + i + 1;
         }
         // else
         // {

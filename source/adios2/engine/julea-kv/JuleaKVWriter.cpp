@@ -30,13 +30,9 @@ namespace engine
 
 JuleaKVWriter::JuleaKVWriter(IO &io, const std::string &name, const Mode mode,
                              helper::Comm comm)
-: Engine("JuleaKVWriter", io, name, mode, std::move(comm)),
-  m_BPSerializer(m_Comm, m_DebugMode)
+: Engine("JuleaKVWriter", io, name, mode, std::move(comm))
 // : Engine("JuleaKVWriter", io, name, mode, mpiComm), m_Julea(io.m_DebugMode)
 {
-    // std::cout << "JULEA ENGINE: Constructor" << std::endl;
-    // m_BP3Serializer(mpiComm, m_DebugMode),
-    // m_FileDataManager(mpiComm, m_DebugMode),
     // m_EndMessage = " in call to JuleaKVWriter " + m_Name + " Open\n";
 
     // MPI_Comm_rank(mpiComm, &m_WriterRank); //TODO: changed in release_25
@@ -79,7 +75,8 @@ StepStatus JuleaKVWriter::BeginStep(StepMode mode, const float timeoutSeconds)
     }
     std::cout << "StepMode mode: " << mode << std::endl;
     m_StepMode = mode;
-    m_DeferredVariables.clear();
+    m_DeferredVariables
+        .clear(); // FIXME: can this work for deferred put before first step?
     m_DeferredVariablesDataSize = 0;
     return StepStatus::OK;
 }
@@ -106,9 +103,11 @@ size_t JuleaKVWriter::CurrentStep() const
  */
 void JuleaKVWriter::EndStep()
 {
+    std::cout << "--- DEBUG : EndStep1" << std::endl;
     // if (m_NeedPerformPuts)
     if (m_DeferredVariables.size() > 0)
     {
+        std::cout << "--- DEBUG : EndStep2" << std::endl;
         std::cout << "m_DeferredVariables.size() = "
                   << m_DeferredVariables.size() << std::endl;
         PerformPuts(); // FIXME
