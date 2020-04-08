@@ -43,6 +43,106 @@ void SetMinMax(Variable<T> &variable, const T *data)
 template <class T>
 JuleaKVWriter::Metadata<T> *SetMetadata(Variable<T> &variable)
 {
+    // JuleaKVWriter::Metadata
+    return NULL;
+}
+
+template <>
+JuleaKVWriter::Metadata<std::string> *SetMetadata(Variable<std::string> &variable)
+{
+    // JuleaKVWriter::Metadata
+    return NULL;
+}
+
+template <>
+JuleaKVWriter::Metadata<int8_t> *SetMetadata(Variable<int8_t> &variable)
+{
+    // JuleaKVWriter::Metadata
+    return NULL;
+}
+
+template <>
+JuleaKVWriter::Metadata<uint8_t> *SetMetadata(Variable<uint8_t> &variable)
+{
+    // JuleaKVWriter::Metadata
+    return NULL;
+}
+
+template <>
+JuleaKVWriter::Metadata<int16_t> *SetMetadata(Variable<int16_t> &variable)
+{
+    // JuleaKVWriter::Metadata
+    return NULL;
+}
+
+template <>
+JuleaKVWriter::Metadata<uint16_t> *SetMetadata(Variable<uint16_t> &variable)
+{
+    // JuleaKVWriter::Metadata
+    return NULL;
+}
+
+template <>
+JuleaKVWriter::Metadata<int32_t> *SetMetadata(Variable<int32_t> &variable)
+{
+    // JuleaKVWriter::Metadata
+    return NULL;
+}
+
+template <>
+JuleaKVWriter::Metadata<uint32_t> *SetMetadata(Variable<uint32_t> &variable)
+{
+    // JuleaKVWriter::Metadata
+    return NULL;
+}
+
+template <>
+JuleaKVWriter::Metadata<int64_t> *SetMetadata(Variable<int64_t> &variable)
+{
+    // JuleaKVWriter::Metadata
+    return NULL;
+}
+
+template <>
+JuleaKVWriter::Metadata<uint64_t> *SetMetadata(Variable<uint64_t> &variable)
+{
+    // JuleaKVWriter::Metadata
+    return NULL;
+}
+
+template <>
+JuleaKVWriter::Metadata<float> *SetMetadata(Variable<float> &variable)
+{
+    // JuleaKVWriter::Metadata
+    return NULL;
+}
+
+template <>
+JuleaKVWriter::Metadata<double> *SetMetadata(Variable<double> &variable)
+{
+    // JuleaKVWriter::Metadata
+    return NULL;
+}
+
+template <>
+JuleaKVWriter::Metadata<long double> *SetMetadata(Variable<long double> &variable)
+{
+    // JuleaKVWriter::Metadata
+    return NULL;
+}
+
+
+template <>
+JuleaKVWriter::Metadata<std::complex<float>> *SetMetadata(Variable<std::complex<float>> &variable)
+{
+    // JuleaKVWriter::Metadata
+    return NULL;
+}
+
+template <>
+JuleaKVWriter::Metadata<std::complex<double>> *SetMetadata(Variable<std::complex<double>> &variable)
+{
+    // JuleaKVWriter::Metadata
     return NULL;
 }
 

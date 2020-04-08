@@ -140,43 +140,22 @@ void WriteMetadataToJuleaKV(std::string kvName, std::string paramName,
     j_semantics_unref(semantics);
 }
 
-// template <class T>
-// void WriteBlockMetadataToJuleaKV(Variable<T> &variable,
-//                                  const std::string nameSpace,
-//                                  JuleaKVWriter::Metadata<T> &md,
-//                                  size_t currStep, size_t blockID)
-void WriteBlockMetadataToJuleaKV(const std::string nameSpace,
-                                 gpointer &md, guint32 valueLen,
+void WriteBlockMetadataToJuleaKV(const std::string nameSpace, gpointer &md,
+                                 guint32 valueLen,
                                  const std::string stepBlockID)
 {
-    // void *namesBuf = NULL;
-    // guint32 valueLen = 0;
-    // void *metaDataBuf = NULL;
-
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
-
-    std::cout << "nameSpace " << nameSpace << std::endl;
-    // std::string stepBlockID;
 
     auto stringMetadataKV =
         g_strdup_printf("%s_%s", nameSpace.c_str(), "variableblocks");
     std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
 
-    // stepBlockID = g_strdup_printf("%d_%d", currStep, blockID);
-    // std::cout << "stepBlockID: " << stepBlockID << std::endl;
-
     auto kvObjectMetadata = j_kv_new(stringMetadataKV, stepBlockID.c_str());
-    // valueLen = sizeof(md);
 
-    // FIXME: store structs
-    // metaDataBuf = g_memdup(md, valueLen);
     j_kv_put(kvObjectMetadata, md, valueLen, g_free, batch);
-    // j_kv_put(kvObjectMetadata, (gpointer *) metaDataBuf, valueLen, g_free, batch);
     j_batch_execute(batch);
 
-    // free(metaDataBuf);
-    // free(namesBuf);
     g_free(stringMetadataKV);
     j_kv_unref(kvObjectMetadata);
     j_batch_unref(batch);
@@ -381,17 +360,17 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
     // bson_destroy(bsonNames);
 }
 
-//FIXME: params for writeblockmetadata!
+// FIXME: params for writeblockmetadata!
 // template <class T>
 // void PutVariableMetadataToJulea(Variable<T> &variable,
 //                                 JuleaKVWriter::Metadata<T> &md,
 //                                 const std::string nameSpace, size_t currStep,
 //                                 size_t blockID, bool isNameWritten)
 template <class T>
-void PutVariableMetadataToJulea(Variable<T> &variable,
-                                gpointer &md, guint32 valueLen,
-                                const std::string nameSpace, size_t currStep,
-                                size_t blockID, bool isNameWritten)
+void PutVariableMetadataToJulea(Variable<T> &variable, gpointer &md,
+                                guint32 valueLen, const std::string nameSpace,
+                                size_t currStep, size_t blockID,
+                                bool isNameWritten)
 {
     const char *kvNames = "variable_names";
     const char *kvMD = "variables";
@@ -405,7 +384,7 @@ void PutVariableMetadataToJulea(Variable<T> &variable,
 
     WriteVarMetadataToJuleaKV(variable, nameSpace.c_str(), currStep, blockID);
     // WriteBlockMetadataToJuleaKV(variable, nameSpace.c_str(), md, currStep,
-                                // blockID);
+    // blockID);
 
     WriteBlockMetadataToJuleaKV(nameSpace.c_str(), md, valueLen, stepBlockID);
 }

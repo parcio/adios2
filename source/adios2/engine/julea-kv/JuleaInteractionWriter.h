@@ -35,13 +35,14 @@ void PutVariableMetadataBSONToJulea(Variable<T> &variable, bson_t *bsonMetadata,
 // template <class T>
 // void PutVariableMetadataToJulea(Variable<T> &variable,
 //                                 JuleaKVWriter::Metadata<T> &md,
-//                                 const std::string nameSpace, size_t currentStep,
-//                                 size_t blockID, bool isNameWritten);
+//                                 const std::string nameSpace, size_t
+//                                 currentStep, size_t blockID, bool
+//                                 isNameWritten);
 template <class T>
-void PutVariableMetadataToJulea(Variable<T> &variable,
-                                gpointer &md, guint32 valueLen,
-                                const std::string nameSpace, size_t currentStep,
-                                size_t blockID, bool isNameWritten);
+void PutVariableMetadataToJulea(Variable<T> &variable, gpointer &md,
+                                guint32 valueLen, const std::string nameSpace,
+                                size_t currentStep, size_t blockID,
+                                bool isNameWritten);
 
 // template <class T>
 // void WriteVarMetadataToJuleaKV(Variable<T> &variable, const std::string
@@ -74,7 +75,7 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
         const std::string nameSpace, size_t currentStep, size_t blockID,       \
         bool isNameWritten);                                                   \
     extern template void PutVariableMetadataToJulea(                           \
-        Variable<T> &variable,gpointer &md, guint32 valueLen,                 \
+        Variable<T> &variable, gpointer &md, guint32 valueLen,                 \
         const std::string nameSpace, size_t currentStep, size_t blockID,       \
         bool isNameWritten);                                                   \
                                                                                \
