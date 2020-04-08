@@ -26,26 +26,6 @@ void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);
 
 template <class T>
 void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);
-
-template <class T>
-void SetMinMax(Variable<T> &variable, const T *data);
-
-template <class T>
-void ParseVariableToBSON(Variable<T> &variable, bson_t *bsonMetadata);
-
-// template <class T>
-// JuleaKVWriter::Metadata<T> *SetMetadata(Variable<T> &variable);
-
-template <class T>
-gpointer GetMetadataBuffer(Variable<T> &variable, guint32 &buffer_len, size_t step,
-                     size_t block);
-
-/* also sets m_Min, m_Max, m_Value; therefore the data pointer needs to be
- * passed */
-template <class T>
-void ParseVarTypeToBSON(Variable<T> &variable, const T *data,
-                        bson_t *bsonMetadata);
-
 #define attribute_template_instantiation(T)                                    \
     extern template void ParseAttributeToBSON(Attribute<T> &attribute,         \
                                               bson_t *bsonMetadata);           \
@@ -54,10 +34,16 @@ void ParseVarTypeToBSON(Variable<T> &variable, const T *data,
     ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(attribute_template_instantiation)
 #undef attribute_template_instantiation
 
+template <class T>
+void SetMinMax(Variable<T> &variable, const T *data);
+
+template <class T>
+gpointer GetMetadataBuffer(Variable<T> &variable, guint32 &buffer_len, size_t step,
+                     size_t block);
+
+
 #define variable_template_instantiation(T)                                     \
     SetMinMax(Variable<T> &variable, const T *data);                           \
-    extern template void ParseVariableToBSON(Variable<T> &variable,            \
-                                             bson_t *bsonMetadata);            \
     extern template gpointer GetMetadataBuffer(Variable<T> &variable,                \
                                          guint32 &buffer_len, size_t step,     \
                                          size_t block);                        \

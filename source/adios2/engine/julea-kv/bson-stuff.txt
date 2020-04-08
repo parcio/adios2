@@ -399,7 +399,6 @@ void ParseVarTypeToBSON<std::complex<double>>(
               << variable.Min() << std::endl;
 }
 
-// FIXME: ParseVariableToBSON why core:: and no variable?
 #define variable_template_instantiation(T)                                     \
     template void SetMinMax(Variable<T> &variable, const T *data);             \
     template void ParseVariableToBSON(core::Variable<T> &,                     \
