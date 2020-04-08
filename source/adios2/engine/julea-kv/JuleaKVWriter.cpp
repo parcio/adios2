@@ -106,9 +106,6 @@ size_t JuleaKVWriter::CurrentStep() const
  */
 void JuleaKVWriter::EndStep()
 {
-    // FIXME: append Step Data to Object store not replace it!
-    //
-    // std::cout << "JULEA ENGINE: EndStep" << std::endl;
     // if (m_NeedPerformPuts)
     if (m_DeferredVariables.size() > 0)
     {
@@ -343,15 +340,16 @@ void JuleaKVWriter::InitVariables()
  * @param  T [description]
  * @return   [description]
  */
-                // PutSyncCommon(variable, variable.SetBlockInfo(data, CurrentStep()));   \
+// PutSyncCommon(variable, variable.SetBlockInfo(data, CurrentStep()));   \
                 //         variable.m_BlocksInfo.pop_back();                                      \
 
 #define declare_type(T)                                                        \
     void JuleaKVWriter::DoPutSync(Variable<T> &variable, const T *data)        \
     {                                                                          \
-            variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].push_back(variable.m_BlocksInfo.size());\
+        variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].push_back(    \
+            variable.m_BlocksInfo.size());                                     \
         PutSyncCommon(variable, data);                                         \
-        m_CurrentBlockID ++;\
+        m_CurrentBlockID++;                                                    \
     }                                                                          \
     void JuleaKVWriter::DoPutDeferred(Variable<T> &variable, const T *data)    \
     {                                                                          \

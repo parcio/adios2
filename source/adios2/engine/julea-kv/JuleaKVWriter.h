@@ -122,7 +122,8 @@ public:
 
         /** is single value or array */
         bool IsValue = false;
-          /** if reader and writer have different ordering (column vs row major) */
+        /** if reader and writer have different ordering (column vs row major)
+         */
         bool IsReverseDimensions = false;
     };
 
@@ -269,11 +270,10 @@ private:
     void PutSyncCommon(Variable<T> &variable,
                        const typename Variable<T>::Info &blockInfo);
 
-
     template <class T>
     void PutSyncCommon(Variable<T> &variable, const T *values);
 
-        template <class T>
+    template <class T>
     void PutSyncToJulea(Variable<T> &variable, const T *values);
 
     template <class T>

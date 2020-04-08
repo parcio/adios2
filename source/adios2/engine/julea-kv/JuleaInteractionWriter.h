@@ -24,7 +24,8 @@ namespace engine
 /* Variable Functions */
 template <class T>
 void PutVariableDataToJulea(Variable<T> &variable, const T *data,
-                            const std::string nameSpace, size_t currentStep, size_t blockID);
+                            const std::string nameSpace, size_t currentStep,
+                            size_t blockID);
 
 template <class T>
 void PutVariableMetadataBSONToJulea(Variable<T> &variable, bson_t *bsonMetadata,
@@ -69,7 +70,7 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
 #define declare_template_instantiation(T)                                      \
     extern template void PutVariableDataToJulea(                               \
         Variable<T> &variable, const T *data, const std::string nameSpace,     \
-        size_t currentStep, size_t blockID);                                                   \
+        size_t currentStep, size_t blockID);                                   \
     extern template void PutVariableMetadataBSONToJulea(                       \
         Variable<T> &variable, bson_t *bsonMetadata,                           \
         const std::string nameSpace, size_t currentStep, size_t blockID,       \

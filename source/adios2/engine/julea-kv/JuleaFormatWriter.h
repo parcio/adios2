@@ -38,15 +38,14 @@ template <class T>
 void SetMinMax(Variable<T> &variable, const T *data);
 
 template <class T>
-gpointer GetMetadataBuffer(Variable<T> &variable, guint32 &buffer_len, size_t step,
-                     size_t block);
-
+gpointer GetMetadataBuffer(Variable<T> &variable, guint32 &buffer_len,
+                           size_t step, size_t block);
 
 #define variable_template_instantiation(T)                                     \
     SetMinMax(Variable<T> &variable, const T *data);                           \
-    extern template gpointer GetMetadataBuffer(Variable<T> &variable,                \
-                                         guint32 &buffer_len, size_t step,     \
-                                         size_t block);                        \
+    extern template gpointer GetMetadataBuffer(Variable<T> &variable,          \
+                                               guint32 &buffer_len,            \
+                                               size_t step, size_t block);     \
     ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 

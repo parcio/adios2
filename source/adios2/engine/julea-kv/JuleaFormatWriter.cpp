@@ -40,9 +40,9 @@ void SetMinMax(Variable<T> &variable, const T *data)
     variable.m_Max = max;
 }
 
-
 template <class T>
-void SetMetadata(Variable<T> &variable, JuleaKVWriter::Metadata<T> &md, size_t step, size_t block)
+void SetMetadata(Variable<T> &variable, JuleaKVWriter::Metadata<T> &md,
+                 size_t step, size_t block)
 {
     std::cout << "DEBUG ---- SetMetadata ---- " << std::endl;
 
@@ -89,16 +89,17 @@ void SetMetadata(Variable<T> &variable, JuleaKVWriter::Metadata<T> &md, size_t s
 
 template <>
 gpointer GetMetadataBuffer(Variable<std::string> &variable, guint32 &buffer_len,
-                     size_t step, size_t block)
+                           size_t step, size_t block)
 {
     JuleaKVWriter::Metadata<std::string> md;
     void *buf = NULL;
     buffer_len = sizeof(md);
 
-    std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type << std::endl;
+    std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type
+              << std::endl;
     std::cout << "buffer_len: " << buffer_len << std::endl;
 
-    SetMetadata(variable,md, step, block);
+    SetMetadata(variable, md, step, block);
     std::cout << "min =  " << md.Min << std::endl;
 
     buf = g_memdup(&md, buffer_len);
@@ -107,16 +108,17 @@ gpointer GetMetadataBuffer(Variable<std::string> &variable, guint32 &buffer_len,
 
 template <>
 gpointer GetMetadataBuffer(Variable<int8_t> &variable, guint32 &buffer_len,
-                     size_t step, size_t block)
+                           size_t step, size_t block)
 {
     JuleaKVWriter::Metadata<int8_t> md;
     void *buf = NULL;
     buffer_len = sizeof(md);
 
-    std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type << std::endl;
+    std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type
+              << std::endl;
     std::cout << "buffer_len: " << buffer_len << std::endl;
 
-    SetMetadata(variable,md, step, block);
+    SetMetadata(variable, md, step, block);
     std::cout << "min =  " << md.Min << std::endl;
 
     buf = g_memdup(&md, buffer_len);
@@ -125,16 +127,17 @@ gpointer GetMetadataBuffer(Variable<int8_t> &variable, guint32 &buffer_len,
 
 template <>
 gpointer GetMetadataBuffer(Variable<uint8_t> &variable, guint32 &buffer_len,
-                     size_t step, size_t block)
+                           size_t step, size_t block)
 {
     JuleaKVWriter::Metadata<uint8_t> md;
     void *buf = NULL;
     buffer_len = sizeof(md);
 
-    std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type << std::endl;
+    std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type
+              << std::endl;
     std::cout << "buffer_len: " << buffer_len << std::endl;
 
-    SetMetadata(variable,md, step, block);
+    SetMetadata(variable, md, step, block);
     std::cout << "min =  " << md.Min << std::endl;
 
     buf = g_memdup(&md, buffer_len);
@@ -143,34 +146,37 @@ gpointer GetMetadataBuffer(Variable<uint8_t> &variable, guint32 &buffer_len,
 
 template <>
 gpointer GetMetadataBuffer(Variable<int16_t> &variable, guint32 &buffer_len,
-                     size_t step, size_t block)
+                           size_t step, size_t block)
 {
     JuleaKVWriter::Metadata<int16_t> md;
     void *buf = NULL;
     buffer_len = sizeof(md);
 
-    std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type << std::endl;
+    std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type
+              << std::endl;
     std::cout << "buffer_len: " << buffer_len << std::endl;
 
-    SetMetadata(variable,md, step, block);
+    SetMetadata(variable, md, step, block);
     std::cout << "min =  " << md.Min << std::endl;
 
     buf = g_memdup(&md, buffer_len);
-    return buf;;
+    return buf;
+    ;
 }
 
 template <>
 gpointer GetMetadataBuffer(Variable<uint16_t> &variable, guint32 &buffer_len,
-                     size_t step, size_t block)
+                           size_t step, size_t block)
 {
     JuleaKVWriter::Metadata<uint16_t> md;
     void *buf = NULL;
     buffer_len = sizeof(md);
 
-    std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type << std::endl;
+    std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type
+              << std::endl;
     std::cout << "buffer_len: " << buffer_len << std::endl;
 
-    SetMetadata(variable,md, step, block);
+    SetMetadata(variable, md, step, block);
     std::cout << "min =  " << md.Min << std::endl;
 
     buf = g_memdup(&md, buffer_len);
@@ -179,16 +185,17 @@ gpointer GetMetadataBuffer(Variable<uint16_t> &variable, guint32 &buffer_len,
 
 template <>
 gpointer GetMetadataBuffer(Variable<int32_t> &variable, guint32 &buffer_len,
-                     size_t step, size_t block)
+                           size_t step, size_t block)
 {
     JuleaKVWriter::Metadata<int32_t> md;
     void *buf = NULL;
     buffer_len = sizeof(md);
 
-    std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type << std::endl;
+    std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type
+              << std::endl;
     std::cout << "buffer_len: " << buffer_len << std::endl;
 
-    SetMetadata(variable,md, step, block);
+    SetMetadata(variable, md, step, block);
     std::cout << "min =  " << md.Min << std::endl;
 
     buf = g_memdup(&md, buffer_len);
@@ -197,16 +204,17 @@ gpointer GetMetadataBuffer(Variable<int32_t> &variable, guint32 &buffer_len,
 
 template <>
 gpointer GetMetadataBuffer(Variable<uint32_t> &variable, guint32 &buffer_len,
-                     size_t step, size_t block)
+                           size_t step, size_t block)
 {
     JuleaKVWriter::Metadata<uint32_t> md;
     void *buf = NULL;
     buffer_len = sizeof(md);
 
-    std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type << std::endl;
+    std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type
+              << std::endl;
     std::cout << "buffer_len: " << buffer_len << std::endl;
 
-    SetMetadata(variable,md, step, block);
+    SetMetadata(variable, md, step, block);
     std::cout << "min =  " << md.Min << std::endl;
 
     buf = g_memdup(&md, buffer_len);
@@ -215,16 +223,17 @@ gpointer GetMetadataBuffer(Variable<uint32_t> &variable, guint32 &buffer_len,
 
 template <>
 gpointer GetMetadataBuffer(Variable<int64_t> &variable, guint32 &buffer_len,
-                     size_t step, size_t block)
+                           size_t step, size_t block)
 {
     JuleaKVWriter::Metadata<int64_t> md;
     void *buf = NULL;
     buffer_len = sizeof(md);
 
-    std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type << std::endl;
+    std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type
+              << std::endl;
     std::cout << "buffer_len: " << buffer_len << std::endl;
 
-    SetMetadata(variable,md, step, block);
+    SetMetadata(variable, md, step, block);
     std::cout << "min =  " << md.Min << std::endl;
 
     buf = g_memdup(&md, buffer_len);
@@ -233,16 +242,17 @@ gpointer GetMetadataBuffer(Variable<int64_t> &variable, guint32 &buffer_len,
 
 template <>
 gpointer GetMetadataBuffer(Variable<uint64_t> &variable, guint32 &buffer_len,
-                     size_t step, size_t block)
+                           size_t step, size_t block)
 {
     JuleaKVWriter::Metadata<uint64_t> md;
     void *buf = NULL;
     buffer_len = sizeof(md);
 
-    std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type << std::endl;
+    std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type
+              << std::endl;
     std::cout << "buffer_len: " << buffer_len << std::endl;
 
-    SetMetadata(variable,md, step, block);
+    SetMetadata(variable, md, step, block);
     std::cout << "min =  " << md.Min << std::endl;
 
     buf = g_memdup(&md, buffer_len);
@@ -251,16 +261,17 @@ gpointer GetMetadataBuffer(Variable<uint64_t> &variable, guint32 &buffer_len,
 
 template <>
 gpointer GetMetadataBuffer(Variable<float> &variable, guint32 &buffer_len,
-                     size_t step, size_t block)
+                           size_t step, size_t block)
 {
     JuleaKVWriter::Metadata<float> md;
     void *buf = NULL;
     buffer_len = sizeof(md);
 
-   std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type << std::endl;
+    std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type
+              << std::endl;
     std::cout << "buffer_len: " << buffer_len << std::endl;
 
-    SetMetadata(variable,md, step, block);
+    SetMetadata(variable, md, step, block);
     std::cout << "min =  " << md.Min << std::endl;
 
     buf = g_memdup(&md, buffer_len);
@@ -269,16 +280,17 @@ gpointer GetMetadataBuffer(Variable<float> &variable, guint32 &buffer_len,
 
 template <>
 gpointer GetMetadataBuffer(Variable<double> &variable, guint32 &buffer_len,
-                     size_t step, size_t block)
+                           size_t step, size_t block)
 {
     JuleaKVWriter::Metadata<double> md;
     void *buf = NULL;
     buffer_len = sizeof(md);
 
-   std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type << std::endl;
+    std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type
+              << std::endl;
     std::cout << "buffer_len: " << buffer_len << std::endl;
 
-    SetMetadata(variable,md, step, block);
+    SetMetadata(variable, md, step, block);
     std::cout << "min =  " << md.Min << std::endl;
 
     buf = g_memdup(&md, buffer_len);
@@ -287,16 +299,17 @@ gpointer GetMetadataBuffer(Variable<double> &variable, guint32 &buffer_len,
 
 template <>
 gpointer GetMetadataBuffer(Variable<long double> &variable, guint32 &buffer_len,
-                     size_t step, size_t block)
+                           size_t step, size_t block)
 {
     JuleaKVWriter::Metadata<long double> md;
     void *buf = NULL;
     buffer_len = sizeof(md);
 
-   std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type << std::endl;
+    std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type
+              << std::endl;
     std::cout << "buffer_len: " << buffer_len << std::endl;
 
-    SetMetadata(variable,md, step, block);
+    SetMetadata(variable, md, step, block);
     std::cout << "min =  " << md.Min << std::endl;
 
     buf = g_memdup(&md, buffer_len);
@@ -305,16 +318,17 @@ gpointer GetMetadataBuffer(Variable<long double> &variable, guint32 &buffer_len,
 
 template <>
 gpointer GetMetadataBuffer(Variable<std::complex<float>> &variable,
-                     guint32 &buffer_len, size_t step, size_t block)
+                           guint32 &buffer_len, size_t step, size_t block)
 {
     JuleaKVWriter::Metadata<std::complex<float>> md;
     void *buf = NULL;
     buffer_len = sizeof(md);
 
-   std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type << std::endl;
+    std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type
+              << std::endl;
     std::cout << "buffer_len: " << buffer_len << std::endl;
 
-    SetMetadata(variable,md, step, block);
+    SetMetadata(variable, md, step, block);
     std::cout << "min =  " << md.Min << std::endl;
 
     buf = g_memdup(&md, buffer_len);
@@ -323,22 +337,22 @@ gpointer GetMetadataBuffer(Variable<std::complex<float>> &variable,
 
 template <>
 gpointer GetMetadataBuffer(Variable<std::complex<double>> &variable,
-                     guint32 &buffer_len, size_t step, size_t block)
+                           guint32 &buffer_len, size_t step, size_t block)
 {
     JuleaKVWriter::Metadata<std::complex<double>> md;
     void *buf = NULL;
     buffer_len = sizeof(md);
 
-   std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type << std::endl;
+    std::cout << "DEBUG ---- GetMetadataBuffer ---- type: " << variable.m_Type
+              << std::endl;
     std::cout << "buffer_len: " << buffer_len << std::endl;
 
-    SetMetadata(variable,md, step, block);
+    SetMetadata(variable, md, step, block);
     std::cout << "min =  " << md.Min << std::endl;
 
     buf = g_memdup(&md, buffer_len);
     return buf;
 }
-
 
 template <class T>
 void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
@@ -469,8 +483,9 @@ void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
 
 #define variable_template_instantiation(T)                                     \
     template void SetMinMax(Variable<T> &variable, const T *data);             \
-    template gpointer GetMetadataBuffer(Variable<T> &variable, guint32 &buffer_len,  \
-                                  size_t step, size_t block);
+    template gpointer GetMetadataBuffer(Variable<T> &variable,                 \
+                                        guint32 &buffer_len, size_t step,      \
+                                        size_t block);
 
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
