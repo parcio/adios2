@@ -115,7 +115,6 @@ JuleaKVReader::DoAllStepsBlocksInfo(const core::Variable<T> &variable) const
     return allStepsBlocksInfo;
 }
 
-
 template <class T>
 std::vector<std::vector<typename core::Variable<T>::Info>>
 JuleaKVReader::DoAllRelativeStepsBlocksInfo(
@@ -130,7 +129,7 @@ JuleaKVReader::DoAllRelativeStepsBlocksInfo(
     {
         const std::vector<size_t> &blockPositions = pair.second;
         // allRelativeStepsBlocksInfo[relativeStep] =
-            // BlocksInfoCommon(variable, blockPositions);
+        // BlocksInfoCommon(variable, blockPositions);
         ++relativeStep;
     }
     return allRelativeStepsBlocksInfo;
@@ -150,7 +149,6 @@ JuleaKVReader::DoBlocksInfo(const core::Variable<T> &variable,
     // return BlocksInfoCommon(variable, itStep->second);
     return NULL;
 }
-
 
 } // end namespace engine
 } // end namespace core

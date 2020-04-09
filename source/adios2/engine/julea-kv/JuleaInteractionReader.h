@@ -21,13 +21,28 @@ namespace core
 namespace engine
 {
 
-/* Variables and Attributes */
-void GetNamesBSONFromJulea(const std::string nameSpace, bson_t **bsonNames,
-                           unsigned int *varCount, const std::string kvName);
+// TODO: implement according to Writer
+// template <class T>
+// void GetVariableDataFromJulea(Variable<T> &variable, const T *data,
+//                             const std::string nameSpace, size_t currentStep,
+//                             size_t blockID);
+// template <class T>
+// void GetVariableMetadataFromJulea(Variable<T> &variable, gpointer &md,
+//                                 guint32 valueLen, const std::string
+//                                 nameSpace, size_t currentStep, size_t
+//                                 blockID, bool isNameWritten);
+
+/* Variables */
+void GetVarNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
+                          unsigned int *varCount);
 
 /* Variables */
 void GetVariableBSONFromJulea(const std::string nameSpace,
                               const std::string varName, bson_t **bsonMetadata);
+
+
+void GetVariableMetadataFromJuleaNew(const std::string nameSpace, const std::string varName, JuleaKVReader::StepMetadata *md, guint32 *buffer_len);
+// void GetVariableMetadataFromJuleaNew(const std::string nameSpace, const std::string varName, gpointer md_buffer, guint32 buffer_len);
 
 template <class T>
 void GetVariableMetadataFromJulea(Variable<T> &variable,

@@ -179,7 +179,8 @@ void WriteVarMetadataToJuleaKV(Variable<T> &variable,
         g_strdup_printf("%s_%s", nameSpace.c_str(), "variables");
     auto kvVarMetadata = j_kv_new(stringMetadataKV, variable.m_Name.c_str());
     // std::cout << "nameSpace " << nameSpace << std::endl;
-    // std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
+    std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
+    std::cout << "varName " << variable.m_Name << std::endl;
 
     // JuleaKVWriter::StepMetadata *md =
     // g_slice_new(JuleaKVWriter::StepMetadata);
@@ -220,11 +221,48 @@ void WriteVarMetadataToJuleaKV(Variable<T> &variable,
     std::cout << "valueLen: " << valueLen << std::endl;
     if (valueLen == 0)
     {
-        // TODO: needed?
+        std::cout << "--- DEBUG --- todo something here" << std::endl;
+
+        //TODO: this is just copied from else... something needs to be adapted
+        // md.shape = variable.m_Shape;
+        // md.start = variable.m_Start;
+        // md.count = variable.m_Count;
+        // md.isConstantDims = variable.IsConstantDims();
+        // md.numberSteps = currStep + 1;
+        // md.blocks = (size_t *)g_slice_alloc(md.numberSteps * sizeof(size_t));
+
+        // // TODO: check whether this is called too often.
+        // // it is called in KVWriter.tcc for every block but every block change
+        // // needs to update variable. so it must be ok
+        // std::cout << "md->numberSteps: " << md.numberSteps << std::endl;
+        // std::cout << "type" << md.type << std::endl;
+        // std::cout << "isConstantDims" << md.isConstantDims << std::endl;
+        // for (uint i = 0; i <= currStep; i++)
+        // {
+        //     std::cout << "--- DEBUG ---" << std::endl;
+        //     // only one element in vector -> number of blocks for this step
+        //     // blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].at(0);
+        //     md.blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].at(0);
+        //     // md->blocks = blocks;
+        //     std::cout << "i: " << i << "  blocks: " << md.blocks[i]
+        //               << std::endl;
+        // }
+        //     // std::cout << "--- DEBUG ---2" << std::endl;
+        // size_t len = sizeof(JuleaKVWriter::StepMetadata);
+        //     // std::cout << "--- DEBUG ---3" << std::endl;
+        // metaDataBuf = g_memdup(&md, len);
+        //     // std::cout << "--- DEBUG ---4" << std::endl;
+
+        // j_kv_put(kvVarMetadata, metaDataBuf, len, g_free, batch);
+        // j_batch_execute(batch);
     }
     else
     {
         // md = metaDataBuf;
+        md.shape = variable.m_Shape;
+        md.start = variable.m_Start;
+        md.count = variable.m_Count;
+        md.isConstantDims = variable.IsConstantDims();
         md.numberSteps = currStep + 1;
         md.blocks = (size_t *)g_slice_alloc(md.numberSteps * sizeof(size_t));
 
@@ -232,6 +270,8 @@ void WriteVarMetadataToJuleaKV(Variable<T> &variable,
         // it is called in KVWriter.tcc for every block but every block change
         // needs to update variable. so it must be ok
         std::cout << "md->numberSteps: " << md.numberSteps << std::endl;
+        std::cout << "type" << md.type << std::endl;
+        std::cout << "isConstantDims" << md.isConstantDims << std::endl;
         for (uint i = 0; i <= currStep; i++)
         {
             std::cout << "--- DEBUG ---" << std::endl;
@@ -242,10 +282,14 @@ void WriteVarMetadataToJuleaKV(Variable<T> &variable,
             std::cout << "i: " << i << "  blocks: " << md.blocks[i]
                       << std::endl;
         }
+            std::cout << "--- DEBUG 2 ---" << std::endl;
         size_t len = sizeof(JuleaKVWriter::StepMetadata);
+            std::cout << "--- DEBUG 3 ---" << std::endl;
         metaDataBuf = g_memdup(&md, len);
+            std::cout << "--- DEBUG 4 ---" << std::endl;
 
         j_kv_put(kvVarMetadata, metaDataBuf, len, g_free, batch);
+            std::cout << "--- DEBUG 5 ---" << std::endl;
         j_batch_execute(batch);
     }
 

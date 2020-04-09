@@ -269,12 +269,12 @@ void JuleaKVReader::InitVariables()
 {
     bson_iter_t b_iter;
     bson_t *bsonNames;
-    // std::string varName;
+    std::string varName;
     std::string nameSpace = m_Name;
     std::string kvName = "variable_names";
     unsigned int varCount = 0;
 
-    GetNamesBSONFromJulea(nameSpace, &bsonNames, &varCount, kvName);
+    GetVarNamesFromJulea(nameSpace, &bsonNames, &varCount);
 
     if (varCount == 0)
     {
@@ -288,14 +288,23 @@ void JuleaKVReader::InitVariables()
 
         while (bson_iter_next(&b_iter))
         {
-            bson_t *bsonMetadata;
-
+            // bson_t *bsonMetadata;
+            guint32 buffer_len;
+            gpointer md_buffer = NULL;
+            JuleaKVReader::StepMetadata md;
             // varName = g_strdup(bson_iter_key(&b_iter));
             std::string varName(bson_iter_key(&b_iter));
 
             std::cout << "-- Variable name " << varName << std::endl;
+            GetVariableMetadataFromJuleaNew(nameSpace, varName, &md, &buffer_len);
+            // GetVariableMetadataFromJuleaNew(nameSpace, varName, md_buffer, buffer_len);
+            // TODO: rewrite variablemetadata so that the variable knows shape,
+            // start, count so it is not necessary to ask every block?! check BP
 
-            GetVariableBSONFromJulea(nameSpace, varName, &bsonMetadata);
+            // GetVariableBSONFromJulea(nameSpace, varName, &bsonMetadata);
+            std::cout << "numberSteps" << md.numberSteps << std::endl;
+            std::cout << "type" << md.type << std::endl;
+            std::cout << "isConstantDims" << md.isConstantDims << std::endl;
 
             Dims shape;
             Dims start;
@@ -303,10 +312,11 @@ void JuleaKVReader::InitVariables()
             bool constantDims;
             int type;
 
-            GetVariableMetadataForInitFromBSON(nameSpace, varName, bsonMetadata,
-                                               &type, &shape, &start, &count,
-                                               &constantDims);
-            bson_destroy(bsonMetadata);
+            // GetVariableMetadataForInitFromBSON(nameSpace, varName,
+            // bsonMetadata,
+            //                                    &type, &shape, &start, &count,
+            //                                    &constantDims);
+            // bson_destroy(bsonMetadata);
             DefineVariableInInit(&m_IO, varName, type, shape, start, count,
                                  constantDims);
             // free(varName);
@@ -333,8 +343,8 @@ void JuleaKVReader::InitAttributes()
 
     std::cout << "\n______________InitAttributes_____________________"
               << std::endl;
-    GetNamesBSONFromJulea(nameSpace, &bsonNames, &attrCount,
-                          kvName); // TODO: get all attribute names
+    GetVarNamesFromJulea(nameSpace, &bsonNames,
+                         &attrCount); // TODO: get all attribute names
 
     if (attrCount == 0)
     {
@@ -513,24 +523,24 @@ void JuleaKVReader::DoClose(const int transportIndex)
     std::map<size_t, std::vector<typename Variable<T>::Info>>                  \
     JuleaKVReader::DoAllStepsBlocksInfo(const Variable<T> &variable) const     \
     {                                                                          \
-        return AllStepsBlocksInfo(variable);\
+        return AllStepsBlocksInfo(variable);                                   \
     }                                                                          \
-     std::vector<std::vector<typename Variable<T>::Info>>                       \
-    JuleaKVReader::DoAllRelativeStepsBlocksInfo(const Variable<T> &variable) const \
+    std::vector<std::vector<typename Variable<T>::Info>>                       \
+    JuleaKVReader::DoAllRelativeStepsBlocksInfo(const Variable<T> &variable)   \
+        const                                                                  \
     {                                                                          \
-        return AllRelativeStepsBlocksInfo(variable);         \
+        return AllRelativeStepsBlocksInfo(variable);                           \
     }                                                                          \
                                                                                \
-    std::vector<typename Variable<T>::Info> JuleaKVReader::DoBlocksInfo(           \
+    std::vector<typename Variable<T>::Info> JuleaKVReader::DoBlocksInfo(       \
         const Variable<T> &variable, const size_t step) const                  \
     {                                                                          \
-        return BlocksInfo(variable, step);                   \
+        return BlocksInfo(variable, step);                                     \
     }
-
 
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
-    //                                                                            \
+//                                                                            \
     // std::vector<typename Variable<T>::Info> JuleaKVReader::DoBlocksInfo(       \
     //     const Variable<T> &variable, const size_t step)                   \
     // {                                                                          \

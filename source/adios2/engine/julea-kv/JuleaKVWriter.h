@@ -60,8 +60,13 @@ public:
     /** Step related metadata for a variable:  */
     struct StepMetadata
     {
-        size_t numberSteps = 0;
+        Dims shape;
+        Dims start;
+        Dims count;
         size_t *blocks = nullptr;
+        size_t numberSteps = 0;
+        int type;
+        bool isConstantDims;
     };
 
     /** Operators metadata info */

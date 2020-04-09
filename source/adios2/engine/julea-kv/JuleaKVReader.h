@@ -66,8 +66,13 @@ public:
     /** Step related metadata for a variable:  */
     struct StepMetadata
     {
-        size_t numberSteps = 0;
+        Dims shape;
+        Dims start;
+        Dims count;
         size_t *blocks = nullptr;
+        size_t numberSteps = 0;
+        int type = 0;
+        bool isConstantDims = true;
     };
 
     /** Operators metadata info */
@@ -240,8 +245,7 @@ private:
     void SetVariableBlockInfo(core::Variable<T> &variable,
                               typename core::Variable<T>::Info &blockInfo);
 
-
-template <class T>
+    template <class T>
     std::map<size_t, std::vector<typename core::Variable<T>::Info>>
     DoAllStepsBlocksInfo(const core::Variable<T> &variable) const;
 
@@ -257,7 +261,7 @@ template <class T>
     std::map<size_t, std::vector<typename Variable<T>::Info>>                  \
     DoAllStepsBlocksInfo(const Variable<T> &variable) const final;             \
                                                                                \
-                                                                               std::vector<std::vector<typename Variable<T>::Info>>                       \
+    std::vector<std::vector<typename Variable<T>::Info>>                       \
     DoAllRelativeStepsBlocksInfo(const Variable<T> &) const final;             \
                                                                                \
     std::vector<typename Variable<T>::Info> DoBlocksInfo(                      \
@@ -268,15 +272,15 @@ template <class T>
     // std::vector<typename Variable<T>::Info> DoBlocksInfo(                      \
     //     const Variable<T> &variable, const size_t step)  final;
 
-//     #define declare_type(T)                                                        \
+    //     #define declare_type(T)                                                        \
 //     std::map<size_t, std::vector<typename Variable<T>::Info>>                  \
 //     DoAllStepsBlocksInfo(const Variable<T> &variable) const final;             \
 //                                                                                \
 //     std::vector<typename Variable<T>::Info> DoBlocksInfo(                      \
 //         const Variable<T> &variable, const size_t step) const final;
 
-//     ADIOS2_FOREACH_TYPE_1ARG(declare_type)
-// #undef declare_type
+    //     ADIOS2_FOREACH_TYPE_1ARG(declare_type)
+    // #undef declare_type
 };
 
 } // end namespace engine

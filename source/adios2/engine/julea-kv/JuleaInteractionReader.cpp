@@ -31,6 +31,33 @@ namespace core
 namespace engine
 {
 
+
+// void GetVariableMetadataFromJuleaNew(const std::string nameSpace, const std::string varName, gpointer md_buffer, guint32 buffer_len)
+void GetVariableMetadataFromJuleaNew(const std::string nameSpace, const std::string varName, JuleaKVReader::StepMetadata *md, guint32 *buffer_len)
+{
+    guint32 valueLen = 0;
+    void *metaDataBuf = NULL;
+
+    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
+
+    JuleaKVReader::StepMetadata md2;
+    auto stringMetadataKV =
+        g_strdup_printf("%s_%s", nameSpace.c_str(), "variables");
+    std::cout << "stringMetadataKV: " << stringMetadataKV << std::endl;
+    std::cout << "varName: " << varName << std::endl;
+    auto kvVarMetadata = j_kv_new(stringMetadataKV, varName.c_str());
+     // j_kv_get(kvVarMetadata, (gpointer *)md, buffer_len, batch);
+
+
+     j_kv_get(kvVarMetadata, (gpointer *)&md2, &valueLen, batch);
+    j_batch_execute(batch);
+
+    std::cout << "buffer_len: " << buffer_len << std::endl;
+    std::cout << "buffer_len: " << &buffer_len << std::endl;
+    std::cout << "buffer_len: " << *buffer_len << std::endl;
+}
+
 template <class T>
 void GetVariableMetadataFromJulea(Variable<T> &variable,
                                   const std::string nameSpace,
@@ -126,20 +153,21 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 
-void GetNamesBSONFromJulea(const std::string nameSpace, bson_t **bsonNames,
-                           unsigned int *varCount, const std::string kvName)
+void GetVarNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
+                          unsigned int *varCount)
 {
-    std::cout << "-- GetNamesBSONFromJulea ------" << std::endl;
+    std::cout << "-- GetNamesFromJulea ------" << std::endl;
     guint32 valueLen = 0;
     // g_autoptr(JKV) kv_object = NULL;
     void *namesBuf = NULL;
 
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
+    auto kvName = "variable_names";
 
     // auto kv_object = j_kv_new("variable_names", nameSpace.c_str());
     // auto kvObject = j_kv_new(nameSpace.c_str(),kvName.c_str());
-    auto kvObject = j_kv_new(kvName.c_str(), nameSpace.c_str());
+    auto kvObject = j_kv_new(kvName, nameSpace.c_str());
     std::cout << "kvName :" << kvName << std::endl;
 
     j_kv_get(kvObject, &namesBuf, &valueLen, batch);
