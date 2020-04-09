@@ -505,6 +505,38 @@ void JuleaKVReader::DoClose(const int transportIndex)
     // g_free(m_JuleaInfo->nameSpace);
     // g_slice_free(JuleaInfo, m_JuleaInfo);
 }
+/// FIXME: implement AllStepsBlocksInfo
+// return m_BP4Deserializer.AllStepsBlocksInfo(variable);                 \
+        return m_BP4Deserializer.BlocksInfo(variable, step);                   \
+
+#define declare_type(T)                                                        \
+    std::map<size_t, std::vector<typename Variable<T>::Info>>                  \
+    JuleaKVReader::DoAllStepsBlocksInfo(const Variable<T> &variable) const     \
+    {                                                                          \
+        return AllStepsBlocksInfo(variable);\
+    }                                                                          \
+     std::vector<std::vector<typename Variable<T>::Info>>                       \
+    JuleaKVReader::DoAllRelativeStepsBlocksInfo(const Variable<T> &variable) const \
+    {                                                                          \
+        return AllRelativeStepsBlocksInfo(variable);         \
+    }                                                                          \
+                                                                               \
+    std::vector<typename Variable<T>::Info> JuleaKVReader::DoBlocksInfo(           \
+        const Variable<T> &variable, const size_t step) const                  \
+    {                                                                          \
+        return BlocksInfo(variable, step);                   \
+    }
+
+
+ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
+#undef declare_type
+    //                                                                            \
+    // std::vector<typename Variable<T>::Info> JuleaKVReader::DoBlocksInfo(       \
+    //     const Variable<T> &variable, const size_t step)                   \
+    // {                                                                          \
+    //     TAU_SCOPED_TIMER("JuleaKVReader::BlocksInfo");                         \
+    //     BlocksInfo(variable,step);\
+    // }
 
 } // end namespace engine
 } // end namespace core

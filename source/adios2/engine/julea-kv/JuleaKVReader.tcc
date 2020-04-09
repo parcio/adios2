@@ -97,6 +97,61 @@ void JuleaKVReader::GetDeferredCommon(Variable<T> &variable, T *data)
     m_NeedPerformGets = true;
 }
 
+template <class T>
+std::map<size_t, std::vector<typename core::Variable<T>::Info>>
+JuleaKVReader::DoAllStepsBlocksInfo(const core::Variable<T> &variable) const
+{
+    std::map<size_t, std::vector<typename core::Variable<T>::Info>>
+        allStepsBlocksInfo;
+
+    for (const auto &pair : variable.m_AvailableStepBlockIndexOffsets)
+    {
+        const size_t step = pair.first;
+        const std::vector<size_t> &blockPositions = pair.second;
+        // bp4 index starts at 1
+        // allStepsBlocksInfo[step - 1] =
+        //     BlocksInfoCommon(variable, blockPositions);
+    }
+    return allStepsBlocksInfo;
+}
+
+
+template <class T>
+std::vector<std::vector<typename core::Variable<T>::Info>>
+JuleaKVReader::DoAllRelativeStepsBlocksInfo(
+    const core::Variable<T> &variable) const
+{
+    std::vector<std::vector<typename core::Variable<T>::Info>>
+        allRelativeStepsBlocksInfo(
+            variable.m_AvailableStepBlockIndexOffsets.size());
+
+    size_t relativeStep = 0;
+    for (const auto &pair : variable.m_AvailableStepBlockIndexOffsets)
+    {
+        const std::vector<size_t> &blockPositions = pair.second;
+        // allRelativeStepsBlocksInfo[relativeStep] =
+            // BlocksInfoCommon(variable, blockPositions);
+        ++relativeStep;
+    }
+    return allRelativeStepsBlocksInfo;
+}
+
+template <class T>
+std::vector<typename core::Variable<T>::Info>
+JuleaKVReader::DoBlocksInfo(const core::Variable<T> &variable,
+                            const size_t step) const
+{
+    // bp4 format starts at 1
+    auto itStep = variable.m_AvailableStepBlockIndexOffsets.find(step + 1);
+    if (itStep == variable.m_AvailableStepBlockIndexOffsets.end())
+    {
+        return std::vector<typename core::Variable<T>::Info>();
+    }
+    // return BlocksInfoCommon(variable, itStep->second);
+    return NULL;
+}
+
+
 } // end namespace engine
 } // end namespace core
 } // end namespace adios2
