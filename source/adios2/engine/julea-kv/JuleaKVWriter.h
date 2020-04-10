@@ -57,16 +57,35 @@ public:
     Flush(const int transportIndex = -1) final; // TODO: transportindex needed?
     // void Flush();
 
-    /** Step related metadata for a variable:  */
+    /** Step related metadata for a variable broken down to put into JULEA  */
+    struct CStepMetadata
+    {
+        bool isConstantDims;
+        size_t typeSize = 0;
+        char *type = nullptr;
+        size_t shapeSize = 0;
+        size_t *shape = nullptr;
+        size_t startSize = 0;
+        size_t *start = nullptr;
+        size_t countSize = 0;
+        size_t *count = nullptr;
+
+        size_t numberSteps = 0;
+        size_t *blocks = nullptr;
+        // int type;
+    };
+
+        /** Step related metadata for a variable:  */
     struct StepMetadata
     {
         Dims shape;
         Dims start;
         Dims count;
-        size_t *blocks = nullptr;
-        size_t numberSteps = 0;
-        int type;
+        std::string type;
         bool isConstantDims;
+        size_t numberSteps = 0;
+        size_t *blocks = nullptr;
+        // int type;
     };
 
     /** Operators metadata info */
@@ -101,6 +120,11 @@ public:
         // std::vector<T> Values;
         // std::vector<T> MinMaxs; // sub-block level min-max
 
+        // T *Data = nullptr;
+        T Min = T();
+        T Max = T();
+        // T Value = T();   //TODO: not set in variable?!
+
         // size_t Step = 0; // TODO: currentStep? variable has no Step itself
         size_t StepsStart = 0;
         size_t StepsCount = 0;
@@ -109,10 +133,6 @@ public:
         size_t CurrentStep = 0; // Julea Engine
         size_t BlockNumber = 0; // Julea Engine
 
-        // T *Data = nullptr;
-        T Min = T();
-        T Max = T();
-        // T Value = T();   //TODO: not set in variable?!
 
         // int WriterID = 0; //TODO: what exactly is this and when used?
 

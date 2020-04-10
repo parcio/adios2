@@ -69,9 +69,10 @@ public:
         Dims shape;
         Dims start;
         Dims count;
+        std::string type;
         size_t *blocks = nullptr;
         size_t numberSteps = 0;
-        int type = 0;
+        // int type = 0;
         bool isConstantDims = true;
     };
 

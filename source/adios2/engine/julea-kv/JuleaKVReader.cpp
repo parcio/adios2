@@ -302,6 +302,7 @@ void JuleaKVReader::InitVariables()
             // start, count so it is not necessary to ask every block?! check BP
 
             // GetVariableBSONFromJulea(nameSpace, varName, &bsonMetadata);
+            std::cout << "DEBUG 1" << std::endl;
             std::cout << "numberSteps" << md.numberSteps << std::endl;
             std::cout << "type" << md.type << std::endl;
             std::cout << "isConstantDims" << md.isConstantDims << std::endl;
