@@ -41,7 +41,7 @@ void GetVariableBSONFromJulea(const std::string nameSpace,
                               const std::string varName, bson_t **bsonMetadata);
 
 void GetVariableMetadataFromJuleaNew(const std::string nameSpace,
-                                     const std::string varName, gpointer md,
+                                     const std::string varName, gpointer* md,
                                      guint32 *buffer_len);
 // void GetVariableMetadataFromJuleaNew(const std::string nameSpace, const
 // std::string varName, gpointer md_buffer, guint32 buffer_len);

@@ -34,7 +34,7 @@ namespace engine
 // void GetVariableMetadataFromJuleaNew(const std::string nameSpace, const
 // std::string varName, gpointer md_buffer, guint32 buffer_len)
 void GetVariableMetadataFromJuleaNew(const std::string nameSpace,
-                                     const std::string varName, gpointer md,
+                                     const std::string varName, gpointer* md,
                                      guint32 *buffer_len)
 {
     void *metaDataBuf = NULL;
@@ -48,7 +48,7 @@ void GetVariableMetadataFromJuleaNew(const std::string nameSpace,
     std::cout << "varName: " << varName << std::endl;
     auto kvVarMetadata = j_kv_new(stringMetadataKV, varName.c_str());
 
-    j_kv_get(kvVarMetadata, &md, buffer_len, batch);
+    j_kv_get(kvVarMetadata, md, buffer_len, batch);
     // j_kv_get(kvVarMetadata, &metaDataBuf, buffer_len, batch);
 
     // j_kv_get(kvVarMetadata, &metaDataBuf, &valueLen, batch);

@@ -38,7 +38,7 @@ void DeserializeVariableMetadata(gpointer buffer, int *type, Dims *shape,
 
     // memcpy(&isConstantDims, &buffer, sizeof(bool));
     // buffer += sizeof(bool);
-    memcpy(&isConstantDims, &tmp_buffer, sizeof(bool));
+    memcpy(&isConstantDims, tmp_buffer, sizeof(bool));
     tmp_buffer += sizeof(bool);
     std::cout << "constantDims: " << isConstantDims << std::endl;
 
@@ -47,12 +47,12 @@ void DeserializeVariableMetadata(gpointer buffer, int *type, Dims *shape,
     // memcpy(buffer, &typeLen, sizeof(size_t)); // type
 
     std::cout << "typeLen: " << typeLen << std::endl;
-    memcpy(&typeLen, &tmp_buffer, sizeof(size_t)); // type
+    memcpy(&typeLen, tmp_buffer, sizeof(size_t)); // type
     // memcpy(&typeLen, &buffer, sizeof(size_t)); // type
     tmp_buffer += sizeof(size_t);
     std::cout << "typeLen: " << typeLen << std::endl;
 
-    memcpy(&tmpType, &tmp_buffer, typeLen);
+    memcpy(&tmpType, tmp_buffer, typeLen);
     tmp_buffer += typeLen;
     std::cout << "tmpType: " << tmpType << std::endl;
 

@@ -95,7 +95,7 @@ void PutNameToJulea(std::string paramName, std::string nameSpace,
     j_semantics_unref(semantics);
 }
 
-void PutVariableMetadataToJulea(const std::string nameSpace, gpointer &buffer,
+void PutVariableMetadataToJulea(const std::string nameSpace, gpointer buffer,
                                 guint32 bufferLen, const std::string varName)
 {
     // TODO: make sure that there are no races when updating
