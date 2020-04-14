@@ -80,7 +80,7 @@ void JuleaKVWriter::PutSyncToJulea(Variable<T> &variable, const T *data)
     // blockID);
 
     auto stepBlockID =
-        g_strdup_printf("%d_%d", m_CurrentStep, m_CurrentBlockID);
+        g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
     std::cout << "stepBlockID: " << stepBlockID << std::endl;
 
     // PutBlockMetadataToJulea(m_Name, blockMD, blockMD_len, stepBlockID);

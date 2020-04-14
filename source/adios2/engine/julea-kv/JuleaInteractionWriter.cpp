@@ -209,7 +209,7 @@ void PutVariableDataToJulea(Variable<T> &variable, const T *data,
     auto dataSize = variable.m_ElementSize * numberElements;
 
     std::string objName = "variableblocks";
-    auto stepBlockID = g_strdup_printf("%d_%d", currStep, block);
+    auto stepBlockID = g_strdup_printf("%lu_%lu", currStep, block);
     std::cout << "stepBlockID: " << stepBlockID << std::endl;
     auto stringDataObject =
         g_strdup_printf("%s_%s", nameSpace.c_str(), objName.c_str());
