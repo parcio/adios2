@@ -58,10 +58,11 @@ public:
     // void Flush();
 
     /** Step related metadata for a variable broken down to put into JULEA  */
+    // serialized format
     struct CStepMetadata
     {
         bool isConstantDims;
-        size_t typeSize = 0;
+        size_t typeLen = 0;
         char *type = nullptr;
         size_t shapeSize = 0;
         size_t *shape = nullptr;
@@ -100,6 +101,38 @@ public:
         Params Info;
     };
 
+    // serialized format
+    struct CBlockMetadata
+    {
+        size_t typeLen = 0;
+        char *type = nullptr;
+        size_t shapeSize = 0;
+        size_t *shape = nullptr;
+        size_t startSize = 0;
+        size_t *start = nullptr;
+        size_t countSize = 0;
+        size_t *count = nullptr;
+
+        size_t memoryStartSize = 0;
+        size_t *memoryStart = nullptr;
+        size_t memoryCountSize = 0;
+        size_t *memoryCount = nullptr;
+        // min
+        // max
+
+        size_t StepsStart = 0;
+        size_t StepsCount = 0;
+        size_t BlockID = 0;
+
+        size_t CurrentStep = 0; // Julea Engine
+        size_t BlockNumber = 0; // Julea Engine
+
+        bool IsReadAsJoined = false;
+        bool IsReadAsLocalValue = false;
+        bool IsRandomAccess = true;
+        bool IsValue = false;
+    };
+
     template <class T>
     struct Metadata
     {
@@ -116,7 +149,7 @@ public:
         Dims MemoryCount;
 
         // std::vector<core::IO::Operation> Operations;
-        std::vector<core::VariableBase::Operation> Operations;
+        std::vector<core::VariableBase::Operation> Operations; // TODO serialize
         // std::vector<T> Values;
         // std::vector<T> MinMaxs; // sub-block level min-max
 

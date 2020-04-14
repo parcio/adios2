@@ -29,6 +29,182 @@ namespace engine
 {
 
 template <class T>
+gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
+                                   size_t currStep)
+{
+    bool constantDims = variable.IsConstantDims();
+    const char *type = variable.m_Type.c_str();
+    size_t shapeSize = variable.m_Shape.size();
+    size_t startSize = variable.m_Start.size();
+    size_t countSize = variable.m_Count.size();
+    size_t numberSteps = currStep + 1;
+
+    size_t typeLen = sizeof(variable.m_Type.c_str());
+    size_t shapeLen = shapeSize * sizeof(Dims[0]);
+    size_t startLen = startSize * sizeof(Dims[0]);
+    size_t countLen = countSize * sizeof(Dims[0]);
+    size_t blocksLen = numberSteps * sizeof(size_t);
+
+    uint numberVectors = 5; // type + shape + start + count + blocks
+    uint numberBools = 1;   // constantDims
+
+    len = numberVectors * sizeof(size_t) + typeLen + shapeLen + startLen +
+          countLen + blocksLen + numberBools * sizeof(bool);
+    std::cout << "--- buffer length: " << len << std::endl;
+
+    // gpointer buffer = (char *)g_slice_alloc(len);
+    char *buffer = (char *)g_slice_alloc(len);
+
+    size_t blocks[numberSteps];
+    for (uint i = 0; i < numberSteps; i++)
+    {
+        std::cout << "--- DEBUG ---" << std::endl;
+        blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].size();
+        std::cout << "i: " << i << "  blocks: " << blocks[i] << std::endl;
+    }
+
+    memcpy(buffer, &constantDims, sizeof(bool));
+    buffer += sizeof(bool);
+
+    /** allocate memory for variable holding the length of the vector +
+    memory for the vector data itself */
+    memcpy(buffer, &typeLen, sizeof(size_t)); // type
+    buffer += sizeof(size_t);
+    memcpy(buffer, type, typeLen);
+    buffer += typeLen;
+
+    memcpy(buffer, &shapeSize, sizeof(size_t)); // shape
+    buffer += sizeof(size_t);
+    memcpy(buffer, variable.m_Shape.data(), shapeLen);
+    buffer += shapeLen;
+
+    memcpy(buffer, &startSize, sizeof(size_t)); // start
+    buffer += sizeof(size_t);
+    memcpy(buffer, variable.m_Start.data(), startLen);
+    buffer += startLen;
+
+    memcpy(buffer, &countSize, sizeof(size_t)); // count
+    buffer += sizeof(size_t);
+    memcpy(buffer, variable.m_Count.data(), countLen);
+    buffer += countLen;
+
+    memcpy(buffer, &numberSteps, sizeof(size_t)); // blocks
+    buffer += sizeof(size_t);
+    memcpy(buffer, blocks, blocksLen);
+
+    return (gpointer)buffer;
+}
+
+template <class T>
+gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
+                                size_t currStep, size_t block)
+{
+    size_t typeLen = sizeof(variable.m_Type.c_str());
+    const char *type = variable.m_Type.c_str();
+
+    size_t shapeSize = variable.m_Shape.size();
+    size_t startSize = variable.m_Start.size();
+    size_t countSize = variable.m_Count.size();
+    size_t memoryStartSize = variable.m_MemoryStart.size();
+    size_t memoryCountSize = variable.m_MemoryCount.size();
+
+    size_t shapeLen = shapeSize * sizeof(Dims[0]);
+    size_t startLen = startSize * sizeof(Dims[0]);
+    size_t countLen = countSize * sizeof(Dims[0]);
+    size_t memoryStartLen = memoryStartSize * sizeof(Dims[0]);
+    size_t memoryCountLen = memoryCountSize * sizeof(Dims[0]);
+
+    size_t stepsStart = variable.m_StepsStart;
+    size_t stepsCount = variable.m_StepsCount;
+    size_t blockID = variable.m_BlockID;
+
+    size_t currentStep = currStep; // Julea Engine
+    size_t blockNumber = block;    // Julea Engine
+
+    bool isReadAsJoined = variable.m_ReadAsJoined;
+    bool isReadAsLocalValue = variable.m_ReadAsLocalValue;
+    bool isRandomAccess = variable.m_RandomAccess;
+    bool isValue = variable.m_SingleValue;
+
+    // type + shape + start + count + memoryStart + memoryCount
+    uint numberVectors = 6;
+    // StepsStart + StepsCount + BlockID + currentStep + blockNumber
+    uint numberCounter = 5;
+    // ReadAsJoined + ReadAsLocalValue + RandomAccess + SingleValue
+    uint numberBools = 4;
+
+    // calculating buffer size
+    len = numberVectors * sizeof(size_t) + typeLen + shapeLen + startLen +
+          countLen + memoryStartLen + memoryCountLen +
+          numberCounter * sizeof(size_t) + numberBools * sizeof(bool);
+
+    std::cout << "--- buffer length: " << len << std::endl;
+
+    char *buffer = (char *)g_slice_alloc(len);
+
+    /** allocate memory for variable holding the length of the vector +
+    memory for the vector data itself */
+    memcpy(buffer, &typeLen, sizeof(size_t)); // type
+    buffer += sizeof(size_t);
+    memcpy(buffer, type, typeLen);
+    buffer += typeLen;
+
+    memcpy(buffer, &shapeSize, sizeof(size_t)); // shape
+    buffer += sizeof(size_t);
+    memcpy(buffer, variable.m_Shape.data(), shapeLen);
+    buffer += shapeLen;
+
+    memcpy(buffer, &startSize, sizeof(size_t)); // start
+    buffer += sizeof(size_t);
+    memcpy(buffer, variable.m_Start.data(), startLen);
+    buffer += startLen;
+
+    memcpy(buffer, &countSize, sizeof(size_t)); // count
+    buffer += sizeof(size_t);
+    memcpy(buffer, variable.m_Count.data(), countLen);
+    buffer += countLen;
+
+    memcpy(buffer, &memoryStartSize, sizeof(size_t)); // memoryStart
+    buffer += sizeof(size_t);
+    memcpy(buffer, variable.m_MemoryStart.data(), memoryStartLen);
+    buffer += memoryStartLen;
+
+    memcpy(buffer, &memoryCountSize, sizeof(size_t)); // memoryCount
+    buffer += sizeof(size_t);
+    memcpy(buffer, variable.m_MemoryCount.data(), memoryCountLen);
+    buffer += memoryCountLen;
+
+    memcpy(buffer, &stepsStart, sizeof(size_t)); // stepsStart
+    buffer += sizeof(size_t);
+
+    memcpy(buffer, &stepsCount, sizeof(size_t)); // stepsCount
+    buffer += sizeof(size_t);
+
+    memcpy(buffer, &blockID, sizeof(size_t)); // blockID
+    buffer += sizeof(size_t);
+
+    memcpy(buffer, &currentStep, sizeof(size_t)); // currentStep
+    buffer += sizeof(size_t);
+
+    memcpy(buffer, &blockNumber, sizeof(size_t)); // blockNumber
+    buffer += sizeof(size_t);
+
+    memcpy(buffer, &isReadAsJoined, sizeof(bool)); // isReadAsJoined
+    buffer += sizeof(bool);
+
+    memcpy(buffer, &isReadAsLocalValue, sizeof(bool)); // isReadAsLocalValue
+    buffer += sizeof(bool);
+
+    memcpy(buffer, &isRandomAccess, sizeof(bool)); // isRandomAccess
+    buffer += sizeof(bool);
+
+    memcpy(buffer, &isValue, sizeof(bool)); // isValue
+    buffer += sizeof(bool);
+
+    return buffer;
+}
+
+template <class T>
 void SetMinMax(Variable<T> &variable, const T *data)
 {
     T min;
@@ -485,7 +661,12 @@ void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
     template void SetMinMax(Variable<T> &variable, const T *data);             \
     template gpointer GetMetadataBuffer(Variable<T> &variable,                 \
                                         guint32 &buffer_len, size_t step,      \
-                                        size_t block);
+                                        size_t block);                         \
+    template gpointer SerializeVariableMetadata(                               \
+        Variable<T> &variable, guint32 &buffer_len, size_t step);              \
+    template gpointer SerializeBlockMetadata(Variable<T> &variable,            \
+                                             guint32 &buffer_len, size_t step, \
+                                             size_t block);
 
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
