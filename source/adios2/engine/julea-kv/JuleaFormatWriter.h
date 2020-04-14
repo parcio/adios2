@@ -37,13 +37,6 @@ void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);
 template <class T>
 void SetMinMax(Variable<T> &variable, const T *data);
 
-// template <class T>
-// gpointer GetMetadataBuffer(Variable<T> &variable, guint32 &buffer_len,
-// size_t step, size_t block);
-
-// template <class T>
-// gpointer SerializeVarMetadata(Variable<T> &variable,size_t &len, size_t
-// currStep);
 
 template <class T>
 gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &buffer_len,
@@ -51,9 +44,6 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &buffer_len,
 template <class T>
 gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &buffer_len,
                                 size_t step, size_t block);
-// extern template gpointer GetMetadataBuffer(Variable<T> &variable,          \
-    //                                            guint32 &buffer_len,            \
-    //                                            size_t step, size_t block);     \
 
 #define variable_template_instantiation(T)                                     \
     SetMinMax(Variable<T> &variable, const T *data);                           \
