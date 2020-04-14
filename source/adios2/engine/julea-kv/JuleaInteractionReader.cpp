@@ -31,9 +31,12 @@ namespace core
 namespace engine
 {
 
-
-// void GetVariableMetadataFromJuleaNew(const std::string nameSpace, const std::string varName, gpointer md_buffer, guint32 buffer_len)
-void GetVariableMetadataFromJuleaNew(const std::string nameSpace, const std::string varName, JuleaKVReader::StepMetadata *md, guint32 *buffer_len)
+// void GetVariableMetadataFromJuleaNew(const std::string nameSpace, const
+// std::string varName, gpointer md_buffer, guint32 buffer_len)
+void GetVariableMetadataFromJuleaNew(const std::string nameSpace,
+                                     const std::string varName,
+                                     JuleaKVReader::StepMetadata *md,
+                                     guint32 *buffer_len)
 {
     guint32 valueLen = 0;
     void *metaDataBuf = NULL;
@@ -47,11 +50,10 @@ void GetVariableMetadataFromJuleaNew(const std::string nameSpace, const std::str
     std::cout << "stringMetadataKV: " << stringMetadataKV << std::endl;
     std::cout << "varName: " << varName << std::endl;
     auto kvVarMetadata = j_kv_new(stringMetadataKV, varName.c_str());
-     // j_kv_get(kvVarMetadata, (gpointer *)md, buffer_len, batch);
+    // j_kv_get(kvVarMetadata, (gpointer *)md, buffer_len, batch);
 
-
-     // j_kv_get(kvVarMetadata, (gpointer *)&md2, &valueLen, batch);
-     // j_kv_get(kvVarMetadata, (gpointer *)&md, &valueLen, batch);
+    // j_kv_get(kvVarMetadata, (gpointer *)&md2, &valueLen, batch);
+    // j_kv_get(kvVarMetadata, (gpointer *)&md, &valueLen, batch);
     j_kv_get(kvVarMetadata, &metaDataBuf, &valueLen, batch);
     j_batch_execute(batch);
 

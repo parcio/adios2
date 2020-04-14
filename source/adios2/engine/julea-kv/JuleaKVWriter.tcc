@@ -126,7 +126,7 @@ void JuleaKVWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
     {
         std::cout << "variable.m_SingleValue: " << variable.m_SingleValue
                   << std::endl;
-        DoPutSync(variable, data);    //TODO: correct?!
+        DoPutSync(variable, data); // TODO: correct?!
         return;
     }
 
@@ -165,12 +165,14 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
         std::cout << "variable:" << variable.m_Name << std::endl;
         std::cout << "i = " << i << std::endl;
         // std::cout << "Map size = "
-                  // << variable.m_AvailableStepBlockIndexOffsets.size()
-                  // << std::endl;
+        // << variable.m_AvailableStepBlockIndexOffsets.size()
+        // << std::endl;
 
-        // variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].push_back(
-            // variable.m_BlocksInfo.size());
-        std::cout << "variable.m_BlocksInfo.size() = " << variable.m_BlocksInfo.size() <<std::endl;
+        variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].push_back(
+            m_CurrentBlockID);
+        // variable.m_BlocksInfo.size());
+        std::cout << "variable.m_BlocksInfo.size() = "
+                  << variable.m_BlocksInfo.size() << std::endl;
 
         /** if there are no SpanBlocks simply put every variable */
         auto itSpanBlock = variable.m_BlocksSpan.find(i);
@@ -188,8 +190,8 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
         // }
 
         // std::cout << "Map size = "
-                  // << variable.m_AvailableStepBlockIndexOffsets.size()
-                  // << std::endl;
+        // << variable.m_AvailableStepBlockIndexOffsets.size()
+        // << std::endl;
         // // DEBUG:
         // if (variable.m_AvailableStepBlockIndexOffsets.size() > 0)
         // {

@@ -75,7 +75,7 @@ public:
         // int type;
     };
 
-        /** Step related metadata for a variable:  */
+    /** Step related metadata for a variable:  */
     struct StepMetadata
     {
         Dims shape;
@@ -132,7 +132,6 @@ public:
 
         size_t CurrentStep = 0; // Julea Engine
         size_t BlockNumber = 0; // Julea Engine
-
 
         // int WriterID = 0; //TODO: what exactly is this and when used?
 

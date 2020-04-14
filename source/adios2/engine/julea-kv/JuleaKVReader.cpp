@@ -296,8 +296,10 @@ void JuleaKVReader::InitVariables()
             std::string varName(bson_iter_key(&b_iter));
 
             std::cout << "-- Variable name " << varName << std::endl;
-            GetVariableMetadataFromJuleaNew(nameSpace, varName, &md, &buffer_len);
-            // GetVariableMetadataFromJuleaNew(nameSpace, varName, md_buffer, buffer_len);
+            GetVariableMetadataFromJuleaNew(nameSpace, varName, &md,
+                                            &buffer_len);
+            // GetVariableMetadataFromJuleaNew(nameSpace, varName, md_buffer,
+            // buffer_len);
             // TODO: rewrite variablemetadata so that the variable knows shape,
             // start, count so it is not necessary to ask every block?! check BP
 

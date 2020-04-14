@@ -40,9 +40,12 @@ void GetVarNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
 void GetVariableBSONFromJulea(const std::string nameSpace,
                               const std::string varName, bson_t **bsonMetadata);
 
-
-void GetVariableMetadataFromJuleaNew(const std::string nameSpace, const std::string varName, JuleaKVReader::StepMetadata *md, guint32 *buffer_len);
-// void GetVariableMetadataFromJuleaNew(const std::string nameSpace, const std::string varName, gpointer md_buffer, guint32 buffer_len);
+void GetVariableMetadataFromJuleaNew(const std::string nameSpace,
+                                     const std::string varName,
+                                     JuleaKVReader::StepMetadata *md,
+                                     guint32 *buffer_len);
+// void GetVariableMetadataFromJuleaNew(const std::string nameSpace, const
+// std::string varName, gpointer md_buffer, guint32 buffer_len);
 
 template <class T>
 void GetVariableMetadataFromJulea(Variable<T> &variable,
