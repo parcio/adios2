@@ -52,7 +52,6 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
           countLen + blocksLen + numberBools * sizeof(bool);
     std::cout << "--- variable metadata buffer length: " << len << std::endl;
 
-    // gpointer buffer = (char *)g_slice_alloc(len);
     char *buffer = (char *)g_slice_alloc(len);
 
     size_t blocks[numberSteps];
@@ -92,7 +91,7 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     buffer += sizeof(size_t);
     memcpy(buffer, blocks, blocksLen);
 
-    return (gpointer)buffer;
+    return (gpointer) buffer;
 }
 
 template <class T>
