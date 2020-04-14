@@ -57,7 +57,7 @@ void PutNameToJulea(std::string paramName, std::string nameSpace,
 
     j_kv_get(kvObjectNames, &namesBuf, &valueLen, batch);
     // err = j_batch_execute(batch);
-    g_assert_true(j_batch_execute(batch) == true );
+    g_assert_true(j_batch_execute(batch) == true);
 
     std::cout << "valueLen: " << valueLen << std::endl;
     if (valueLen == 0)
@@ -84,7 +84,7 @@ void PutNameToJulea(std::string paramName, std::string nameSpace,
     namesBuf = g_memdup(bson_get_data(bsonNames), bsonNames->len);
     j_kv_put(kvObjectNames, namesBuf, bsonNames->len, g_free, batch2);
     // err = j_batch_execute(batch2);
-    g_assert_true(j_batch_execute(batch2) == true );
+    g_assert_true(j_batch_execute(batch2) == true);
 
     // free(namesBuf); //TODO: why does this lead to segfaults?
     free(name);
@@ -94,8 +94,6 @@ void PutNameToJulea(std::string paramName, std::string nameSpace,
     j_batch_unref(batch2);
     j_semantics_unref(semantics);
 }
-
-
 
 void PutVariableMetadataToJulea(const std::string nameSpace, gpointer &buffer,
                                 guint32 bufferLen, const std::string varName)
@@ -121,7 +119,7 @@ void PutVariableMetadataToJulea(const std::string nameSpace, gpointer &buffer,
     metaDataBuf = g_memdup(buffer, bufferLen);
 
     j_kv_put(kvVarMetadata, metaDataBuf, bufferLen, g_free, batch);
-    g_assert_true(j_batch_execute(batch) == true );
+    g_assert_true(j_batch_execute(batch) == true);
     // j_batch_execute(batch);
 
     g_free(stringMetadataKV);
@@ -145,7 +143,7 @@ void PutBlockMetadataToJulea(const std::string nameSpace, gpointer &buffer,
 
     metaDataBuf = g_memdup(buffer, bufferLen);
     j_kv_put(kvObjectMetadata, metaDataBuf, bufferLen, g_free, batch);
-    g_assert_true(j_batch_execute(batch) == true );
+    g_assert_true(j_batch_execute(batch) == true);
     // j_batch_execute(batch);
 
     g_free(stringMetadataKV);
@@ -153,7 +151,6 @@ void PutBlockMetadataToJulea(const std::string nameSpace, gpointer &buffer,
     j_batch_unref(batch);
     j_semantics_unref(semantics);
 }
-
 
 template <class T>
 void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
@@ -200,7 +197,6 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
     // bson_destroy(bsonNames);
 }
 
-
 template <class T>
 void PutVariableDataToJulea(Variable<T> &variable, const T *data,
                             const std::string nameSpace, size_t currStep,
@@ -227,7 +223,7 @@ void PutVariableDataToJulea(Variable<T> &variable, const T *data,
 
     j_object_create(dataObject, batch);
     j_object_write(dataObject, data, dataSize, 0, &bytesWritten, batch);
-    g_assert_true(j_batch_execute(batch) == true );
+    g_assert_true(j_batch_execute(batch) == true);
     // j_batch_execute(batch);
 
     if (bytesWritten == dataSize)
@@ -313,7 +309,7 @@ void PutAttributeDataToJulea(Attribute<T> &attribute,
     }
 
     // j_batch_execute(batch);
-    g_assert_true(j_batch_execute(batch) == true );
+    g_assert_true(j_batch_execute(batch) == true);
     if (bytesWritten == dataSize)
     {
         std::cout << "++ Julea Interaction Writer: Data written for \
@@ -368,7 +364,7 @@ void PutAttributeDataToJulea<std::string>(Attribute<std::string> &attribute,
 
         j_object_write(dataObject, dataElement, dataSize, 0, &bytesWritten,
                        batch);
-        g_assert_true(j_batch_execute(batch) == true );
+        g_assert_true(j_batch_execute(batch) == true);
         // j_batch_execute(batch);
         delete[] dataElement;
     }
@@ -381,7 +377,7 @@ void PutAttributeDataToJulea<std::string>(Attribute<std::string> &attribute,
                            dataSize, offset, &bytesWritten, batch);
             offset += dataSize;
         }
-        g_assert_true(j_batch_execute(batch) == true );
+        g_assert_true(j_batch_execute(batch) == true);
         // j_batch_execute(batch);
     }
 
@@ -428,7 +424,7 @@ void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetaData,
     /* names_kv = kv holding all variable names */
     auto kvObjectNames = j_kv_new("attribute_names", nameSpace.c_str());
     j_kv_get(kvObjectNames, &namesBuf, &valueLen, batch);
-    g_assert_true(j_batch_execute(batch) == true );
+    g_assert_true(j_batch_execute(batch) == true);
     // j_batch_execute(batch);
 
     if (valueLen == 0)
@@ -467,7 +463,7 @@ void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetaData,
     j_kv_put(kvObjectNames, namesBuf, bsonNames->len, g_free, batch2);
 
     // j_batch_execute(batch2); // Writing metadata
-    g_assert_true(j_batch_execute(batch2) == true );
+    g_assert_true(j_batch_execute(batch2) == true);
 
     free(attrName);
     g_free(stringMetadataKV);
@@ -482,7 +478,7 @@ void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetaData,
 }
 
 #define declare_template_instantiation(T)                                      \
-template void PutVariableDataToJulea(Variable<T> &variable, const T *data, \
+    template void PutVariableDataToJulea(Variable<T> &variable, const T *data, \
                                          const std::string nameSpace,          \
                                          size_t currentStep, size_t blockID);  \
                                                                                \

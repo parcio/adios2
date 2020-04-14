@@ -57,7 +57,6 @@ public:
     Flush(const int transportIndex = -1) final; // TODO: transportindex needed?
     // void Flush();
 
-
 private:
     // interop::JuleaSerializer m_Julea;
     JSemantics *m_JuleaSemantics;

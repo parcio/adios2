@@ -37,7 +37,6 @@ void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);
 template <class T>
 void SetMinMax(Variable<T> &variable, const T *data);
 
-
 template <class T>
 gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &buffer_len,
                                    size_t step);

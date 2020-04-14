@@ -289,15 +289,24 @@ void JuleaKVReader::InitVariables()
         while (bson_iter_next(&b_iter))
         {
             // bson_t *bsonMetadata;
+            Dims shape;
+            Dims start;
+            Dims count;
+            bool constantDims;
+            int type;
             guint32 buffer_len;
             gpointer md_buffer = NULL;
-            JuleaKVReader::StepMetadata md;
+            // JuleaKVReader::StepMetadata md;
             // varName = g_strdup(bson_iter_key(&b_iter));
             std::string varName(bson_iter_key(&b_iter));
 
             std::cout << "-- Variable name " << varName << std::endl;
-            GetVariableMetadataFromJuleaNew(nameSpace, varName, &md,
+            GetVariableMetadataFromJuleaNew(nameSpace, varName, &md_buffer,
                                             &buffer_len);
+            std::cout << "buffer_len = " << buffer_len << std::endl;
+            std::cout << "buffer_len = " << &buffer_len << std::endl;
+            DeserializeVariableMetadata(md_buffer, &type, &shape, &start,
+                                        &count, &constantDims);
             // GetVariableMetadataFromJuleaNew(nameSpace, varName, md_buffer,
             // buffer_len);
             // TODO: rewrite variablemetadata so that the variable knows shape,
@@ -305,15 +314,9 @@ void JuleaKVReader::InitVariables()
 
             // GetVariableBSONFromJulea(nameSpace, varName, &bsonMetadata);
             std::cout << "DEBUG 1" << std::endl;
-            std::cout << "numberSteps" << md.numberSteps << std::endl;
-            std::cout << "type" << md.type << std::endl;
-            std::cout << "isConstantDims" << md.isConstantDims << std::endl;
-
-            Dims shape;
-            Dims start;
-            Dims count;
-            bool constantDims;
-            int type;
+            // std::cout << "numberSteps" << md.numberSteps << std::endl;
+            // std::cout << "type" << md.type << std::endl;
+            // std::cout << "isConstantDims" << md.isConstantDims << std::endl;
 
             // GetVariableMetadataForInitFromBSON(nameSpace, varName,
             // bsonMetadata,

@@ -27,6 +27,61 @@ namespace core
 namespace engine
 {
 
+void DeserializeVariableMetadata(gpointer buffer, int *type, Dims *shape,
+                                 Dims *start, Dims *count, bool *constantDims)
+{
+    size_t typeLen = 42;
+    char tmpType[8];
+    bool isConstantDims = true;
+    std::cout << "constantDims: " << isConstantDims << std::endl;
+    std::cout << "constantDims: " << &isConstantDims << std::endl;
+
+    memcpy(&isConstantDims, &buffer, sizeof(bool));
+    buffer += sizeof(bool);
+    std::cout << "constantDims: " << isConstantDims << std::endl;
+    std::cout << "constantDims: " << &isConstantDims << std::endl;
+
+    //     memcpy(&isConstantDims, buffer, sizeof(bool));
+    // buffer += sizeof(bool);
+    // std::cout << "constantDims: " << constantDims << std::endl;
+    // std::cout << "constantDims: " << *constantDims << std::endl;
+
+    /** allocate memory for variable holding the length of the vector +
+    memory for the vector data itself */
+    // memcpy(buffer, &typeLen, sizeof(size_t)); // type
+
+    std::cout << "typeLen: " << typeLen << std::endl;
+    std::cout << "typeLen: " << &typeLen << std::endl;
+    memcpy(&typeLen, &buffer, sizeof(size_t)); // type
+    buffer += sizeof(size_t);
+    std::cout << "typeLen: " << typeLen << std::endl;
+    std::cout << "typeLen: " << &typeLen << std::endl;
+
+    memcpy(&tmpType, &buffer, typeLen);
+    buffer += typeLen;
+    std::cout << "tmpType: " << tmpType << std::endl;
+    std::cout << "tmpType: " << &tmpType << std::endl;
+
+    // memcpy(buffer, &shapeSize, sizeof(size_t)); // shape
+    // buffer += sizeof(size_t);
+    // memcpy(buffer, variable.m_Shape.data(), shapeLen);
+    // buffer += shapeLen;
+
+    // memcpy(buffer, &startSize, sizeof(size_t)); // start
+    // buffer += sizeof(size_t);
+    // memcpy(buffer, variable.m_Start.data(), startLen);
+    // buffer += startLen;
+
+    // memcpy(buffer, &countSize, sizeof(size_t)); // count
+    // buffer += sizeof(size_t);
+    // memcpy(buffer, variable.m_Count.data(), countLen);
+    // buffer += countLen;
+
+    // memcpy(buffer, &numberSteps, sizeof(size_t)); // blocks
+    // buffer += sizeof(size_t);
+    // memcpy(buffer, blocks, blocksLen);
+}
+
 void GetAdiosTypeString(int type, std::string *typeString)
 {
     switch (type)

@@ -21,6 +21,9 @@ namespace core
 namespace engine
 {
 
+void DeserializeVariableMetadata(gpointer buffer, int *type, Dims *shape,
+                                 Dims *start, Dims *count, bool *constantDims);
+
 // void DefineAttributeInInit(core::IO *io, const std::string varName, int type,
 // bool IsSingleValue);
 // template <class T>

@@ -34,8 +34,7 @@ namespace engine
 // void GetVariableMetadataFromJuleaNew(const std::string nameSpace, const
 // std::string varName, gpointer md_buffer, guint32 buffer_len)
 void GetVariableMetadataFromJuleaNew(const std::string nameSpace,
-                                     const std::string varName,
-                                     JuleaKVReader::StepMetadata *md,
+                                     const std::string varName, gpointer md,
                                      guint32 *buffer_len)
 {
     guint32 valueLen = 0;
@@ -54,14 +53,15 @@ void GetVariableMetadataFromJuleaNew(const std::string nameSpace,
 
     // j_kv_get(kvVarMetadata, (gpointer *)&md2, &valueLen, batch);
     // j_kv_get(kvVarMetadata, (gpointer *)&md, &valueLen, batch);
-    j_kv_get(kvVarMetadata, &metaDataBuf, &valueLen, batch);
-    g_assert_true(j_batch_execute(batch) == true );
+    j_kv_get(kvVarMetadata, &md, buffer_len, batch);
+    // j_kv_get(kvVarMetadata, &metaDataBuf, &valueLen, batch);
+    g_assert_true(j_batch_execute(batch) == true);
     // j_batch_execute(batch);
 
     // md2 =(JuleaKVReader::StepMetadata*) g_memdup(metaDataBuf,valueLen);
 
-    std::cout << "valueLen" << valueLen << std::endl;
-    std::cout << "valueLen" << &valueLen << std::endl;
+    // std::cout << "valueLen" << buffer_len << std::endl;
+    // std::cout << "valueLen" << *buffer_len << std::endl;
     // std::cout << "type" << md->type.c_str() << std::endl;
     // std::cout << "type" << md2->type.c_str() << std::endl;
     // std::cout << "type" << &md->type.c_str() << std::endl;
@@ -134,7 +134,7 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
     std::cout << "v[1]" << data[1] << std::endl;
     j_object_read(dataObject, data, dataSize, 0, &bytesRead, batch);
     // j_batch_execute(batch);
-    g_assert_true(j_batch_execute(batch) == true );
+    g_assert_true(j_batch_execute(batch) == true);
 
     std::cout << "v[0]" << data[0] << std::endl;
     std::cout << "v[1]" << data[1] << std::endl;
@@ -185,7 +185,7 @@ void GetVarNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
 
     j_kv_get(kvObject, &namesBuf, &valueLen, batch);
     // j_batch_execute(batch);
-    g_assert_true(j_batch_execute(batch) == true );
+    g_assert_true(j_batch_execute(batch) == true);
 
     if (valueLen == 0)
     {
@@ -235,7 +235,7 @@ void GetVariableBSONFromJulea(const std::string nameSpace,
 
     j_kv_get(kvObject, &metaDataBuf, &valueLen, batch);
     // j_batch_execute(batch);
-    g_assert_true(j_batch_execute(batch) == true );
+    g_assert_true(j_batch_execute(batch) == true);
 
     if (valueLen == 0)
     {
@@ -273,7 +273,7 @@ void GetAttributeBSONFromJulea(const std::string nameSpace,
 
     j_kv_get(kvObject, &metaDataBuf, valueLen, batch);
     // j_batch_execute(batch);
-    g_assert_true(j_batch_execute(batch) == true );
+    g_assert_true(j_batch_execute(batch) == true);
 
     if (valueLen == 0)
     {
@@ -351,7 +351,7 @@ void GetAttributeDataFromJulea(const std::string attrName, T *data,
 
     j_object_read(dataObject, data, dataSize, 0, &bytesRead, batch);
     // j_batch_execute(batch);
-    g_assert_true(j_batch_execute(batch) == true );
+    g_assert_true(j_batch_execute(batch) == true);
 
     if (bytesRead == dataSize)
     {
@@ -397,7 +397,7 @@ void GetAttributeStringDataFromJulea(const std::string attrName, char *data,
         j_object_read(dataObject, charArray, completeSize, 0, &bytesRead,
                       batch);
         // j_batch_execute(batch);
-        g_assert_true(j_batch_execute(batch) == true );
+        g_assert_true(j_batch_execute(batch) == true);
         // std::cout << "-- charArray = " << charArray << std::endl;
     }
     else
@@ -407,7 +407,7 @@ void GetAttributeStringDataFromJulea(const std::string attrName, char *data,
         j_object_read(dataObject, stringArray, completeSize, 0, &bytesRead,
                       batch);
         // j_batch_execute(batch);
-        g_assert_true(j_batch_execute(batch) == true );
+        g_assert_true(j_batch_execute(batch) == true);
         // std::cout << "string: " << stringArray << std::endl;
     }
     if (bytesRead == completeSize)

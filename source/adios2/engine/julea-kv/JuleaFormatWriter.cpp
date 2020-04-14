@@ -33,13 +33,16 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
                                    size_t currStep)
 {
     bool constantDims = variable.IsConstantDims();
+    std::cout << "constantDims: " << constantDims << std::endl;
     const char *type = variable.m_Type.c_str();
+    std::cout << "type: " << type << std::endl;
     size_t shapeSize = variable.m_Shape.size();
     size_t startSize = variable.m_Start.size();
     size_t countSize = variable.m_Count.size();
     size_t numberSteps = currStep + 1;
 
     size_t typeLen = sizeof(variable.m_Type.c_str());
+    std::cout << "typeLen: " << typeLen << std::endl;
     size_t shapeLen = shapeSize * sizeof(Dims[0]);
     size_t startLen = startSize * sizeof(Dims[0]);
     size_t countLen = countSize * sizeof(Dims[0]);
@@ -91,7 +94,7 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     buffer += sizeof(size_t);
     memcpy(buffer, blocks, blocksLen);
 
-    return (gpointer) buffer;
+    return (gpointer)buffer;
 }
 
 template <class T>
@@ -143,8 +146,8 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     // calculating buffer size
     len = numberVectors * sizeof(size_t) + typeLen + shapeLen + startLen +
           countLen + memoryStartLen + memoryCountLen +
-          numberVariables * sizeof(size_t) + numberBools * sizeof(bool)
-          + minLen + maxLen;
+          numberVariables * sizeof(size_t) + numberBools * sizeof(bool) +
+          minLen + maxLen;
 
     std::cout << "--- block metadata buffer length: " << len << std::endl;
 
@@ -229,7 +232,6 @@ void SetMinMax(Variable<T> &variable, const T *data)
     variable.m_Min = min;
     variable.m_Max = max;
 }
-
 
 template <class T>
 void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
@@ -357,7 +359,6 @@ void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
     // std::cout << "-- bsonMetadata length: " << bsonMetadata->len <<
     // std::endl; std::cout << "-- type: " << attribute.m_Type << std::endl;
 }
-
 
 #define variable_template_instantiation(T)                                     \
     template void SetMinMax(Variable<T> &variable, const T *data);             \
