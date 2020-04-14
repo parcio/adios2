@@ -289,13 +289,13 @@ void JuleaKVReader::InitVariables()
         while (bson_iter_next(&b_iter))
         {
             // bson_t *bsonMetadata;
-            Dims shape;
-            Dims start;
-            Dims count;
+            Dims shape = nullptr; //FIXME
+            Dims start = nullptr;
+            Dims count = nullptr;
             bool constantDims;
             int type;
             guint32 buffer_len;
-            gpointer md_buffer = NULL;
+            gpointer md_buffer = nullptr;
             // JuleaKVReader::StepMetadata md;
             // varName = g_strdup(bson_iter_key(&b_iter));
             std::string varName(bson_iter_key(&b_iter));

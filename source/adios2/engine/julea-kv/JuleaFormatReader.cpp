@@ -37,7 +37,6 @@ void DeserializeVariableMetadata(gpointer buffer, int *type, Dims *shape,
     bool isConstantDims = true;
 
     size_t shapeSize = 0;
-    size_t *tmp_shape = nullptr;
     std::cout << "constantDims: " << isConstantDims << std::endl;
 
     // memcpy(&isConstantDims, &buffer, sizeof(bool));
@@ -62,11 +61,13 @@ void DeserializeVariableMetadata(gpointer buffer, int *type, Dims *shape,
     memcpy(&shapeSize, tmp_buffer, sizeof(size_t)); // shape
     tmp_buffer += sizeof(size_t);
     shapeLen = sizeof(size_t) * shapeSize;
+    size_t tmp_shape[shapeSize];
     memcpy(&tmp_shape, tmp_buffer, shapeLen);
     buffer += shapeLen;
     if(shapeSize > 0)
     {
-        Dims tmpShape (tmpShape.begin(), tmpShape.end() );
+        // Dims tmpShape (tmpShape.begin(), tmpShape.end() );
+        shape (std::begin(tmp_shape), std::end(tmp_shape) ); //FIXME
         // shape = &tmpShape;      //TODO: check if this is correct!
     }
     std::cout << "shapeSize = " << shapeSize << std::endl;
