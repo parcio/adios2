@@ -133,6 +133,7 @@ void PutVariableMetadataToJulea(const std::string nameSpace, gpointer &buffer,
 void PutBlockMetadataToJulea(const std::string nameSpace, gpointer &buffer,
                              guint32 bufferLen, const std::string stepBlockID)
 {
+    void *metaDataBuf = NULL;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
@@ -142,7 +143,8 @@ void PutBlockMetadataToJulea(const std::string nameSpace, gpointer &buffer,
 
     auto kvObjectMetadata = j_kv_new(stringMetadataKV, stepBlockID.c_str());
 
-    j_kv_put(kvObjectMetadata, buffer, bufferLen, g_free, batch);
+    metaDataBuf = g_memdup(buffer, bufferLen);
+    j_kv_put(kvObjectMetadata, metaDataBuf, bufferLen, g_free, batch);
     g_assert_true(j_batch_execute(batch) == true );
     // j_batch_execute(batch);
 
@@ -480,6 +482,9 @@ void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetaData,
 }
 
 #define declare_template_instantiation(T)                                      \
+template void PutVariableDataToJulea(Variable<T> &variable, const T *data, \
+                                         const std::string nameSpace,          \
+                                         size_t currentStep, size_t blockID);  \
                                                                                \
     template void PutAttributeDataToJulea(Attribute<T> &attribute,             \
                                           const std::string nameSpace);        \

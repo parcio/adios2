@@ -54,6 +54,9 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
 
 
 #define declare_template_instantiation(T)                                      \
+extern template void PutVariableDataToJulea(                               \
+        Variable<T> &variable, const T *data, const std::string nameSpace,     \
+        size_t currentStep, size_t blockID);                                   \
                                                                                \
     extern template void PutAttributeDataToJulea(Attribute<T> &attribute,      \
                                                  const std::string nameSpace); \

@@ -34,41 +34,31 @@ void JuleaKVWriter::PutSyncToJulea(Variable<T> &variable, const T *data)
 {
     std::cout << "------------------ PutSyncToJulea --------------------"
               << std::endl;
-    auto bsonMetadata = bson_new();
     guint32 blockMD_len = 0;
     guint32 varMD_len = 0;
-    SetMinMax(variable, data);
     gpointer md_buffer = NULL;
+    auto bsonMetadata = bson_new();
 
-    // TODO: rename to SerializeBlockMetadata
-    // gpointer blockMD = GetMetadataBuffer(variable, blockMD_len,
-    // m_CurrentStep,
-    //                                      m_CurrentBlockID);
+    SetMinMax(variable, data);
+    auto stepBlockID =
+        g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
+    std::cout << "stepBlockID: " << stepBlockID << std::endl;
 
+    gpointer varMD = SerializeVariableMetadata(variable, varMD_len, m_CurrentStep);
     gpointer blockMD = SerializeBlockMetadata(variable, blockMD_len,
                                               m_CurrentStep, m_CurrentBlockID);
-
-    gpointer varMD = NULL;
-    varMD = SerializeVariableMetadata(variable, varMD_len, m_CurrentStep);
 
     // check whether variable name is already in variable_names kv
     auto itVariableWritten = m_WrittenVariableNames.find(variable.m_Name);
     if (itVariableWritten == m_WrittenVariableNames.end())
     {
         std::cout << "---- DEBUG: Variable name not yet written " << std::endl;
-        // PutVariableMetadataToJulea(variable, md_buffer, buffer_len, m_Name,
-        //                            m_CurrentStep, m_CurrentBlockID, false);
+
         PutNameToJulea(variable.m_Name, m_Name, "variable_names");
         m_WrittenVariableNames.insert(variable.m_Name);
     }
-    // else
-    // {
-    //     // PutVariableMetadataToJulea(variable, md_buffer, buffer_len,
-    //     m_Name,
-    //     //                            m_CurrentStep, m_CurrentBlockID, true);
-    // }
-    // std::cout << "Variable names written to the names kv: " << std::endl;
 
+    // std::cout << "Variable names written to the names kv: " << std::endl;
     for (auto it = m_WrittenVariableNames.begin();
          it != m_WrittenVariableNames.end(); ++it)
     {
@@ -76,17 +66,9 @@ void JuleaKVWriter::PutSyncToJulea(Variable<T> &variable, const T *data)
     }
 
     PutVariableMetadataToJulea(m_Name, varMD, varMD_len, variable.m_Name);
-    // WriteBlockMetadataToJuleaKV(variable, nameSpace.c_str(), md, currStep,
-    // blockID);
-
-    auto stepBlockID =
-        g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
-    std::cout << "stepBlockID: " << stepBlockID << std::endl;
-
-    // PutBlockMetadataToJulea(m_Name, blockMD, blockMD_len, stepBlockID);
-
-    // PutVariableDataToJulea(variable, data, m_Name, m_CurrentStep,
-    // m_CurrentBlockID);
+    PutBlockMetadataToJulea(m_Name, blockMD, blockMD_len, stepBlockID);
+    PutVariableDataToJulea(variable, data, m_Name, m_CurrentStep,
+    m_CurrentBlockID);
 
     bson_destroy(bsonMetadata);
 }
