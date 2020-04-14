@@ -126,7 +126,7 @@ void JuleaKVWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
     {
         std::cout << "variable.m_SingleValue: " << variable.m_SingleValue
                   << std::endl;
-        DoPutSync(variable, data);
+        DoPutSync(variable, data);    //TODO: correct?!
         return;
     }
 
@@ -156,6 +156,7 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
 {
     std::cout << "\n______________PerformPutCommon T_____________________"
               << std::endl;
+    std::cout << "BlockInfo.size = " << variable.m_BlocksInfo.size();
     for (size_t i = 0; i < variable.m_BlocksInfo.size(); ++i)
     {
         std::cout
@@ -163,12 +164,13 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
             << std::endl;
         std::cout << "variable:" << variable.m_Name << std::endl;
         std::cout << "i = " << i << std::endl;
-        std::cout << "Map size = "
-                  << variable.m_AvailableStepBlockIndexOffsets.size()
-                  << std::endl;
+        // std::cout << "Map size = "
+                  // << variable.m_AvailableStepBlockIndexOffsets.size()
+                  // << std::endl;
 
-        variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].push_back(
-            variable.m_BlocksInfo.size());
+        // variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].push_back(
+            // variable.m_BlocksInfo.size());
+        std::cout << "variable.m_BlocksInfo.size() = " << variable.m_BlocksInfo.size() <<std::endl;
 
         /** if there are no SpanBlocks simply put every variable */
         auto itSpanBlock = variable.m_BlocksSpan.find(i);
@@ -185,16 +187,15 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
         //     m_BP3Serializer.PutSpanMetadata(variable, itSpanBlock->second);
         // }
 
-        std::cout << "Map size = "
-                  << variable.m_AvailableStepBlockIndexOffsets.size()
-                  << std::endl;
-        // DEBUG:
-        if (variable.m_AvailableStepBlockIndexOffsets.size() > 0)
-        {
-            auto it = variable.m_AvailableStepBlockIndexOffsets.begin();
-        }
+        // std::cout << "Map size = "
+                  // << variable.m_AvailableStepBlockIndexOffsets.size()
+                  // << std::endl;
+        // // DEBUG:
+        // if (variable.m_AvailableStepBlockIndexOffsets.size() > 0)
+        // {
+        //     auto it = variable.m_AvailableStepBlockIndexOffsets.begin();
+        // }
     }
-    std::cout << "BlockInfo.size = " << variable.m_BlocksInfo.size();
 
     variable.m_BlocksInfo.clear();
     variable.m_BlocksSpan.clear();

@@ -63,6 +63,25 @@ public:
     void EndStep() final;
     void PerformGets() final;
 
+     /** Step related metadata for a variable broken down to put into JULEA  */
+    struct CStepMetadata
+    {
+        bool isConstantDims;
+        size_t typeSize = 0;
+        char *type = nullptr;
+        size_t shapeSize = 0;
+        size_t *shape = nullptr;
+        size_t startSize = 0;
+        size_t *start = nullptr;
+        size_t countSize = 0;
+        size_t *count = nullptr;
+
+        size_t numberSteps = 0;
+        size_t *blocks = nullptr;
+        // int type;
+    };
+
+
     /** Step related metadata for a variable:  */
     struct StepMetadata
     {

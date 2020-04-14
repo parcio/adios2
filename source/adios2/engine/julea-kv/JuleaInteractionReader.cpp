@@ -52,15 +52,15 @@ void GetVariableMetadataFromJuleaNew(const std::string nameSpace, const std::str
 
      // j_kv_get(kvVarMetadata, (gpointer *)&md2, &valueLen, batch);
      // j_kv_get(kvVarMetadata, (gpointer *)&md, &valueLen, batch);
-     j_kv_get(kvVarMetadata, &metaDataBuf, &valueLen, batch);
+    j_kv_get(kvVarMetadata, &metaDataBuf, &valueLen, batch);
     j_batch_execute(batch);
 
-    md2 =(JuleaKVReader::StepMetadata*) g_memdup(metaDataBuf,valueLen);
+    // md2 =(JuleaKVReader::StepMetadata*) g_memdup(metaDataBuf,valueLen);
 
     std::cout << "valueLen" << valueLen << std::endl;
     std::cout << "valueLen" << &valueLen << std::endl;
     // std::cout << "type" << md->type.c_str() << std::endl;
-    std::cout << "type" << md2->type.c_str() << std::endl;
+    // std::cout << "type" << md2->type.c_str() << std::endl;
     // std::cout << "type" << &md->type.c_str() << std::endl;
     // std::cout << "buffer_len: " << buffer_len << std::endl;
     // std::cout << "buffer_len: " << &buffer_len << std::endl;

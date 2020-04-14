@@ -220,13 +220,114 @@ void WriteVarMetadataToJuleaKV(Variable<T> &variable,
     j_batch_execute(batch);
 
     std::cout << "valueLen: " << valueLen << std::endl;
-    if (valueLen == 0)
-    {
-        std::cout << "--- DEBUG --- todo something here" << std::endl;
+    // if (valueLen == 0)
+    // {
+    //     std::cout << "--- DEBUG --- todo something here" << std::endl;
 
-        JuleaKVWriter::StepMetadata md2;
-        //TODO: this is just copied from else... something needs to be adapted
-        char *buffer = NULL;
+    //     JuleaKVWriter::StepMetadata md2;
+    //     //TODO: this is just copied from else... something needs to be adapted
+    //     char *buffer = NULL;
+
+    //     bool constantDims = variable.IsConstantDims();
+    //     size_t typeLen = sizeof(variable.m_Type.c_str());
+    //     const char *type = variable.m_Type.c_str();
+
+    //     size_t shapeSize = variable.m_Shape.size();
+    //     size_t shapeLen = shapeSize * sizeof(Dims[0]);
+
+    //     size_t startSize = variable.m_Start.size();
+    //     size_t startLen = startSize * sizeof(Dims[0]);
+
+    //     size_t countSize = variable.m_Count.size();
+    //     size_t countLen = countSize * sizeof(Dims[0]);
+
+    //     size_t numberSteps = currStep + 1;
+    //     size_t blocksLen = numberSteps * sizeof(size_t);
+    //     // calculating buffer size
+    //     size_t len = sizeof(bool) +
+    //                 typeLen  + sizeof(size_t) +
+    //                 shapeLen + sizeof(size_t) +   //shapeSize + size for counter
+    //                 startLen + sizeof(size_t) +
+    //                 countLen + sizeof(size_t) +
+    //                 blocksLen + sizeof(size_t);
+    //     std::cout << "len: " << len << std::endl;
+
+    //     buffer = (char*) g_slice_alloc(len);
+
+    //     size_t *blocks = (size_t *)g_slice_alloc(numberSteps * sizeof(size_t));
+    //     for (uint i = 0; i < numberSteps; i++)
+    //     {
+    //         std::cout << "--- DEBUG ---" << std::endl;
+    //         blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].at(0);
+    //         std::cout << "i: " << i << "  blocks: " << blocks[i]
+    //                   << std::endl;
+    //     }
+
+    //     memcpy(buffer, &constantDims, sizeof(bool));
+    //     buffer += sizeof(bool);
+    //     memcpy(buffer, &typeLen, sizeof(size_t));
+    //     buffer += sizeof(size_t);
+    //     memcpy(buffer, type, typeLen);
+    //     buffer += typeLen;
+    //     memcpy(buffer, &shapeSize, sizeof(size_t));
+    //     // memcpy(buffer, (void*) variable.m_Shape.size(), sizeof(size_t));
+    //     buffer += sizeof(size_t);
+    //     memcpy(buffer, variable.m_Shape.data(), shapeLen);
+    //     buffer += shapeLen;
+    //     memcpy(buffer, &startSize, sizeof(size_t));
+    //     buffer += sizeof(size_t);
+    //     memcpy(buffer, variable.m_Start.data(), startLen);
+    //     buffer += startLen;
+    //     memcpy(buffer, &countSize, sizeof(size_t));
+    //     buffer += sizeof(size_t);
+    //     memcpy(buffer, variable.m_Count.data(), countLen);
+    //     buffer += countLen;
+    //     memcpy(buffer, &numberSteps, sizeof(size_t));
+    //     buffer += sizeof(size_t);
+    //     memcpy(buffer, blocks, blocksLen);
+    //     buffer += blocksLen;
+
+    // }
+    // else
+    // {
+    //     // JuleaKVWriter::StepMetadata md;
+    //     // // md = metaDataBuf;
+    //     // md.shape = variable.m_Shape;
+    //     // md.start = variable.m_Start;
+    //     // md.count = variable.m_Count;
+    //     // md.type = variable.m_Type;
+    //     // md.isConstantDims = variable.IsConstantDims();
+    //     // md.numberSteps = currStep + 1;
+    //     // md.blocks = (size_t *)g_slice_alloc(md.numberSteps * sizeof(size_t));
+
+    //     // // TODO: check whether this is called too often.
+    //     // // it is called in KVWriter.tcc for every block but every block change
+    //     // // needs to update variable. so it must be ok
+    //     // std::cout << "md->numberSteps: " << md.numberSteps << std::endl;
+    //     // std::cout << "type " << md.type.c_str() << std::endl;
+    //     // std::cout << "isConstantDims" << md.isConstantDims << std::endl;
+    //     // for (uint i = 0; i <= currStep; i++)
+    //     // {
+    //     //     std::cout << "--- DEBUG ---" << std::endl;
+    //     //     // only one element in vector -> number of blocks for this step
+    //     //     // blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].at(0);
+    //     //     md.blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].at(0);
+    //     //     // md->blocks = blocks;
+    //     //     std::cout << "i: " << i << "  blocks: " << md.blocks[i]
+    //     //               << std::endl;
+    //     // }
+    //     //     std::cout << "--- DEBUG 2 ---" << std::endl;
+    //     // size_t len = sizeof(JuleaKVWriter::StepMetadata);
+    //     //     std::cout << "--- DEBUG 3 ---" << std::endl;
+    //     // metaDataBuf = g_memdup(&md, len);
+    //     //     std::cout << "--- DEBUG 4 ---" << std::endl;
+
+    //     // j_kv_put(kvVarMetadata, metaDataBuf, len, g_free, batch);
+    //     //     std::cout << "--- DEBUG 5 ---" << std::endl;
+    //     // j_batch_execute(batch);
+    // }
+
+    char *buffer = NULL;
 
         bool constantDims = variable.IsConstantDims();
         size_t typeLen = sizeof(variable.m_Type.c_str());
@@ -258,7 +359,8 @@ void WriteVarMetadataToJuleaKV(Variable<T> &variable,
         for (uint i = 0; i < numberSteps; i++)
         {
             std::cout << "--- DEBUG ---" << std::endl;
-            blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].at(0);
+            // blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].at(0);
+            blocks[i] = blockID + 1;
             std::cout << "i: " << i << "  blocks: " << blocks[i]
                       << std::endl;
         }
@@ -289,47 +391,6 @@ void WriteVarMetadataToJuleaKV(Variable<T> &variable,
 
 
 
-
-
-    }
-    else
-    {
-        JuleaKVWriter::StepMetadata md;
-        // md = metaDataBuf;
-        md.shape = variable.m_Shape;
-        md.start = variable.m_Start;
-        md.count = variable.m_Count;
-        md.type = variable.m_Type;
-        md.isConstantDims = variable.IsConstantDims();
-        md.numberSteps = currStep + 1;
-        md.blocks = (size_t *)g_slice_alloc(md.numberSteps * sizeof(size_t));
-
-        // TODO: check whether this is called too often.
-        // it is called in KVWriter.tcc for every block but every block change
-        // needs to update variable. so it must be ok
-        std::cout << "md->numberSteps: " << md.numberSteps << std::endl;
-        std::cout << "type " << md.type.c_str() << std::endl;
-        std::cout << "isConstantDims" << md.isConstantDims << std::endl;
-        for (uint i = 0; i <= currStep; i++)
-        {
-            std::cout << "--- DEBUG ---" << std::endl;
-            // only one element in vector -> number of blocks for this step
-            // blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].at(0);
-            md.blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].at(0);
-            // md->blocks = blocks;
-            std::cout << "i: " << i << "  blocks: " << md.blocks[i]
-                      << std::endl;
-        }
-            std::cout << "--- DEBUG 2 ---" << std::endl;
-        size_t len = sizeof(JuleaKVWriter::StepMetadata);
-            std::cout << "--- DEBUG 3 ---" << std::endl;
-        metaDataBuf = g_memdup(&md, len);
-            std::cout << "--- DEBUG 4 ---" << std::endl;
-
-        j_kv_put(kvVarMetadata, metaDataBuf, len, g_free, batch);
-            std::cout << "--- DEBUG 5 ---" << std::endl;
-        j_batch_execute(batch);
-    }
 
     g_free(stringMetadataKV);
     j_kv_unref(kvVarMetadata);
