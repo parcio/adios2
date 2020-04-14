@@ -32,35 +32,29 @@ void DeserializeVariableMetadata(gpointer buffer, int *type, Dims *shape,
 {
     size_t typeLen = 42;
     char tmpType[8];
+    char *tmp_buffer = (char *)buffer;
     bool isConstantDims = true;
     std::cout << "constantDims: " << isConstantDims << std::endl;
-    std::cout << "constantDims: " << &isConstantDims << std::endl;
 
-    memcpy(&isConstantDims, &buffer, sizeof(bool));
-    buffer += sizeof(bool);
-    std::cout << "constantDims: " << isConstantDims << std::endl;
-    std::cout << "constantDims: " << &isConstantDims << std::endl;
-
-    //     memcpy(&isConstantDims, buffer, sizeof(bool));
+    // memcpy(&isConstantDims, &buffer, sizeof(bool));
     // buffer += sizeof(bool);
-    // std::cout << "constantDims: " << constantDims << std::endl;
-    // std::cout << "constantDims: " << *constantDims << std::endl;
+    memcpy(&isConstantDims, &tmp_buffer, sizeof(bool));
+    tmp_buffer += sizeof(bool);
+    std::cout << "constantDims: " << isConstantDims << std::endl;
 
     /** allocate memory for variable holding the length of the vector +
     memory for the vector data itself */
     // memcpy(buffer, &typeLen, sizeof(size_t)); // type
 
     std::cout << "typeLen: " << typeLen << std::endl;
-    std::cout << "typeLen: " << &typeLen << std::endl;
-    memcpy(&typeLen, &buffer, sizeof(size_t)); // type
-    buffer += sizeof(size_t);
+    memcpy(&typeLen, &tmp_buffer, sizeof(size_t)); // type
+    // memcpy(&typeLen, &buffer, sizeof(size_t)); // type
+    tmp_buffer += sizeof(size_t);
     std::cout << "typeLen: " << typeLen << std::endl;
-    std::cout << "typeLen: " << &typeLen << std::endl;
 
-    memcpy(&tmpType, &buffer, typeLen);
-    buffer += typeLen;
+    memcpy(&tmpType, &tmp_buffer, typeLen);
+    tmp_buffer += typeLen;
     std::cout << "tmpType: " << tmpType << std::endl;
-    std::cout << "tmpType: " << &tmpType << std::endl;
 
     // memcpy(buffer, &shapeSize, sizeof(size_t)); // shape
     // buffer += sizeof(size_t);
