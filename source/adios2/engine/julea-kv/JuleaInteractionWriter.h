@@ -33,11 +33,11 @@ template <class T>
 void PutVariableDataToJulea(Variable<T> &variable, const T *data,
                             const std::string nameSpace, size_t currentStep,
                             size_t blockID);
-template <class T>
-void PutVariableMetadataToJulea(Variable<T> &variable, gpointer &md,
-                                guint32 valueLen, const std::string nameSpace,
-                                size_t currentStep, size_t blockID,
-                                bool isNameWritten);
+// template <class T>
+// void PutVariableMetadataToJulea(Variable<T> &variable, gpointer &md,
+//                                 guint32 valueLen, const std::string nameSpace,
+//                                 size_t currentStep, size_t blockID,
+//                                 bool isNameWritten);
 
 // template <class T>
 // void PutVariableMetadataBSONToJulea(Variable<T> &variable, bson_t
@@ -78,8 +78,6 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
         Variable<T> &variable, bson_t *bsonMetadata,                           \
         const std::string nameSpace, size_t currentStep, size_t blockID,       \
         bool isNameWritten);                                                   \
-
-#define declare_template_instantiation(T)                                      \
     extern template void PutVariableDataToJulea(                               \
         Variable<T> &variable, const T *data, const std::string nameSpace,     \
         size_t currentStep, size_t blockID);                                   \
@@ -87,6 +85,8 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
         Variable<T> &variable, gpointer &md, guint32 valueLen,                 \
         const std::string nameSpace, size_t currentStep, size_t blockID,       \
         bool isNameWritten);                                                   \
+
+#define declare_template_instantiation(T)                                      \
                                                                                \
     extern template void PutAttributeDataToJulea(Attribute<T> &attribute,      \
                                                  const std::string nameSpace); \

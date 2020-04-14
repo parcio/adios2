@@ -193,265 +193,265 @@ void PutNameToJulea(std::string paramName, std::string nameSpace,
 //     j_semantics_unref(semantics);
 // }
 
-void WriteBlockMetadataToJuleaKV(const std::string nameSpace, gpointer &md,
-                                 guint32 valueLen,
-                                 const std::string stepBlockID)
-{
-    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    auto batch = j_batch_new(semantics);
+// void WriteBlockMetadataToJuleaKV(const std::string nameSpace, gpointer &md,
+//                                  guint32 valueLen,
+//                                  const std::string stepBlockID)
+// {
+//     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+//     auto batch = j_batch_new(semantics);
 
-    auto stringMetadataKV =
-        g_strdup_printf("%s_%s", nameSpace.c_str(), "variableblocks");
-    std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
+//     auto stringMetadataKV =
+//         g_strdup_printf("%s_%s", nameSpace.c_str(), "variableblocks");
+//     std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
 
-    auto kvObjectMetadata = j_kv_new(stringMetadataKV, stepBlockID.c_str());
+//     auto kvObjectMetadata = j_kv_new(stringMetadataKV, stepBlockID.c_str());
 
-    j_kv_put(kvObjectMetadata, md, valueLen, g_free, batch);
-    j_batch_execute(batch);
+//     j_kv_put(kvObjectMetadata, md, valueLen, g_free, batch);
+//     j_batch_execute(batch);
 
-    g_free(stringMetadataKV);
-    j_kv_unref(kvObjectMetadata);
-    j_batch_unref(batch);
-    j_semantics_unref(semantics);
-}
+//     g_free(stringMetadataKV);
+//     j_kv_unref(kvObjectMetadata);
+//     j_batch_unref(batch);
+//     j_semantics_unref(semantics);
+// }
 
 // template <class T>
 // void WriteVarMetadataToJuleaKV(Variable<T> &variable,
 //                                const std::string nameSpace, size_t currStep,
 //                                size_t blockID)
-void WriteVarMetadataToJuleaKV(const std::string nameSpace, gpointer &buffer,
-                               guint32 bufferLen, const std::string varName)
-{
-    // TODO: make sure that there are no races when updating
-    // communicate to rest?
-    // j_kv_get(kvVarMetadata, &metaDataBuf, &valueLen, batch);
-    // j_batch_execute(batch);
+// void WriteVarMetadataToJuleaKV(const std::string nameSpace, gpointer &buffer,
+//                                guint32 bufferLen, const std::string varName)
+// {
+//     // TODO: make sure that there are no races when updating
+//     // communicate to rest?
+//     // j_kv_get(kvVarMetadata, &metaDataBuf, &valueLen, batch);
+//     // j_batch_execute(batch);
 
-    // guint32 bufferLen = 0;
-    // char *buffer = NULL;
-    void *metaDataBuf = NULL;
+//     // guint32 bufferLen = 0;
+//     // char *buffer = NULL;
+//     void *metaDataBuf = NULL;
 
-    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    auto batch = j_batch_new(semantics);
+//     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+//     auto batch = j_batch_new(semantics);
 
-    auto stringMetadataKV =
-        g_strdup_printf("%s_%s", nameSpace.c_str(), "variables");
-    auto kvVarMetadata = j_kv_new(stringMetadataKV, varName.c_str());
-    std::cout << "--- WriteVarMetadataToJuleaKV --- kv = " << stringMetadataKV
-              << " key = " << varName.c_str() << " --- " << std::endl;
+//     auto stringMetadataKV =
+//         g_strdup_printf("%s_%s", nameSpace.c_str(), "variables");
+//     auto kvVarMetadata = j_kv_new(stringMetadataKV, varName.c_str());
+//     std::cout << "--- WriteVarMetadataToJuleaKV --- kv = " << stringMetadataKV
+//               << " key = " << varName.c_str() << " --- " << std::endl;
 
-    // bool constantDims = variable.IsConstantDims();
-    // size_t typeLen = sizeof(variable.m_Type.c_str());
-    // const char *type = variable.m_Type.c_str();
+//     // bool constantDims = variable.IsConstantDims();
+//     // size_t typeLen = sizeof(variable.m_Type.c_str());
+//     // const char *type = variable.m_Type.c_str();
 
-    // size_t shapeSize = variable.m_Shape.size();
-    // size_t shapeLen = shapeSize * sizeof(Dims[0]);
+//     // size_t shapeSize = variable.m_Shape.size();
+//     // size_t shapeLen = shapeSize * sizeof(Dims[0]);
 
-    // size_t startSize = variable.m_Start.size();
-    // size_t startLen = startSize * sizeof(Dims[0]);
+//     // size_t startSize = variable.m_Start.size();
+//     // size_t startLen = startSize * sizeof(Dims[0]);
 
-    // size_t countSize = variable.m_Count.size();
-    // size_t countLen = countSize * sizeof(Dims[0]);
+//     // size_t countSize = variable.m_Count.size();
+//     // size_t countLen = countSize * sizeof(Dims[0]);
 
-    // size_t numberSteps = currStep + 1;
-    // size_t blocksLen = numberSteps * sizeof(size_t);
-    // // calculating buffer size
-    // size_t len = sizeof(bool) + typeLen + sizeof(size_t) + shapeLen +
-    //              sizeof(size_t) + // shapeSize + size for counter
-    //              startLen + sizeof(size_t) + countLen + sizeof(size_t) +
-    //              blocksLen + sizeof(size_t);
-    // std::cout << "--- buffer length: " << len << std::endl;
+//     // size_t numberSteps = currStep + 1;
+//     // size_t blocksLen = numberSteps * sizeof(size_t);
+//     // // calculating buffer size
+//     // size_t len = sizeof(bool) + typeLen + sizeof(size_t) + shapeLen +
+//     //              sizeof(size_t) + // shapeSize + size for counter
+//     //              startLen + sizeof(size_t) + countLen + sizeof(size_t) +
+//     //              blocksLen + sizeof(size_t);
+//     // std::cout << "--- buffer length: " << len << std::endl;
 
-    // buffer = (char *)g_slice_alloc(len);
+//     // buffer = (char *)g_slice_alloc(len);
 
-    // size_t blocks[numberSteps];
-    // for (uint i = 0; i < numberSteps; i++)
-    // {
-    //     std::cout << "--- DEBUG ---" << std::endl;
-    //     blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].size();
-    //     std::cout << "i: " << i << "  blocks: " << blocks[i] << std::endl;
-    // }
+//     // size_t blocks[numberSteps];
+//     // for (uint i = 0; i < numberSteps; i++)
+//     // {
+//     //     std::cout << "--- DEBUG ---" << std::endl;
+//     //     blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].size();
+//     //     std::cout << "i: " << i << "  blocks: " << blocks[i] << std::endl;
+//     // }
 
-    // memcpy(buffer, &constantDims, sizeof(bool));
-    // buffer += sizeof(bool);
-    // memcpy(buffer, &typeLen, sizeof(size_t));
-    // buffer += sizeof(size_t);
-    // memcpy(buffer, type, typeLen);
-    // buffer += typeLen;
-    // memcpy(buffer, &shapeSize, sizeof(size_t));
-    // buffer += sizeof(size_t);
-    // memcpy(buffer, variable.m_Shape.data(), shapeLen);
-    // buffer += shapeLen;
-    // memcpy(buffer, &startSize, sizeof(size_t));
-    // buffer += sizeof(size_t);
-    // memcpy(buffer, variable.m_Start.data(), startLen);
-    // buffer += startLen;
-    // memcpy(buffer, &countSize, sizeof(size_t));
-    // buffer += sizeof(size_t);
-    // memcpy(buffer, variable.m_Count.data(), countLen);
-    // buffer += countLen;
-    // memcpy(buffer, &numberSteps, sizeof(size_t));
-    // buffer += sizeof(size_t);
-    // memcpy(buffer, blocks, blocksLen);
+//     // memcpy(buffer, &constantDims, sizeof(bool));
+//     // buffer += sizeof(bool);
+//     // memcpy(buffer, &typeLen, sizeof(size_t));
+//     // buffer += sizeof(size_t);
+//     // memcpy(buffer, type, typeLen);
+//     // buffer += typeLen;
+//     // memcpy(buffer, &shapeSize, sizeof(size_t));
+//     // buffer += sizeof(size_t);
+//     // memcpy(buffer, variable.m_Shape.data(), shapeLen);
+//     // buffer += shapeLen;
+//     // memcpy(buffer, &startSize, sizeof(size_t));
+//     // buffer += sizeof(size_t);
+//     // memcpy(buffer, variable.m_Start.data(), startLen);
+//     // buffer += startLen;
+//     // memcpy(buffer, &countSize, sizeof(size_t));
+//     // buffer += sizeof(size_t);
+//     // memcpy(buffer, variable.m_Count.data(), countLen);
+//     // buffer += countLen;
+//     // memcpy(buffer, &numberSteps, sizeof(size_t));
+//     // buffer += sizeof(size_t);
+//     // memcpy(buffer, blocks, blocksLen);
 
-    // buffer = SerializeVarMetadata(variable, &bufferLen, currStep);
+//     // buffer = SerializeVarMetadata(variable, &bufferLen, currStep);
 
-    metaDataBuf = g_memdup(buffer, bufferLen);
+//     metaDataBuf = g_memdup(buffer, bufferLen);
 
-    j_kv_put(kvVarMetadata, metaDataBuf, bufferLen, g_free, batch);
-    j_batch_execute(batch);
+//     j_kv_put(kvVarMetadata, metaDataBuf, bufferLen, g_free, batch);
+//     j_batch_execute(batch);
 
-    g_free(stringMetadataKV);
-    j_kv_unref(kvVarMetadata);
-    j_batch_unref(batch);
-    j_semantics_unref(semantics);
+//     g_free(stringMetadataKV);
+//     j_kv_unref(kvVarMetadata);
+//     j_batch_unref(batch);
+//     j_semantics_unref(semantics);
 
-    // JuleaKVWriter::StepMetadata md =
-    // g_slice_new(JuleaKVWriter::StepMetadata);
-    // JuleaKVWriter::StepMetadata md;
-    // std::cout << "sizeof md" << sizeof(md) << std::endl;
+//     // JuleaKVWriter::StepMetadata md =
+//     // g_slice_new(JuleaKVWriter::StepMetadata);
+//     // JuleaKVWriter::StepMetadata md;
+//     // std::cout << "sizeof md" << sizeof(md) << std::endl;
 
-    /* ------------------------------ DEBUG START ---------------------------*/
-    // try to write, then read, then write new stuff
-    // std::cout << "======== DEBUG =====================" << std::endl;
-    // JuleaKVWriter::StepMetadata *md2 =
-    // g_slice_new(JuleaKVWriter::StepMetadata);
+//     /* ------------------------------ DEBUG START ---------------------------*/
+//     // try to write, then read, then write new stuff
+//     // std::cout << "======== DEBUG =====================" << std::endl;
+//     // JuleaKVWriter::StepMetadata *md2 =
+//     // g_slice_new(JuleaKVWriter::StepMetadata);
 
-    // md2->numberSteps = currStep + 1;
-    // md2->blocks = (size_t*) g_slice_alloc(md2->numberSteps*sizeof(size_t));
+//     // md2->numberSteps = currStep + 1;
+//     // md2->blocks = (size_t*) g_slice_alloc(md2->numberSteps*sizeof(size_t));
 
-    // for (uint i = 0; i <= currStep; i++)
-    // {
-    //     // only one element in vector -> number of blocks for this step
-    //     md2->blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].at(0);
-    //     std::cout << "md2: i: " << i << "  blocks: " << md2->blocks[i] <<
-    //     std::endl;
-    // }
+//     // for (uint i = 0; i <= currStep; i++)
+//     // {
+//     //     // only one element in vector -> number of blocks for this step
+//     //     md2->blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].at(0);
+//     //     std::cout << "md2: i: " << i << "  blocks: " << md2->blocks[i] <<
+//     //     std::endl;
+//     // }
 
-    // size_t len = sizeof(JuleaKVWriter::StepMetadata) +
-    // (currStep+1)*sizeof(size_t); std::cout << "len " << len << std::endl;
+//     // size_t len = sizeof(JuleaKVWriter::StepMetadata) +
+//     // (currStep+1)*sizeof(size_t); std::cout << "len " << len << std::endl;
 
-    // metaDataBuf = g_memdup(md2, len);
+//     // metaDataBuf = g_memdup(md2, len);
 
-    // j_kv_put(kvVarMetadata, metaDataBuf, len, g_free, batch);
-    // j_batch_execute(batch);
+//     // j_kv_put(kvVarMetadata, metaDataBuf, len, g_free, batch);
+//     // j_batch_execute(batch);
 
-    /* ------------------------------ DEBUG END ---------------------------*/
+//     /* ------------------------------ DEBUG END ---------------------------*/
 
-    // std::cout << "md->numberSteps: " << md.numberSteps << std::endl;
-    // j_kv_get(kvVarMetadata, (gpointer *)&md, &valueLen, batch);
+//     // std::cout << "md->numberSteps: " << md.numberSteps << std::endl;
+//     // j_kv_get(kvVarMetadata, (gpointer *)&md, &valueLen, batch);
 
-    // if (valueLen == 0)
-    // {
-    //     std::cout << "--- DEBUG --- todo something here" << std::endl;
+//     // if (valueLen == 0)
+//     // {
+//     //     std::cout << "--- DEBUG --- todo something here" << std::endl;
 
-    //     JuleaKVWriter::StepMetadata md2;
-    //     //TODO: this is just copied from else... something needs to be
-    //     adapted char *buffer = NULL;
+//     //     JuleaKVWriter::StepMetadata md2;
+//     //     //TODO: this is just copied from else... something needs to be
+//     //     adapted char *buffer = NULL;
 
-    //     bool constantDims = variable.IsConstantDims();
-    //     size_t typeLen = sizeof(variable.m_Type.c_str());
-    //     const char *type = variable.m_Type.c_str();
+//     //     bool constantDims = variable.IsConstantDims();
+//     //     size_t typeLen = sizeof(variable.m_Type.c_str());
+//     //     const char *type = variable.m_Type.c_str();
 
-    //     size_t shapeSize = variable.m_Shape.size();
-    //     size_t shapeLen = shapeSize * sizeof(Dims[0]);
+//     //     size_t shapeSize = variable.m_Shape.size();
+//     //     size_t shapeLen = shapeSize * sizeof(Dims[0]);
 
-    //     size_t startSize = variable.m_Start.size();
-    //     size_t startLen = startSize * sizeof(Dims[0]);
+//     //     size_t startSize = variable.m_Start.size();
+//     //     size_t startLen = startSize * sizeof(Dims[0]);
 
-    //     size_t countSize = variable.m_Count.size();
-    //     size_t countLen = countSize * sizeof(Dims[0]);
+//     //     size_t countSize = variable.m_Count.size();
+//     //     size_t countLen = countSize * sizeof(Dims[0]);
 
-    //     size_t numberSteps = currStep + 1;
-    //     size_t blocksLen = numberSteps * sizeof(size_t);
-    //     // calculating buffer size
-    //     size_t len = sizeof(bool) +
-    //                 typeLen  + sizeof(size_t) +
-    //                 shapeLen + sizeof(size_t) +   //shapeSize + size for
-    //                 counter startLen + sizeof(size_t) + countLen +
-    //                 sizeof(size_t) + blocksLen + sizeof(size_t);
-    //     std::cout << "len: " << len << std::endl;
+//     //     size_t numberSteps = currStep + 1;
+//     //     size_t blocksLen = numberSteps * sizeof(size_t);
+//     //     // calculating buffer size
+//     //     size_t len = sizeof(bool) +
+//     //                 typeLen  + sizeof(size_t) +
+//     //                 shapeLen + sizeof(size_t) +   //shapeSize + size for
+//     //                 counter startLen + sizeof(size_t) + countLen +
+//     //                 sizeof(size_t) + blocksLen + sizeof(size_t);
+//     //     std::cout << "len: " << len << std::endl;
 
-    //     buffer = (char*) g_slice_alloc(len);
+//     //     buffer = (char*) g_slice_alloc(len);
 
-    //     size_t *blocks = (size_t *)g_slice_alloc(numberSteps *
-    //     sizeof(size_t)); for (uint i = 0; i < numberSteps; i++)
-    //     {
-    //         std::cout << "--- DEBUG ---" << std::endl;
-    //         blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].at(0);
-    //         std::cout << "i: " << i << "  blocks: " << blocks[i]
-    //                   << std::endl;
-    //     }
+//     //     size_t *blocks = (size_t *)g_slice_alloc(numberSteps *
+//     //     sizeof(size_t)); for (uint i = 0; i < numberSteps; i++)
+//     //     {
+//     //         std::cout << "--- DEBUG ---" << std::endl;
+//     //         blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].at(0);
+//     //         std::cout << "i: " << i << "  blocks: " << blocks[i]
+//     //                   << std::endl;
+//     //     }
 
-    //     memcpy(buffer, &constantDims, sizeof(bool));
-    //     buffer += sizeof(bool);
-    //     memcpy(buffer, &typeLen, sizeof(size_t));
-    //     buffer += sizeof(size_t);
-    //     memcpy(buffer, type, typeLen);
-    //     buffer += typeLen;
-    //     memcpy(buffer, &shapeSize, sizeof(size_t));
-    //     // memcpy(buffer, (void*) variable.m_Shape.size(), sizeof(size_t));
-    //     buffer += sizeof(size_t);
-    //     memcpy(buffer, variable.m_Shape.data(), shapeLen);
-    //     buffer += shapeLen;
-    //     memcpy(buffer, &startSize, sizeof(size_t));
-    //     buffer += sizeof(size_t);
-    //     memcpy(buffer, variable.m_Start.data(), startLen);
-    //     buffer += startLen;
-    //     memcpy(buffer, &countSize, sizeof(size_t));
-    //     buffer += sizeof(size_t);
-    //     memcpy(buffer, variable.m_Count.data(), countLen);
-    //     buffer += countLen;
-    //     memcpy(buffer, &numberSteps, sizeof(size_t));
-    //     buffer += sizeof(size_t);
-    //     memcpy(buffer, blocks, blocksLen);
-    //     buffer += blocksLen;
+//     //     memcpy(buffer, &constantDims, sizeof(bool));
+//     //     buffer += sizeof(bool);
+//     //     memcpy(buffer, &typeLen, sizeof(size_t));
+//     //     buffer += sizeof(size_t);
+//     //     memcpy(buffer, type, typeLen);
+//     //     buffer += typeLen;
+//     //     memcpy(buffer, &shapeSize, sizeof(size_t));
+//     //     // memcpy(buffer, (void*) variable.m_Shape.size(), sizeof(size_t));
+//     //     buffer += sizeof(size_t);
+//     //     memcpy(buffer, variable.m_Shape.data(), shapeLen);
+//     //     buffer += shapeLen;
+//     //     memcpy(buffer, &startSize, sizeof(size_t));
+//     //     buffer += sizeof(size_t);
+//     //     memcpy(buffer, variable.m_Start.data(), startLen);
+//     //     buffer += startLen;
+//     //     memcpy(buffer, &countSize, sizeof(size_t));
+//     //     buffer += sizeof(size_t);
+//     //     memcpy(buffer, variable.m_Count.data(), countLen);
+//     //     buffer += countLen;
+//     //     memcpy(buffer, &numberSteps, sizeof(size_t));
+//     //     buffer += sizeof(size_t);
+//     //     memcpy(buffer, blocks, blocksLen);
+//     //     buffer += blocksLen;
 
-    // }
-    // else
-    // {
-    //     // JuleaKVWriter::StepMetadata md;
-    //     // // md = metaDataBuf;
-    //     // md.shape = variable.m_Shape;
-    //     // md.start = variable.m_Start;
-    //     // md.count = variable.m_Count;
-    //     // md.type = variable.m_Type;
-    //     // md.isConstantDims = variable.IsConstantDims();
-    //     // md.numberSteps = currStep + 1;
-    //     // md.blocks = (size_t *)g_slice_alloc(md.numberSteps *
-    //     sizeof(size_t));
+//     // }
+//     // else
+//     // {
+//     //     // JuleaKVWriter::StepMetadata md;
+//     //     // // md = metaDataBuf;
+//     //     // md.shape = variable.m_Shape;
+//     //     // md.start = variable.m_Start;
+//     //     // md.count = variable.m_Count;
+//     //     // md.type = variable.m_Type;
+//     //     // md.isConstantDims = variable.IsConstantDims();
+//     //     // md.numberSteps = currStep + 1;
+//     //     // md.blocks = (size_t *)g_slice_alloc(md.numberSteps *
+//     //     sizeof(size_t));
 
-    //     // // TODO: check whether this is called too often.
-    //     // // it is called in KVWriter.tcc for every block but every block
-    //     change
-    //     // // needs to update variable. so it must be ok
-    //     // std::cout << "md->numberSteps: " << md.numberSteps << std::endl;
-    //     // std::cout << "type " << md.type.c_str() << std::endl;
-    //     // std::cout << "isConstantDims" << md.isConstantDims << std::endl;
-    //     // for (uint i = 0; i <= currStep; i++)
-    //     // {
-    //     //     std::cout << "--- DEBUG ---" << std::endl;
-    //     //     // only one element in vector -> number of blocks for this
-    //     step
-    //     //     // blocks[i] =
-    //     variable.m_AvailableStepBlockIndexOffsets[i].at(0);
-    //     //     md.blocks[i] =
-    //     variable.m_AvailableStepBlockIndexOffsets[i].at(0);
-    //     //     // md->blocks = blocks;
-    //     //     std::cout << "i: " << i << "  blocks: " << md.blocks[i]
-    //     //               << std::endl;
-    //     // }
-    //     //     std::cout << "--- DEBUG 2 ---" << std::endl;
-    //     // size_t len = sizeof(JuleaKVWriter::StepMetadata);
-    //     //     std::cout << "--- DEBUG 3 ---" << std::endl;
-    //     // metaDataBuf = g_memdup(&md, len);
-    //     //     std::cout << "--- DEBUG 4 ---" << std::endl;
+//     //     // // TODO: check whether this is called too often.
+//     //     // // it is called in KVWriter.tcc for every block but every block
+//     //     change
+//     //     // // needs to update variable. so it must be ok
+//     //     // std::cout << "md->numberSteps: " << md.numberSteps << std::endl;
+//     //     // std::cout << "type " << md.type.c_str() << std::endl;
+//     //     // std::cout << "isConstantDims" << md.isConstantDims << std::endl;
+//     //     // for (uint i = 0; i <= currStep; i++)
+//     //     // {
+//     //     //     std::cout << "--- DEBUG ---" << std::endl;
+//     //     //     // only one element in vector -> number of blocks for this
+//     //     step
+//     //     //     // blocks[i] =
+//     //     variable.m_AvailableStepBlockIndexOffsets[i].at(0);
+//     //     //     md.blocks[i] =
+//     //     variable.m_AvailableStepBlockIndexOffsets[i].at(0);
+//     //     //     // md->blocks = blocks;
+//     //     //     std::cout << "i: " << i << "  blocks: " << md.blocks[i]
+//     //     //               << std::endl;
+//     //     // }
+//     //     //     std::cout << "--- DEBUG 2 ---" << std::endl;
+//     //     // size_t len = sizeof(JuleaKVWriter::StepMetadata);
+//     //     //     std::cout << "--- DEBUG 3 ---" << std::endl;
+//     //     // metaDataBuf = g_memdup(&md, len);
+//     //     //     std::cout << "--- DEBUG 4 ---" << std::endl;
 
-    //     // j_kv_put(kvVarMetadata, metaDataBuf, len, g_free, batch);
-    //     //     std::cout << "--- DEBUG 5 ---" << std::endl;
-    //     // j_batch_execute(batch);
-    // }
-}
+//     //     // j_kv_put(kvVarMetadata, metaDataBuf, len, g_free, batch);
+//     //     //     std::cout << "--- DEBUG 5 ---" << std::endl;
+//     //     // j_batch_execute(batch);
+//     // }
+// }
 
 template <class T>
 void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
@@ -504,73 +504,73 @@ void PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
 //                                 JuleaKVWriter::Metadata<T> &md,
 //                                 const std::string nameSpace, size_t currStep,
 //                                 size_t blockID, bool isNameWritten)
-template <class T>
-void PutVariableMetadataToJulea(Variable<T> &variable, gpointer &md,
-                                guint32 valueLen, const std::string nameSpace,
-                                size_t currStep, size_t blockID,
-                                bool isNameWritten)
-{
-    const char *kvNames = "variable_names";
-    const char *kvMD = "variables";
-    auto stepBlockID = g_strdup_printf("%d_%d", currStep, blockID);
-    std::cout << "stepBlockID: " << stepBlockID << std::endl;
+// template <class T>
+// void PutVariableMetadataToJulea(Variable<T> &variable, gpointer &md,
+//                                 guint32 valueLen, const std::string nameSpace,
+//                                 size_t currStep, size_t blockID,
+//                                 bool isNameWritten)
+// {
+//     const char *kvNames = "variable_names";
+//     const char *kvMD = "variables";
+//     auto stepBlockID = g_strdup_printf("%d_%d", currStep, blockID);
+//     std::cout << "stepBlockID: " << stepBlockID << std::endl;
 
-    if (!isNameWritten)
-    {
-        PutNameToJulea(variable.m_Name, nameSpace.c_str(), kvNames);
-    }
+//     if (!isNameWritten)
+//     {
+//         PutNameToJulea(variable.m_Name, nameSpace.c_str(), kvNames);
+//     }
 
-    // WriteVarMetadataToJuleaKV(variable, nameSpace.c_str(), currStep,
-    // blockID); WriteBlockMetadataToJuleaKV(variable, nameSpace.c_str(), md,
-    // currStep, blockID);
+//     // WriteVarMetadataToJuleaKV(variable, nameSpace.c_str(), currStep,
+//     // blockID); WriteBlockMetadataToJuleaKV(variable, nameSpace.c_str(), md,
+//     // currStep, blockID);
 
-    // WriteBlockMetadataToJuleaKV(nameSpace.c_str(), md, valueLen,
-    // stepBlockID);
-}
+//     // WriteBlockMetadataToJuleaKV(nameSpace.c_str(), md, valueLen,
+//     // stepBlockID);
+// }
 
 /** ------------------------- DATA ------------------------------------------**/
-void WriteDataToJuleaObjectStore(std::string objName, std::string paramName,
-                                 std::string nameSpace, unsigned int dataSize,
-                                 const void *data, size_t currStep)
-{
-    guint64 bytesWritten = 0;
-    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    auto batch = j_batch_new(semantics);
+// void WriteDataToJuleaObjectStore(std::string objName, std::string paramName,
+//                                  std::string nameSpace, unsigned int dataSize,
+//                                  const void *data, size_t currStep)
+// {
+//     guint64 bytesWritten = 0;
+//     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+//     auto batch = j_batch_new(semantics);
 
-    auto name = strdup(paramName.c_str());
+//     auto name = strdup(paramName.c_str());
 
-    /* Write data pointer to object store:
-     * printf("%s_variables_%s", nameSpace, name)*/
-    std::cout << "objName: " << objName << std::endl;
-    auto stringDataObject =
-        // g_strdup_printf("%s_%s_%s_%d", nameSpace.c_str(), objName.c_str(),
-        // name, currStep); g_strdup_printf("%s_%s_%s", nameSpace.c_str(),
-        // objName.c_str(), name);
-        g_strdup_printf("%s_%s", nameSpace.c_str(), objName.c_str());
-    std::cout << "stringDataObject " << stringDataObject << std::endl;
-    auto dataObject = j_object_new(stringDataObject, name);
+//     /* Write data pointer to object store:
+//      * printf("%s_variables_%s", nameSpace, name)*/
+//     std::cout << "objName: " << objName << std::endl;
+//     auto stringDataObject =
+//         // g_strdup_printf("%s_%s_%s_%d", nameSpace.c_str(), objName.c_str(),
+//         // name, currStep); g_strdup_printf("%s_%s_%s", nameSpace.c_str(),
+//         // objName.c_str(), name);
+//         g_strdup_printf("%s_%s", nameSpace.c_str(), objName.c_str());
+//     std::cout << "stringDataObject " << stringDataObject << std::endl;
+//     auto dataObject = j_object_new(stringDataObject, name);
 
-    j_object_create(dataObject, batch);
-    j_object_write(dataObject, data, dataSize, 0, &bytesWritten, batch);
+//     j_object_create(dataObject, batch);
+//     j_object_write(dataObject, data, dataSize, 0, &bytesWritten, batch);
 
-    j_batch_execute(batch);
-    if (bytesWritten == dataSize)
-    {
-        std::cout << "++ Julea Interaction Writer: Data written for:  " << name
-                  << std::endl;
-    }
-    else
-    {
-        std::cout << "WARNING: only " << bytesWritten
-                  << " bytes written instead of " << dataSize << " bytes! "
-                  << std::endl;
-    }
-    free(name);
-    g_free(stringDataObject);
-    j_object_unref(dataObject);
-    j_batch_unref(batch);
-    j_semantics_unref(semantics);
-}
+//     j_batch_execute(batch);
+//     if (bytesWritten == dataSize)
+//     {
+//         std::cout << "++ Julea Interaction Writer: Data written for:  " << name
+//                   << std::endl;
+//     }
+//     else
+//     {
+//         std::cout << "WARNING: only " << bytesWritten
+//                   << " bytes written instead of " << dataSize << " bytes! "
+//                   << std::endl;
+//     }
+//     free(name);
+//     g_free(stringDataObject);
+//     j_object_unref(dataObject);
+//     j_batch_unref(batch);
+//     j_semantics_unref(semantics);
+// }
 
 template <class T>
 void PutVariableDataToJulea(Variable<T> &variable, const T *data,
@@ -850,8 +850,6 @@ void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetaData,
     std::cout << "++ Julea Interaction Writer: Put Attribute " << std::endl;
 }
 // template void WriteVarMetadataToJuleaKV(Variable<T> &variable, const std::string nameSpace,size_t currStep);\
-
-#define declare_template_instantiation(T)                                      \
     template void PutVariableDataToJulea(Variable<T> &variable, const T *data, \
                                          const std::string nameSpace,          \
                                          size_t currentStep, size_t blockID);  \
@@ -859,6 +857,8 @@ void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetaData,
         Variable<T> &variable, gpointer &md, guint32 valueLen,                 \
         const std::string nameSpace, size_t currentStep, size_t blockID,       \
         bool isNameWritten);                                                   \
+
+#define declare_template_instantiation(T)                                      \
                                                                                \
     template void PutAttributeDataToJulea(Attribute<T> &attribute,             \
                                           const std::string nameSpace);        \
