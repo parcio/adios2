@@ -33,13 +33,17 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
                                    size_t currStep)
 {
     bool constantDims = variable.IsConstantDims();
-    std::cout << "constantDims: " << constantDims << std::endl;
     const char *type = variable.m_Type.c_str();
-    std::cout << "type: " << type << std::endl;
     size_t shapeSize = variable.m_Shape.size();
     size_t startSize = variable.m_Start.size();
     size_t countSize = variable.m_Count.size();
     size_t numberSteps = currStep + 1;
+    std::cout << "constantDims: " << constantDims << std::endl;
+    std::cout << "type: " << type << std::endl;
+    std::cout << "shapeSize: " << shapeSize << std::endl;
+    std::cout << "startSize: " << startSize << std::endl;
+    std::cout << "countSize: " << countSize << std::endl;
+    std::cout << "numberSteps: " << numberSteps << std::endl;
 
     size_t typeLen = sizeof(variable.m_Type.c_str());
     std::cout << "typeLen: " << typeLen << std::endl;
@@ -80,6 +84,7 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     memcpy(buffer, variable.m_Shape.data(), shapeLen);
     buffer += shapeLen;
 
+    std::cout << "shape.data = " << variable.m_Shape.data() << std::endl;
     memcpy(buffer, &startSize, sizeof(size_t)); // start
     buffer += sizeof(size_t);
     memcpy(buffer, variable.m_Start.data(), startLen);
