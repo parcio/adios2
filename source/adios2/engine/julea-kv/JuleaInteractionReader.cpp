@@ -55,7 +55,8 @@ void GetVariableMetadataFromJuleaNew(const std::string nameSpace,
     // j_kv_get(kvVarMetadata, (gpointer *)&md2, &valueLen, batch);
     // j_kv_get(kvVarMetadata, (gpointer *)&md, &valueLen, batch);
     j_kv_get(kvVarMetadata, &metaDataBuf, &valueLen, batch);
-    j_batch_execute(batch);
+    g_assert_true(j_batch_execute(batch) == true );
+    // j_batch_execute(batch);
 
     // md2 =(JuleaKVReader::StepMetadata*) g_memdup(metaDataBuf,valueLen);
 
@@ -132,7 +133,8 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
     std::cout << "get var data from julea v[0]" << data[0] << std::endl;
     std::cout << "v[1]" << data[1] << std::endl;
     j_object_read(dataObject, data, dataSize, 0, &bytesRead, batch);
-    j_batch_execute(batch);
+    // j_batch_execute(batch);
+    g_assert_true(j_batch_execute(batch) == true );
 
     std::cout << "v[0]" << data[0] << std::endl;
     std::cout << "v[1]" << data[1] << std::endl;
@@ -182,7 +184,8 @@ void GetVarNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
     std::cout << "kvName :" << kvName << std::endl;
 
     j_kv_get(kvObject, &namesBuf, &valueLen, batch);
-    j_batch_execute(batch);
+    // j_batch_execute(batch);
+    g_assert_true(j_batch_execute(batch) == true );
 
     if (valueLen == 0)
     {
@@ -231,7 +234,8 @@ void GetVariableBSONFromJulea(const std::string nameSpace,
     auto kvObject = j_kv_new(stringMetadataKV, varName.c_str());
 
     j_kv_get(kvObject, &metaDataBuf, &valueLen, batch);
-    j_batch_execute(batch);
+    // j_batch_execute(batch);
+    g_assert_true(j_batch_execute(batch) == true );
 
     if (valueLen == 0)
     {
@@ -268,7 +272,8 @@ void GetAttributeBSONFromJulea(const std::string nameSpace,
     // std::cout << "-- stringMetadataKV: " << stringMetadataKV << std::endl;
 
     j_kv_get(kvObject, &metaDataBuf, valueLen, batch);
-    j_batch_execute(batch);
+    // j_batch_execute(batch);
+    g_assert_true(j_batch_execute(batch) == true );
 
     if (valueLen == 0)
     {
@@ -345,7 +350,8 @@ void GetAttributeDataFromJulea(const std::string attrName, T *data,
     // std::cout << "-- Datasize = " << dataSize << std::endl;
 
     j_object_read(dataObject, data, dataSize, 0, &bytesRead, batch);
-    j_batch_execute(batch);
+    // j_batch_execute(batch);
+    g_assert_true(j_batch_execute(batch) == true );
 
     if (bytesRead == dataSize)
     {
@@ -390,7 +396,8 @@ void GetAttributeStringDataFromJulea(const std::string attrName, char *data,
 
         j_object_read(dataObject, charArray, completeSize, 0, &bytesRead,
                       batch);
-        j_batch_execute(batch);
+        // j_batch_execute(batch);
+        g_assert_true(j_batch_execute(batch) == true );
         // std::cout << "-- charArray = " << charArray << std::endl;
     }
     else
@@ -399,7 +406,8 @@ void GetAttributeStringDataFromJulea(const std::string attrName, char *data,
 
         j_object_read(dataObject, stringArray, completeSize, 0, &bytesRead,
                       batch);
-        j_batch_execute(batch);
+        // j_batch_execute(batch);
+        g_assert_true(j_batch_execute(batch) == true );
         // std::cout << "string: " << stringArray << std::endl;
     }
     if (bytesRead == completeSize)
