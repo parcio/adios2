@@ -1,0 +1,47 @@
+
+Serialized formats :
+
+---block metadata-- -
+
+    size_t typeLen = 0;
+char *type = nullptr;
+size_t shapeSize = 0;
+size_t *shape = nullptr;
+size_t startSize = 0;
+size_t *start = nullptr;
+size_t countSize = 0;
+size_t *count = nullptr;
+
+size_t memoryStartSize = 0;
+size_t *memoryStart = nullptr;
+size_t memoryCountSize = 0;
+size_t *memoryCount = nullptr;
+
+sizeof(T) min;
+sizeof(T) max;
+
+size_t StepsStart = 0;
+size_t StepsCount = 0;
+size_t BlockID = 0;
+
+size_t CurrentStep = 0; // Julea Engine
+size_t BlockNumber = 0; // Julea Engine
+
+bool IsReadAsJoined = false;
+bool IsReadAsLocalValue = false;
+bool IsRandomAccess = true;
+bool IsValue = false;
+
+---step metadata-- -
+bool isConstantDims;
+size_t typeLen = 0;
+char *type = nullptr;
+size_t shapeSize = 0;
+size_t *shape = nullptr;
+size_t startSize = 0;
+size_t *start = nullptr;
+size_t countSize = 0;
+size_t *count = nullptr;
+
+size_t numberSteps = 0;
+size_t *blocks = nullptr;
