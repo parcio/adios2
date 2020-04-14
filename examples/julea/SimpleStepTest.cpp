@@ -79,8 +79,8 @@ void write_simple(std::string engine, std::string fileName)
     // v2[1] = 222;
     v3[0] = -333;
     v3[1] = 333;
-    // v4[0] = -444;
-    // v4[1] = -444;
+    v4[0] = -444;
+    v4[1] = -444;
     // v5[0] = -555;
     // v5[1] = 555;
     v6[0] = -666;
@@ -89,7 +89,7 @@ void write_simple(std::string engine, std::string fileName)
     // writer.Put<double>(varV0, v6.data());
     // writer.Put<double>(varV0, v2.data());
     writer.Put<double>(varV0, v3.data(), adios2::Mode::Sync);
-    // writer.Put<double>(varV0, v4.data());
+    writer.Put<double>(varV0, v4.data());
     // writer.Put<double>(varV0, v1.data(), adios2::Mode::Sync);
     // writer.Put<double>(varV0, v5.data());
 
@@ -246,7 +246,7 @@ void write_complex(std::string engine, std::string fileName)
     writer.Close();
 }
 
-void read(std::string engine, std::string fileName)
+void read_simple(std::string engine, std::string fileName)
 {
 
     // v0 has the same size on every process at every step
@@ -319,7 +319,8 @@ int main(int argc, char *argv[])
         write_simple("julea-kv", "SimpleSteps.jv");
         // write("julea-kv", "SimpleSteps.bp");
         // write();
-        // read();
+        // read_simple("bp3", "SimpleSteps.bp");
+        read_simple("julea-kv", "SimpleSteps.jv");
     }
     catch (std::invalid_argument &e)
     {
