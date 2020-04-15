@@ -95,6 +95,8 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     memcpy(buffer, variable.m_Count.data(), countLen);
     buffer += countLen;
 
+    numberSteps = 4242;
+    std::cout << "numberSteps: " << numberSteps << std::endl;
     memcpy(buffer, &numberSteps, sizeof(size_t)); // blocks
     buffer += sizeof(size_t);
     memcpy(buffer, blocks, blocksLen);

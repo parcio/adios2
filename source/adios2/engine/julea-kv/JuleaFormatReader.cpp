@@ -195,6 +195,19 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
         // std::cout << "count: " << count->front() <<std::endl;
     }
 
+    size_t testSteps;
+
+    memcpy(&testSteps,tmpBuffer, sizeof(size_t) );
+    tmpBuffer += sizeof(size_t);
+
+    std::cout << "numberSteps: " << testSteps << std::endl;
+    std::cout << "numberSteps: " << &testSteps << std::endl;
+
+    size_t blocksLen = testSteps *sizeof(size_t);
+    // memcpy(&blocks, tmpBuffer, blocksLen);
+    // memcpy(buffer, &numberSteps, sizeof(size_t)); // blocks
+    // buffer += sizeof(size_t);
+    // memcpy(buffer, blocks, blocksLen);
 
 }
 

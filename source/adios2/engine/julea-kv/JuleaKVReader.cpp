@@ -388,6 +388,8 @@ void JuleaKVReader::InitVariables()
             // std::cout << "shape size = " << shape.size() << std::endl;
             // std::cout << "start size = " << start.size() << std::endl;
             std::cout << "count size = " << count.size() << std::endl;
+            std::cout << "shape size = " << shape.size() << std::endl;
+            std::cout << "start size= " << start.size() << std::endl;
             std::cout << "count = " << count.front() << std::endl;
             std::cout << "type  = " << type << std::endl;
 
