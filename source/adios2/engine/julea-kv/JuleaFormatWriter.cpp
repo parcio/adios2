@@ -47,9 +47,19 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
 
     size_t typeLen = sizeof(variable.m_Type.c_str());
     std::cout << "typeLen: " << typeLen << std::endl;
-    size_t shapeLen = shapeSize * sizeof(Dims[0]);
-    size_t startLen = startSize * sizeof(Dims[0]);
-    size_t countLen = countSize * sizeof(Dims[0]);
+
+    //FIXME: try shapesize+1
+    // why does this not change the len? should there be a difference when shapesize=0? etc
+    size_t shapeLen = (shapeSize +1) * sizeof(Dims[0]);
+    std::cout << "shapeLen: " << shapeLen << std::endl;
+    size_t startLen = (startSize) * sizeof(Dims[0]); //TODO +1?!
+    std::cout << "startLen: " << startLen << std::endl;
+    size_t countLen = (countSize+1) * sizeof(Dims[0]);
+    //FIXME: sizeof(Dims[0]) = 0! is this supposed to be like this?!
+    std::cout << "sizeof(Dims[0]): " << sizeof(Dims[0]) << std::endl;
+    // size_t shapeLen = shapeSize  * sizeof(Dims[0]);
+    // size_t startLen = startSize * sizeof(Dims[0]);
+    // size_t countLen = countSize * sizeof(Dims[0]);
     size_t blocksLen = numberSteps * sizeof(size_t);
 
     uint numberVectors = 5; // type + shape + start + count + blocks
@@ -79,20 +89,47 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     memcpy(buffer, type, typeLen);
     buffer += typeLen;
 
-    memcpy(buffer, &shapeSize, sizeof(size_t)); // shape
+    /** shape */
+    memcpy(buffer, &shapeSize, sizeof(size_t));
     buffer += sizeof(size_t);
-    memcpy(buffer, variable.m_Shape.data(), shapeLen);
-    buffer += shapeLen;
+size_t shapeBuffer[shapeSize];
+    for(uint i = 0; i < shapeSize ; i++)
+    {
+        shapeBuffer[i] = variable.m_Shape.data()[i];
 
+    }
+    memcpy(buffer, shapeBuffer, shapeLen);
+    // memcpy(buffer, variable.m_Shape.data(), shapeLen);
+    buffer += shapeLen;
     std::cout << "shape.data = " << variable.m_Shape.data() << std::endl;
+
+    /** start */
     memcpy(buffer, &startSize, sizeof(size_t)); // start
     buffer += sizeof(size_t);
-    memcpy(buffer, variable.m_Start.data(), startLen);
+size_t startBuffer[startSize];
+    for(uint i = 0; i < startSize ; i++)
+    {
+        startBuffer[i] = variable.m_Start.data()[i];
+
+    }
+
+    memcpy(buffer, startBuffer, startLen);
+    // memcpy(buffer, variable.m_Start.data(), startLen);
     buffer += startLen;
 
+    std::cout << "count: " <<variable.m_Count.data() << std::endl;
+    std::cout << "count: " <<variable.m_Count.data()[0] << std::endl;
     memcpy(buffer, &countSize, sizeof(size_t)); // count
     buffer += sizeof(size_t);
-    memcpy(buffer, variable.m_Count.data(), countLen);
+
+    size_t countBuffer[countSize];
+    for(uint i = 0; i < countSize ; i++)
+    {
+        countBuffer[i] = variable.m_Count.data()[i];
+
+    }
+    // memcpy(buffer, variable.m_Count.data(), countLen);
+    memcpy(buffer, countBuffer, countLen);
     buffer += countLen;
 
     numberSteps = 4242;
