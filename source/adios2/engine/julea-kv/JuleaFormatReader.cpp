@@ -27,6 +27,7 @@ namespace core
 namespace engine
 {
 
+// FIXME: blocks + numbersteps as params
 void DefineVariableInInitNew(core::IO *io, const std::string varName,
                              std::string stringType, Dims shape, Dims start,
                              Dims count, bool constantDims)
@@ -91,10 +92,17 @@ void DefineVariableInInitNew(core::IO *io, const std::string varName,
     }
     else if (strcmp(type, "double") == 0)
     {
-        auto &var = io->DefineVariable<double>(varName, shape, start, count, constantDims);
+        // FIXME: is there a way not to set m_AvailableStepBlockIndexOffsets for
+        // every type on its own?
+        auto &var = io->DefineVariable<double>(varName, shape, start, count,
+                                               constantDims);
         std::cout << "Defined variable of type: " << type << std::endl;
-        var.m_AvailableStepBlockIndexOffsets[1] = std::vector<size_t>({0});
-        var.m_AvailableStepsStart = 1;
+        // FIXME
+        // for(uint i = 0; i < numberSteps; i++)
+        // {
+        // var.m_AvailableStepBlockIndexOffsets[1] = std::vector<size_t>({0});
+        // //FIXME var.m_AvailableStepsStart = 1; //FIXME
+        // }
     }
     else if (strcmp(type, "long double") == 0)
     {
@@ -121,7 +129,8 @@ void DefineVariableInInitNew(core::IO *io, const std::string varName,
 
 void DeserializeVariableMetadata(gpointer buffer, std::string *type,
                                  Dims *shape, Dims *start, Dims *count,
-                                 bool *constantDims, gpointer blocks, size_t *numberSteps)
+                                 bool *constantDims, gpointer blocks,
+                                 size_t *numberSteps)
 {
     std::cout << "------ DeserializeVariableMetadata ----------" << std::endl;
     // char tmpType[8];
@@ -155,7 +164,7 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
 
     memcpy(&shapeSize, tmpBuffer, sizeof(size_t)); // shape
     tmpBuffer += sizeof(size_t);
-    shapeLen = sizeof(size_t) * (shapeSize); //TODO +1?
+    shapeLen = sizeof(size_t) * (shapeSize); // TODO +1?
 
     size_t tmpShapeBuffer[shapeSize];
 
@@ -169,7 +178,7 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
 
     memcpy(&startSize, tmpBuffer, sizeof(size_t)); // start
     tmpBuffer += sizeof(size_t);
-    startLen = sizeof(size_t) * (startSize); //TODO
+    startLen = sizeof(size_t) * (startSize); // TODO
 
     size_t tmpStartBuffer[startSize];
 
@@ -183,7 +192,7 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
 
     memcpy(&countSize, tmpBuffer, sizeof(size_t)); // count
     tmpBuffer += sizeof(size_t);
-    countLen = sizeof(size_t) * (countSize); //TODO
+    countLen = sizeof(size_t) * (countSize); // TODO
 
     std::cout << "count size" << countSize << std::endl;
     size_t tmpCountBuffer[countSize];
@@ -198,29 +207,34 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
         // std::cout << "count: " << count->front() <<std::endl;
     }
 
-    size_t testSteps = 0;
+    size_t steps = 0;
 
-    memcpy(&testSteps,tmpBuffer, sizeof(size_t) );
+    memcpy(&steps, tmpBuffer, sizeof(size_t));
+    memcpy(numberSteps, tmpBuffer, sizeof(size_t));
     tmpBuffer += sizeof(size_t);
 
-    std::cout << "numberSteps: " << testSteps << std::endl;
-    std::cout << "numberSteps: " << &testSteps << std::endl;
+    std::cout << "numberSteps: " << steps << std::endl;
+    std::cout << "numberSteps: " << &steps << std::endl;
 
-    size_t blocksLen = 2 *sizeof(size_t);
+    size_t blocksLen = steps * sizeof(size_t);
     // if((buffer + 65) == tmpBuffer)
     // {
     //     std::cout << "test length" << std::endl;
     // }
-    size_t tmpBlocks[2];
-    memcpy(&tmpBlocks, tmpBuffer, blocksLen); //FIXME: heap-buffer overflow
+    size_t tmpBlocks[blocksLen];
+    memcpy(&tmpBlocks, tmpBuffer, blocksLen); // FIXME: heap-buffer overflow
+    memcpy(&tmpBlocks, tmpBuffer, blocksLen); // FIXME: heap-buffer overflow
 
+    std::cout << "block[0]" << tmpBlocks[0] << std::endl;
+    std::cout << "block[1]" << tmpBlocks[1] << std::endl;
+    blocks = tmpBlocks;
     // (char*) blocks=tmpBlocks;
 
     // buffer += sizeof(size_t);
     // memcpy(buffer, blocks, blocksLen);
-
 }
 
+// FIXME: implement rest
 template <class T>
 void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
                               size_t block)

@@ -26,7 +26,8 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
 
 void DeserializeVariableMetadata(gpointer buffer, std::string *type,
                                  Dims *shape, Dims *start, Dims *count,
-                                 bool *constantDims, gpointer blocks, size_t *numberSteps);
+                                 bool *constantDims, gpointer blocks,
+                                 size_t *numberSteps);
 
 void DefineVariableInInitNew(core::IO *io, const std::string varName,
                              std::string type, Dims shape, Dims start,
