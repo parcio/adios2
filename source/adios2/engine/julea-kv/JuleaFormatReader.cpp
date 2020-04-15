@@ -32,11 +32,15 @@ void DeserializeVariableMetadata(gpointer buffer, int *type, Dims *shape,
 {
     size_t typeLen = 42;
     size_t shapeLen = 0;
+    size_t startLen = 0;
+    size_t countLen = 0;
     char tmpType[8];
     char *tmp_buffer = (char *)buffer;
     bool isConstantDims = true;
 
     size_t shapeSize = 0;
+    size_t startSize = 0;
+    size_t countSize = 0;
     std::cout << "constantDims: " << isConstantDims << std::endl;
 
     // memcpy(&isConstantDims, &buffer, sizeof(bool));
@@ -63,8 +67,6 @@ void DeserializeVariableMetadata(gpointer buffer, int *type, Dims *shape,
     shapeLen = sizeof(size_t) * shapeSize;
 
     size_t tmp_shape[shapeSize];
-    // size_t *tmp_shape = (size_t *)malloc(shapeLen);
-    // size_t *tmp_shape;
 
     memcpy(&tmp_shape, tmp_buffer, shapeLen);
     buffer += shapeLen;
@@ -72,21 +74,36 @@ void DeserializeVariableMetadata(gpointer buffer, int *type, Dims *shape,
     {
         Dims tmpShape (tmp_shape, tmp_shape+shapeSize);
         *shape = tmpShape;
-        // Dims tmpShape (tmpShape.begin(), tmpShape.end() );
-        // Dims tmpshape (std::begin(tmp_shape), std::end(tmp_shape) ); //FIXME
-        // shape = &tmpShape;      //TODO: check if this is correct!
     }
-        // std::vector<size_t> test(std::begin(tmp_shape), std::end(tmp_shape) ); //FIXME
-    std::cout << "shapeSize = " << shapeSize << std::endl;
-    std::cout << "shape: " << shape << std::endl;
 
-    int src[] = {1,2,3,4,5};
-    // int src[5] ;
-    std::vector<int> dest(std::begin(src),std::end(src));
-    for (int i: dest)
+    memcpy(&startSize, tmp_buffer, sizeof(size_t)); // shape
+    tmp_buffer += sizeof(size_t);
+    startLen = sizeof(size_t) * startSize;
+
+    size_t tmp_start[startSize];
+
+    memcpy(&tmp_start, tmp_buffer, startLen);
+    buffer += startLen;
+    if(startSize > 0)
     {
-        std::cout << i << " " ;
+        Dims tmpStart (tmp_start, tmp_start+startSize);
+        *start = tmpStart;
     }
+
+    memcpy(&countSize, tmp_buffer, sizeof(size_t)); // shape
+    tmp_buffer += sizeof(size_t);
+    countLen = sizeof(size_t) * countSize;
+
+    size_t tmp_count[countSize];
+
+    memcpy(&tmp_count, tmp_buffer, countLen);
+    buffer += countLen;
+    if(countSize > 0)
+    {
+        Dims tmpCount (tmp_count, tmp_count+countSize);
+        *count = tmpCount;
+    }
+
 
     // memcpy(buffer, &startSize, sizeof(size_t)); // start
     // buffer += sizeof(size_t);

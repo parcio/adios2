@@ -308,8 +308,12 @@ void JuleaKVReader::InitVariables()
             std::cout << "buffer_len = " << &buffer_len << std::endl;
             // DeserializeVariableMetadata(md_buffer, &type, &shape, &start,
                                         // &count, &constantDims);
+            std::cout << "shape size = " << shape.size() << std::endl;
                 DeserializeVariableMetadata(md_buffer, &type, &shape, &start,
                                         &count, &constantDims);
+            std::cout << "shape size = " << shape.size() << std::endl;
+            std::cout << "start size = " << start.size() << std::endl;
+            std::cout << "count size = " << count.size() << std::endl;
             // GetVariableMetadataFromJuleaNew(nameSpace, varName, md_buffer,
             // buffer_len);
             // TODO: rewrite variablemetadata so that the variable knows shape,
