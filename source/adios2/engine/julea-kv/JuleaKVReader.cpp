@@ -289,9 +289,10 @@ void JuleaKVReader::InitVariables()
         while (bson_iter_next(&b_iter))
         {
             // bson_t *bsonMetadata;
-            Dims shape = nullptr; //FIXME
-            Dims start = nullptr;
-            Dims count = nullptr;
+            // Dims shape(); //FIXME NULL and nullptr don't compile
+            Dims shape; //FIXME
+            Dims start;
+            Dims count;
             bool constantDims;
             int type;
             guint32 buffer_len;
@@ -305,7 +306,9 @@ void JuleaKVReader::InitVariables()
                                             &buffer_len);
             std::cout << "buffer_len = " << buffer_len << std::endl;
             std::cout << "buffer_len = " << &buffer_len << std::endl;
-            DeserializeVariableMetadata(md_buffer, &type, &shape, &start,
+            // DeserializeVariableMetadata(md_buffer, &type, &shape, &start,
+                                        // &count, &constantDims);
+                DeserializeVariableMetadata(md_buffer, &type, &shape, &start,
                                         &count, &constantDims);
             // GetVariableMetadataFromJuleaNew(nameSpace, varName, md_buffer,
             // buffer_len);

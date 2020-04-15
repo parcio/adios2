@@ -61,17 +61,32 @@ void DeserializeVariableMetadata(gpointer buffer, int *type, Dims *shape,
     memcpy(&shapeSize, tmp_buffer, sizeof(size_t)); // shape
     tmp_buffer += sizeof(size_t);
     shapeLen = sizeof(size_t) * shapeSize;
+
     size_t tmp_shape[shapeSize];
+    // size_t *tmp_shape = (size_t *)malloc(shapeLen);
+    // size_t *tmp_shape;
+
     memcpy(&tmp_shape, tmp_buffer, shapeLen);
     buffer += shapeLen;
     if(shapeSize > 0)
     {
+        Dims tmpShape (tmp_shape, tmp_shape+shapeSize);
+        *shape = tmpShape;
         // Dims tmpShape (tmpShape.begin(), tmpShape.end() );
-        shape (std::begin(tmp_shape), std::end(tmp_shape) ); //FIXME
+        // Dims tmpshape (std::begin(tmp_shape), std::end(tmp_shape) ); //FIXME
         // shape = &tmpShape;      //TODO: check if this is correct!
     }
+        // std::vector<size_t> test(std::begin(tmp_shape), std::end(tmp_shape) ); //FIXME
     std::cout << "shapeSize = " << shapeSize << std::endl;
     std::cout << "shape: " << shape << std::endl;
+
+    int src[] = {1,2,3,4,5};
+    // int src[5] ;
+    std::vector<int> dest(std::begin(src),std::end(src));
+    for (int i: dest)
+    {
+        std::cout << i << " " ;
+    }
 
     // memcpy(buffer, &startSize, sizeof(size_t)); // start
     // buffer += sizeof(size_t);
