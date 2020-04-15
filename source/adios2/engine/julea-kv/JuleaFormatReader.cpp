@@ -151,10 +151,11 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
     std::string t(tmpType);
     *type = t;
     // std::cout << "tmpType: " << tmpType << std::endl;
+    std::cout << "--- DEBUG " << std::endl;
 
     memcpy(&shapeSize, tmpBuffer, sizeof(size_t)); // shape
     tmpBuffer += sizeof(size_t);
-    shapeLen = sizeof(size_t) * (shapeSize+1); //TODO +1?
+    shapeLen = sizeof(size_t) * (shapeSize); //TODO +1?
 
     size_t tmpShapeBuffer[shapeSize];
 
@@ -168,7 +169,7 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
 
     memcpy(&startSize, tmpBuffer, sizeof(size_t)); // start
     tmpBuffer += sizeof(size_t);
-    startLen = sizeof(size_t) * (startSize+1); //TODO
+    startLen = sizeof(size_t) * (startSize); //TODO
 
     size_t tmpStartBuffer[startSize];
 
@@ -182,7 +183,7 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
 
     memcpy(&countSize, tmpBuffer, sizeof(size_t)); // count
     tmpBuffer += sizeof(size_t);
-    countLen = sizeof(size_t) * (countSize+1); //TODO
+    countLen = sizeof(size_t) * (countSize); //TODO
 
     std::cout << "count size" << countSize << std::endl;
     size_t tmpCountBuffer[countSize];
