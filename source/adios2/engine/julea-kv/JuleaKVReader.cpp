@@ -233,11 +233,27 @@ void JuleaKVReader::PerformGets()
     /** Call GetSyncCommon for every variable that has been deferred */
     for (const std::string &variableName : m_DeferredVariables)
     {
+        std::map<std::string, Params> varMap = m_IO.GetAvailableVariables();
+
+        std::cout << "------DEBUG ----- test io.GetAvailableVariables"
+                  << std::endl;
+        for (std::map<std::string, Params>::iterator it = varMap.begin();
+             it != varMap.end(); ++it)
+        {
+
+            std::cout << "------DEBUG 1" << std::endl;
+            // std::cout << "first: " << it->first << " => " <<
+            // it->second.begin()
+            // << '\n';
+            std::cout << "first: " << it->first << '\n';
+        }
         std::cout << "----- for loop m_DeferredVariables " << std::endl;
         std::cout << "variableName = " << variableName << std::endl;
 
         const std::string type = m_IO.InquireVariableType(variableName);
         std::cout << "type = " << type << std::endl;
+
+        // const std::string type = "double";
 
         if (type == "compound")
         {
@@ -248,6 +264,7 @@ void JuleaKVReader::PerformGets()
 #define declare_type(T)                                                        \
     else if (type == helper::GetType<T>())                                     \
     {                                                                          \
+        std::cout << "------------ DEBUG -----------" << std::endl;            \
         Variable<T> &variable = FindVariable<T>(                               \
             variableName, "in call to PerformGets, EndStep or Close");         \
         for (auto &blockInfo : variable.m_BlocksInfo)                          \
