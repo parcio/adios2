@@ -56,8 +56,8 @@ void PutNameToJulea(std::string paramName, std::string nameSpace,
     auto kvObjectNames = j_kv_new(kvName.c_str(), nameSpace.c_str());
 
     j_kv_get(kvObjectNames, &namesBuf, &valueLen, batch);
-    // err = j_batch_execute(batch);
-    g_assert_true(j_batch_execute(batch) == true);
+    err = j_batch_execute(batch);
+    // g_assert_true(j_batch_execute(batch) == true);
 
     std::cout << "valueLen: " << valueLen << std::endl;
     if (valueLen == 0)

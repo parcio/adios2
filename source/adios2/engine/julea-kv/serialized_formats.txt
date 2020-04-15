@@ -20,6 +20,8 @@ struct Metadata
     // struct helper::BlockDivisionInfo SubBlockInfo;
     // SelectionType Selection = SelectionType::BoundingBox;
 
+    //TODO: ShapeID is an enum (ADIOSTypes.h) being globalvalue, globalarray,...
+
     Dims Shape;
     Dims Start;
     Dims Count;

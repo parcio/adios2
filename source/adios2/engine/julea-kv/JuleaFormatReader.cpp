@@ -27,7 +27,88 @@ namespace core
 namespace engine
 {
 
-void DeserializeVariableMetadata(gpointer buffer, int *type, Dims *shape,
+void DefineVariableInInitNew(core::IO *io, const std::string varName, std::string stringType,
+                          Dims shape, Dims start, Dims count,
+                          bool constantDims)
+{
+    const char *type = stringType.c_str();
+    std::cout << "------DefineVariableInInitNew ----------" << std::endl;
+    std::cout << "------ type  ---------- " << type << std::endl;
+
+    if (strcmp(type, "unknown") == 0)
+    {
+        //TODO
+    }
+    else if (strcmp(type, "compound") == 0)
+    {
+
+    }
+    else if (strcmp(type, "string") == 0)
+    {
+        io->DefineVariable<std::string>(varName, shape, start, count,
+                                        constantDims);
+        std::cout << "Defined variable of type: " << type << std::endl;
+    }
+    else if (strcmp(type, "int8_t") == 0)
+    {
+        io->DefineVariable<int8_t>(varName, shape, start, count, constantDims);
+        std::cout << "Defined variable of type: " << type << std::endl;
+    }
+    else if (strcmp(type, "uint8_t") == 0)
+    {
+        io->DefineVariable<uint8_t>(varName, shape, start, count, constantDims);
+    }
+    else if (strcmp(type, "int16_t") == 0)
+    {
+        io->DefineVariable<int16_t>(varName, shape, start, count, constantDims);
+    }
+    else if (strcmp(type, "uint16_t") == 0)
+    {
+        io->DefineVariable<uint16_t>(varName, shape, start, count, constantDims);
+    }
+    else if (strcmp(type, "int32_t") == 0)
+    {
+        io->DefineVariable<int32_t>(varName, shape, start, count, constantDims);
+    }
+    else if (strcmp(type, "uint32_t") == 0)
+    {
+        io->DefineVariable<uint32_t>(varName, shape, start, count, constantDims);
+    }
+    else if (strcmp(type, "int64_t") == 0)
+    {
+        io->DefineVariable<int64_t>(varName, shape, start, count, constantDims);
+    }
+    else if (strcmp(type, "uint64_t") == 0)
+    {
+        io->DefineVariable<uint64_t>(varName, shape, start, count, constantDims);
+    }
+    else if (strcmp(type, "float") == 0)
+    {
+        io->DefineVariable<float>(varName, shape, start, count, constantDims);
+        std::cout << "Defined variable of type: " << type << std::endl;
+    }
+    else if (strcmp(type, "double") == 0)
+    {
+        io->DefineVariable<double>(varName, shape, start, count, constantDims);
+        std::cout << "Defined variable of type: " << type << std::endl;
+    }
+    else if (strcmp(type, "long double") == 0)
+    {
+        io->DefineVariable<long double>(varName, shape, start, count, constantDims);
+    }
+    else if (strcmp(type, "complex float") == 0)
+    {
+
+    }
+    else if (strcmp(type, "complex double") == 0)
+    {
+
+    }
+
+}
+
+void DeserializeVariableMetadata(gpointer buffer, std::string
+    *type, Dims *shape,
                                  Dims *start, Dims *count, bool *constantDims)
 {
     size_t typeLen = 42;
@@ -60,6 +141,8 @@ void DeserializeVariableMetadata(gpointer buffer, int *type, Dims *shape,
 
     memcpy(&tmpType, tmp_buffer, typeLen);
     tmp_buffer += typeLen;
+    std::string t(tmpType);
+    *type = t;
     std::cout << "tmpType: " << tmpType << std::endl;
 
     memcpy(&shapeSize, tmp_buffer, sizeof(size_t)); // shape
@@ -102,6 +185,7 @@ void DeserializeVariableMetadata(gpointer buffer, int *type, Dims *shape,
     {
         Dims tmpCount (tmp_count, tmp_count+countSize);
         *count = tmpCount;
+        std::cout << "count: " << count->front() <<std::endl;
     }
 
 

@@ -294,7 +294,8 @@ void JuleaKVReader::InitVariables()
             Dims start;
             Dims count;
             bool constantDims;
-            int type;
+            // int type;
+            std::string type;
             guint32 buffer_len;
             gpointer md_buffer = nullptr;
             // JuleaKVReader::StepMetadata md;
@@ -314,13 +315,13 @@ void JuleaKVReader::InitVariables()
             std::cout << "shape size = " << shape.size() << std::endl;
             std::cout << "start size = " << start.size() << std::endl;
             std::cout << "count size = " << count.size() << std::endl;
+            std::cout << "type  = " << type << std::endl;
             // GetVariableMetadataFromJuleaNew(nameSpace, varName, md_buffer,
             // buffer_len);
             // TODO: rewrite variablemetadata so that the variable knows shape,
             // start, count so it is not necessary to ask every block?! check BP
 
             // GetVariableBSONFromJulea(nameSpace, varName, &bsonMetadata);
-            std::cout << "DEBUG 1" << std::endl;
             // std::cout << "numberSteps" << md.numberSteps << std::endl;
             // std::cout << "type" << md.type << std::endl;
             // std::cout << "isConstantDims" << md.isConstantDims << std::endl;
@@ -330,7 +331,11 @@ void JuleaKVReader::InitVariables()
             //                                    &type, &shape, &start, &count,
             //                                    &constantDims);
             // bson_destroy(bsonMetadata);
-            DefineVariableInInit(&m_IO, varName, type, shape, start, count,
+            // T type = StringTo(type, true, "");
+
+
+
+            DefineVariableInInitNew(&m_IO, varName, type, shape, start, count,
                                  constantDims);
             // free(varName);
             // free(&varName);
