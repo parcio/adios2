@@ -184,6 +184,7 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
     tmpBuffer += sizeof(size_t);
     countLen = sizeof(size_t) * countSize;
 
+    std::cout << "count size" << countSize << std::endl;
     size_t tmpCountBuffer[countSize];
 
     memcpy(&tmpCountBuffer, tmpBuffer, countLen);
@@ -195,7 +196,7 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
         // std::cout << "count: " << count->front() <<std::endl;
     }
 
-    size_t testSteps;
+    size_t testSteps = 0;
 
     memcpy(&testSteps,tmpBuffer, sizeof(size_t) );
     tmpBuffer += sizeof(size_t);
@@ -203,9 +204,16 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
     std::cout << "numberSteps: " << testSteps << std::endl;
     std::cout << "numberSteps: " << &testSteps << std::endl;
 
-    size_t blocksLen = testSteps *sizeof(size_t);
-    // memcpy(&blocks, tmpBuffer, blocksLen);
-    // memcpy(buffer, &numberSteps, sizeof(size_t)); // blocks
+    size_t blocksLen = 2 *sizeof(size_t);
+    // if((buffer + 65) == tmpBuffer)
+    // {
+    //     std::cout << "test length" << std::endl;
+    // }
+    size_t tmpBlocks[2];
+    // memcpy(&tmpBlocks, tmpBuffer, blocksLen); //FIXME: heap-buffer overflow
+
+    // (char*) blocks=tmpBlocks;
+
     // buffer += sizeof(size_t);
     // memcpy(buffer, blocks, blocksLen);
 
