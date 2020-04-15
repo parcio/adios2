@@ -105,14 +105,24 @@ void DefineVariableInInitNew(core::IO *io, const std::string varName,
     else if (strcmp(type, "complex double") == 0)
     {
     }
+    std::map<std::string, Params> varMap = io->GetAvailableVariables();
+
+    for (std::map<std::string, Params>::iterator it = varMap.begin();
+         it != varMap.end(); ++it)
+    {
+
+        // std::cout << "first: " << it->first << " => " << it->second.begin()
+        // << '\n';
+        std::cout << "first: " << it->first << '\n';
+    }
 }
 
 void DeserializeVariableMetadata(gpointer buffer, std::string *type,
                                  Dims *shape, Dims *start, Dims *count,
                                  bool *constantDims)
 {
-
-    char tmpType[8];
+    std::cout << "------ DeserializeVariableMetadata ----------" << std::endl;
+    // char tmpType[8];
     char *tmpBuffer = (char *)buffer;
     bool isConstantDims = true;
 
@@ -132,6 +142,7 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
     memcpy(&typeLen, tmpBuffer, sizeof(size_t)); // type
     tmpBuffer += sizeof(size_t);
     // std::cout << "typeLen: " << typeLen << std::endl;
+    char tmpType[typeLen];
 
     memcpy(&tmpType, tmpBuffer, typeLen);
     tmpBuffer += typeLen;
@@ -184,8 +195,97 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
 }
 
 template <class T>
-void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer)
+void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
+                              size_t block)
 {
+    std::cout << "------ DeserializeBlockMetadata ----------" << std::endl;
+    typename Variable<T>::Info info;
+
+    char *tmpBuffer = (char *)buffer;
+    size_t typeLen = sizeof(variable.m_Type.c_str());
+    const char *type = variable.m_Type.c_str();
+
+    size_t shapeSize = 0;
+    size_t startSize = 0;
+    size_t countSize = 0;
+    size_t memoryStartSize = 0;
+    size_t memoryCountSize = 0;
+
+    size_t shapeLen = 0;
+    size_t startLen = 0;
+    size_t countLen = 0;
+    size_t memoryStartLen = 0;
+    size_t memoryCountLen = 0;
+
+    size_t minLen = 0;
+    size_t maxLen = 0;
+
+    size_t stepsStart = 0;
+    size_t stepsCount = 0;
+    size_t blockID = 0;
+
+    size_t currentStep = 0; // Julea Engine
+    size_t blockNumber = 0; // Julea Engine
+
+    bool isReadAsJoined = false;
+    bool isReadAsLocalValue = false;
+    bool isRandomAccess = false;
+    bool isValue = false;
+
+    /** type */
+    memcpy(&typeLen, tmpBuffer, sizeof(size_t));
+    tmpBuffer += sizeof(size_t);
+    char tmpType[typeLen];
+
+    memcpy(&tmpType, tmpBuffer, typeLen);
+    tmpBuffer += typeLen;
+
+    /** shape */
+    memcpy(&shapeSize, tmpBuffer, sizeof(size_t));
+    tmpBuffer += sizeof(size_t);
+    size_t tmpShapeBuffer[shapeSize];
+    shapeLen = sizeof(size_t) * shapeSize;
+
+    memcpy(&tmpShapeBuffer, tmpBuffer, shapeLen);
+    tmpBuffer += shapeLen;
+    if (shapeSize > 0)
+    {
+        Dims tmpShape(tmpShapeBuffer, tmpShapeBuffer + shapeSize);
+        info.Shape = tmpShape;
+    }
+
+    /** start */
+    memcpy(&startSize, tmpBuffer, sizeof(size_t));
+    tmpBuffer += sizeof(size_t);
+    size_t tmpStartBuffer[startSize];
+    startLen = sizeof(size_t) * startSize;
+
+    memcpy(&tmpStartBuffer, tmpBuffer, startLen);
+    tmpBuffer += startLen;
+    if (startSize > 0)
+    {
+        Dims tmpStart(tmpStartBuffer, tmpStartBuffer + startSize);
+        info.Start = tmpStart;
+    }
+
+    /** count */
+    memcpy(&countSize, tmpBuffer, sizeof(size_t)); // count
+    tmpBuffer += sizeof(size_t);
+    size_t tmpCountBuffer[countSize];
+    countLen = sizeof(size_t) * countSize;
+
+    memcpy(&tmpCountBuffer, tmpBuffer, countLen);
+    tmpBuffer += countLen;
+    if (countSize > 0)
+    {
+        Dims tmpCount(tmpCountBuffer, tmpCountBuffer + countSize);
+        info.Count = tmpCount;
+        // std::cout << "count: " << count->front() <<std::endl;
+    }
+
+    std::cout << "size: m_BlocksInfo" << variable.m_BlocksInfo.size()
+              << std::endl;
+    // variable.m_BlocksInfo[block](info);
 }
 
 void GetAdiosTypeString(int type, std::string *typeString)
@@ -909,7 +1009,7 @@ void ParseVarTypeFromBSON<std::complex<double>>(
 
 #define variable_template_instantiation(T)                                     \
     template void DeserializeBlockMetadata(Variable<T> &variable,              \
-                                           gpointer buffer);                   \
+                                           gpointer buffer, size_t block);     \
     template void ParseVariableFromBSON(                                       \
         core::Variable<T> &, bson_t *bsonMetadata,                             \
         const std::string nameSpace, long unsigned int *dataSize);             \

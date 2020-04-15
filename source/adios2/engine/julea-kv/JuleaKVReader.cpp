@@ -233,7 +233,11 @@ void JuleaKVReader::PerformGets()
     /** Call GetSyncCommon for every variable that has been deferred */
     for (const std::string &variableName : m_DeferredVariables)
     {
+        std::cout << "----- for loop m_DeferredVariables " << std::endl;
+        std::cout << "variableName = " << variableName << std::endl;
+
         const std::string type = m_IO.InquireVariableType(variableName);
+        std::cout << "type = " << type << std::endl;
 
         if (type == "compound")
         {
@@ -248,6 +252,7 @@ void JuleaKVReader::PerformGets()
             variableName, "in call to PerformGets, EndStep or Close");         \
         for (auto &blockInfo : variable.m_BlocksInfo)                          \
         {                                                                      \
+            std::cout << "-------------------for loop reached " << std::endl;  \
             GetSyncCommon(variable, variable.m_Data);                          \
         }                                                                      \
         variable.m_BlocksInfo.clear();                                         \
@@ -366,8 +371,12 @@ void JuleaKVReader::InitVariables()
             std::cout << "count = " << count.front() << std::endl;
             std::cout << "type  = " << type << std::endl;
 
+            // m_IO.DefineVariable<double>("test", shape, start, count,
+            //                             constantDims);
             DefineVariableInInitNew(&m_IO, varName, type, shape, start, count,
                                     constantDims);
+            const std::string testtype = m_IO.InquireVariableType(varName);
+            std::cout << "testtype = " << testtype << std::endl;
             // free(varName);
             // free(&varName);
         }

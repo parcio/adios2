@@ -91,7 +91,7 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
                               &buffer_len, stepBlockID);
     std::cout << "buffer_len = " << buffer_len << std::endl;
 
-    DeserializeBlockMetadata(&variable, md_buffer);
+    DeserializeBlockMetadata(variable, md_buffer, m_CurrentBlockID);
     // GetVariableDataFromJulea(variable, data, nameSpace, dataSize,
     // m_CurrentStep, m_CurrentBlockID);
 }
@@ -106,7 +106,11 @@ void JuleaKVReader::GetDeferredCommon(Variable<T> &variable, T *data)
         std::cout << "Julea Reader " << m_ReaderRank << "     GetDeferred("
                   << variable.m_Name << ")\n";
     }
-    m_NeedPerformGets = true;
+    // m_NeedPerformGets = true;
+
+    // returns immediately without populating data
+    // m_BP4Deserializer.InitVariableBlockInfo(variable, data);  //TODO: needed?
+    m_DeferredVariables.insert(variable.m_Name);
 }
 
 template <class T>
