@@ -1,3 +1,4 @@
+--------------------- Struct formats ---------------------------------
 
 /** Operators metadata info */
 struct Operation
@@ -78,7 +79,7 @@ struct StepMetadata
     size_t *blocks = nullptr;
 };
 
-Serialized formats :
+--------------------- Serialized formats ---------------------------------
 
     ---block metadata-- -
 

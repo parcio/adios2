@@ -288,51 +288,28 @@ void JuleaKVReader::InitVariables()
 
         while (bson_iter_next(&b_iter))
         {
-            // bson_t *bsonMetadata;
-            // Dims shape(); //FIXME NULL and nullptr don't compile
-            Dims shape; //FIXME
+            Dims shape;
             Dims start;
             Dims count;
+
             bool constantDims;
-            // int type;
             std::string type;
             guint32 buffer_len;
             gpointer md_buffer = nullptr;
-            // JuleaKVReader::StepMetadata md;
-            // varName = g_strdup(bson_iter_key(&b_iter));
+
             std::string varName(bson_iter_key(&b_iter));
 
             std::cout << "-- Variable name " << varName << std::endl;
             GetVariableMetadataFromJuleaNew(nameSpace, varName, &md_buffer,
                                             &buffer_len);
             std::cout << "buffer_len = " << buffer_len << std::endl;
-            std::cout << "buffer_len = " << &buffer_len << std::endl;
-            // DeserializeVariableMetadata(md_buffer, &type, &shape, &start,
-                                        // &count, &constantDims);
-            std::cout << "shape size = " << shape.size() << std::endl;
                 DeserializeVariableMetadata(md_buffer, &type, &shape, &start,
                                         &count, &constantDims);
-            std::cout << "shape size = " << shape.size() << std::endl;
-            std::cout << "start size = " << start.size() << std::endl;
+            // std::cout << "shape size = " << shape.size() << std::endl;
+            // std::cout << "start size = " << start.size() << std::endl;
             std::cout << "count size = " << count.size() << std::endl;
+            std::cout << "count = " << count.front() << std::endl;
             std::cout << "type  = " << type << std::endl;
-            // GetVariableMetadataFromJuleaNew(nameSpace, varName, md_buffer,
-            // buffer_len);
-            // TODO: rewrite variablemetadata so that the variable knows shape,
-            // start, count so it is not necessary to ask every block?! check BP
-
-            // GetVariableBSONFromJulea(nameSpace, varName, &bsonMetadata);
-            // std::cout << "numberSteps" << md.numberSteps << std::endl;
-            // std::cout << "type" << md.type << std::endl;
-            // std::cout << "isConstantDims" << md.isConstantDims << std::endl;
-
-            // GetVariableMetadataForInitFromBSON(nameSpace, varName,
-            // bsonMetadata,
-            //                                    &type, &shape, &start, &count,
-            //                                    &constantDims);
-            // bson_destroy(bsonMetadata);
-            // T type = StringTo(type, true, "");
-
 
 
             DefineVariableInInitNew(&m_IO, varName, type, shape, start, count,
