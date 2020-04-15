@@ -34,7 +34,7 @@ namespace engine
 // void GetVariableMetadataFromJuleaNew(const std::string nameSpace, const
 // std::string varName, gpointer md_buffer, guint32 buffer_len)
 void GetVariableMetadataFromJuleaNew(const std::string nameSpace,
-                                     const std::string varName, gpointer* md,
+                                     const std::string varName, gpointer *md,
                                      guint32 *buffer_len)
 {
     void *metaDataBuf = NULL;
@@ -154,8 +154,8 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 
-void GetVarNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
-                          unsigned int *varCount)
+void GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
+                          unsigned int *varCount, bool isVariable)
 {
     std::cout << "-- GetNamesFromJulea ------" << std::endl;
     guint32 valueLen = 0;
@@ -164,7 +164,16 @@ void GetVarNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
 
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
-    auto kvName = "variable_names";
+    char *kvName ;
+
+    if(isVariable)
+    {
+     kvName = "variable_names";
+    }
+    else
+    {
+     kvName = "attribute_names";
+    }
 
     // auto kv_object = j_kv_new("variable_names", nameSpace.c_str());
     // auto kvObject = j_kv_new(nameSpace.c_str(),kvName.c_str());
@@ -172,8 +181,8 @@ void GetVarNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
     std::cout << "kvName :" << kvName << std::endl;
 
     j_kv_get(kvObject, &namesBuf, &valueLen, batch);
-    // j_batch_execute(batch);
-    g_assert_true(j_batch_execute(batch) == true);
+    j_batch_execute(batch);
+    // g_assert_true(j_batch_execute(batch) == true);
 
     if (valueLen == 0)
     {
@@ -260,8 +269,8 @@ void GetAttributeBSONFromJulea(const std::string nameSpace,
     // std::cout << "-- stringMetadataKV: " << stringMetadataKV << std::endl;
 
     j_kv_get(kvObject, &metaDataBuf, valueLen, batch);
-    // j_batch_execute(batch);
-    g_assert_true(j_batch_execute(batch) == true);
+    j_batch_execute(batch);
+    // g_assert_true(j_batch_execute(batch) == true);
 
     if (valueLen == 0)
     {

@@ -274,7 +274,7 @@ void JuleaKVReader::InitVariables()
     std::string kvName = "variable_names";
     unsigned int varCount = 0;
 
-    GetVarNamesFromJulea(nameSpace, &bsonNames, &varCount);
+    GetNamesFromJulea(nameSpace, &bsonNames, &varCount, true);
 
     if (varCount == 0)
     {
@@ -298,12 +298,13 @@ void JuleaKVReader::InitVariables()
             gpointer md_buffer = nullptr;
 
             std::string varName(bson_iter_key(&b_iter));
-
             std::cout << "-- Variable name " << varName << std::endl;
+
             GetVariableMetadataFromJuleaNew(nameSpace, varName, &md_buffer,
                                             &buffer_len);
             std::cout << "buffer_len = " << buffer_len << std::endl;
-                DeserializeVariableMetadata(md_buffer, &type, &shape, &start,
+
+            DeserializeVariableMetadata(md_buffer, &type, &shape, &start,
                                         &count, &constantDims);
             // std::cout << "shape size = " << shape.size() << std::endl;
             // std::cout << "start size = " << start.size() << std::endl;
@@ -311,9 +312,8 @@ void JuleaKVReader::InitVariables()
             std::cout << "count = " << count.front() << std::endl;
             std::cout << "type  = " << type << std::endl;
 
-
             DefineVariableInInitNew(&m_IO, varName, type, shape, start, count,
-                                 constantDims);
+                                    constantDims);
             // free(varName);
             // free(&varName);
         }
@@ -338,8 +338,8 @@ void JuleaKVReader::InitAttributes()
 
     std::cout << "\n______________InitAttributes_____________________"
               << std::endl;
-    GetVarNamesFromJulea(nameSpace, &bsonNames,
-                         &attrCount); // TODO: get all attribute names
+    GetNamesFromJulea(nameSpace, &bsonNames,
+                         &attrCount, false); // TODO: get all attribute names
 
     if (attrCount == 0)
     {

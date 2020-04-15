@@ -99,7 +99,7 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     buffer += sizeof(size_t);
     memcpy(buffer, blocks, blocksLen);
 
-    //rewind buffer
+    // rewind buffer
     buffer -= len - blocksLen;
 
     return (gpointer)buffer;

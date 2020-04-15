@@ -1,7 +1,7 @@
---------------------- Struct formats ---------------------------------
+---------------------Struct formats-- -------------------------------
 
-/** Operators metadata info */
-struct Operation
+                    /** Operators metadata info */
+                    struct Operation
 {
     /** reference to object derived from Operator class,
      *  needs a pointer to enable assignment operator (C++ class) */
@@ -21,7 +21,8 @@ struct Metadata
     // struct helper::BlockDivisionInfo SubBlockInfo;
     // SelectionType Selection = SelectionType::BoundingBox;
 
-    //TODO: ShapeID is an enum (ADIOSTypes.h) being globalvalue, globalarray,...
+    // TODO: ShapeID is an enum (ADIOSTypes.h) being globalvalue,
+    // globalarray,...
 
     Dims Shape;
     Dims Start;
@@ -79,9 +80,9 @@ struct StepMetadata
     size_t *blocks = nullptr;
 };
 
---------------------- Serialized formats ---------------------------------
+---------------------Serialized formats-- -------------------------------
 
-    ---block metadata-- -
+                    ---block metadata-- -
 
     size_t typeLen = 0;
 char *type = nullptr;

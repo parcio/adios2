@@ -21,12 +21,13 @@ namespace core
 namespace engine
 {
 
-void DeserializeVariableMetadata(gpointer buffer, std::string *type, Dims *shape,
-                                 Dims *start, Dims *count, bool *constantDims);
+void DeserializeVariableMetadata(gpointer buffer, std::string *type,
+                                 Dims *shape, Dims *start, Dims *count,
+                                 bool *constantDims);
 
-void DefineVariableInInitNew(core::IO *io, const std::string varName, std::string type,
-                          Dims shape, Dims start, Dims count,
-                          bool constantDims);
+void DefineVariableInInitNew(core::IO *io, const std::string varName,
+                             std::string type, Dims shape, Dims start,
+                             Dims count, bool constantDims);
 
 // void DefineAttributeInInit(core::IO *io, const std::string varName, int type,
 // bool IsSingleValue);

@@ -27,21 +27,20 @@ namespace core
 namespace engine
 {
 
-void DefineVariableInInitNew(core::IO *io, const std::string varName, std::string stringType,
-                          Dims shape, Dims start, Dims count,
-                          bool constantDims)
+void DefineVariableInInitNew(core::IO *io, const std::string varName,
+                             std::string stringType, Dims shape, Dims start,
+                             Dims count, bool constantDims)
 {
     const char *type = stringType.c_str();
-    std::cout << "------DefineVariableInInitNew ----------" << std::endl;
+    std::cout << "------ DefineVariableInInitNew ----------" << std::endl;
     std::cout << "------ type  ---------- " << type << std::endl;
 
     if (strcmp(type, "unknown") == 0)
     {
-        //TODO
+        // TODO
     }
     else if (strcmp(type, "compound") == 0)
     {
-
     }
     else if (strcmp(type, "string") == 0)
     {
@@ -64,7 +63,8 @@ void DefineVariableInInitNew(core::IO *io, const std::string varName, std::strin
     }
     else if (strcmp(type, "uint16_t") == 0)
     {
-        io->DefineVariable<uint16_t>(varName, shape, start, count, constantDims);
+        io->DefineVariable<uint16_t>(varName, shape, start, count,
+                                     constantDims);
     }
     else if (strcmp(type, "int32_t") == 0)
     {
@@ -72,7 +72,8 @@ void DefineVariableInInitNew(core::IO *io, const std::string varName, std::strin
     }
     else if (strcmp(type, "uint32_t") == 0)
     {
-        io->DefineVariable<uint32_t>(varName, shape, start, count, constantDims);
+        io->DefineVariable<uint32_t>(varName, shape, start, count,
+                                     constantDims);
     }
     else if (strcmp(type, "int64_t") == 0)
     {
@@ -80,7 +81,8 @@ void DefineVariableInInitNew(core::IO *io, const std::string varName, std::strin
     }
     else if (strcmp(type, "uint64_t") == 0)
     {
-        io->DefineVariable<uint64_t>(varName, shape, start, count, constantDims);
+        io->DefineVariable<uint64_t>(varName, shape, start, count,
+                                     constantDims);
     }
     else if (strcmp(type, "float") == 0)
     {
@@ -94,31 +96,30 @@ void DefineVariableInInitNew(core::IO *io, const std::string varName, std::strin
     }
     else if (strcmp(type, "long double") == 0)
     {
-        io->DefineVariable<long double>(varName, shape, start, count, constantDims);
+        io->DefineVariable<long double>(varName, shape, start, count,
+                                        constantDims);
     }
     else if (strcmp(type, "complex float") == 0)
     {
-
     }
     else if (strcmp(type, "complex double") == 0)
     {
-
     }
-
 }
 
-void DeserializeVariableMetadata(gpointer buffer, std::string
-    *type, Dims *shape,
-                                 Dims *start, Dims *count, bool *constantDims)
+void DeserializeVariableMetadata(gpointer buffer, std::string *type,
+                                 Dims *shape, Dims *start, Dims *count,
+                                 bool *constantDims)
 {
-    size_t typeLen = 0;
-    size_t shapeLen = 0;
-    size_t startLen = 0;
-    size_t countLen = 0;
 
     char tmpType[8];
     char *tmpBuffer = (char *)buffer;
     bool isConstantDims = true;
+
+    size_t typeLen = 0;
+    size_t shapeLen = 0;
+    size_t startLen = 0;
+    size_t countLen = 0;
 
     size_t shapeSize = 0;
     size_t startSize = 0;
@@ -128,11 +129,6 @@ void DeserializeVariableMetadata(gpointer buffer, std::string
     tmpBuffer += sizeof(bool);
     // std::cout << "constantDims: " << isConstantDims << std::endl;
 
-    /** allocate memory for variable holding the length of the vector +
-    memory for the vector data itself */
-    // memcpy(buffer, &typeLen, sizeof(size_t)); // type
-
-    // std::cout << "typeLen: " << typeLen << std::endl;
     memcpy(&typeLen, tmpBuffer, sizeof(size_t)); // type
     tmpBuffer += sizeof(size_t);
     // std::cout << "typeLen: " << typeLen << std::endl;
@@ -151,13 +147,13 @@ void DeserializeVariableMetadata(gpointer buffer, std::string
 
     memcpy(&tmpShapeBuffer, tmpBuffer, shapeLen);
     tmpBuffer += shapeLen;
-    if(shapeSize > 0)
+    if (shapeSize > 0)
     {
-        Dims tmpShape (tmpShapeBuffer, tmpShapeBuffer+shapeSize);
+        Dims tmpShape(tmpShapeBuffer, tmpShapeBuffer + shapeSize);
         *shape = tmpShape;
     }
 
-    memcpy(&startSize, tmpBuffer, sizeof(size_t)); // shape
+    memcpy(&startSize, tmpBuffer, sizeof(size_t)); // start
     tmpBuffer += sizeof(size_t);
     startLen = sizeof(size_t) * startSize;
 
@@ -165,13 +161,13 @@ void DeserializeVariableMetadata(gpointer buffer, std::string
 
     memcpy(&tmpStartBuffer, tmpBuffer, startLen);
     tmpBuffer += startLen;
-    if(startSize > 0)
+    if (startSize > 0)
     {
-        Dims tmpStart (tmpStartBuffer, tmpStartBuffer+startSize);
+        Dims tmpStart(tmpStartBuffer, tmpStartBuffer + startSize);
         *start = tmpStart;
     }
 
-    memcpy(&countSize, tmpBuffer, sizeof(size_t)); // shape
+    memcpy(&countSize, tmpBuffer, sizeof(size_t)); // count
     tmpBuffer += sizeof(size_t);
     countLen = sizeof(size_t) * countSize;
 
@@ -179,9 +175,9 @@ void DeserializeVariableMetadata(gpointer buffer, std::string
 
     memcpy(&tmpCountBuffer, tmpBuffer, countLen);
     tmpBuffer += countLen;
-    if(countSize > 0)
+    if (countSize > 0)
     {
-        Dims tmpCount (tmpCountBuffer, tmpCountBuffer+countSize);
+        Dims tmpCount(tmpCountBuffer, tmpCountBuffer + countSize);
         *count = tmpCount;
         // std::cout << "count: " << count->front() <<std::endl;
     }
