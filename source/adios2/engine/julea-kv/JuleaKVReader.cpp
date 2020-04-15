@@ -185,7 +185,6 @@ void JuleaKVReader::EndStep()
 
     if (m_DeferredVariables.size() > 0)
     {
-        std::cout << "--- DEBUG : EndStep2" << std::endl;
         std::cout << "m_DeferredVariables.size() = "
                   << m_DeferredVariables.size() << std::endl;
         PerformGets(); // FIXME
@@ -233,22 +232,25 @@ void JuleaKVReader::PerformGets()
     /** Call GetSyncCommon for every variable that has been deferred */
     for (const std::string &variableName : m_DeferredVariables)
     {
-        std::map<std::string, Params> varMap = m_IO.GetAvailableVariables();
 
         std::cout << "------DEBUG ----- test io.GetAvailableVariables"
                   << std::endl;
+        std::map<std::string, Params> varMap = m_IO.GetAvailableVariables();
+
+        std::cout << "empty? : " << varMap.empty() << std::endl;
+        std::cout << "mapsize? : " << varMap.size() << std::endl;
         for (std::map<std::string, Params>::iterator it = varMap.begin();
              it != varMap.end(); ++it)
         {
 
             std::cout << "------DEBUG 1" << std::endl;
+            std::cout << "first: " << it->first << '\n';
             // std::cout << "first: " << it->first << " => " <<
             // it->second.begin()
             // << '\n';
-            std::cout << "first: " << it->first << '\n';
         }
-        std::cout << "----- for loop m_DeferredVariables " << std::endl;
-        std::cout << "variableName = " << variableName << std::endl;
+        // std::cout << "----- for loop m_DeferredVariables " << std::endl;
+        // std::cout << "variableName = " << variableName << std::endl;
 
         const std::string type = m_IO.InquireVariableType(variableName);
         std::cout << "type = " << type << std::endl;
@@ -264,7 +266,6 @@ void JuleaKVReader::PerformGets()
 #define declare_type(T)                                                        \
     else if (type == helper::GetType<T>())                                     \
     {                                                                          \
-        std::cout << "------------ DEBUG -----------" << std::endl;            \
         Variable<T> &variable = FindVariable<T>(                               \
             variableName, "in call to PerformGets, EndStep or Close");         \
         for (auto &blockInfo : variable.m_BlocksInfo)                          \
@@ -372,6 +373,8 @@ void JuleaKVReader::InitVariables()
             std::string type;
             guint32 buffer_len;
             gpointer md_buffer = nullptr;
+            gpointer blocks = nullptr;
+            size_t numberSteps =0;
 
             std::string varName(bson_iter_key(&b_iter));
             std::cout << "-- Variable name " << varName << std::endl;
@@ -381,7 +384,7 @@ void JuleaKVReader::InitVariables()
             std::cout << "buffer_len = " << buffer_len << std::endl;
 
             DeserializeVariableMetadata(md_buffer, &type, &shape, &start,
-                                        &count, &constantDims);
+                                        &count, &constantDims, blocks, &numberSteps);
             // std::cout << "shape size = " << shape.size() << std::endl;
             // std::cout << "start size = " << start.size() << std::endl;
             std::cout << "count size = " << count.size() << std::endl;

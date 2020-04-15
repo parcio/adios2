@@ -91,8 +91,10 @@ void DefineVariableInInitNew(core::IO *io, const std::string varName,
     }
     else if (strcmp(type, "double") == 0)
     {
-        io->DefineVariable<double>(varName, shape, start, count, constantDims);
+        auto &var = io->DefineVariable<double>(varName, shape, start, count, constantDims);
         std::cout << "Defined variable of type: " << type << std::endl;
+        var.m_AvailableStepBlockIndexOffsets[1] = std::vector<size_t>({0});
+        var.m_AvailableStepsStart = 1;
     }
     else if (strcmp(type, "long double") == 0)
     {
@@ -119,7 +121,7 @@ void DefineVariableInInitNew(core::IO *io, const std::string varName,
 
 void DeserializeVariableMetadata(gpointer buffer, std::string *type,
                                  Dims *shape, Dims *start, Dims *count,
-                                 bool *constantDims)
+                                 bool *constantDims, gpointer blocks, size_t *numberSteps)
 {
     std::cout << "------ DeserializeVariableMetadata ----------" << std::endl;
     // char tmpType[8];
@@ -192,6 +194,8 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
         *count = tmpCount;
         // std::cout << "count: " << count->front() <<std::endl;
     }
+
+
 }
 
 template <class T>
