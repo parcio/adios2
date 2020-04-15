@@ -128,7 +128,8 @@ void PutVariableMetadataToJulea(const std::string nameSpace, gpointer buffer,
     j_semantics_unref(semantics);
 }
 
-void PutBlockMetadataToJulea(const std::string nameSpace, gpointer &buffer,
+void PutBlockMetadataToJulea(const std::string nameSpace,
+                             const std::string varName, gpointer &buffer,
                              guint32 bufferLen, const std::string stepBlockID)
 {
     void *metaDataBuf = NULL;
@@ -136,7 +137,9 @@ void PutBlockMetadataToJulea(const std::string nameSpace, gpointer &buffer,
     auto batch = j_batch_new(semantics);
 
     auto stringMetadataKV =
-        g_strdup_printf("%s_%s", nameSpace.c_str(), "variableblocks");
+        // g_strdup_printf("%s_%s", nameSpace.c_str(), "variableblocks");
+        g_strdup_printf("%s_%s_%s", nameSpace.c_str(), varName.c_str(),
+                        "variableblocks");
     std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
 
     auto kvObjectMetadata = j_kv_new(stringMetadataKV, stepBlockID.c_str());

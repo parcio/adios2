@@ -112,12 +112,7 @@ void JuleaKVWriter::EndStep()
                   << m_DeferredVariables.size() << std::endl;
         PerformPuts(); // FIXME
     }
-    if (m_Verbosity == 5)
-    {
-        std::cout << "\n______________EndStep _____________________"
-                  << std::endl;
-        // std::cout << "Julea Writer " << m_WriterRank << "   EndStep()\n";
-    }
+
     // TODO
     // SerializeData in BP3
     // - Profiler ?!
@@ -141,6 +136,13 @@ void JuleaKVWriter::EndStep()
         Flush();
     }
     m_CurrentBlockID = 0;
+
+    if (m_Verbosity == 5)
+    {
+        std::cout << "\n______________EndStep _____________________"
+                  << std::endl;
+        // std::cout << "Julea Writer " << m_WriterRank << "   EndStep()\n";
+    }
 }
 
 /**

@@ -34,27 +34,34 @@ namespace engine
 
 /* Variables */
 void GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
-                          unsigned int *varCount, bool isVariable);
+                       unsigned int *varCount, bool isVariable);
 
 /* Variables */
 void GetVariableBSONFromJulea(const std::string nameSpace,
                               const std::string varName, bson_t **bsonMetadata);
 
-void GetVariableMetadataFromJuleaNew(const std::string nameSpace,
-                                     const std::string varName, gpointer *md,
-                                     guint32 *buffer_len);
+void GetVariableMetadataFromJulea(const std::string nameSpace,
+                                  const std::string varName, gpointer *md,
+                                  guint32 *buffer_len);
 // void GetVariableMetadataFromJuleaNew(const std::string nameSpace, const
 // std::string varName, gpointer md_buffer, guint32 buffer_len);
 
-template <class T>
-void GetVariableMetadataFromJulea(Variable<T> &variable,
-                                  const std::string nameSpace,
-                                  long unsigned int *dataSize);
+// template <class T>
+// void GetBlockMetadataFromJulea(Variable<T> &variable,
+//                                   const std::string nameSpace,
+//                                   long unsigned int *dataSize, size_t step,
+//                                   size_t block);
+
+void GetBlockMetadataFromJulea(const std::string nameSpace,
+                               const std::string varName, gpointer *md,
+                               guint32 *buffer_len,
+                               const std::string stepBlockID);
 
 template <class T>
 void GetVariableDataFromJulea(Variable<T> &variable, T *data,
                               const std::string nameSpace,
-                              long unsigned int dataSize);
+                              long unsigned int dataSize, size_t step,
+                              size_t block);
 
 /* Attributes */
 void GetAttributeMetadataFromJulea(const std::string attrName,
@@ -81,14 +88,14 @@ void GetAttributeStringDataFromJulea(const std::string attrName, char *data,
                                      const std::string nameSpace,
                                      long unsigned int completeSize,
                                      bool IsSingleValue, size_t numberElements);
+// extern template void GetBlockMetadataFromJulea(                         \
+    //     Variable<T> &variable, const std::string nameSpace,                    \
+    //     long unsigned int *dataSize, size_t step, size_t block);                                          \
 
 #define variable_template_instantiation(T)                                     \
-    extern template void GetVariableMetadataFromJulea(                         \
-        Variable<T> &variable, const std::string nameSpace,                    \
-        long unsigned int *dataSize);                                          \
     extern template void GetVariableDataFromJulea(                             \
         Variable<T> &variable, T *data, const std::string nameSpace,           \
-        long unsigned int dataSize);
+        long unsigned int dataSize, size_t step, size_t block);
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 

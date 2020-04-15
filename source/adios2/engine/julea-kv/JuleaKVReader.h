@@ -160,6 +160,8 @@ public:
 private:
     // JuleaInfo *m_JuleaInfo;
     JSemantics *m_JuleaSemantics;
+    StepMode m_StepMode = StepMode::Append;
+
     int m_Verbosity = 5; // TODO: changed to 5 for debugging
     int m_ReaderRank;    // my rank in the readers' comm
 

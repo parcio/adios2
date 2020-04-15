@@ -20,6 +20,8 @@ namespace core
 {
 namespace engine
 {
+template <class T>
+void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer);
 
 void DeserializeVariableMetadata(gpointer buffer, std::string *type,
                                  Dims *shape, Dims *start, Dims *count,
@@ -76,6 +78,8 @@ void GetAdiosTypeString(int type, std::string *typeString);
 
 
 #define variable_template_instantiation(T)                                     \
+    extern template void DeserializeBlockMetadata(Variable<T> &variable,       \
+                                                  gpointer buffer);            \
     extern template void ParseVariableFromBSON(                                \
         Variable<T> &variable, bson_t *bsonMetadata,                           \
         const std::string nameSpace, long unsigned int *dataSize);             \

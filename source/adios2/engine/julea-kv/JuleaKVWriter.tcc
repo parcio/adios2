@@ -67,7 +67,8 @@ void JuleaKVWriter::PutSyncToJulea(Variable<T> &variable, const T *data)
     }
 
     PutVariableMetadataToJulea(m_Name, varMD, varMD_len, variable.m_Name);
-    PutBlockMetadataToJulea(m_Name, blockMD, blockMD_len, stepBlockID);
+    PutBlockMetadataToJulea(m_Name, variable.m_Name, blockMD, blockMD_len,
+                            stepBlockID);
     PutVariableDataToJulea(variable, data, m_Name, m_CurrentStep,
                            m_CurrentBlockID);
 

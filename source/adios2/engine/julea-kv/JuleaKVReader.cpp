@@ -61,6 +61,75 @@ JuleaKVReader::~JuleaKVReader()
     j_semantics_unref(m_JuleaSemantics);
 }
 
+// StepStatus JuleaKVReader::BeginStep(const StepMode mode,
+//                                     const float timeoutSeconds)
+// {
+//     if (m_DebugMode)
+//     {
+//         // FIXME: NextAvailable is no longer a StepMode
+//         // if (mode != StepMode::NextAvailable)
+//         // {
+//         //     throw std::invalid_argument(
+//         //         "ERROR: mode is not supported yet, "
+//         //         "only NextAvailable is valid for "
+//         //         "engine BP3 with adios2::Mode::Read, in call to "
+//         //         "BeginStep\n");
+//         // }
+
+//         if (!m_DeferredVariables.empty())
+//         {
+//             throw std::invalid_argument(
+//                 "ERROR: existing variables subscribed with "
+//                 "GetDeferred, did you forget to call "
+//                 "PerformGets() or EndStep()?, in call to BeginStep\n");
+//         }
+//     }
+
+//     if (m_FirstStep)
+//     {
+//         m_FirstStep = false;
+//     }
+//     else
+//     {
+//         // HELP! what is this comment supposed to mean?!
+//         // step info should be received from the writer side in BeginStep()
+//         // so this forced increase should not be here
+//         // ++m_CurrentStep;
+//     }
+
+//     // used to inquire for variables in streaming mode
+//     m_IO.m_ReadStreaming = true;
+//     m_IO.m_EngineStep = m_CurrentStep;
+
+//     // HELP! check this brilliant comment...
+//     // If we reach the end of stream (writer is gone or explicitly tells the
+//     // reader)
+//     // we return EndOfStream to the reader application
+//     // if (m_CurrentStep == 2)
+//     if (m_CurrentStep >= m_MetadataSet.StepsCount)
+//     {
+//         std::cout << "Julea Reader " << m_ReaderRank
+//                   << "   forcefully returns End of Stream at this step\n";
+//         m_IO.m_ReadStreaming = false;
+
+//         // HELP! comment?!
+//         // We should block until a new step arrives or reach the timeout
+//         // m_IO Variables and Attributes should be defined at this point
+//         // so that the application can inquire them and start getting data
+//         return StepStatus::EndOfStream;
+//     }
+
+//     m_IO.ResetVariablesStepSelection(false,
+//                                      "in call to Julea Reader BeginStep");
+
+//     if (m_Verbosity == 5)
+//     {
+//         std::cout << "Julea Reader " << m_ReaderRank
+//                   << "   BeginStep() new step " << m_CurrentStep << "\n";
+//     }
+//     return StepStatus::OK;
+// }
+
 StepStatus JuleaKVReader::BeginStep(const StepMode mode,
                                     const float timeoutSeconds)
 {
@@ -85,42 +154,12 @@ StepStatus JuleaKVReader::BeginStep(const StepMode mode,
         }
     }
 
-    if (m_FirstStep)
-    {
-        m_FirstStep = false;
-    }
-    else
-    {
-        // HELP! what is this comment supposed to mean?!
-        // step info should be received from the writer side in BeginStep()
-        // so this forced increase should not be here
-        ++m_CurrentStep;
-    }
-
-    // used to inquire for variables in streaming mode
     m_IO.m_ReadStreaming = true;
     m_IO.m_EngineStep = m_CurrentStep;
 
-    // HELP! check this brilliant comment...
-    // If we reach the end of stream (writer is gone or explicitly tells the
-    // reader)
-    // we return EndOfStream to the reader application
-    // if (m_CurrentStep == 2)
-    if (m_CurrentStep >= m_MetadataSet.StepsCount)
-    {
-        std::cout << "Julea Reader " << m_ReaderRank
-                  << "   forcefully returns End of Stream at this step\n";
-        m_IO.m_ReadStreaming = false;
-
-        // HELP! comment?!
-        // We should block until a new step arrives or reach the timeout
-        // m_IO Variables and Attributes should be defined at this point
-        // so that the application can inquire them and start getting data
-        return StepStatus::EndOfStream;
-    }
-
-    m_IO.ResetVariablesStepSelection(false,
-                                     "in call to Julea Reader BeginStep");
+    m_StepMode = mode;
+    m_DeferredVariables.clear();
+    m_DeferredVariablesDataSize = 0;
 
     if (m_Verbosity == 5)
     {
@@ -143,21 +182,35 @@ size_t JuleaKVReader::CurrentStep() const
 
 void JuleaKVReader::EndStep()
 {
-    // EndStep should call PerformGets() if there are unserved GetDeferred()
-    // requests
-    if (m_NeedPerformGets)
+
+    if (m_DeferredVariables.size() > 0)
     {
-        PerformGets();
+        std::cout << "--- DEBUG : EndStep2" << std::endl;
+        std::cout << "m_DeferredVariables.size() = "
+                  << m_DeferredVariables.size() << std::endl;
+        PerformGets(); // FIXME
     }
+
+    // PutAttributes(m_IO); //TODO: get Attributes?
+
+    /* advance step */
+    ++m_CurrentStep;
+
+    /* ------ original EndStep */
+    // const size_t currentStep = CurrentStep();
+    // const size_t flushStepsCount = m_FlushStepsCount;
+    // if (m_CurrentStep % m_FlushStepsCount == 0)
+    // {
+    //     Flush();
+    // }
+    m_CurrentBlockID = 0;
 
     if (m_Verbosity == 5)
     {
+        std::cout << "\n______________EndStep _____________________"
+                  << std::endl;
         std::cout << "Julea Reader " << m_ReaderRank << "   EndStep()\n";
     }
-    // TODO: Can reading happen in steps?
-    // if (m_CurrentStep % m_FlushStepsCount == 0){
-    //     Flush();
-    // }
 }
 
 /*
@@ -214,6 +267,7 @@ void JuleaKVReader::PerformGets()
     void JuleaKVReader::DoGetSync(Variable<T> &variable, T *data)              \
     {                                                                          \
         GetSyncCommon(variable, data);                                         \
+        m_CurrentBlockID++;                                                    \
     }                                                                          \
     void JuleaKVReader::DoGetDeferred(Variable<T> &variable, T *data)          \
     {                                                                          \
@@ -300,8 +354,8 @@ void JuleaKVReader::InitVariables()
             std::string varName(bson_iter_key(&b_iter));
             std::cout << "-- Variable name " << varName << std::endl;
 
-            GetVariableMetadataFromJuleaNew(nameSpace, varName, &md_buffer,
-                                            &buffer_len);
+            GetVariableMetadataFromJulea(nameSpace, varName, &md_buffer,
+                                         &buffer_len);
             std::cout << "buffer_len = " << buffer_len << std::endl;
 
             DeserializeVariableMetadata(md_buffer, &type, &shape, &start,
@@ -338,8 +392,8 @@ void JuleaKVReader::InitAttributes()
 
     std::cout << "\n______________InitAttributes_____________________"
               << std::endl;
-    GetNamesFromJulea(nameSpace, &bsonNames,
-                         &attrCount, false); // TODO: get all attribute names
+    GetNamesFromJulea(nameSpace, &bsonNames, &attrCount,
+                      false); // TODO: get all attribute names
 
     if (attrCount == 0)
     {

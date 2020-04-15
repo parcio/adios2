@@ -31,11 +31,23 @@ namespace core
 namespace engine
 {
 
-// void GetVariableMetadataFromJuleaNew(const std::string nameSpace, const
-// std::string varName, gpointer md_buffer, guint32 buffer_len)
-void GetVariableMetadataFromJuleaNew(const std::string nameSpace,
-                                     const std::string varName, gpointer *md,
-                                     guint32 *buffer_len)
+// template <class T>
+// void GetVariableMetadataFromJulea(Variable<T> &variable,
+//                                   const std::string nameSpace,
+//                                   long unsigned int *dataSize, size_t step,
+//                                   size_t block)
+// {
+//     std::cout << "-- GetVariableMetadataFromJulea -----" << std::endl;
+//     bson_t *bsonMetadata = NULL;
+
+//     GetVariableBSONFromJulea(nameSpace, variable.m_Name, &bsonMetadata);
+//     ParseVariableFromBSON(variable, bsonMetadata, nameSpace, dataSize);
+//     bson_destroy(bsonMetadata);
+// }
+
+void GetVariableMetadataFromJulea(const std::string nameSpace,
+                                  const std::string varName, gpointer *md,
+                                  guint32 *buffer_len)
 {
     void *metaDataBuf = NULL;
 
@@ -58,17 +70,32 @@ void GetVariableMetadataFromJuleaNew(const std::string nameSpace,
     // md = g_memdup(metaDataBuf, *buffer_len);
 }
 
-template <class T>
-void GetVariableMetadataFromJulea(Variable<T> &variable,
-                                  const std::string nameSpace,
-                                  long unsigned int *dataSize)
+void GetBlockMetadataFromJulea(const std::string nameSpace,
+                               const std::string varName, gpointer *md,
+                               guint32 *buffer_len,
+                               const std::string stepBlockID)
 {
-    std::cout << "-- GetVariableMetadataFromJulea -----" << std::endl;
-    bson_t *bsonMetadata = NULL;
+    std::cout << "-- GetBlockMetadataFromJulea -----" << std::endl;
+    // bson_t *bsonMetadata = NULL;
 
-    GetVariableBSONFromJulea(nameSpace, variable.m_Name, &bsonMetadata);
-    ParseVariableFromBSON(variable, bsonMetadata, nameSpace, dataSize);
-    bson_destroy(bsonMetadata);
+    void *metaDataBuf = NULL;
+    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
+
+    auto stringMetadataKV = g_strdup_printf("%s_%s_%s", nameSpace.c_str(),
+                                            varName.c_str(), "variableblocks");
+    std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
+
+    auto kvBlockMetadata = j_kv_new(stringMetadataKV, stepBlockID.c_str());
+
+    j_kv_get(kvBlockMetadata, md, buffer_len, batch);
+    g_assert_true(j_batch_execute(batch) == true);
+    // j_batch_execute(batch);
+
+    g_free(stringMetadataKV);
+    j_kv_unref(kvBlockMetadata);
+    j_batch_unref(batch);
+    j_semantics_unref(semantics);
 }
 
 template <class T>
@@ -102,7 +129,8 @@ void ReadVarMetadataFromJuleaKV(Variable<T> &variable,
 template <class T>
 void GetVariableDataFromJulea(Variable<T> &variable, T *data,
                               const std::string nameSpace,
-                              long unsigned int dataSize)
+                              long unsigned int dataSize, size_t step,
+                              size_t block)
 {
     std::cout << "-- GetVariableDataFromJulea ----- " << std::endl;
 
@@ -143,40 +171,37 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
     g_free(stringDataObject);
     j_object_unref(dataObject);
 }
+// template void GetBlockMetadataFromJulea(Variable<T> &variable,          \
+    //                                            const std::string nameSpace,    \
+    //                                            long unsigned int *dataSize, size_t step, size_t block);   \
 
 #define variable_template_instantiation(T)                                     \
-    template void GetVariableMetadataFromJulea(Variable<T> &variable,          \
-                                               const std::string nameSpace,    \
-                                               long unsigned int *dataSize);   \
-    template void GetVariableDataFromJulea(Variable<T> &variable, T *data,     \
-                                           const std::string nameSpace,        \
-                                           long unsigned int dataSize);
+    template void GetVariableDataFromJulea(                                    \
+        Variable<T> &variable, T *data, const std::string nameSpace,           \
+        long unsigned int dataSize, size_t step, size_t block);
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 
 void GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
-                          unsigned int *varCount, bool isVariable)
+                       unsigned int *varCount, bool isVariable)
 {
     std::cout << "-- GetNamesFromJulea ------" << std::endl;
     guint32 valueLen = 0;
-    // g_autoptr(JKV) kv_object = NULL;
     void *namesBuf = NULL;
 
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
-    char *kvName ;
+    char *kvName;
 
-    if(isVariable)
+    if (isVariable)
     {
-     kvName = "variable_names";
+        kvName = "variable_names";
     }
     else
     {
-     kvName = "attribute_names";
+        kvName = "attribute_names";
     }
 
-    // auto kv_object = j_kv_new("variable_names", nameSpace.c_str());
-    // auto kvObject = j_kv_new(nameSpace.c_str(),kvName.c_str());
     auto kvObject = j_kv_new(kvName, nameSpace.c_str());
     std::cout << "kvName :" << kvName << std::endl;
 
@@ -187,8 +212,6 @@ void GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
     if (valueLen == 0)
     {
         // bsonNames = bson_new();
-        // std::cout << "WARNING: The variable names key-value store is empty!"
-        // << std::endl;
         std::cout << "WARNING: The kv store: " << kvName << " is empty!"
                   << std::endl;
 

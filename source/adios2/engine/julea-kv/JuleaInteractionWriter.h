@@ -25,7 +25,8 @@ void PutNameToJulea(std::string paramName, std::string nameSpace,
                     std::string kvName);
 void PutVariableMetadataToJulea(const std::string nameSpace, gpointer buffer,
                                 guint32 bufferLen, const std::string varName);
-void PutBlockMetadataToJulea(const std::string nameSpace, gpointer &buffer,
+void PutBlockMetadataToJulea(const std::string nameSpace,
+                             const std::string varName, gpointer &buffer,
                              guint32 bufferLen, const std::string stepBlockID);
 
 /* Variable Functions */

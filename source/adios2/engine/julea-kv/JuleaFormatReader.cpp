@@ -183,6 +183,11 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
     }
 }
 
+template <class T>
+void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer)
+{
+}
+
 void GetAdiosTypeString(int type, std::string *typeString)
 {
     switch (type)
@@ -903,6 +908,8 @@ void ParseVarTypeFromBSON<std::complex<double>>(
         bool IsSingleValue, size_t numberElements);
 
 #define variable_template_instantiation(T)                                     \
+    template void DeserializeBlockMetadata(Variable<T> &variable,              \
+                                           gpointer buffer);                   \
     template void ParseVariableFromBSON(                                       \
         core::Variable<T> &, bson_t *bsonMetadata,                             \
         const std::string nameSpace, long unsigned int *dataSize);             \

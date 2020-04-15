@@ -74,14 +74,26 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
               << std::endl;
     std::cout << "Julea Reader " << m_ReaderRank
               << " Variable name: " << variable.m_Name << std::endl;
+    /* all the additional metadata which is not used in InitVariables has to be
+     * read again */
+    // FIXME:
+
+    guint32 buffer_len;
+    gpointer md_buffer = nullptr;
 
     auto nameSpace = m_Name;
     long unsigned int dataSize = 0;
+    auto stepBlockID =
+        g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
+    std::cout << "stepBlockID: " << stepBlockID << std::endl;
 
-    /* all the additional metadata which is not used in InitVariables has to be
-     * read again */
-    GetVariableMetadataFromJulea(variable, nameSpace, &dataSize);
-    GetVariableDataFromJulea(variable, data, nameSpace, dataSize);
+    GetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
+                              &buffer_len, stepBlockID);
+    std::cout << "buffer_len = " << buffer_len << std::endl;
+
+    DeserializeBlockMetadata(&variable, md_buffer);
+    // GetVariableDataFromJulea(variable, data, nameSpace, dataSize,
+    // m_CurrentStep, m_CurrentBlockID);
 }
 
 template <class T>
@@ -101,6 +113,14 @@ template <class T>
 std::map<size_t, std::vector<typename core::Variable<T>::Info>>
 JuleaKVReader::DoAllStepsBlocksInfo(const core::Variable<T> &variable) const
 {
+    std::cout << "\n______________ DoAllStepsBlocksInfo _____________________"
+              << std::endl;
+    std::cout << "Julea Reader " << m_ReaderRank
+              << " Reached DoAllStepsBlocksInfo" << std::endl;
+    std::cout << "Julea Reader " << m_ReaderRank << " Namespace: " << m_Name
+              << std::endl;
+    std::cout << "Julea Reader " << m_ReaderRank
+              << " Variable name: " << variable.m_Name << std::endl;
     std::map<size_t, std::vector<typename core::Variable<T>::Info>>
         allStepsBlocksInfo;
 
@@ -108,6 +128,8 @@ JuleaKVReader::DoAllStepsBlocksInfo(const core::Variable<T> &variable) const
     {
         const size_t step = pair.first;
         const std::vector<size_t> &blockPositions = pair.second;
+        std::cout << "step: " << step << std::endl;
+        std::cout << "blockPositions" << &blockPositions << std::endl;
         // bp4 index starts at 1
         // allStepsBlocksInfo[step - 1] =
         //     BlocksInfoCommon(variable, blockPositions);
