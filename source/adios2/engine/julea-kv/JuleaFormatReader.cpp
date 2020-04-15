@@ -69,7 +69,7 @@ void DeserializeVariableMetadata(gpointer buffer, int *type, Dims *shape,
     size_t tmp_shape[shapeSize];
 
     memcpy(&tmp_shape, tmp_buffer, shapeLen);
-    buffer += shapeLen;
+    tmp_buffer += shapeLen;
     if(shapeSize > 0)
     {
         Dims tmpShape (tmp_shape, tmp_shape+shapeSize);
@@ -83,7 +83,7 @@ void DeserializeVariableMetadata(gpointer buffer, int *type, Dims *shape,
     size_t tmp_start[startSize];
 
     memcpy(&tmp_start, tmp_buffer, startLen);
-    buffer += startLen;
+    tmp_buffer += startLen;
     if(startSize > 0)
     {
         Dims tmpStart (tmp_start, tmp_start+startSize);
@@ -97,7 +97,7 @@ void DeserializeVariableMetadata(gpointer buffer, int *type, Dims *shape,
     size_t tmp_count[countSize];
 
     memcpy(&tmp_count, tmp_buffer, countLen);
-    buffer += countLen;
+    tmp_buffer += countLen;
     if(countSize > 0)
     {
         Dims tmpCount (tmp_count, tmp_count+countSize);
