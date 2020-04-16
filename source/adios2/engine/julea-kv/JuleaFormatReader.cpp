@@ -30,11 +30,13 @@ namespace engine
 // FIXME: blocks + numbersteps as params
 void DefineVariableInInitNew(core::IO *io, const std::string varName,
                              std::string stringType, Dims shape, Dims start,
-                             Dims count, bool constantDims)
+                             Dims count, bool constantDims, size_t *blocks,
+                             size_t numberSteps)
 {
     const char *type = stringType.c_str();
     std::cout << "------ DefineVariableInInitNew ----------" << std::endl;
     std::cout << "------ type  ---------- " << type << std::endl;
+
 
     if (strcmp(type, "unknown") == 0)
     {
@@ -98,11 +100,15 @@ void DefineVariableInInitNew(core::IO *io, const std::string varName,
                                                constantDims);
         std::cout << "Defined variable of type: " << type << std::endl;
         // FIXME
-        // for(uint i = 0; i < numberSteps; i++)
-        // {
-        // var.m_AvailableStepBlockIndexOffsets[1] = std::vector<size_t>({0});
-        // //FIXME var.m_AvailableStepsStart = 1; //FIXME
-        // }
+        for (uint i = 0; i < numberSteps; i++)
+        {
+            var.m_AvailableStepBlockIndexOffsets[i+1] = std::vector<size_t>({blocks[i]});
+            var.m_AvailableStepsStart = i;
+            if (0 == var.m_AvailableStepsCount)
+            {
+                var.m_AvailableStepsCount++;
+            }
+        }
     }
     else if (strcmp(type, "long double") == 0)
     {
@@ -115,6 +121,13 @@ void DefineVariableInInitNew(core::IO *io, const std::string varName,
     else if (strcmp(type, "complex double") == 0)
     {
     }
+
+    //   for(uint i = 0; i < numberSteps; i++)
+    // {
+    // var.m_AvailableStepBlockIndexOffsets[1] = std::vector<size_t>({0});
+    // //FIXME var.m_AvailableStepsStart = 1; //FIXME
+    // }
+
     std::map<std::string, Params> varMap = io->GetAvailableVariables();
 
     for (std::map<std::string, Params>::iterator it = varMap.begin();

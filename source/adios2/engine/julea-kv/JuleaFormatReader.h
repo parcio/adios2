@@ -31,7 +31,8 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
 
 void DefineVariableInInitNew(core::IO *io, const std::string varName,
                              std::string type, Dims shape, Dims start,
-                             Dims count, bool constantDims);
+                             Dims count, bool constantDims, size_t *blocks,
+                             size_t numberSteps);
 
 // void DefineAttributeInInit(core::IO *io, const std::string varName, int type,
 // bool IsSingleValue);

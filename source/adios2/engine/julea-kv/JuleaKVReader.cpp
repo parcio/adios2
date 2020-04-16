@@ -373,7 +373,7 @@ void JuleaKVReader::InitVariables()
             std::string type;
             guint32 buffer_len;
             gpointer md_buffer = nullptr;
-            size_t* blocks = nullptr;
+            size_t *blocks = nullptr;
             size_t numberSteps = 0;
 
             std::string varName(bson_iter_key(&b_iter));
@@ -402,7 +402,7 @@ void JuleaKVReader::InitVariables()
 
             // FIXME: add blocks + numberSteps as paarams
             DefineVariableInInitNew(&m_IO, varName, type, shape, start, count,
-                                    constantDims);
+                                    constantDims, blocks, numberSteps);
             const std::string testtype = m_IO.InquireVariableType(varName);
             std::cout << "testtype = " << testtype << std::endl;
             // free(varName);
