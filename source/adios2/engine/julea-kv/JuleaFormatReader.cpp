@@ -214,11 +214,11 @@ void DefineVariableInInitNew(core::IO *io, const std::string varName,
             }
         }
 
-        //copied from BP3Deserializer.tcc DefineVariableInEngineIO
-            /* Update variable's starting step, which equals to the min value in
-    the sorted map minus one */
-    var.m_StepsStart =
-        var.m_AvailableStepBlockIndexOffsets.begin()->first - 1;
+        // copied from BP3Deserializer.tcc DefineVariableInEngineIO
+        /* Update variable's starting step, which equals to the min value in
+the sorted map minus one */
+        var.m_StepsStart =
+            var.m_AvailableStepBlockIndexOffsets.begin()->first - 1;
         std::cout << "Defined variable of type: " << type << std::endl;
     }
     else if (strcmp(type, "long double") == 0)
@@ -308,7 +308,8 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
     tmpBuffer += sizeof(bool);
     // std::cout << "constantDims: " << isConstantDims << std::endl;
 
-    memcpy(&typeLen, tmpBuffer, sizeof(size_t)); // type
+    /** --- type --- */
+    memcpy(&typeLen, tmpBuffer, sizeof(size_t));
     tmpBuffer += sizeof(size_t);
     // std::cout << "typeLen: " << typeLen << std::endl;
     char tmpType[typeLen];
@@ -320,9 +321,10 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
     // std::cout << "tmpType: " << tmpType << std::endl;
     std::cout << "--- DEBUG " << std::endl;
 
-    memcpy(&shapeSize, tmpBuffer, sizeof(size_t)); // shape
+    /** --- shape --- */
+    memcpy(&shapeSize, tmpBuffer, sizeof(size_t));
     tmpBuffer += sizeof(size_t);
-    shapeLen = sizeof(size_t) * (shapeSize); // TODO +1?
+    shapeLen = sizeof(size_t) * (shapeSize);
 
     size_t tmpShapeBuffer[shapeSize];
 
@@ -334,9 +336,10 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
         *shape = tmpShape;
     }
 
-    memcpy(&startSize, tmpBuffer, sizeof(size_t)); // start
+    /** --- start --- */
+    memcpy(&startSize, tmpBuffer, sizeof(size_t));
     tmpBuffer += sizeof(size_t);
-    startLen = sizeof(size_t) * (startSize); // TODO
+    startLen = sizeof(size_t) * (startSize);
 
     size_t tmpStartBuffer[startSize];
 
@@ -348,9 +351,10 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
         *start = tmpStart;
     }
 
-    memcpy(&countSize, tmpBuffer, sizeof(size_t)); // count
+    /** --- count --- */
+    memcpy(&countSize, tmpBuffer, sizeof(size_t));
     tmpBuffer += sizeof(size_t);
-    countLen = sizeof(size_t) * (countSize); // TODO
+    countLen = sizeof(size_t) * (countSize); //
 
     std::cout << "count size" << countSize << std::endl;
     size_t tmpCountBuffer[countSize];
@@ -401,10 +405,10 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
     typename Variable<T>::Info info;
 
     char *tmpBuffer = (char *)buffer;
-    size_t typeLen = sizeof(variable.m_Type.c_str());
-    const char *type = variable.m_Type.c_str();
+    // size_t typeLen = sizeof(variable.m_Type.c_str());
+    // const char *type = variable.m_Type.c_str();
 
-    std::cout << "typeLen: " << typeLen << std::endl;
+    // std::cout << "typeLen: " << typeLen << std::endl;
     size_t shapeSize = 0;
     size_t startSize = 0;
     size_t countSize = 0;
@@ -433,7 +437,7 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
     bool isValue = false;
 
     /** type */
-    //TODO: not needed?! type is already set in DefineVariable
+    // TODO: not needed?! type is already set in DefineVariable
     // memcpy(&typeLen, tmpBuffer, sizeof(size_t));
     // tmpBuffer += sizeof(size_t);
     // char tmpType[typeLen];
@@ -444,17 +448,21 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
     // std::cout << "tmpType: " << tmpType << std::endl;
 
     /** shape */
+    std::cout << "shapeSize: " << shapeSize << std::endl;
     memcpy(&shapeSize, tmpBuffer, sizeof(size_t));
+    std::cout << "shapeSize: " << shapeSize << std::endl;
     tmpBuffer += sizeof(size_t);
-    size_t tmpShapeBuffer[shapeSize];
     shapeLen = sizeof(size_t) * shapeSize;
+
+    // size_t tmpShapeBuffer[shapeSize];
+    size_t tmpShapeBuffer[0];
 
     memcpy(&tmpShapeBuffer, tmpBuffer, shapeLen);
     tmpBuffer += shapeLen;
     if (shapeSize > 0)
     {
         Dims tmpShape(tmpShapeBuffer, tmpShapeBuffer + shapeSize);
-        info.Shape = tmpShape;
+        // info.Shape = tmpShape;
     }
 
     /** start */

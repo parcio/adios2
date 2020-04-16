@@ -30,7 +30,8 @@ namespace engine
 {
 
 template <class T>
-void JuleaKVWriter::PutSyncToJulea(Variable<T> &variable, const T *data)
+void JuleaKVWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
+                                   const typename Variable<T>::Info &blockInfo)
 {
     std::cout << "------------------ PutSyncToJulea --------------------"
               << std::endl;
@@ -46,8 +47,8 @@ void JuleaKVWriter::PutSyncToJulea(Variable<T> &variable, const T *data)
 
     gpointer varMD =
         SerializeVariableMetadata(variable, varMD_len, m_CurrentStep);
-    gpointer blockMD = SerializeBlockMetadata(variable, blockMD_len,
-                                              m_CurrentStep, m_CurrentBlockID);
+    gpointer blockMD = SerializeBlockMetadata(
+        variable, blockMD_len, m_CurrentStep, m_CurrentBlockID, blockInfo);
 
     // check whether variable name is already in variable_names kv
     auto itVariableWritten = m_WrittenVariableNames.find(variable.m_Name);
@@ -90,7 +91,10 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
     std::cout << "DEBUG: CurrentStep" << m_CurrentStep << std::endl;
     std::cout << "---------------------\n" << std::endl;
 
-    PutSyncToJulea(variable, blockInfo.Data);
+    // FIXME: needed for serializing but does it introduce new problems?
+    // const typename Variable<T>::Info blockInfoTmp =
+    // variable.SetBlockInfo(data, CurrentStep());
+    PutSyncToJulea(variable, blockInfo.Data, blockInfo);
 
     if (m_Verbosity == 5)
     {
@@ -111,7 +115,11 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 
     std::cout << "DEBUG: CurrentStep" << m_CurrentStep << std::endl;
     std::cout << "---------------------\n" << std::endl;
-    PutSyncToJulea(variable, data);
+    // FIXME: needed for serializing but does it introduce new problems?
+    const typename Variable<T>::Info blockInfo =
+        variable.SetBlockInfo(data, CurrentStep());
+    PutSyncToJulea(variable, data, blockInfo);
+    // PutSyncToJulea(variable, data);
 
     if (m_Verbosity == 5)
     {
@@ -130,6 +138,16 @@ void JuleaKVWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
     std::cout << "data[0]: " << data[0] << std::endl;
     std::cout << "data[1]: " << data[1] << std::endl;
 
+    const typename Variable<T>::Info blockInfo =
+        variable.SetBlockInfo(data, CurrentStep());
+
+    std::cout << "BlockInfo size: " << variable.m_BlocksInfo.size()
+              << std::endl;
+
+    std::cout << "variable.m_BlocksInfo[0].Data: "
+              << variable.m_BlocksInfo[0].Data[0] << std::endl;
+    std::cout << "variable.m_BlocksInfo[0].Data: "
+              << variable.m_BlocksInfo[0].Data[1] << std::endl;
     if (variable.m_SingleValue)
     {
         std::cout << "variable.m_SingleValue: " << variable.m_SingleValue
@@ -137,14 +155,6 @@ void JuleaKVWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
         DoPutSync(variable, data); // TODO: correct?!
         return;
     }
-
-    const typename Variable<T>::Info blockInfo =
-        variable.SetBlockInfo(data, CurrentStep());
-
-    std::cout << "variable.m_BlocksInfo[0].Data: "
-              << variable.m_BlocksInfo[0].Data[0] << std::endl;
-    std::cout << "variable.m_BlocksInfo[0].Data: "
-              << variable.m_BlocksInfo[0].Data[1] << std::endl;
 
     if (m_Verbosity == 5)
     {
@@ -181,6 +191,10 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
         // variable.m_BlocksInfo.size());
         std::cout << "variable.m_BlocksInfo.size() = "
                   << variable.m_BlocksInfo.size() << std::endl;
+
+        // FIXME: needed for deserialize problem with m_BlocksInfo.size()?
+        //  const typename Variable<T>::Info blockInfo =
+        // variable.SetBlockInfo(data, CurrentStep());
 
         /** if there are no SpanBlocks simply put every variable */
         auto itSpanBlock = variable.m_BlocksSpan.find(i);

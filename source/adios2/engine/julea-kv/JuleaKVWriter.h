@@ -157,7 +157,8 @@ private:
     void PutSyncCommon(Variable<T> &variable, const T *values);
 
     template <class T>
-    void PutSyncToJulea(Variable<T> &variable, const T *values);
+    void PutSyncToJulea(Variable<T> &variable, const T *values,
+                        const typename Variable<T>::Info &blockInfo);
 
     template <class T>
     void PutDeferredCommon(Variable<T> &variable, const T *values);

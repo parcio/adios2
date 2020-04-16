@@ -266,10 +266,10 @@ void JuleaKVReader::PerformGets()
 #define declare_type(T)                                                        \
     else if (type == helper::GetType<T>())                                     \
     {                                                                          \
-        std::cout << "DEBUG: type " << type << std::endl;\
+        std::cout << "DEBUG: type " << type << std::endl;                      \
         Variable<T> &variable = FindVariable<T>(                               \
             variableName, "in call to PerformGets, EndStep or Close");         \
-        std::cout << "found variable name: " << variable.m_Name << std::endl;\
+        std::cout << "found variable name: " << variable.m_Name << std::endl;  \
         for (auto &blockInfo : variable.m_BlocksInfo)                          \
         {                                                                      \
             std::cout << "-------------------for loop reached " << std::endl;  \

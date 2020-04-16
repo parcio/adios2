@@ -130,16 +130,31 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
 
 template <class T>
 gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
-                                size_t currStep, size_t block)
+                                size_t currStep, size_t block,
+                                const typename Variable<T>::Info &blockInfo)
 {
     // size_t typeLen = sizeof(variable.m_Type.c_str());
     // const char *type = variable.m_Type.c_str();
 
-    size_t shapeSize = variable.m_Shape.size();
-    size_t startSize = variable.m_Start.size();
-    size_t countSize = variable.m_Count.size();
-    size_t memoryStartSize = variable.m_MemoryStart.size();
-    size_t memoryCountSize = variable.m_MemoryCount.size();
+    // size_t shapeSize = variable.m_Shape.size();
+    // size_t startSize = variable.m_Start.size();
+    // size_t countSize = variable.m_Count.size();
+    // size_t memoryStartSize = variable.m_MemoryStart.size();
+    // size_t memoryCountSize = variable.m_MemoryCount.size();
+
+    std::cout << "SerializeBlockMetadata : block = " << block << std::endl;
+    std::cout << "m_BlocksInfo.size() : " << variable.m_BlocksInfo.size()
+              << std::endl;
+    // size_t shapeSize = variable.m_BlocksInfo[block].Shape.size();
+    // size_t startSize = variable.m_BlocksInfo[block].Start.size();
+    // size_t countSize = variable.m_BlocksInfo[block].Count.size();
+    // size_t memoryStartSize = variable.m_BlocksInfo[block].MemoryStart.size();
+    // size_t memoryCountSize = variable.m_BlocksInfo[block].MemoryCount.size();
+    size_t shapeSize = blockInfo.Shape.size();
+    size_t startSize = blockInfo.Start.size();
+    size_t countSize = blockInfo.Count.size();
+    size_t memoryStartSize = blockInfo.MemoryStart.size();
+    size_t memoryCountSize = blockInfo.MemoryCount.size();
 
     // size_t shapeLen = shapeSize * sizeof(Dims[0]);
     // size_t startLen = startSize * sizeof(Dims[0]);
@@ -147,27 +162,36 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     // size_t memoryStartLen = memoryStartSize * sizeof(Dims[0]);
     // size_t memoryCountLen = memoryCountSize * sizeof(Dims[0]);
 
-        size_t shapeLen = shapeSize * sizeof(size_t);
+    size_t shapeLen = shapeSize * sizeof(size_t);
     size_t startLen = startSize * sizeof(size_t);
     size_t countLen = countSize * sizeof(size_t);
-        size_t memoryStartLen = memoryStartSize * sizeof(size_t);
+    size_t memoryStartLen = memoryStartSize * sizeof(size_t);
     size_t memoryCountLen = memoryCountSize * sizeof(size_t);
-
 
     size_t minLen = sizeof(variable.m_Min);
     size_t maxLen = sizeof(variable.m_Max);
 
-    size_t stepsStart = variable.m_StepsStart;
-    size_t stepsCount = variable.m_StepsCount;
-    size_t blockID = variable.m_BlockID;
+    // size_t stepsStart = variable.m_StepsStart;
+    // size_t stepsCount = variable.m_StepsCount;
+    // size_t blockID = variable.m_BlockID;
+
+    // size_t stepsStart = variable.m_BlocksInfo[block].StepsStart;
+    // size_t stepsCount = variable.m_BlocksInfo[block].StepsCount;
+    // size_t blockID = variable.m_BlocksInfo[block].BlockID;
+
+    size_t stepsStart = blockInfo.StepsStart;
+    size_t stepsCount = blockInfo.StepsCount;
+    size_t blockID = blockInfo.BlockID;
 
     size_t currentStep = currStep; // Julea Engine
     size_t blockNumber = block;    // Julea Engine
 
+    // bool isValue = variable.m_SingleValue;
     bool isReadAsJoined = variable.m_ReadAsJoined;
     bool isReadAsLocalValue = variable.m_ReadAsLocalValue;
     bool isRandomAccess = variable.m_RandomAccess;
-    bool isValue = variable.m_SingleValue;
+    // bool isValue = variable.m_BlocksInfo[block].IsValue;
+    bool isValue = blockInfo.IsValue;
 
     std::cout << "variable minimum: " << variable.m_Min << std::endl;
     std::cout << "variable maximum: " << variable.m_Max << std::endl;
@@ -187,10 +211,9 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     //       countLen + memoryStartLen + memoryCountLen +
     //       numberVariables * sizeof(size_t) + numberBools * sizeof(bool) +
     //       minLen + maxLen;
-    len = numberVectors * sizeof(size_t)  + shapeLen + startLen +
-          countLen + memoryStartLen + memoryCountLen +
-          numberVariables * sizeof(size_t) + numberBools * sizeof(bool) +
-          minLen + maxLen;
+    len = numberVectors * sizeof(size_t) + shapeLen + startLen + countLen +
+          memoryStartLen + memoryCountLen + numberVariables * sizeof(size_t) +
+          numberBools * sizeof(bool) + minLen + maxLen;
 
     std::cout << "--- block metadata buffer length: " << len << std::endl;
 
@@ -203,7 +226,7 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     // memcpy(buffer, type, typeLen);
     // buffer += typeLen;
 
-    //FIXME: original not working
+    // FIXME: original not working
     // memcpy(buffer, &shapeSize, sizeof(size_t)); // shape
     // buffer += sizeof(size_t);
     // memcpy(buffer, variable.m_Shape.data(), shapeLen);
@@ -219,17 +242,22 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     // memcpy(buffer, variable.m_Count.data(), countLen);
     // buffer += countLen;
 
-     /** --- shape ---*/
+    /** --- shape ---*/
     memcpy(buffer, &shapeSize, sizeof(size_t));
+    std::cout << "shapeSize: " << shapeSize << std::endl;
     buffer += sizeof(size_t);
     size_t shapeBuffer[shapeSize];
     for (uint i = 0; i < shapeSize; i++)
     {
-        shapeBuffer[i] = variable.m_Shape.data()[i];
+        // shapeBuffer[i] = variable.m_Shape.data()[i];
+        shapeBuffer[i] = blockInfo.Shape.data()[i];
     }
     memcpy(buffer, shapeBuffer, shapeLen);
     buffer += shapeLen;
-    std::cout << "shape.data = " << variable.m_Shape.data() << std::endl;
+    std::cout << "shapeLen:" << shapeLen << std::endl;
+    std::cout << "var: shape.data: " << variable.m_Shape.data() << std::endl;
+    std::cout << "blockInfo:shape.data: " << variable.m_Shape.data()
+              << std::endl;
 
     /** ---start --- */
     memcpy(buffer, &startSize, sizeof(size_t));
@@ -237,7 +265,8 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     size_t startBuffer[startSize];
     for (uint i = 0; i < startSize; i++)
     {
-        startBuffer[i] = variable.m_Start.data()[i];
+        // startBuffer[i] = variable.m_Start.data()[i];
+        startBuffer[i] = blockInfo.Start.data()[i];
     }
 
     memcpy(buffer, startBuffer, startLen);
@@ -250,11 +279,11 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     size_t countBuffer[countSize];
     for (uint i = 0; i < countSize; i++)
     {
-        countBuffer[i] = variable.m_Count.data()[i];
+        // countBuffer[i] = variable.m_Count.data()[i];
+        countBuffer[i] = blockInfo.Count.data()[i];
     }
     memcpy(buffer, countBuffer, countLen);
     buffer += countLen;
-
 
     /** ---memorystart --- */
     memcpy(buffer, &memoryStartSize, sizeof(size_t));
@@ -262,13 +291,14 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     size_t memoryStartBuffer[memoryStartSize];
     for (uint i = 0; i < memoryStartSize; i++)
     {
-        memoryStartBuffer[i] = variable.m_MemoryStart.data()[i];
+        // memoryStartBuffer[i] = variable.m_MemoryStart.data()[i];
+        memoryStartBuffer[i] = blockInfo.MemoryStart.data()[i];
     }
 
     memcpy(buffer, memoryStartBuffer, memoryStartLen);
     buffer += memoryStartLen;
 
-    //FIXME rewrite
+    // FIXME rewrite
     // memcpy(buffer, &memoryStartSize, sizeof(size_t)); // memoryStart
     // buffer += sizeof(size_t);
     // memcpy(buffer, variable.m_MemoryStart.data(), memoryStartLen);
@@ -279,18 +309,20 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     // memcpy(buffer, variable.m_MemoryCount.data(), memoryCountLen);
     // buffer += memoryCountLen;
 
-     /** ---memorycount --- */
+    /** ---memorycount --- */
     memcpy(buffer, &memoryCountSize, sizeof(size_t));
     buffer += sizeof(size_t);
     size_t memoryCountBuffer[memoryCountSize];
     for (uint i = 0; i < memoryCountSize; i++)
     {
-        memoryCountBuffer[i] = variable.m_MemoryCount.data()[i];
+        // memoryCountBuffer[i] = variable.m_MemoryCount.data()[i];
+        memoryCountBuffer[i] = blockInfo.MemoryCount.data()[i];
     }
 
     memcpy(buffer, memoryCountBuffer, memoryCountLen);
     buffer += memoryCountLen;
 
+    /** no more vectors from here on */
     memcpy(buffer, &variable.m_Min, minLen); // Min
     buffer += minLen;
 
@@ -470,9 +502,9 @@ void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
     template void SetMinMax(Variable<T> &variable, const T *data);             \
     template gpointer SerializeVariableMetadata(                               \
         Variable<T> &variable, guint32 &buffer_len, size_t step);              \
-    template gpointer SerializeBlockMetadata(Variable<T> &variable,            \
-                                             guint32 &buffer_len, size_t step, \
-                                             size_t block);
+    template gpointer SerializeBlockMetadata(                                  \
+        Variable<T> &variable, guint32 &buffer_len, size_t step, size_t block, \
+        const typename Variable<T>::Info &blockInfo);
 
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation

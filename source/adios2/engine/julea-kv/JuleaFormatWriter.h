@@ -42,14 +42,16 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &buffer_len,
                                    size_t step);
 template <class T>
 gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &buffer_len,
-                                size_t step, size_t block);
+                                size_t step, size_t block,
+                                const typename Variable<T>::Info &blockInfo);
 
 #define variable_template_instantiation(T)                                     \
     SetMinMax(Variable<T> &variable, const T *data);                           \
     gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,    \
                                        size_t currStep);                       \
-    gpointer SerializeBlockMetadata(Variable<T> &variable,                     \
-                                    guint32 &buffer_len, size_t step),         \
+    gpointer SerializeBlockMetadata(                                           \
+        Variable<T> &variable, guint32 &buffer_len, size_t step,               \
+        const typename Variable<T>::Info &blockInfo),                          \
         size_t block;                                                          \
     ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation

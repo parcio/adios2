@@ -342,7 +342,6 @@ void JuleaKVWriter::InitVariables()
  * @return   [description]
  */
 // PutSyncCommon(variable, variable.SetBlockInfo(data, CurrentStep()));   \
-                //         variable.m_BlocksInfo.pop_back();                                      \
 
 
 #define declare_type(T)                                                        \
@@ -351,6 +350,7 @@ void JuleaKVWriter::InitVariables()
         variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].push_back(    \
             m_CurrentBlockID);                                                 \
         PutSyncCommon(variable, data);                                         \
+        variable.m_BlocksInfo.pop_back();                                      \
         m_CurrentBlockID++;                                                    \
     }                                                                          \
     void JuleaKVWriter::DoPutDeferred(Variable<T> &variable, const T *data)    \
