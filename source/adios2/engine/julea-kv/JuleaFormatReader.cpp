@@ -571,18 +571,22 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
     std::cout << "info.BlockID: " << info.BlockID << std::endl;
     tmpBuffer += sizeof(size_t);
 
-    //TODO: currentStep and blocknumer not necessary to read. already known.
+    // TODO: currentStep and blocknumer not necessary to read. already known.
 
     memcpy(&variable.m_ReadAsJoined, tmpBuffer, sizeof(bool)); // isReadAsJoined
-    std::cout << "variable.m_ReadAsJoined: " << variable.m_ReadAsJoined << std::endl;
+    std::cout << "variable.m_ReadAsJoined: " << variable.m_ReadAsJoined
+              << std::endl;
     tmpBuffer += sizeof(bool);
 
-    memcpy(&variable.m_ReadAsLocalValue, tmpBuffer, sizeof(bool)); // isReadAsLocalValue
-    std::cout << "variable.m_ReadAsLocalValue: " << variable.m_ReadAsLocalValue << std::endl;
+    memcpy(&variable.m_ReadAsLocalValue, tmpBuffer,
+           sizeof(bool)); // isReadAsLocalValue
+    std::cout << "variable.m_ReadAsLocalValue: " << variable.m_ReadAsLocalValue
+              << std::endl;
     tmpBuffer += sizeof(bool);
 
     memcpy(&variable.m_RandomAccess, tmpBuffer, sizeof(bool)); // isRandomAccess
-    std::cout << "variable.m_RandomAccess: " << variable.m_RandomAccess << std::endl;
+    std::cout << "variable.m_RandomAccess: " << variable.m_RandomAccess
+              << std::endl;
     tmpBuffer += sizeof(bool);
 
     memcpy(&info.IsValue, tmpBuffer, sizeof(bool)); // isValue

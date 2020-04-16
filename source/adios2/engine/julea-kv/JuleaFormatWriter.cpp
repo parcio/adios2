@@ -178,7 +178,8 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     // uint numberVectors = 6; //TODO: changed -> now without type!
     uint numberVectors = 5;
     // StepsStart + StepsCount + BlockID + currentStep + blockNumber
-    // uint numberVariables = 5; //TODO changed now without currentStep and blockNumber
+    // uint numberVariables = 5; //TODO changed now without currentStep and
+    // blockNumber
     uint numberVariables = 3;
     // ReadAsJoined + ReadAsLocalValue + RandomAccess + SingleValue
     uint numberBools = 4;

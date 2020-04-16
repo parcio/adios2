@@ -205,15 +205,19 @@ void PutVariableDataToJulea(Variable<T> &variable, const T *data,
                             const std::string nameSpace, size_t currStep,
                             size_t block)
 {
+        std::cout << "-- PutVariableDataToJulea ----- " << std::endl;
     guint64 bytesWritten = 0;
     auto numberElements = adios2::helper::GetTotalSize(variable.m_Count);
     auto dataSize = variable.m_ElementSize * numberElements;
+    std::cout << "dataSize: " << dataSize << std::endl;
 
     std::string objName = "variableblocks";
     auto stepBlockID = g_strdup_printf("%lu_%lu", currStep, block);
     std::cout << "stepBlockID: " << stepBlockID << std::endl;
     auto stringDataObject =
-        g_strdup_printf("%s_%s", nameSpace.c_str(), objName.c_str());
+        // g_strdup_printf("%s_%s", nameSpace.c_str(), objName.c_str());
+        g_strdup_printf("%s_%s_%s", nameSpace.c_str(), variable.m_Name.c_str(),
+                        objName.c_str());
     std::cout << "stringDataObject " << stringDataObject << std::endl;
 
     std::cout << "data [0] = " << data[0] << std::endl;
