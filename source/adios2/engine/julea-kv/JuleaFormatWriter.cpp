@@ -136,31 +136,15 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     // size_t typeLen = sizeof(variable.m_Type.c_str());
     // const char *type = variable.m_Type.c_str();
 
-    // size_t shapeSize = variable.m_Shape.size();
-    // size_t startSize = variable.m_Start.size();
-    // size_t countSize = variable.m_Count.size();
-    // size_t memoryStartSize = variable.m_MemoryStart.size();
-    // size_t memoryCountSize = variable.m_MemoryCount.size();
-
     std::cout << "SerializeBlockMetadata : block = " << block << std::endl;
     std::cout << "m_BlocksInfo.size() : " << variable.m_BlocksInfo.size()
               << std::endl;
-    // size_t shapeSize = variable.m_BlocksInfo[block].Shape.size();
-    // size_t startSize = variable.m_BlocksInfo[block].Start.size();
-    // size_t countSize = variable.m_BlocksInfo[block].Count.size();
-    // size_t memoryStartSize = variable.m_BlocksInfo[block].MemoryStart.size();
-    // size_t memoryCountSize = variable.m_BlocksInfo[block].MemoryCount.size();
+
     size_t shapeSize = blockInfo.Shape.size();
     size_t startSize = blockInfo.Start.size();
     size_t countSize = blockInfo.Count.size();
     size_t memoryStartSize = blockInfo.MemoryStart.size();
     size_t memoryCountSize = blockInfo.MemoryCount.size();
-
-    // size_t shapeLen = shapeSize * sizeof(Dims[0]);
-    // size_t startLen = startSize * sizeof(Dims[0]);
-    // size_t countLen = countSize * sizeof(Dims[0]);
-    // size_t memoryStartLen = memoryStartSize * sizeof(Dims[0]);
-    // size_t memoryCountLen = memoryCountSize * sizeof(Dims[0]);
 
     size_t shapeLen = shapeSize * sizeof(size_t);
     size_t startLen = startSize * sizeof(size_t);
@@ -170,14 +154,6 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
 
     size_t minLen = sizeof(variable.m_Min);
     size_t maxLen = sizeof(variable.m_Max);
-
-    // size_t stepsStart = variable.m_StepsStart;
-    // size_t stepsCount = variable.m_StepsCount;
-    // size_t blockID = variable.m_BlockID;
-
-    // size_t stepsStart = variable.m_BlocksInfo[block].StepsStart;
-    // size_t stepsCount = variable.m_BlocksInfo[block].StepsCount;
-    // size_t blockID = variable.m_BlocksInfo[block].BlockID;
 
     size_t stepsStart = blockInfo.StepsStart;
     size_t stepsCount = blockInfo.StepsCount;
@@ -225,22 +201,6 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     // buffer += sizeof(size_t);
     // memcpy(buffer, type, typeLen);
     // buffer += typeLen;
-
-    // FIXME: original not working
-    // memcpy(buffer, &shapeSize, sizeof(size_t)); // shape
-    // buffer += sizeof(size_t);
-    // memcpy(buffer, variable.m_Shape.data(), shapeLen);
-    // buffer += shapeLen;
-
-    // memcpy(buffer, &startSize, sizeof(size_t)); // start
-    // buffer += sizeof(size_t);
-    // memcpy(buffer, variable.m_Start.data(), startLen);
-    // buffer += startLen;
-
-    // memcpy(buffer, &countSize, sizeof(size_t)); // count
-    // buffer += sizeof(size_t);
-    // memcpy(buffer, variable.m_Count.data(), countLen);
-    // buffer += countLen;
 
     /** --- shape ---*/
     memcpy(buffer, &shapeSize, sizeof(size_t));
@@ -297,17 +257,6 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
 
     memcpy(buffer, memoryStartBuffer, memoryStartLen);
     buffer += memoryStartLen;
-
-    // FIXME rewrite
-    // memcpy(buffer, &memoryStartSize, sizeof(size_t)); // memoryStart
-    // buffer += sizeof(size_t);
-    // memcpy(buffer, variable.m_MemoryStart.data(), memoryStartLen);
-    // buffer += memoryStartLen;
-
-    // memcpy(buffer, &memoryCountSize, sizeof(size_t)); // memoryCount
-    // buffer += sizeof(size_t);
-    // memcpy(buffer, variable.m_MemoryCount.data(), memoryCountLen);
-    // buffer += memoryCountLen;
 
     /** ---memorycount --- */
     memcpy(buffer, &memoryCountSize, sizeof(size_t));
