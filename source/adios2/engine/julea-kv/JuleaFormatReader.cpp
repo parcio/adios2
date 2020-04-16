@@ -451,6 +451,10 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
     std::cout << "shapeSize: " << shapeSize << std::endl;
     memcpy(&shapeSize, tmpBuffer, sizeof(size_t));
     std::cout << "shapeSize: " << shapeSize << std::endl;
+    std::cout << "shapeSize: " << &shapeSize << std::endl;
+    // memcpy(&shapeSize, buffer, sizeof(size_t)); //TODO: only to test
+    // std::cout << "shapeSize: " << shapeSize << std::endl;
+    // std::cout << "shapeSize: " << &shapeSize << std::endl;
     tmpBuffer += sizeof(size_t);
     shapeLen = sizeof(size_t) * shapeSize;
 
