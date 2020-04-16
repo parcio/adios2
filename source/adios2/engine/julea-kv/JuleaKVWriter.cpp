@@ -343,7 +343,6 @@ void JuleaKVWriter::InitVariables()
  */
 // PutSyncCommon(variable, variable.SetBlockInfo(data, CurrentStep()));   \
 
-
 #define declare_type(T)                                                        \
     void JuleaKVWriter::DoPutSync(Variable<T> &variable, const T *data)        \
     {                                                                          \
@@ -359,6 +358,22 @@ void JuleaKVWriter::InitVariables()
     }
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
+
+
+// #define declare_type(T)                                                        \
+//     void JuleaKVWriter::DoPutSync(Variable<T> &variable, const T *data)        \
+//     {                                                                          \
+//        std::cout << " SYNC ---- data[0] --- " << data[0] << std::endl;\
+//        std::cout << " SYNC ---- data[1] --- " << data[1] << std::endl;\
+//     }                                                                          \
+//     void JuleaKVWriter::DoPutDeferred(Variable<T> &variable, const T *data)    \
+//     {                                                                          \
+//        std::cout << " DEFERRED ---- data[0] --- " << data[0] << std::endl;\
+//        std::cout << " DEFERRED ---- data[1] --- " << data[1] << std::endl;\
+//    }
+// ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
+// #undef declare_type
+
 // ADIOS2_FOREACH_TYPE_1ARG(declare_type)
 
 /**TODO

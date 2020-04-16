@@ -81,7 +81,7 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
                                   const typename Variable<T>::Info &blockInfo)
 {
 
-    std::cout << "\n______________PutSyncCommon BlockInfo_____________________"
+    std::cout << "\n_________________________PutSyncCommon BlockInfo_____________________________"
               << std::endl;
     std::cout << "Julea Writer " << m_WriterRank << " Namespace: " << m_Name
               << std::endl;
@@ -106,7 +106,7 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
 template <class T>
 void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 {
-    std::cout << "\n______________PutSyncCommon T_____________________"
+    std::cout << "\n___________________________PutSyncCommon T__________________________"
               << std::endl;
     std::cout << "Julea Writer " << m_WriterRank << " Namespace: " << m_Name
               << std::endl;
@@ -131,10 +131,8 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 template <class T>
 void JuleaKVWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
 {
-    std::cout << "\n______________PutDeferred T_____________________"
+    std::cout << "\n___________________________PutDeferred T____________________________"
               << std::endl;
-
-    std::cout << "variable.m_Data: " << variable.m_Data << std::endl;
     std::cout << "data[0]: " << data[0] << std::endl;
     std::cout << "data[1]: " << data[1] << std::endl;
 
@@ -143,11 +141,6 @@ void JuleaKVWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
 
     std::cout << "BlockInfo size: " << variable.m_BlocksInfo.size()
               << std::endl;
-
-    std::cout << "variable.m_BlocksInfo[0].Data: "
-              << variable.m_BlocksInfo[0].Data[0] << std::endl;
-    std::cout << "variable.m_BlocksInfo[0].Data: "
-              << variable.m_BlocksInfo[0].Data[1] << std::endl;
     if (variable.m_SingleValue)
     {
         std::cout << "variable.m_SingleValue: " << variable.m_SingleValue
@@ -174,12 +167,12 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
 {
     std::cout << "\n______________PerformPutCommon T_____________________"
               << std::endl;
-    std::cout << "BlockInfo.size = " << variable.m_BlocksInfo.size();
+    std::cout << "BlockInfo.size = " << variable.m_BlocksInfo.size() << std::endl;
     for (size_t i = 0; i < variable.m_BlocksInfo.size(); ++i)
     {
-        std::cout
-            << "------- TEST for different info block sizes ----------------"
-            << std::endl;
+        // std::cout
+        //     << "------- TEST for different info block sizes ----------------"
+        //     << std::endl;
         std::cout << "variable:" << variable.m_Name << std::endl;
         std::cout << "i = " << i << std::endl;
         // std::cout << "Map size = "
@@ -188,9 +181,8 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
 
         variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].push_back(
             m_CurrentBlockID);
-        // variable.m_BlocksInfo.size());
-        std::cout << "variable.m_BlocksInfo.size() = "
-                  << variable.m_BlocksInfo.size() << std::endl;
+        // std::cout << "variable.m_BlocksInfo.size() = "
+        //           << variable.m_BlocksInfo.size() << std::endl;
 
         // FIXME: needed for deserialize problem with m_BlocksInfo.size()?
         //  const typename Variable<T>::Info blockInfo =

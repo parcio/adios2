@@ -38,15 +38,15 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     size_t startSize = variable.m_Start.size();
     size_t countSize = variable.m_Count.size();
     size_t numberSteps = currStep + 1;
-    std::cout << "constantDims: " << constantDims << std::endl;
-    std::cout << "type: " << type << std::endl;
-    std::cout << "shapeSize: " << shapeSize << std::endl;
-    std::cout << "startSize: " << startSize << std::endl;
-    std::cout << "countSize: " << countSize << std::endl;
-    std::cout << "numberSteps: " << numberSteps << std::endl;
+    // std::cout << "constantDims: " << constantDims << std::endl;
+    // std::cout << "type: " << type << std::endl;
+    // std::cout << "shapeSize: " << shapeSize << std::endl;
+    // std::cout << "startSize: " << startSize << std::endl;
+    // std::cout << "countSize: " << countSize << std::endl;
+    // std::cout << "numberSteps: " << numberSteps << std::endl;
 
     size_t typeLen = sizeof(variable.m_Type.c_str());
-    std::cout << "typeLen: " << typeLen << std::endl;
+    // std::cout << "typeLen: " << typeLen << std::endl;
 
     size_t shapeLen = shapeSize * sizeof(size_t);
     size_t startLen = startSize * sizeof(size_t);
@@ -65,7 +65,7 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     size_t blocks[numberSteps];
     for (uint i = 0; i < numberSteps; i++)
     {
-        std::cout << "--- DEBUG ---" << std::endl;
+        // std::cout << "--- DEBUG ---" << std::endl;
         blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].size();
         std::cout << "i: " << i << "  blocks: " << blocks[i] << std::endl;
     }
@@ -90,7 +90,7 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     }
     memcpy(buffer, shapeBuffer, shapeLen);
     buffer += shapeLen;
-    std::cout << "shape.data = " << variable.m_Shape.data() << std::endl;
+    // std::cout << "shape.data = " << variable.m_Shape.data() << std::endl;
 
     /** ---start --- */
     memcpy(buffer, &startSize, sizeof(size_t));
@@ -136,7 +136,7 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     // size_t typeLen = sizeof(variable.m_Type.c_str());
     // const char *type = variable.m_Type.c_str();
 
-    std::cout << "SerializeBlockMetadata : block = " << block << std::endl;
+    std::cout << "--- SerializeBlockMetadata : block = " << block << std::endl;
     std::cout << "m_BlocksInfo.size() : " << variable.m_BlocksInfo.size()
               << std::endl;
 
@@ -215,9 +215,9 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     memcpy(buffer, shapeBuffer, shapeLen);
     buffer += shapeLen;
     std::cout << "shapeLen:" << shapeLen << std::endl;
-    std::cout << "var: shape.data: " << variable.m_Shape.data() << std::endl;
-    std::cout << "blockInfo:shape.data: " << variable.m_Shape.data()
-              << std::endl;
+    // std::cout << "var: shape.data: " << variable.m_Shape.data() << std::endl;
+    // std::cout << "blockInfo:shape.data: " << variable.m_Shape.data()
+    //           << std::endl;
 
     /** ---start --- */
     memcpy(buffer, &startSize, sizeof(size_t));
