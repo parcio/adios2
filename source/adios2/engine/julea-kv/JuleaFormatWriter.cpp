@@ -80,7 +80,7 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     memcpy(buffer, type, typeLen);
     buffer += typeLen;
 
-    /** shape */
+    /** --- shape ---*/
     memcpy(buffer, &shapeSize, sizeof(size_t));
     buffer += sizeof(size_t);
     size_t shapeBuffer[shapeSize];
@@ -89,12 +89,11 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
         shapeBuffer[i] = variable.m_Shape.data()[i];
     }
     memcpy(buffer, shapeBuffer, shapeLen);
-    // memcpy(buffer, variable.m_Shape.data(), shapeLen);
     buffer += shapeLen;
     std::cout << "shape.data = " << variable.m_Shape.data() << std::endl;
 
-    /** start */
-    memcpy(buffer, &startSize, sizeof(size_t)); // start
+    /** ---start --- */
+    memcpy(buffer, &startSize, sizeof(size_t));
     buffer += sizeof(size_t);
     size_t startBuffer[startSize];
     for (uint i = 0; i < startSize; i++)
@@ -103,12 +102,10 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     }
 
     memcpy(buffer, startBuffer, startLen);
-    // memcpy(buffer, variable.m_Start.data(), startLen);
     buffer += startLen;
 
-    std::cout << "count: " << variable.m_Count.data() << std::endl;
-    std::cout << "count: " << variable.m_Count.data()[0] << std::endl;
-    memcpy(buffer, &countSize, sizeof(size_t)); // count
+    /** --- count --- */
+    memcpy(buffer, &countSize, sizeof(size_t));
     buffer += sizeof(size_t);
 
     size_t countBuffer[countSize];
@@ -116,10 +113,10 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     {
         countBuffer[i] = variable.m_Count.data()[i];
     }
-    // memcpy(buffer, variable.m_Count.data(), countLen);
     memcpy(buffer, countBuffer, countLen);
     buffer += countLen;
 
+    /** --- blocks --- */
     std::cout << "numberSteps: " << numberSteps << std::endl;
     memcpy(buffer, &numberSteps, sizeof(size_t)); // blocks
     buffer += sizeof(size_t);
@@ -135,8 +132,8 @@ template <class T>
 gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
                                 size_t currStep, size_t block)
 {
-    size_t typeLen = sizeof(variable.m_Type.c_str());
-    const char *type = variable.m_Type.c_str();
+    // size_t typeLen = sizeof(variable.m_Type.c_str());
+    // const char *type = variable.m_Type.c_str();
 
     size_t shapeSize = variable.m_Shape.size();
     size_t startSize = variable.m_Start.size();
@@ -206,29 +203,92 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     // memcpy(buffer, type, typeLen);
     // buffer += typeLen;
 
-    memcpy(buffer, &shapeSize, sizeof(size_t)); // shape
-    buffer += sizeof(size_t);
-    memcpy(buffer, variable.m_Shape.data(), shapeLen);
-    buffer += shapeLen;
+    //FIXME: original not working
+    // memcpy(buffer, &shapeSize, sizeof(size_t)); // shape
+    // buffer += sizeof(size_t);
+    // memcpy(buffer, variable.m_Shape.data(), shapeLen);
+    // buffer += shapeLen;
 
-    memcpy(buffer, &startSize, sizeof(size_t)); // start
+    // memcpy(buffer, &startSize, sizeof(size_t)); // start
+    // buffer += sizeof(size_t);
+    // memcpy(buffer, variable.m_Start.data(), startLen);
+    // buffer += startLen;
+
+    // memcpy(buffer, &countSize, sizeof(size_t)); // count
+    // buffer += sizeof(size_t);
+    // memcpy(buffer, variable.m_Count.data(), countLen);
+    // buffer += countLen;
+
+     /** --- shape ---*/
+    memcpy(buffer, &shapeSize, sizeof(size_t));
     buffer += sizeof(size_t);
-    memcpy(buffer, variable.m_Start.data(), startLen);
+    size_t shapeBuffer[shapeSize];
+    for (uint i = 0; i < shapeSize; i++)
+    {
+        shapeBuffer[i] = variable.m_Shape.data()[i];
+    }
+    memcpy(buffer, shapeBuffer, shapeLen);
+    buffer += shapeLen;
+    std::cout << "shape.data = " << variable.m_Shape.data() << std::endl;
+
+    /** ---start --- */
+    memcpy(buffer, &startSize, sizeof(size_t));
+    buffer += sizeof(size_t);
+    size_t startBuffer[startSize];
+    for (uint i = 0; i < startSize; i++)
+    {
+        startBuffer[i] = variable.m_Start.data()[i];
+    }
+
+    memcpy(buffer, startBuffer, startLen);
     buffer += startLen;
 
-    memcpy(buffer, &countSize, sizeof(size_t)); // count
+    /** --- count --- */
+    memcpy(buffer, &countSize, sizeof(size_t));
     buffer += sizeof(size_t);
-    memcpy(buffer, variable.m_Count.data(), countLen);
+
+    size_t countBuffer[countSize];
+    for (uint i = 0; i < countSize; i++)
+    {
+        countBuffer[i] = variable.m_Count.data()[i];
+    }
+    memcpy(buffer, countBuffer, countLen);
     buffer += countLen;
 
-    memcpy(buffer, &memoryStartSize, sizeof(size_t)); // memoryStart
+
+    /** ---memorystart --- */
+    memcpy(buffer, &memoryStartSize, sizeof(size_t));
     buffer += sizeof(size_t);
-    memcpy(buffer, variable.m_MemoryStart.data(), memoryStartLen);
+    size_t memoryStartBuffer[memoryStartSize];
+    for (uint i = 0; i < memoryStartSize; i++)
+    {
+        memoryStartBuffer[i] = variable.m_MemoryStart.data()[i];
+    }
+
+    memcpy(buffer, memoryStartBuffer, memoryStartLen);
     buffer += memoryStartLen;
 
-    memcpy(buffer, &memoryCountSize, sizeof(size_t)); // memoryCount
+    //FIXME rewrite
+    // memcpy(buffer, &memoryStartSize, sizeof(size_t)); // memoryStart
+    // buffer += sizeof(size_t);
+    // memcpy(buffer, variable.m_MemoryStart.data(), memoryStartLen);
+    // buffer += memoryStartLen;
+
+    // memcpy(buffer, &memoryCountSize, sizeof(size_t)); // memoryCount
+    // buffer += sizeof(size_t);
+    // memcpy(buffer, variable.m_MemoryCount.data(), memoryCountLen);
+    // buffer += memoryCountLen;
+
+     /** ---memorycount --- */
+    memcpy(buffer, &memoryCountSize, sizeof(size_t));
     buffer += sizeof(size_t);
-    memcpy(buffer, variable.m_MemoryCount.data(), memoryCountLen);
+    size_t memoryCountBuffer[memoryCountSize];
+    for (uint i = 0; i < memoryCountSize; i++)
+    {
+        memoryCountBuffer[i] = variable.m_MemoryCount.data()[i];
+    }
+
+    memcpy(buffer, memoryCountBuffer, memoryCountLen);
     buffer += memoryCountLen;
 
     memcpy(buffer, &variable.m_Min, minLen); // Min
