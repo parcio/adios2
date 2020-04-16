@@ -137,12 +137,12 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
     guint64 bytesRead = 0;
     const char *varName = variable.m_Name.c_str();
     // auto batch = j_batch_new(m_JuleaSemantics);
-    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    auto batch = j_batch_new(semantics);
+    std::cout << "-- Datasize = " << dataSize << std::endl;
+
 
     std::string objName = "variableblocks";
-    auto stringDataObject =
-        g_strdup_printf("%s_%s_%s", nameSpace.c_str(), varName,
+       auto stringDataObject =
+        g_strdup_printf("%s_%s_%s", nameSpace.c_str(), variable.m_Name.c_str(),
                         objName.c_str());
     std::cout << "stringDataObject: " << stringDataObject << std::endl;
 
@@ -150,11 +150,10 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
     std::cout << "stepBlockID: " << stepBlockID << std::endl;
 
 
+    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
+
     auto dataObject = j_object_new(stringDataObject, stepBlockID);
-
-    std::cout << "-- Datasize = " << dataSize << std::endl;
-
-        // j_object_create(dataObject, batch);
 
     j_object_read(dataObject, data, dataSize, 0, &bytesRead, batch);
     // j_batch_execute(batch);

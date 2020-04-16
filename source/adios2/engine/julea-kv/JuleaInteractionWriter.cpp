@@ -215,7 +215,6 @@ void PutVariableDataToJulea(Variable<T> &variable, const T *data,
     auto stepBlockID = g_strdup_printf("%lu_%lu", currStep, block);
     std::cout << "stepBlockID: " << stepBlockID << std::endl;
     auto stringDataObject =
-        // g_strdup_printf("%s_%s", nameSpace.c_str(), objName.c_str());
         g_strdup_printf("%s_%s_%s", nameSpace.c_str(), variable.m_Name.c_str(),
                         objName.c_str());
     std::cout << "stringDataObject " << stringDataObject << std::endl;
