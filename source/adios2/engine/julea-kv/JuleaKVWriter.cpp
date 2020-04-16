@@ -359,7 +359,6 @@ void JuleaKVWriter::InitVariables()
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
 
-
 // #define declare_type(T)                                                        \
 //     void JuleaKVWriter::DoPutSync(Variable<T> &variable, const T *data)        \
 //     {                                                                          \

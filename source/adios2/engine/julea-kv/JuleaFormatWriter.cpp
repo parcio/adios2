@@ -205,7 +205,10 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     /** --- shape ---*/
     memcpy(buffer, &shapeSize, sizeof(size_t));
     std::cout << "shapeSize: " << shapeSize << std::endl;
+        std::cout << "buffer: " << (void*) buffer << std::endl;
     buffer += sizeof(size_t);
+        std::cout << "buffer: " << (void*) buffer << std::endl;
+
     size_t shapeBuffer[shapeSize];
     for (uint i = 0; i < shapeSize; i++)
     {
@@ -214,6 +217,8 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     }
     memcpy(buffer, shapeBuffer, shapeLen);
     buffer += shapeLen;
+        std::cout << "buffer: " << (void*) buffer << std::endl;
+
     std::cout << "shapeLen:" << shapeLen << std::endl;
     // std::cout << "var: shape.data: " << variable.m_Shape.data() << std::endl;
     // std::cout << "blockInfo:shape.data: " << variable.m_Shape.data()
@@ -222,6 +227,8 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     /** ---start --- */
     memcpy(buffer, &startSize, sizeof(size_t));
     buffer += sizeof(size_t);
+        std::cout << "buffer: " << (void*) buffer << std::endl;
+
     size_t startBuffer[startSize];
     for (uint i = 0; i < startSize; i++)
     {
@@ -231,10 +238,14 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
 
     memcpy(buffer, startBuffer, startLen);
     buffer += startLen;
+        std::cout << "buffer: " << (void*) buffer << std::endl;
+
 
     /** --- count --- */
     memcpy(buffer, &countSize, sizeof(size_t));
     buffer += sizeof(size_t);
+        std::cout << "buffer: " << (void*) buffer << std::endl;
+
 
     size_t countBuffer[countSize];
     for (uint i = 0; i < countSize; i++)
@@ -244,6 +255,8 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     }
     memcpy(buffer, countBuffer, countLen);
     buffer += countLen;
+        std::cout << "buffer: " << (void*) buffer << std::endl;
+
 
     /** ---memorystart --- */
     memcpy(buffer, &memoryStartSize, sizeof(size_t));
@@ -303,9 +316,11 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     buffer += sizeof(bool);
 
     memcpy(buffer, &isValue, sizeof(bool)); // isValue
-    buffer += sizeof(bool);
+    // buffer += sizeof(bool);
 
-    return buffer;
+    // rewind buffer
+    buffer -= len - sizeof(bool);
+    return (gpointer) buffer;
 }
 
 template <class T>

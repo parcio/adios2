@@ -81,7 +81,8 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
                                   const typename Variable<T>::Info &blockInfo)
 {
 
-    std::cout << "\n_________________________PutSyncCommon BlockInfo_____________________________"
+    std::cout << "\n_________________________PutSyncCommon "
+                 "BlockInfo_____________________________"
               << std::endl;
     std::cout << "Julea Writer " << m_WriterRank << " Namespace: " << m_Name
               << std::endl;
@@ -106,7 +107,8 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
 template <class T>
 void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 {
-    std::cout << "\n___________________________PutSyncCommon T__________________________"
+    std::cout << "\n___________________________PutSyncCommon "
+                 "T__________________________"
               << std::endl;
     std::cout << "Julea Writer " << m_WriterRank << " Namespace: " << m_Name
               << std::endl;
@@ -131,7 +133,8 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 template <class T>
 void JuleaKVWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
 {
-    std::cout << "\n___________________________PutDeferred T____________________________"
+    std::cout << "\n___________________________PutDeferred "
+                 "T____________________________"
               << std::endl;
     std::cout << "data[0]: " << data[0] << std::endl;
     std::cout << "data[1]: " << data[1] << std::endl;
@@ -167,7 +170,8 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
 {
     std::cout << "\n______________PerformPutCommon T_____________________"
               << std::endl;
-    std::cout << "BlockInfo.size = " << variable.m_BlocksInfo.size() << std::endl;
+    std::cout << "BlockInfo.size = " << variable.m_BlocksInfo.size()
+              << std::endl;
     for (size_t i = 0; i < variable.m_BlocksInfo.size(); ++i)
     {
         // std::cout

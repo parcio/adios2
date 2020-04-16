@@ -330,6 +330,7 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
 
     memcpy(&tmpShapeBuffer, tmpBuffer, shapeLen);
     tmpBuffer += shapeLen;
+
     if (shapeSize > 0)
     {
         Dims tmpShape(tmpShapeBuffer, tmpShapeBuffer + shapeSize);
@@ -345,6 +346,7 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
 
     memcpy(&tmpStartBuffer, tmpBuffer, startLen);
     tmpBuffer += startLen;
+
     if (startSize > 0)
     {
         Dims tmpStart(tmpStartBuffer, tmpStartBuffer + startSize);
@@ -448,53 +450,65 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
     // std::cout << "tmpType: " << tmpType << std::endl;
 
     /** shape */
-    std::cout << "shapeSize: " << shapeSize << std::endl;
     memcpy(&shapeSize, tmpBuffer, sizeof(size_t));
     std::cout << "shapeSize: " << shapeSize << std::endl;
-    std::cout << "shapeSize: " << &shapeSize << std::endl;
-    // memcpy(&shapeSize, buffer, sizeof(size_t)); //TODO: only to test
-    // std::cout << "shapeSize: " << shapeSize << std::endl;
-    // std::cout << "shapeSize: " << &shapeSize << std::endl;
-    tmpBuffer += sizeof(size_t);
-    shapeLen = sizeof(size_t) * shapeSize;
 
-    // size_t tmpShapeBuffer[shapeSize];
-    size_t tmpShapeBuffer[0];
+    std::cout << "tmpBuffer1: " << (void*) tmpBuffer << std::endl;
+    tmpBuffer += sizeof(size_t);
+    std::cout << "tmpBuffer: " << (void*) tmpBuffer << std::endl;
+
+    shapeLen = sizeof(size_t) * shapeSize;
+    size_t tmpShapeBuffer[shapeSize];
+    // size_t tmpShapeBuffer[0];
 
     memcpy(&tmpShapeBuffer, tmpBuffer, shapeLen);
     tmpBuffer += shapeLen;
+    std::cout << "tmpBuffer: " << (void*) tmpBuffer << std::endl;
     if (shapeSize > 0)
     {
-        Dims tmpShape(tmpShapeBuffer, tmpShapeBuffer + shapeSize);
+        // Dims tmpShape(tmpShapeBuffer, tmpShapeBuffer + shapeSize);
         // info.Shape = tmpShape;
     }
 
     /** start */
     memcpy(&startSize, tmpBuffer, sizeof(size_t));
+    std::cout << "startSize: " << startSize << std::endl;
+
     tmpBuffer += sizeof(size_t);
-    size_t tmpStartBuffer[startSize];
-    startLen = sizeof(size_t) * startSize;
+    std::cout << "tmpBuffer: " << (void*) tmpBuffer << std::endl;
+
+    // startLen = sizeof(size_t) * startSize;
+    startLen = sizeof(size_t) * 0;
+
+    // size_t tmpStartBuffer[startSize];
+    size_t tmpStartBuffer[0];
 
     memcpy(&tmpStartBuffer, tmpBuffer, startLen);
     tmpBuffer += startLen;
+    std::cout << "tmpBuffer5: " << (void*) tmpBuffer << std::endl;
     if (startSize > 0)
     {
-        Dims tmpStart(tmpStartBuffer, tmpStartBuffer + startSize);
-        info.Start = tmpStart;
+        // Dims tmpStart(tmpStartBuffer, tmpStartBuffer + startSize);
+        // info.Start = tmpStart;
     }
 
     /** count */
     memcpy(&countSize, tmpBuffer, sizeof(size_t)); // count
+    std::cout << "countSize" << countSize << std::endl;
     tmpBuffer += sizeof(size_t);
+    std::cout << "tmpBuffer: " << (void*) tmpBuffer << std::endl;
+
+    countSize = 1;
     size_t tmpCountBuffer[countSize];
     countLen = sizeof(size_t) * countSize;
 
     memcpy(&tmpCountBuffer, tmpBuffer, countLen);
     tmpBuffer += countLen;
+    std::cout << "tmpBuffer: " << (void*) tmpBuffer << std::endl;
     if (countSize > 0)
     {
-        Dims tmpCount(tmpCountBuffer, tmpCountBuffer + countSize);
-        info.Count = tmpCount;
+        // Dims tmpCount(tmpCountBuffer, tmpCountBuffer + countSize);
+        // info.Count = tmpCount;
         // std::cout << "count: " << count->front() <<std::endl;
     }
 
