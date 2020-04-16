@@ -178,7 +178,8 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     // uint numberVectors = 6; //TODO: changed -> now without type!
     uint numberVectors = 5;
     // StepsStart + StepsCount + BlockID + currentStep + blockNumber
-    uint numberVariables = 5;
+    // uint numberVariables = 5; //TODO changed now without currentStep and blockNumber
+    uint numberVariables = 3;
     // ReadAsJoined + ReadAsLocalValue + RandomAccess + SingleValue
     uint numberBools = 4;
 
@@ -205,9 +206,9 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     /** --- shape ---*/
     memcpy(buffer, &shapeSize, sizeof(size_t));
     std::cout << "shapeSize: " << shapeSize << std::endl;
-        std::cout << "buffer: " << (void*) buffer << std::endl;
+    std::cout << "buffer: " << (void *)buffer << std::endl;
     buffer += sizeof(size_t);
-        std::cout << "buffer: " << (void*) buffer << std::endl;
+    std::cout << "buffer: " << (void *)buffer << std::endl;
 
     size_t shapeBuffer[shapeSize];
     for (uint i = 0; i < shapeSize; i++)
@@ -217,7 +218,7 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     }
     memcpy(buffer, shapeBuffer, shapeLen);
     buffer += shapeLen;
-        std::cout << "buffer: " << (void*) buffer << std::endl;
+    std::cout << "buffer: " << (void *)buffer << std::endl;
 
     std::cout << "shapeLen:" << shapeLen << std::endl;
     // std::cout << "var: shape.data: " << variable.m_Shape.data() << std::endl;
@@ -227,7 +228,7 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     /** ---start --- */
     memcpy(buffer, &startSize, sizeof(size_t));
     buffer += sizeof(size_t);
-        std::cout << "buffer: " << (void*) buffer << std::endl;
+    std::cout << "buffer: " << (void *)buffer << std::endl;
 
     size_t startBuffer[startSize];
     for (uint i = 0; i < startSize; i++)
@@ -238,14 +239,12 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
 
     memcpy(buffer, startBuffer, startLen);
     buffer += startLen;
-        std::cout << "buffer: " << (void*) buffer << std::endl;
-
+    std::cout << "buffer: " << (void *)buffer << std::endl;
 
     /** --- count --- */
     memcpy(buffer, &countSize, sizeof(size_t));
     buffer += sizeof(size_t);
-        std::cout << "buffer: " << (void*) buffer << std::endl;
-
+    std::cout << "buffer: " << (void *)buffer << std::endl;
 
     size_t countBuffer[countSize];
     for (uint i = 0; i < countSize; i++)
@@ -255,8 +254,7 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     }
     memcpy(buffer, countBuffer, countLen);
     buffer += countLen;
-        std::cout << "buffer: " << (void*) buffer << std::endl;
-
+    std::cout << "buffer: " << (void *)buffer << std::endl;
 
     /** ---memorystart --- */
     memcpy(buffer, &memoryStartSize, sizeof(size_t));
@@ -300,11 +298,11 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     memcpy(buffer, &blockID, sizeof(size_t)); // blockID
     buffer += sizeof(size_t);
 
-    memcpy(buffer, &currentStep, sizeof(size_t)); // currentStep
-    buffer += sizeof(size_t);
+    // memcpy(buffer, &currentStep, sizeof(size_t)); // currentStep
+    // buffer += sizeof(size_t);
 
-    memcpy(buffer, &blockNumber, sizeof(size_t)); // blockNumber
-    buffer += sizeof(size_t);
+    // memcpy(buffer, &blockNumber, sizeof(size_t)); // blockNumber
+    // buffer += sizeof(size_t);
 
     memcpy(buffer, &isReadAsJoined, sizeof(bool)); // isReadAsJoined
     buffer += sizeof(bool);
@@ -320,7 +318,7 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
 
     // rewind buffer
     buffer -= len - sizeof(bool);
-    return (gpointer) buffer;
+    return (gpointer)buffer;
 }
 
 template <class T>

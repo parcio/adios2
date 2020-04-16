@@ -423,8 +423,9 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
     size_t memoryStartLen = 0;
     size_t memoryCountLen = 0;
 
-    size_t minLen = 0;
-    size_t maxLen = 0;
+    std::cout << "sizeof (T) " << sizeof(T) << std::endl;
+    size_t minLen = sizeof(T);
+    size_t maxLen = sizeof(T);
 
     size_t stepsStart = 0;
     size_t stepsCount = 0;
@@ -453,9 +454,9 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
     memcpy(&shapeSize, tmpBuffer, sizeof(size_t));
     std::cout << "shapeSize: " << shapeSize << std::endl;
 
-    std::cout << "tmpBuffer1: " << (void*) tmpBuffer << std::endl;
+    // std::cout << "tmpBuffer1: " << (void*) tmpBuffer << std::endl;
     tmpBuffer += sizeof(size_t);
-    std::cout << "tmpBuffer: " << (void*) tmpBuffer << std::endl;
+    // std::cout << "tmpBuffer: " << (void*) tmpBuffer << std::endl;
 
     shapeLen = sizeof(size_t) * shapeSize;
     size_t tmpShapeBuffer[shapeSize];
@@ -463,11 +464,11 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
 
     memcpy(&tmpShapeBuffer, tmpBuffer, shapeLen);
     tmpBuffer += shapeLen;
-    std::cout << "tmpBuffer: " << (void*) tmpBuffer << std::endl;
+    // std::cout << "tmpBuffer: " << (void*) tmpBuffer << std::endl;
     if (shapeSize > 0)
     {
-        // Dims tmpShape(tmpShapeBuffer, tmpShapeBuffer + shapeSize);
-        // info.Shape = tmpShape;
+        Dims tmpShape(tmpShapeBuffer, tmpShapeBuffer + shapeSize);
+        info.Shape = tmpShape;
     }
 
     /** start */
@@ -475,46 +476,132 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
     std::cout << "startSize: " << startSize << std::endl;
 
     tmpBuffer += sizeof(size_t);
-    std::cout << "tmpBuffer: " << (void*) tmpBuffer << std::endl;
+    // std::cout << "tmpBuffer: " << (void*) tmpBuffer << std::endl;
 
     // startLen = sizeof(size_t) * startSize;
     startLen = sizeof(size_t) * 0;
 
-    // size_t tmpStartBuffer[startSize];
-    size_t tmpStartBuffer[0];
+    size_t tmpStartBuffer[startSize];
+    // size_t tmpStartBuffer[0];
 
     memcpy(&tmpStartBuffer, tmpBuffer, startLen);
     tmpBuffer += startLen;
-    std::cout << "tmpBuffer5: " << (void*) tmpBuffer << std::endl;
+    // std::cout << "tmpBuffer5: " << (void*) tmpBuffer << std::endl;
     if (startSize > 0)
     {
-        // Dims tmpStart(tmpStartBuffer, tmpStartBuffer + startSize);
-        // info.Start = tmpStart;
+        Dims tmpStart(tmpStartBuffer, tmpStartBuffer + startSize);
+        info.Start = tmpStart;
     }
 
     /** count */
     memcpy(&countSize, tmpBuffer, sizeof(size_t)); // count
-    std::cout << "countSize" << countSize << std::endl;
+    std::cout << "countSize: " << countSize << std::endl;
     tmpBuffer += sizeof(size_t);
-    std::cout << "tmpBuffer: " << (void*) tmpBuffer << std::endl;
+    // std::cout << "tmpBuffer: " << (void*) tmpBuffer << std::endl;
 
-    countSize = 1;
+    // countSize = 1;
     size_t tmpCountBuffer[countSize];
     countLen = sizeof(size_t) * countSize;
 
     memcpy(&tmpCountBuffer, tmpBuffer, countLen);
     tmpBuffer += countLen;
-    std::cout << "tmpBuffer: " << (void*) tmpBuffer << std::endl;
+    // std::cout << "tmpBuffer: " << (void*) tmpBuffer << std::endl;
     if (countSize > 0)
     {
-        // Dims tmpCount(tmpCountBuffer, tmpCountBuffer + countSize);
-        // info.Count = tmpCount;
-        // std::cout << "count: " << count->front() <<std::endl;
+        Dims tmpCount(tmpCountBuffer, tmpCountBuffer + countSize);
+        info.Count = tmpCount;
+        std::cout << "count: " << info.Count.front() << std::endl;
     }
 
-    std::cout << "size: m_BlocksInfo" << variable.m_BlocksInfo.size()
+    /** ---memorystart --- */
+    memcpy(&memoryStartSize, tmpBuffer, sizeof(size_t)); // count
+    std::cout << "memoryStartSize: " << memoryStartSize << std::endl;
+    tmpBuffer += sizeof(size_t);
+
+    size_t tmpMemoryStartBuffer[memoryStartSize];
+    memoryStartLen = sizeof(size_t) * memoryStartSize;
+
+    memcpy(&tmpMemoryStartBuffer, tmpBuffer, memoryStartLen);
+    tmpBuffer += memoryStartLen;
+
+    if (countSize > 0)
+    {
+        Dims tmpMemoryStart(tmpMemoryStartBuffer,
+                            tmpMemoryStartBuffer + memoryStartLen);
+        info.MemoryStart = tmpMemoryStart;
+    }
+
+    /** ---memorycount --- */
+    memcpy(&memoryCountSize, tmpBuffer, sizeof(size_t)); // count
+    std::cout << "memoryCountSize: " << memoryCountSize << std::endl;
+    tmpBuffer += sizeof(size_t);
+
+    size_t tmpMemoryCountBuffer[memoryCountSize];
+    memoryCountLen = sizeof(size_t) * memoryCountSize;
+
+    memcpy(&tmpMemoryCountBuffer, tmpBuffer, memoryCountLen);
+    tmpBuffer += memoryCountLen;
+
+    if (countSize > 0)
+    {
+        Dims tmpMemoryCount(tmpMemoryCountBuffer,
+                            tmpMemoryCountBuffer + memoryCountLen);
+        info.MemoryCount = tmpMemoryCount;
+    }
+
+    /** no more vectors from here on */
+
+    memcpy(&info.Min, tmpBuffer, minLen); // Min
+    std::cout << "info.Min: " << info.Min << std::endl;
+    tmpBuffer += sizeof(minLen);
+
+    memcpy(&info.Max, tmpBuffer, maxLen); // Max
+    std::cout << "info.Max: " << info.Max << std::endl;
+    tmpBuffer += sizeof(maxLen);
+
+    memcpy(&info.StepsStart, tmpBuffer, sizeof(size_t)); // StepsStart
+    std::cout << "info.StepsStart: " << info.StepsStart << std::endl;
+    tmpBuffer += sizeof(size_t);
+
+    memcpy(&info.StepsCount, tmpBuffer, sizeof(size_t)); // StepsCount
+    std::cout << "info.StepsCount: " << info.StepsCount << std::endl;
+    tmpBuffer += sizeof(size_t);
+
+    memcpy(&info.BlockID, tmpBuffer, sizeof(size_t)); // BlockID
+    std::cout << "info.BlockID: " << info.BlockID << std::endl;
+    tmpBuffer += sizeof(size_t);
+
+    //TODO: currentStep and blocknumer not necessary to read. already known.
+
+    memcpy(&variable.m_ReadAsJoined, tmpBuffer, sizeof(bool)); // isReadAsJoined
+    std::cout << "variable.m_ReadAsJoined: " << variable.m_ReadAsJoined << std::endl;
+    tmpBuffer += sizeof(bool);
+
+    memcpy(&variable.m_ReadAsLocalValue, tmpBuffer, sizeof(bool)); // isReadAsLocalValue
+    std::cout << "variable.m_ReadAsLocalValue: " << variable.m_ReadAsLocalValue << std::endl;
+    tmpBuffer += sizeof(bool);
+
+    memcpy(&variable.m_RandomAccess, tmpBuffer, sizeof(bool)); // isRandomAccess
+    std::cout << "variable.m_RandomAccess: " << variable.m_RandomAccess << std::endl;
+    tmpBuffer += sizeof(bool);
+
+    memcpy(&info.IsValue, tmpBuffer, sizeof(bool)); // isValue
+    std::cout << "info.IsValue: " << info.IsValue << std::endl;
+    tmpBuffer += sizeof(bool);
+
+    std::cout << "size: m_BlocksInfo " << variable.m_BlocksInfo.size()
               << std::endl;
-    // variable.m_BlocksInfo[block](info);
+    std::cout << "block: " << block << std::endl;
+
+    // TODO: check if this works in all cases and what to do in the else case
+    /** -1 for 0 index of block, -1 for not yet in there */
+    if ((variable.m_BlocksInfo.size() - 2) == block)
+    {
+        std::cout << "Adding blockinfo of block: " << block
+                  << " to BlocksInfo of size: " << variable.m_BlocksInfo.size()
+                  << std::endl;
+        variable.m_BlocksInfo.push_back(info);
+    }
 }
 
 void GetAdiosTypeString(int type, std::string *typeString)
