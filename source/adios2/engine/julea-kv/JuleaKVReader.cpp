@@ -373,7 +373,7 @@ void JuleaKVReader::InitVariables()
             std::string type;
             guint32 buffer_len;
             gpointer md_buffer = nullptr;
-            gpointer blocks = nullptr;
+            size_t* blocks = nullptr;
             size_t numberSteps = 0;
 
             std::string varName(bson_iter_key(&b_iter));
@@ -384,7 +384,7 @@ void JuleaKVReader::InitVariables()
             std::cout << "buffer_len = " << buffer_len << std::endl;
 
             DeserializeVariableMetadata(md_buffer, &type, &shape, &start,
-                                        &count, &constantDims, blocks,
+                                        &count, &constantDims, &blocks,
                                         &numberSteps);
             // std::cout << "shape size = " << shape.size() << std::endl;
             // std::cout << "start size = " << start.size() << std::endl;
@@ -395,14 +395,8 @@ void JuleaKVReader::InitVariables()
             std::cout << "type  = " << type << std::endl;
             std::cout << "numberSteps = " << numberSteps << std::endl;
 
-            //FIXME convert array?
-            // char tmpBlocks = (char*) blocks;
-            // size_t tmpBlocks[numberSteps];
-            // tmpBlocks = (size_t *)blocks;
-            // std::cout << "block[0]" << blocks[0] << std::endl;
-            // std::cout << "block[0]" << tmpBlocks[0] << std::endl;
-            // std::cout << "block[1]" << tmpBlocks[1] << std::endl;
-
+            std::cout << "block[0]" << blocks[0] << std::endl;
+            std::cout << "block[1]" << blocks[1] << std::endl;
             // m_IO.DefineVariable<double>("test", shape, start, count,
             //                             constantDims);
 

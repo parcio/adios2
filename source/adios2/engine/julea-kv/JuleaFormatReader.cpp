@@ -129,7 +129,7 @@ void DefineVariableInInitNew(core::IO *io, const std::string varName,
 
 void DeserializeVariableMetadata(gpointer buffer, std::string *type,
                                  Dims *shape, Dims *start, Dims *count,
-                                 bool *constantDims, gpointer blocks,
+                                 bool *constantDims, size_t **blocks,
                                  size_t *numberSteps)
 {
     std::cout << "------ DeserializeVariableMetadata ----------" << std::endl;
@@ -227,7 +227,7 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
 
     std::cout << "block[0]" << tmpBlocks[0] << std::endl;
     std::cout << "block[1]" << tmpBlocks[1] << std::endl;
-    blocks = tmpBlocks;
+    *blocks = tmpBlocks;
     // (char*) blocks=tmpBlocks;
 
     // buffer += sizeof(size_t);
