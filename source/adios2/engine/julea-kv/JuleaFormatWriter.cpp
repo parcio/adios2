@@ -48,24 +48,9 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     size_t typeLen = sizeof(variable.m_Type.c_str());
     std::cout << "typeLen: " << typeLen << std::endl;
 
-    // FIXME: try shapesize+1
-    // why does this not change the len? should there be a difference when
-    // shapesize=0? etc size_t shapeLen = (shapeSize +1) * sizeof(Dims[0]);
-    // std::cout << "shapeLen: " << shapeLen << std::endl;
-    // size_t startLen = (startSize) * sizeof(Dims[0]); //TODO +1?!
-    // std::cout << "startLen: " << startLen << std::endl;
-    // size_t countLen = (countSize+1) * sizeof(Dims[0]);
-    // //FIXME: sizeof(Dims[0]) = 0! is this supposed to be like this?!
-    // std::cout << "sizeof(Dims[0]): " << sizeof(Dims[0]) << std::endl;
-
     size_t shapeLen = shapeSize * sizeof(size_t);
     size_t startLen = startSize * sizeof(size_t);
     size_t countLen = countSize * sizeof(size_t);
-
-    // TODO: original
-    // size_t shapeLen = shapeSize  * sizeof(Dims[0]);
-    // size_t startLen = startSize * sizeof(Dims[0]);
-    // size_t countLen = countSize * sizeof(Dims[0]);
     size_t blocksLen = numberSteps * sizeof(size_t);
 
     uint numberVectors = 5; // type + shape + start + count + blocks
