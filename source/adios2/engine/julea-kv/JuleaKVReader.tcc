@@ -87,6 +87,10 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
         g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
     std::cout << "stepBlockID: " << stepBlockID << std::endl;
 
+    //TODO: check if variable.m_StepsStart set correctly!
+        variable.SetBlockInfo(data, variable.m_StepsStart, variable.m_StepsCount );
+
+
     GetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
                               &buffer_len, stepBlockID);
     std::cout << "buffer_len = " << buffer_len << std::endl;
@@ -106,6 +110,7 @@ void JuleaKVReader::GetDeferredCommon(Variable<T> &variable, T *data)
         std::cout << "Julea Reader " << m_ReaderRank << "     GetDeferred("
                   << variable.m_Name << ")\n";
     }
+    variable.SetBlockInfo(data, variable.m_StepsStart, variable.m_StepsCount );
     // m_NeedPerformGets = true;
 
     // returns immediately without populating data

@@ -233,24 +233,24 @@ void JuleaKVReader::PerformGets()
     for (const std::string &variableName : m_DeferredVariables)
     {
 
-        std::cout << "------DEBUG ----- test io.GetAvailableVariables"
-                  << std::endl;
-        std::map<std::string, Params> varMap = m_IO.GetAvailableVariables();
+        // std::cout << "------DEBUG ----- test io.GetAvailableVariables"
+        //           << std::endl;
+        // std::map<std::string, Params> varMap = m_IO.GetAvailableVariables();
 
-        std::cout << "empty? : " << varMap.empty() << std::endl;
-        std::cout << "mapsize? : " << varMap.size() << std::endl;
-        for (std::map<std::string, Params>::iterator it = varMap.begin();
-             it != varMap.end(); ++it)
-        {
+        // std::cout << "empty? : " << varMap.empty() << std::endl;
+        // std::cout << "mapsize? : " << varMap.size() << std::endl;
+        // for (std::map<std::string, Params>::iterator it = varMap.begin();
+        //      it != varMap.end(); ++it)
+        // {
 
-            std::cout << "------DEBUG 1" << std::endl;
-            std::cout << "first: " << it->first << '\n';
-            // std::cout << "first: " << it->first << " => " <<
-            // it->second.begin()
-            // << '\n';
-        }
-        // std::cout << "----- for loop m_DeferredVariables " << std::endl;
-        // std::cout << "variableName = " << variableName << std::endl;
+        //     std::cout << "------DEBUG 1" << std::endl;
+        //     std::cout << "first: " << it->first << '\n';
+        //     // std::cout << "first: " << it->first << " => " <<
+        //     // it->second.begin()
+        //     // << '\n';
+        // }
+        std::cout << "----- for loop m_DeferredVariables " << std::endl;
+        std::cout << "variableName = " << variableName << std::endl;
 
         const std::string type = m_IO.InquireVariableType(variableName);
         std::cout << "type = " << type << std::endl;
@@ -266,8 +266,10 @@ void JuleaKVReader::PerformGets()
 #define declare_type(T)                                                        \
     else if (type == helper::GetType<T>())                                     \
     {                                                                          \
+        std::cout << "DEBUG: type " << type << std::endl;\
         Variable<T> &variable = FindVariable<T>(                               \
             variableName, "in call to PerformGets, EndStep or Close");         \
+        std::cout << "found variable name: " << variable.m_Name << std::endl;\
         for (auto &blockInfo : variable.m_BlocksInfo)                          \
         {                                                                      \
             std::cout << "-------------------for loop reached " << std::endl;  \

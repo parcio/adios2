@@ -159,11 +159,18 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     size_t memoryStartSize = variable.m_MemoryStart.size();
     size_t memoryCountSize = variable.m_MemoryCount.size();
 
-    size_t shapeLen = shapeSize * sizeof(Dims[0]);
-    size_t startLen = startSize * sizeof(Dims[0]);
-    size_t countLen = countSize * sizeof(Dims[0]);
-    size_t memoryStartLen = memoryStartSize * sizeof(Dims[0]);
-    size_t memoryCountLen = memoryCountSize * sizeof(Dims[0]);
+    // size_t shapeLen = shapeSize * sizeof(Dims[0]);
+    // size_t startLen = startSize * sizeof(Dims[0]);
+    // size_t countLen = countSize * sizeof(Dims[0]);
+    // size_t memoryStartLen = memoryStartSize * sizeof(Dims[0]);
+    // size_t memoryCountLen = memoryCountSize * sizeof(Dims[0]);
+
+        size_t shapeLen = shapeSize * sizeof(size_t);
+    size_t startLen = startSize * sizeof(size_t);
+    size_t countLen = countSize * sizeof(size_t);
+        size_t memoryStartLen = memoryStartSize * sizeof(size_t);
+    size_t memoryCountLen = memoryCountSize * sizeof(size_t);
+
 
     size_t minLen = sizeof(variable.m_Min);
     size_t maxLen = sizeof(variable.m_Max);
@@ -186,14 +193,19 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     // std::cout << "size of T: " << sizeof(T) << std::endl;
 
     // type + shape + start + count + memoryStart + memoryCount
-    uint numberVectors = 6;
+    // uint numberVectors = 6; //TODO: changed -> now without type!
+    uint numberVectors = 5;
     // StepsStart + StepsCount + BlockID + currentStep + blockNumber
     uint numberVariables = 5;
     // ReadAsJoined + ReadAsLocalValue + RandomAccess + SingleValue
     uint numberBools = 4;
 
     // calculating buffer size
-    len = numberVectors * sizeof(size_t) + typeLen + shapeLen + startLen +
+    // len = numberVectors * sizeof(size_t) + typeLen + shapeLen + startLen +
+    //       countLen + memoryStartLen + memoryCountLen +
+    //       numberVariables * sizeof(size_t) + numberBools * sizeof(bool) +
+    //       minLen + maxLen;
+    len = numberVectors * sizeof(size_t)  + shapeLen + startLen +
           countLen + memoryStartLen + memoryCountLen +
           numberVariables * sizeof(size_t) + numberBools * sizeof(bool) +
           minLen + maxLen;
@@ -204,10 +216,10 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
 
     /** allocate memory for variable holding the length of the vector +
     memory for the vector data itself */
-    memcpy(buffer, &typeLen, sizeof(size_t)); // type
-    buffer += sizeof(size_t);
-    memcpy(buffer, type, typeLen);
-    buffer += typeLen;
+    // memcpy(buffer, &typeLen, sizeof(size_t)); // type
+    // buffer += sizeof(size_t);
+    // memcpy(buffer, type, typeLen);
+    // buffer += typeLen;
 
     memcpy(buffer, &shapeSize, sizeof(size_t)); // shape
     buffer += sizeof(size_t);
