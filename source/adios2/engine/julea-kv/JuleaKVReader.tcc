@@ -97,9 +97,11 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
     DeserializeBlockMetadata(variable, md_buffer, m_CurrentBlockID);
     size_t numberElements =
         helper::GetTotalSize(variable.m_BlocksInfo[m_CurrentBlockID].Count);
-    dataSize = numberElements * variable.m_ElementSize;
-    GetVariableDataFromJulea(variable, data, nameSpace, dataSize, m_CurrentStep,
+    // dataSize = numberElements * variable.m_ElementSize;
+    GetVariableDataFromJulea(variable, data, nameSpace, numberElements, m_CurrentStep,
                              m_CurrentBlockID);
+    std::cout << "data: " << data[0] << std::endl;
+    std::cout << "data: " << data[1] << std::endl;
 }
 
 template <class T>
