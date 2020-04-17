@@ -35,6 +35,8 @@ void JuleaKVWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
 {
     std::cout << "------------------ PutSyncToJulea --------------------"
               << std::endl;
+    std::cout << " --------------------- m_PutBlockID: " << m_PutBlockID << std::endl;
+    std::cout << " --------------------- m_CurrentBlockID: " << m_CurrentBlockID << std::endl;
     guint32 blockMD_len = 0;
     guint32 varMD_len = 0;
     gpointer md_buffer = NULL;
@@ -72,6 +74,9 @@ void JuleaKVWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
                             stepBlockID);
     PutVariableDataToJulea(variable, data, m_Name, m_CurrentStep,
                            m_CurrentBlockID);
+
+    m_PutBlockID ++;
+    std::cout << " --------------------- BlockID is now: " << m_PutBlockID << std::endl;
 
     bson_destroy(bsonMetadata);
 }

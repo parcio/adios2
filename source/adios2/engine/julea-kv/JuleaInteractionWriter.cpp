@@ -205,7 +205,7 @@ void PutVariableDataToJulea(Variable<T> &variable, const T *data,
                             const std::string nameSpace, size_t currStep,
                             size_t block)
 {
-        std::cout << "-- PutVariableDataToJulea ----- " << std::endl;
+    std::cout << "-- PutVariableDataToJulea ----- " << std::endl;
     guint64 bytesWritten = 0;
     auto numberElements = adios2::helper::GetTotalSize(variable.m_Count);
     auto dataSize = variable.m_ElementSize * numberElements;

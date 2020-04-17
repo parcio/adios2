@@ -95,6 +95,9 @@ private:
 
     size_t m_CurrentBlockID = 0; // starts at 0
 
+    //FIXME: check whether this is different from currentblockid. probably it is
+    size_t m_PutBlockID = 0;
+
     /** Parameter to flush transports at every number of steps, to be used at
      * EndStep */
     size_t m_FlushStepsCount = 1;

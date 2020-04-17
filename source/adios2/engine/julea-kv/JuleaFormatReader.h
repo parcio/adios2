@@ -33,6 +33,25 @@ void DefineVariableInInitNew(core::IO *io, const std::string varName,
                              std::string type, Dims shape, Dims start,
                              Dims count, bool constantDims, size_t *blocks,
                              size_t numberSteps);
+/**
+ * Initializes a block inside variable.m_BlocksInfo
+ * @param variable input
+ * @param data user data pointer
+ * @return a reference inside variable.m_BlocksInfo (invalidated if called
+ * twice)
+ */
+template <class T>
+typename core::Variable<T>::Info &
+InitVariableBlockInfo(core::Variable<T> &variable, T *data);
+
+/**
+ * Sets read block information from the available metadata information
+ * @param variable
+ * @param blockInfo
+ */
+template <class T>
+void SetVariableBlockInfo(core::Variable<T> &variable,
+                          typename core::Variable<T>::Info &blockInfo);
 
 // void DefineAttributeInInit(core::IO *io, const std::string varName, int type,
 // bool IsSingleValue);
@@ -83,6 +102,10 @@ void GetAdiosTypeString(int type, std::string *typeString);
 #define variable_template_instantiation(T)                                     \
     extern template void DeserializeBlockMetadata(                             \
         Variable<T> &variable, gpointer buffer, size_t block);                 \
+    extern template typename core::Variable<T>::Info &InitVariableBlockInfo(   \
+        core::Variable<T> &variable, T *data);                                 \
+    extern template void SetVariableBlockInfo(                                 \
+        core::Variable<T> &variable, typename core::Variable<T>::Info &info);  \
     extern template void ParseVariableFromBSON(                                \
         Variable<T> &variable, bson_t *bsonMetadata,                           \
         const std::string nameSpace, long unsigned int *dataSize);             \

@@ -242,6 +242,10 @@ private:
     template <class T>
     void ReadVariableBlocks(Variable<T> &variable);
 
+    //  template <class T>
+    // void SetVariableBlockInfo(Variable<T> &variable,typename
+    // core::Variable<T>::Info &blockInfo);
+
     template <class T>
     void GetSyncCommon(Variable<T> &variable, T *data);
 
@@ -265,9 +269,6 @@ private:
      * @param variable
      * @param blockInfo
      */
-    template <class T>
-    void SetVariableBlockInfo(core::Variable<T> &variable,
-                              typename core::Variable<T>::Info &blockInfo);
 
     template <class T>
     std::map<size_t, std::vector<typename core::Variable<T>::Info>>

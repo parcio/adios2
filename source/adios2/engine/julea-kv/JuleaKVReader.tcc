@@ -74,86 +74,48 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
               << std::endl;
     std::cout << "Julea Reader " << m_ReaderRank
               << " Variable name: " << variable.m_Name << std::endl;
-    /* all the additional metadata which is not used in InitVariables has to be
-     * read again */
-    // FIXME:
 
-    guint32 buffer_len;
-    gpointer md_buffer = nullptr;
+    if (variable.m_SingleValue)
+    {
+        // m_BP3Deserializer.GetValueFromMetadata(variable, data);
+        // return;
+    }
 
-    auto nameSpace = m_Name;
-    long unsigned int dataSize = 0;
-    auto stepBlockID =
-        g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
-    std::cout << "stepBlockID: " << stepBlockID << std::endl;
+    // guint32 buffer_len;
+    // gpointer md_buffer = nullptr;
 
-    // TODO: check if variable.m_StepsStart set correctly!
-    variable.SetBlockInfo(data, variable.m_StepsStart, variable.m_StepsCount);
-
-    GetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
-                              &buffer_len, stepBlockID);
-    std::cout << "buffer_len = " << buffer_len << std::endl;
-
-    DeserializeBlockMetadata(variable, md_buffer, m_CurrentBlockID);
-    size_t numberElements =
-        helper::GetTotalSize(variable.m_BlocksInfo[m_CurrentBlockID].Count);
-    dataSize = numberElements * variable.m_ElementSize;
-    GetVariableDataFromJulea(variable, data, nameSpace, dataSize, m_CurrentStep,
-                             m_CurrentBlockID);
-
-    std::cout << "data: " << data[0] << std::endl;
-    std::cout << "data: " << data[1] << std::endl;
-}
-
-template <class T>
-void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
-{
-
-    std::cout << "\n______________GetSync T_____________________" << std::endl;
-    std::cout << "Julea Reader " << m_ReaderRank
-              << " Reached Get Sync Common (T, T)" << std::endl;
-    std::cout << "Julea Reader " << m_ReaderRank << " Namespace: " << m_Name
-              << std::endl;
-    std::cout << "Julea Reader " << m_ReaderRank
-              << " Variable name: " << variable.m_Name << std::endl;
-    /* all the additional metadata which is not used in InitVariables has to be
-     * read again */
-    // FIXME:
-
-    guint32 buffer_len;
-    gpointer md_buffer = nullptr;
-
-    auto nameSpace = m_Name;
-    long unsigned int dataSize = 0;
-    auto stepBlockID =
-        g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
-    std::cout << "stepBlockID: " << stepBlockID << std::endl;
+    // auto nameSpace = m_Name;
+    // long unsigned int dataSize = 0;
+    // auto stepBlockID =
+    //     g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
+    // std::cout << "stepBlockID: " << stepBlockID << std::endl;
 
     // // TODO: check if variable.m_StepsStart set correctly!
-    // variable.SetBlockInfo(data, variable.m_StepsStart, variable.m_StepsCount);
+    // variable.SetBlockInfo(data, variable.m_StepsStart,
+    // variable.m_StepsCount);
 
-    GetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
-                              &buffer_len, stepBlockID);
-    std::cout << "buffer_len = " << buffer_len << std::endl;
+    // GetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
+    //                           &buffer_len, stepBlockID);
+    // std::cout << "buffer_len = " << buffer_len << std::endl;
 
-    DeserializeBlockMetadata(variable, md_buffer, m_CurrentBlockID);
-    size_t numberElements =
-        helper::GetTotalSize(variable.m_BlocksInfo[m_CurrentBlockID].Count);
+    // DeserializeBlockMetadata(variable, md_buffer, m_CurrentBlockID);
+    // size_t numberElements =
+    //     helper::GetTotalSize(variable.m_BlocksInfo[m_CurrentBlockID].Count);
     // dataSize = numberElements * variable.m_ElementSize;
-    T *data = variable.m_BlocksInfo[m_CurrentBlockID].Data;
-    GetVariableDataFromJulea(variable, data, nameSpace, numberElements, m_CurrentStep,
-                             m_CurrentBlockID);
-    // std::cout <<"data: " <<variable.m_Data[0] << std::endl;
-    //     std::cout << "data: " << data[0] << std::endl;
+    // GetVariableDataFromJulea(variable, data, nameSpace, dataSize,
+    // m_CurrentStep,
+    //                          m_CurrentBlockID);
+
+    // std::cout << "data: " << data[0] << std::endl;
     // std::cout << "data: " << data[1] << std::endl;
 
-    data = variable.m_BlocksInfo[m_CurrentBlockID].Data;
-    std::cout << "data: " << data[0] << std::endl;
-    std::cout << "data: " << data[1] << std::endl;
-    data = variable.m_Data;
-    std::cout << "data: " << data[0] << std::endl;
-    std::cout << "data: " << data[1] << std::endl;
-    // std::cout << "data: " << data[1] << std::endl;
+    // TODO: InitVariableBlockInfo -> store data pointer in BlockInfo
+    // SetVariableBlockInfo(variable,blockinfo)
+    typename Variable<T>::Info &blockInfo =
+        InitVariableBlockInfo(variable, data);
+    SetVariableBlockInfo(variable, blockInfo);
+    ReadVariableBlocks(variable);
+    variable.m_BlocksInfo.pop_back();
 }
 
 template <class T>
@@ -172,6 +134,60 @@ void JuleaKVReader::GetDeferredCommon(Variable<T> &variable, T *data)
     // returns immediately without populating data
     // m_BP4Deserializer.InitVariableBlockInfo(variable, data);  //TODO: needed?
     m_DeferredVariables.insert(variable.m_Name);
+}
+
+template <class T>
+void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
+{
+
+    std::cout << "\n__________ReadVariableBlocks_____________" << std::endl;
+
+    std::cout << "Julea Reader " << m_ReaderRank << " Namespace: " << m_Name
+              << std::endl;
+    std::cout << "Julea Reader " << m_ReaderRank
+              << " Variable name: " << variable.m_Name << std::endl;
+    /* all the additional metadata which is not used in InitVariables has to be
+     * read again */
+    // FIXME:
+
+    guint32 buffer_len;
+    gpointer md_buffer = nullptr;
+
+    auto nameSpace = m_Name;
+    long unsigned int dataSize = 0;
+    auto stepBlockID =
+        g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
+    std::cout << "stepBlockID: " << stepBlockID << std::endl;
+
+    // // TODO: check if variable.m_StepsStart set correctly!
+    // variable.SetBlockInfo(data, variable.m_StepsStart,
+    // variable.m_StepsCount);
+
+    GetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
+                              &buffer_len, stepBlockID);
+    std::cout << "buffer_len = " << buffer_len << std::endl;
+
+    DeserializeBlockMetadata(variable, md_buffer, m_CurrentBlockID);
+    std::cout << "finished DeserializeBlockMetadata" << std::endl;
+
+    //FIXME: m_CurrentBlockID
+    size_t numberElements =
+        helper::GetTotalSize(variable.m_BlocksInfo[0].Count);
+    dataSize = numberElements * variable.m_ElementSize;
+    T *data = variable.m_BlocksInfo[0].Data;
+    GetVariableDataFromJulea(variable, data, nameSpace, dataSize,
+                             m_CurrentStep, m_CurrentBlockID);
+    // std::cout <<"data: " <<variable.m_Data[0] << std::endl;
+        std::cout << "data: " << data[0] << std::endl;
+    std::cout << "data: " << data[1] << std::endl;
+
+    // data = variable.m_BlocksInfo[m_CurrentBlockID].Data;
+    // std::cout << "data: " << data[0] << std::endl;
+    // std::cout << "data: " << data[1] << std::endl;
+    // data = variable.m_Data;
+    // std::cout << "data: " << data[0] << std::endl;
+    // std::cout << "data: " << data[1] << std::endl;
+    // std::cout << "data: " << data[1] << std::endl;
 }
 
 template <class T>

@@ -128,9 +128,8 @@ void ReadVarMetadataFromJuleaKV(Variable<T> &variable,
 
 template <class T>
 void GetVariableDataFromJulea(Variable<T> &variable, T *data,
-                              const std::string nameSpace,
-                              size_t dataSize, size_t step,
-                              size_t block)
+                              const std::string nameSpace, size_t dataSize,
+                              size_t step, size_t block)
 {
     std::cout << "-- GetVariableDataFromJulea ----- " << std::endl;
     // std::cout << "-- Datasize = " << dataSize << std::endl;
@@ -139,7 +138,7 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
     const char *varName = variable.m_Name.c_str();
 
     std::string objName = "variableblocks";
-       auto stringDataObject =
+    auto stringDataObject =
         g_strdup_printf("%s_%s_%s", nameSpace.c_str(), variable.m_Name.c_str(),
                         objName.c_str());
     std::cout << "stringDataObject: " << stringDataObject << std::endl;
@@ -147,13 +146,11 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
     auto stepBlockID = g_strdup_printf("%lu_%lu", step, block);
     std::cout << "stepBlockID: " << stepBlockID << std::endl;
 
-
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
     auto dataObject = j_object_new(stringDataObject, stepBlockID);
 
-    // j_object_read(dataObject, tbuf, dataSize, 0, &bytesRead, batch);
     j_object_read(dataObject, data, dataSize, 0, &bytesRead, batch);
     // j_batch_execute(batch);
     g_assert_true(j_batch_execute(batch) == true);

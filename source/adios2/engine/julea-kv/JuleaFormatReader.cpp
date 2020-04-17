@@ -27,6 +27,93 @@ namespace core
 namespace engine
 {
 
+template <class T>
+void SetVariableBlockInfo(Variable<T> &variable,
+                          typename core::Variable<T>::Info &blockInfo)
+{
+    // FIXME: probably annoying complicated blockselection stuff to be done here
+}
+
+template <class T>
+typename core::Variable<T>::Info &
+InitVariableBlockInfo(core::Variable<T> &variable, T *data)
+{
+    const size_t stepsStart = variable.m_StepsStart;
+    const size_t stepsCount = variable.m_StepsCount;
+
+    // if (m_DebugMode)
+    // {
+    //     const auto &indices = variable.m_AvailableStepBlockIndexOffsets;
+    //     const size_t maxStep = indices.rbegin()->first;
+    //     if (stepsStart + 1 > maxStep)
+    //     {
+    //         throw std::invalid_argument(
+    //             "ERROR: steps start " + std::to_string(stepsStart) +
+    //             " from SetStepsSelection or BeginStep is larger than "
+    //             "the maximum available step " +
+    //             std::to_string(maxStep - 1) + " for variable " +
+    //             variable.m_Name + ", in call to Get\n");
+    //     }
+
+    //     auto itStep = std::next(indices.begin(), stepsStart);
+
+    //     for (size_t i = 0; i < stepsCount; ++i)
+    //     {
+    //         if (itStep == indices.end())
+    //         {
+    //             throw std::invalid_argument(
+    //                 "ERROR: offset " + std::to_string(i) +
+    //                 " from steps start " + std::to_string(stepsStart) +
+    //                 " in variable " + variable.m_Name +
+    //                 " is beyond the largest available step = " +
+    //                 std::to_string(maxStep - 1) +
+    //                 ", check Variable SetStepSelection argument stepsCount "
+    //                 "(random access), or "
+    //                 "number of BeginStep calls (streaming), in call to Get");
+    //         }
+    //         ++itStep;
+    //     }
+    // }
+
+    // if (variable.m_SelectionType == SelectionType::WriteBlock)
+    // {
+    //     const std::vector<typename core::Variable<T>::Info> blocksInfo =
+    //         BlocksInfo(variable, stepsStart);
+
+    //     if (m_DebugMode)
+    //     {
+    //         if (variable.m_BlockID >= blocksInfo.size())
+    //         {
+    //             throw std::invalid_argument(
+    //                 "ERROR: invalid blockID " +
+    //                 std::to_string(variable.m_BlockID) + " from steps start "
+    //                 + std::to_string(stepsStart) + " in variable " +
+    //                 variable.m_Name +
+    //                 ", check argument to Variable<T>::SetBlockID, in call "
+    //                 "to Get\n");
+    //         }
+    //     }
+
+    //     // switch to bounding box for global array
+    //     if (variable.m_ShapeID == ShapeID::GlobalArray)
+    //     {
+    //         const Dims &start = blocksInfo[variable.m_BlockID].Start;
+    //         const Dims &count = blocksInfo[variable.m_BlockID].Count;
+    //         // TODO check if we need to reverse dimensions
+    //         variable.SetSelection({start, count});
+    //     }
+    //     else if (variable.m_ShapeID == ShapeID::LocalArray)
+    //     {
+    //         // TODO keep Count for block updated
+    //         variable.m_Count = blocksInfo[variable.m_BlockID].Count;
+    //     }
+    // }
+
+    // create block info
+    // FIXME: only create once for every block!
+    return variable.SetBlockInfo(data, stepsStart, stepsCount);
+}
+
 // FIXME: some overflow sometimes!
 void DefineVariableInInitNew(core::IO *io, const std::string varName,
                              std::string stringType, Dims shape, Dims start,
@@ -404,7 +491,9 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
                               size_t block)
 {
     std::cout << "------ DeserializeBlockMetadata ----------" << std::endl;
-    typename Variable<T>::Info info;
+    //FIXME
+    // typename Variable<T>::Info info = variable.m_BlocksInfo[block];
+    typename Variable<T>::Info info = variable.m_BlocksInfo[0];
 
     char *tmpBuffer = (char *)buffer;
     // size_t typeLen = sizeof(variable.m_Type.c_str());
@@ -597,15 +686,22 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
               << std::endl;
     std::cout << "block: " << block << std::endl;
 
-    // TODO: check if this works in all cases and what to do in the else case
-    /** -1 for 0 index of block, -1 for not yet in there */
-    if ((variable.m_BlocksInfo.size() - 2) == block)
-    {
-        std::cout << "Adding blockinfo of block: " << block
-                  << " to BlocksInfo of size: " << variable.m_BlocksInfo.size()
-                  << std::endl;
-        variable.m_BlocksInfo.push_back(info);
-    }
+    // FIXME: check if this works in all cases and what to do in the else case
+    // not working if blocks are written synchronously
+    // is this check even necessary? how could there be more blocksInfo entries
+    // for one variable block?
+    // if (variable.m_BlocksInfo.size()  == block)
+    // {
+    //     // std::cout << "Adding blockinfo of block: " << block
+    //     //           << " to BlocksInfo of size: " << variable.m_BlocksInfo.size()
+    //     //           << std::endl;
+    //     // variable.m_BlocksInfo.push_back(info);
+    // }
+    // std::cout << "Adding blockinfo of block: " << block
+    //               << " to BlocksInfo of size: " << variable.m_BlocksInfo.size()
+    //               << std::endl;
+    //     variable.m_BlocksInfo.push_back(info);
+
 }
 
 void GetAdiosTypeString(int type, std::string *typeString)
@@ -1330,6 +1426,11 @@ void ParseVarTypeFromBSON<std::complex<double>>(
 #define variable_template_instantiation(T)                                     \
     template void DeserializeBlockMetadata(Variable<T> &variable,              \
                                            gpointer buffer, size_t block);     \
+    template void SetVariableBlockInfo(                                        \
+        core::Variable<T> &variable,                                           \
+        typename core::Variable<T>::Info &blockInfo);                          \
+    template typename core::Variable<T>::Info &InitVariableBlockInfo(          \
+        core::Variable<T> &variable, T *data);                                 \
     template void ParseVariableFromBSON(                                       \
         core::Variable<T> &, bson_t *bsonMetadata,                             \
         const std::string nameSpace, long unsigned int *dataSize);             \
