@@ -304,7 +304,7 @@ void read_simple(std::string engine, std::string fileName)
     size_t stepsstart = varV0.StepsStart();
     std::cout << "stepsstart: " << stepsstart << std::endl;
 
-    for (int step = 0; step < 1; step++)
+    for (int step = 0; step < 2; step++)
     {
         double value[2];
 
@@ -391,6 +391,7 @@ void read_selection(std::string engine, std::string fileName)
         for (auto &info : blocksInfo)
         {
             std::cout << "test number blocksinfo: i= " << i << std::endl;
+            std::cout << "info.BlockID = " << info.BlockID << std::endl;
             varV0.SetBlockSelection(info.BlockID);
             reader.Get<double>(varV0, dataSet[i], adios2::Mode::Deferred);
             ++i;
@@ -454,13 +455,13 @@ int main(int argc, char *argv[])
         // write_complex("julea-kv", "SimpleSteps.jv");
         // write_complex("bp3", "SimpleSteps.bp");
         write_simple("bp3", "SimpleSteps.bp");
-        // write_simple("julea-kv", "SimpleSteps.jv");
+        write_simple("julea-kv", "SimpleSteps.jv");
         // write_simple("hdf5", "SimpleSteps.h5");
         // write("julea-kv", "SimpleSteps.bp");
         // write();
         // read_simple("bp3", "SimpleSteps.bp");
-        read_simple("julea-kv", "SimpleSteps.jv");
-        // read_selection("bp3", "SimpleSteps.bp");
+        // read_simple("julea-kv", "SimpleSteps.jv");
+        read_selection("bp3", "SimpleSteps.bp");
         // read_selection("julea-kv", "SimpleSteps.jv");
     }
     catch (std::invalid_argument &e)
