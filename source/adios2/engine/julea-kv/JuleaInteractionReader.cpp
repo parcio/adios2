@@ -170,8 +170,8 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
 
     // j_object_read(dataObject, &tbuf, dataSize, 0, &bytesRead, batch);
     // j_object_read(dataObject, tbuf2, dataSize, 0, &bytesRead, batch);
-    j_object_read(dataObject, tbuf, dataSize, 0, &bytesRead, batch);
-    // j_object_read(dataObject, data, dataSize, 0, &bytesRead, batch);
+    // j_object_read(dataObject, tbuf, dataSize, 0, &bytesRead, batch);
+    j_object_read(dataObject, data, dataSize, 0, &bytesRead, batch);
     // j_batch_execute(batch);
     g_assert_true(j_batch_execute(batch) == true);
 

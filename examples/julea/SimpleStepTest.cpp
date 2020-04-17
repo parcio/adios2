@@ -285,54 +285,45 @@ void read_simple(std::string engine, std::string fileName)
 
     adios2::ADIOS adios(adios2::DebugON);
     adios2::IO io = adios.DeclareIO("Input");
-    // io.SetEngine("julea-kv");
     io.SetEngine(engine);
-    // io.SetEngine("bp3");
 
     // Open file. "w" means we overwrite any existing file on disk,
     // but Advance() will append steps to the same file.
     adios2::Engine reader = io.Open(fileName, adios2::Mode::Read);
-    // io.Open("JULEA-SimpleSteps.bp", adios2::Mode::Read);
-    // adios2::Engine writer = io.Open("JULEAlocalArray.bp",
-    // adios2::Mode::Append);
+
 
     adios2::Variable<double> varV0 = io.InquireVariable<double>("v0");
     adios2::Variable<double> varV1 = io.InquireVariable<double>("v0");
     adios2::Variable<double> varV2 = io.InquireVariable<double>("v0");
     adios2::Variable<double> varV3 = io.InquireVariable<double>("v0");
 
-    size_t steps = varV0.Steps();
 
+    size_t steps = varV0.Steps();
     std::cout << "SIMPLE_STEPS: steps: " << steps << std::endl;
 
     size_t stepsstart = varV0.StepsStart();
-
     std::cout << "stepsstart: " << stepsstart << std::endl;
 
     for (int step = 0; step < 1; step++)
     {
         double value[2];
 
-        reader.Get<double>(varV0, v0.data(), adios2::Mode::Sync);
-        reader.Get<double>(varV0, v1.data(), adios2::Mode::Sync);
-                std::cout << "v0[0]: " << v0[0] << " v0[1]: " << v0[1] << std::endl;
-        std::cout << "v1[0]: " << v1[0] << " v1[1]: " << v1[1] << std::endl;
-        // reader.Get<double>(varV0, v0.data(), adios2::Mode::Deferred); //error: no performgets or endstep!
         reader.BeginStep();
         std::cout << "Step: " << step << std::endl;
         reader.Get<double>(varV0, v0.data(), adios2::Mode::Sync);
-        reader.Get<double>(varV0, v1.data(), adios2::Mode::Sync);
-        reader.Get<double>(varV1, v2.data(), adios2::Mode::Deferred);
-        reader.Get<double>(varV1, v3.data(), adios2::Mode::Sync);
-        // reader.Get<double>(varV0, v0[0], adios2::Mode::Deferred);
+        reader.Get<double>(varV1, v1.data(), adios2::Mode::Sync);
+        reader.Get<double>(varV2, v2.data(), adios2::Mode::Sync);
+        reader.Get<double>(varV3, v3.data(), adios2::Mode::Sync);
+
         reader.EndStep();
 
-        std::cout << "step: " << step << std::endl;
+        std::cout << "----- step ---- " << step << std::endl;
         // std::cout << "v[0]: " << value[0] << " v[1]: " << value[1] << std::endl;
         std::cout << "v0[0]: " << v0[0] << " v0[1]: " << v0[1] << std::endl;
         std::cout << "v1[0]: " << v1[0] << " v1[1]: " << v1[1] << std::endl;
         std::cout << "v2[0]: " << v2[0] << " v2[1]: " << v2[1] << std::endl;
         std::cout << "v3[0]: " << v3[0] << " v3[1]: " << v3[1] << std::endl;
+
     }
 
     // varV0.SetStepSelection(adios2::Box<std::size_t>(0, 3));
@@ -468,8 +459,8 @@ int main(int argc, char *argv[])
         // write("julea-kv", "SimpleSteps.bp");
         // write();
         // read_simple("bp3", "SimpleSteps.bp");
-        // read_simple("julea-kv", "SimpleSteps.jv");
-        read_selection("bp3", "SimpleSteps.bp");
+        read_simple("julea-kv", "SimpleSteps.jv");
+        // read_selection("bp3", "SimpleSteps.bp");
         // read_selection("julea-kv", "SimpleSteps.jv");
     }
     catch (std::invalid_argument &e)
