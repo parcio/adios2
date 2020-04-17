@@ -127,7 +127,7 @@ void ReadVarMetadataFromJuleaKV(Variable<T> &variable,
 }
 
 template <class T>
-void GetVariableDataFromJulea(Variable<T> &variable, T *data,
+void GetVariableDataFromJulea(Variable<T> &variable, T **data,
                               const std::string nameSpace,
                               size_t numberElements, size_t step,
                               size_t block)
@@ -180,8 +180,8 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
     // memcpy(&data,&tbuf, dataSize);
     // std::cout << "buf: " << dataBuf[0] << std::endl;
     // &data = static_cast<T>(dataBuf);
-
-    data = tbuf2;
+    variable.SetData(tbuf2);
+    *data = tbuf2;
     // std::cout << "v[0]" << data[0] << std::endl;
     // std::cout << "v[1]" << data[1] << std::endl;
 
@@ -207,7 +207,7 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
 
 #define variable_template_instantiation(T)                                     \
     template void GetVariableDataFromJulea(                                    \
-        Variable<T> &variable, T *data, const std::string nameSpace,           \
+        Variable<T> &variable, T **data, const std::string nameSpace,           \
         long unsigned int dataSize, size_t step, size_t block);
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
