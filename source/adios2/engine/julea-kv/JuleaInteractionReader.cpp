@@ -129,25 +129,14 @@ void ReadVarMetadataFromJuleaKV(Variable<T> &variable,
 template <class T>
 void GetVariableDataFromJulea(Variable<T> &variable, T *data,
                               const std::string nameSpace,
-                              size_t numberElements, size_t step,
+                              size_t dataSize, size_t step,
                               size_t block)
 {
     std::cout << "-- GetVariableDataFromJulea ----- " << std::endl;
+    // std::cout << "-- Datasize = " << dataSize << std::endl;
 
     guint64 bytesRead = 0;
     const char *varName = variable.m_Name.c_str();
-    // auto batch = j_batch_new(m_JuleaSemantics);
-    // std::cout << "-- Datasize = " << dataSize << std::endl;
-    std::cout << "-- numberElements = " << numberElements << std::endl;
-    // gpointer dataBuf = g_slice_alloc(dataSize);
-    // char dataBuf[dataSize];
-    size_t dataSize = numberElements * sizeof(T);
-    // double buf[2];
-    // T tbuf[2];
-    // T *tbuf2 = (T*) g_slice_alloc(dataSize);
-    // char *dataBuf = (char*) g_slice_alloc(dataSize);
-
-    T tbuf[numberElements];
 
     std::string objName = "variableblocks";
        auto stringDataObject =
@@ -164,38 +153,10 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
 
     auto dataObject = j_object_new(stringDataObject, stepBlockID);
 
-    // j_object_read(dataObject, data, dataSize, 0, &bytesRead, batch);
-    // j_object_read(dataObject, &dataBuf, dataSize, 0, &bytesRead, batch);
-    // j_object_read(dataObject, &buf, dataSize, 0, &bytesRead, batch);
-
-    // j_object_read(dataObject, &tbuf, dataSize, 0, &bytesRead, batch);
-    // j_object_read(dataObject, tbuf2, dataSize, 0, &bytesRead, batch);
     // j_object_read(dataObject, tbuf, dataSize, 0, &bytesRead, batch);
     j_object_read(dataObject, data, dataSize, 0, &bytesRead, batch);
     // j_batch_execute(batch);
     g_assert_true(j_batch_execute(batch) == true);
-
-    // std::cout << "buf: " << buf[0] << std::endl;
-    std::cout << "tbuf: " << tbuf[0] << std::endl;
-    std::cout << "tbuf: " << tbuf[1] << std::endl;
-    // std::cout << "tbuf2: " << tbuf2[0] << std::endl;
-    // std::cout << "tbuf2: " << tbuf2[1] << std::endl;
-    // data = (T) g_memdup(tbuf,dataSize);
-    // memcpy(data,*tbuf, dataSize);
-    // std::cout << "buf: " << dataBuf[0] << std::endl;
-    // &data = static_cast<T>(dataBuf);
-    variable.SetData(tbuf);
-    variable.m_BlocksInfo[block].Data = (T*) &tbuf;
-    // variable.SetData(tbuf2);
-    data = (T*) &tbuf;
-    // *data = (T*) &tbuf;
-    // *data = tbuf2;
-    // data = (T*) tbuf;
-    // std::cout << "v[0]" << data[0] << std::endl;
-    // std::cout << "v[1]" << data[1] << std::endl;
-    std::cout << "block: v[0]" << variable.m_BlocksInfo[block].Data[0] << std::endl;
-    std::cout << "v[0]" << variable.m_Data[0] << std::endl;
-    std::cout << "v[1]" << variable.m_Data[1] << std::endl;
 
     if (bytesRead == dataSize)
     {
