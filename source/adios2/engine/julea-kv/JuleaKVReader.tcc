@@ -102,6 +102,7 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
                              m_CurrentBlockID);
     // std::cout <<"data: " <<variable.m_Data[0] << std::endl;
     // data = variable.m_BlocksInfo[m_CurrentBlockID].Data;
+
     // std::cout << "data: " << data[0] << std::endl;
     // std::cout << "data: " << data[1] << std::endl;
     data = variable.m_Data;

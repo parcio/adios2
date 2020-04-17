@@ -186,6 +186,8 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
     // &data = static_cast<T>(dataBuf);
     variable.SetData(tbuf);
     // variable.SetData(tbuf2);
+    data = (T*) &tbuf;
+    // *data = (T*) &tbuf;
     // *data = tbuf2;
     // data = (T*) tbuf;
     // std::cout << "v[0]" << data[0] << std::endl;
