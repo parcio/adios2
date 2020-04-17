@@ -240,6 +240,9 @@ private:
 #undef declare_type
 
     template <class T>
+    void ReadVariableBlocks(Variable<T> &variable);
+
+    template <class T>
     void GetSyncCommon(Variable<T> &variable, T *data);
 
     template <class T>

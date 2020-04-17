@@ -37,13 +37,35 @@
  *      Author: pnorbert
  */
 
-#include <iostream>
+// #include <algorithm> //std::for_each
+// #include <array>
+// #include <chrono>
+// #include <ios>       //std::ios_base::failure
+#include <iostream>  //std::cout
+// #include <stdexcept> //std::invalid_argument std::exception
+// #include <string>
+// #include <thread>
 #include <vector>
 
 #include <adios2.h>
 // #ifdef ADIOS2_HAVE_MPI
 // #include <mpi.h>
 // #endif
+
+std::string DimsToString(const adios2::Dims &dims)
+{
+    std::string s = "\"";
+    for (int i = 0; i < dims.size(); i++)
+    {
+        if (i > 0)
+        {
+            s += ", ";
+        }
+        s += std::to_string(dims[i]);
+    }
+    s += "\"";
+    return s;
+}
 
 void write_simple(std::string engine, std::string fileName)
 {
@@ -89,7 +111,7 @@ void write_simple(std::string engine, std::string fileName)
     // writer.Put<double>(varV0, v6.data());
     // writer.Put<double>(varV0, v2.data());
     writer.Put<double>(varV0, v3.data(), adios2::Mode::Sync);
-    writer.Put<double>(varV0, v4.data());
+    writer.Put<double>(varV0, v4.data(),adios2::Mode::Deferred);
     // writer.Put<double>(varV0, v1.data(), adios2::Mode::Sync);
     // writer.Put<double>(varV0, v5.data());
 
@@ -248,10 +270,19 @@ void write_complex(std::string engine, std::string fileName)
 
 void read_simple(std::string engine, std::string fileName)
 {
-
+     std::cout << "\n---------- Application: Read "
+                 "-------------------------------------\n" << std::endl;
     // v0 has the same size on every process at every step
     const size_t Nglobal = 2;
-    std::vector<double> v0(Nglobal);
+        std::vector<double> v0(Nglobal);
+    std::vector<double> v1 = {-12345,-12345};
+        std::vector<double> v2(Nglobal);
+        std::vector<double> v3(Nglobal);
+    v0.resize(2);
+    v1.resize(2);
+    v2.resize(2);
+    v3.resize(2);
+
     adios2::ADIOS adios(adios2::DebugON);
     adios2::IO io = adios.DeclareIO("Input");
     // io.SetEngine("julea-kv");
@@ -266,6 +297,9 @@ void read_simple(std::string engine, std::string fileName)
     // adios2::Mode::Append);
 
     adios2::Variable<double> varV0 = io.InquireVariable<double>("v0");
+    adios2::Variable<double> varV1 = io.InquireVariable<double>("v0");
+    adios2::Variable<double> varV2 = io.InquireVariable<double>("v0");
+    adios2::Variable<double> varV3 = io.InquireVariable<double>("v0");
 
     size_t steps = varV0.Steps();
 
@@ -275,27 +309,140 @@ void read_simple(std::string engine, std::string fileName)
 
     std::cout << "stepsstart: " << stepsstart << std::endl;
 
-    for (int step = 0; step < 2; step++)
+    for (int step = 0; step < 1; step++)
     {
         double value[2];
 
+        reader.Get<double>(varV0, v0.data(), adios2::Mode::Sync);
+        reader.Get<double>(varV0, v1.data(), adios2::Mode::Sync);
+                std::cout << "v0[0]: " << v0[0] << " v0[1]: " << v0[1] << std::endl;
+        std::cout << "v1[0]: " << v1[0] << " v1[1]: " << v1[1] << std::endl;
+        // reader.Get<double>(varV0, v0.data(), adios2::Mode::Deferred); //error: no performgets or endstep!
         reader.BeginStep();
-        reader.Get<double>(varV0, value, adios2::Mode::Deferred);
+        std::cout << "Step: " << step << std::endl;
+        reader.Get<double>(varV0, v0.data(), adios2::Mode::Sync);
+        reader.Get<double>(varV0, v1.data(), adios2::Mode::Sync);
+        reader.Get<double>(varV1, v2.data(), adios2::Mode::Deferred);
+        reader.Get<double>(varV1, v3.data(), adios2::Mode::Sync);
+        // reader.Get<double>(varV0, v0[0], adios2::Mode::Deferred);
         reader.EndStep();
 
-        std::cout << "step: " << step << std::endl
-                  << "v[0]: " << value[0] << std::endl
-                  << "v[1]: " << value[1] << std::endl;
+        std::cout << "step: " << step << std::endl;
+        // std::cout << "v[0]: " << value[0] << " v[1]: " << value[1] << std::endl;
+        std::cout << "v0[0]: " << v0[0] << " v0[1]: " << v0[1] << std::endl;
+        std::cout << "v1[0]: " << v1[0] << " v1[1]: " << v1[1] << std::endl;
+        std::cout << "v2[0]: " << v2[0] << " v2[1]: " << v2[1] << std::endl;
+        std::cout << "v3[0]: " << v3[0] << " v3[1]: " << v3[1] << std::endl;
     }
 
-    varV0.SetStepSelection(adios2::Box<std::size_t>(0, 3));
+    // varV0.SetStepSelection(adios2::Box<std::size_t>(0, 3));
 
-    double value[6];
-    reader.Get<double>(varV0, value, adios2::Mode::Sync);
+    // double value[6];
+    // reader.Get<double>(varV0, value, adios2::Mode::Sync);
 
     for (size_t i = 0; i < Nglobal; i++)
     {
-        std::cout << "v[" << i << "]: " << value[i] << std::endl;
+        // std::cout << "v[" << i << "]: " << value[i] << std::endl;
+    }
+
+    std::cout << "\n---------- Application: left for loop "
+                 "-------------------------------------\n"
+              << std::endl;
+    // io.FlushAll();
+    reader.Close();
+}
+
+void read_selection(std::string engine, std::string fileName)
+{
+     std::cout << "\n---------- Application: Read "
+                 "-------------------------------------\n" << std::endl;
+    // v0 has the same size on every process at every step
+    const size_t Nglobal = 2;
+        std::vector<double> v0(Nglobal);
+    std::vector<double> v1 = {-12345,-12345};
+
+    v0.resize(2);
+    v1.resize(2);
+
+    adios2::ADIOS adios(adios2::DebugON);
+    adios2::IO io = adios.DeclareIO("Input");
+    io.SetEngine(engine);
+
+    adios2::Engine reader = io.Open(fileName, adios2::Mode::Read);
+
+    adios2::Variable<double> varV0 = io.InquireVariable<double>("v0");
+    adios2::Variable<double> varV1 = io.InquireVariable<double>("v0");
+
+    size_t steps = varV0.Steps();
+    std::cout << "SIMPLE_STEPS: steps: " << steps << std::endl;
+
+    size_t stepsstart = varV0.StepsStart();
+    std::cout << "stepsstart: " << stepsstart << std::endl;
+
+    for (size_t step = 0; step < 2; step++)
+    {
+        reader.BeginStep(adios2::StepMode::Read);
+        auto blocksInfo = reader.BlocksInfo(varV0, step);
+
+        std::cout << " v0 " << " has " << blocksInfo.size()
+                  << " blocks in step " << step << std::endl;
+
+        // create a data vector for each block
+        std::vector<std::vector<double>> dataSet;
+        dataSet.resize(blocksInfo.size());
+
+        /** to test stuff */
+        // reader.Get<double>(varV1, v1.data(), adios2::Mode::Sync);
+        // std::cout << "\nv1[0]: " << v1[0] << " v1[1]: " << v1[1] << std::endl;
+
+        // schedule a read operation for each block separately
+        int i = 0;
+        for (auto &info : blocksInfo)
+        {
+            std::cout << "test number blocksinfo: i= " << i << std::endl;
+            varV0.SetBlockSelection(info.BlockID);
+            reader.Get<double>(varV0, dataSet[i], adios2::Mode::Deferred);
+            ++i;
+        }
+
+        // Read in all blocks at once now
+        reader.PerformGets();
+        // data vectors now are filled with data
+
+        /** to test stuff */
+        // reader.Get<double>(varV1, v1.data(), adios2::Mode::Sync);
+        // std::cout << "\n v1[0]: " << v1[0] << " v1[1]: " << v1[1] << std::endl;
+
+
+
+        std::cout << "\n--------------- APPLICATION loop over blocksInfo ------- " << std::endl;
+        i = 0;
+        for (const auto &info : blocksInfo)
+        {
+            std::cout << "        block " << info.BlockID
+                      << " size = " << DimsToString(info.Count)
+                      << " offset = " << DimsToString(info.Start) << " : ";
+
+            for (const auto datum : dataSet[i])
+            {
+                std::cout << datum << " ";
+            }
+            std::cout << std::endl;
+            ++i;
+        }
+
+        reader.EndStep();
+
+    }
+
+    // varV0.SetStepSelection(adios2::Box<std::size_t>(0, 3));
+
+    // double value[6];
+    // reader.Get<double>(varV0, value, adios2::Mode::Sync);
+
+    for (size_t i = 0; i < Nglobal; i++)
+    {
+        // std::cout << "v[" << i << "]: " << value[i] << std::endl;
     }
 
     std::cout << "\n---------- Application: left for loop "
@@ -316,11 +463,14 @@ int main(int argc, char *argv[])
         // write_complex("julea-kv", "SimpleSteps.jv");
         // write_complex("bp3", "SimpleSteps.bp");
         write_simple("bp3", "SimpleSteps.bp");
-        write_simple("julea-kv", "SimpleSteps.jv");
+        // write_simple("julea-kv", "SimpleSteps.jv");
+        // write_simple("hdf5", "SimpleSteps.h5");
         // write("julea-kv", "SimpleSteps.bp");
         // write();
         // read_simple("bp3", "SimpleSteps.bp");
-        read_simple("julea-kv", "SimpleSteps.jv");
+        // read_simple("julea-kv", "SimpleSteps.jv");
+        read_selection("bp3", "SimpleSteps.bp");
+        // read_selection("julea-kv", "SimpleSteps.jv");
     }
     catch (std::invalid_argument &e)
     {

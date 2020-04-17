@@ -273,8 +273,8 @@ void JuleaKVReader::PerformGets()
         for (auto &blockInfo : variable.m_BlocksInfo)                          \
         {                                                                      \
             std::cout << "-------------------for loop reached " << std::endl;  \
-            GetSyncCommon(variable, variable.m_Data);                          \
         }                                                                      \
+        ReadVariableBlocks(variable);                          \
         variable.m_BlocksInfo.clear();                                         \
     }
         // ADIOS2_FOREACH_TYPE_1ARG(declare_type) //TODO:Why is this different
@@ -284,6 +284,10 @@ void JuleaKVReader::PerformGets()
     }
     m_DeferredVariables.clear();
     m_NeedPerformGets = false; // TODO: needed?
+
+    //FIXME: needs to be in for loop in 274
+            // variable.SetBlockInfo(data, variable.m_StepsStart, variable.m_StepsCount);\
+            //
 }
 
 // PRIVATE

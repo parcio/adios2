@@ -185,6 +185,7 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
     // std::cout << "buf: " << dataBuf[0] << std::endl;
     // &data = static_cast<T>(dataBuf);
     variable.SetData(tbuf);
+    variable.m_BlocksInfo[block].Data = (T*) &tbuf;
     // variable.SetData(tbuf2);
     data = (T*) &tbuf;
     // *data = (T*) &tbuf;
@@ -192,6 +193,7 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
     // data = (T*) tbuf;
     // std::cout << "v[0]" << data[0] << std::endl;
     // std::cout << "v[1]" << data[1] << std::endl;
+    std::cout << "block: v[0]" << variable.m_BlocksInfo[block].Data[0] << std::endl;
     std::cout << "v[0]" << variable.m_Data[0] << std::endl;
     std::cout << "v[1]" << variable.m_Data[1] << std::endl;
 
