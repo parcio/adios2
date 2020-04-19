@@ -121,42 +121,34 @@ void InitVariable(core::IO *io, core::Engine &engine, std::string varName,
     const std::string type(io->InquireVariableType(varName));
     std::cout << "----- type ---" << type << std::endl;
     std::cout << "-- DEBUG: " << std::endl;
-    std::cout << "blocks: " << blocks << std::endl;
-    std::cout << "blocks: " << &blocks << std::endl;
-    std::cout << "blocks: " << *blocks << std::endl;
-    std::cout << "blocks: " << &blocks[0] << std::endl;
     std::cout << "blocks: " << blocks[0] << std::endl;
-    // std::cout << "blocks: " << blocks[1] << std::endl;
+    std::cout << "blocks: " << blocks[1] << std::endl;
 
     if (type == "compound")
     {
     }
-// #define declare_type(T)                                                        \
-//     else if (type == helper::GetType<T>())                                     \
-//     {                                                                          \
-//         std::cout << "-- DEBUG 1: " << std::endl;                              \
-//         auto var = io->InquireVariable<T>(varName);                            \
-//         std::cout << "-- DEBUG 2: " << std::endl;                              \
-//         var->m_ShapeID = shapeID;                                              \
-//         std::cout << "-- DEBUG 3: " << std::endl;                              \
-//         for (uint i = 0; i < numberSteps; i++)                                 \
-//         {                                                                      \
-//             std::cout << "i: " << i << std::endl;\
-//             for (uint j = 0; j < blocks[i]; j++)                               \
-//             {                                                                  \
-//                 std::cout << "-- DEBUG 4: " << std::endl;                      \
-//                 var->m_AvailableStepBlockIndexOffsets[i + 1].push_back(j);     \
-//                 std::cout << "i: " << i << "j: " << j << std::endl;            \
-//             }                                                                  \
-//             var->m_AvailableStepsStart = i;                                    \
-//             var->m_AvailableStepsCount++;                                      \
-//         }                                                                      \
-//         var->m_StepsStart =                                               \
-//             var->m_AvailableStepBlockIndexOffsets.begin()->first - 1;     \
-//         var->m_Engine = &engine;                                          \
-//     }
-//     ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
-// #undef declare_type
+#define declare_type(T)                                                        \
+    else if (type == helper::GetType<T>())                                     \
+    {                                                                          \
+        auto var = io->InquireVariable<T>(varName);                            \
+        var->m_ShapeID = shapeID;                                              \
+        for (uint i = 0; i < numberSteps; i++)                                 \
+        {                                                                      \
+            std::cout << "i: " << i << std::endl;\
+            for (uint j = 0; j < blocks[i]; j++)                               \
+            {                                                                  \
+                var->m_AvailableStepBlockIndexOffsets[i + 1].push_back(42+i);     \
+                std::cout << "i: " << i << "j: " << j << std::endl;            \
+            }                                                                  \
+            var->m_AvailableStepsStart = i;                                    \
+            var->m_AvailableStepsCount++;                                      \
+        }                                                                      \
+        var->m_StepsStart =                                               \
+            var->m_AvailableStepBlockIndexOffsets.begin()->first - 1;     \
+        var->m_Engine = &engine;                                          \
+    }
+    ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
+#undef declare_type
 
     // var.m_IsFirstStreamingStep = true; //TODO: necessary?
     // for(int i = 0; i < 2; i++ )

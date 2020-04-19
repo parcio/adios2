@@ -410,6 +410,7 @@ void JuleaKVReader::InitVariables()
 
             std::cout << "block[0] = " << blocks[0] << std::endl;
             std::cout << "block[1] = " << blocks[1] << std::endl;
+            size_t * tmpBlocks = (size_t*)g_memdup(blocks, numberSteps * sizeof(size_t));
             // m_IO.DefineVariable<double>("test", shape, start, count,
             //                             constantDims);
 
@@ -420,7 +421,10 @@ void JuleaKVReader::InitVariables()
             //FIXME: blocks loose their content?! why?
             std::cout << "block[0] = " << blocks[0] << std::endl;
             std::cout << "block[1] = " << blocks[1] << std::endl;
-            InitVariable(&m_IO, *this, varName, blocks, numberSteps, shapeID);
+            std::cout << "block[0] = " << tmpBlocks[0] << std::endl;
+            std::cout << "block[0] = " << tmpBlocks[1] << std::endl;
+            InitVariable(&m_IO, *this, varName, tmpBlocks, numberSteps, shapeID);
+            // InitVariable(&m_IO, *this, varName, blocks, numberSteps, shapeID);
             const std::string testtype = m_IO.InquireVariableType(varName);
             std::cout << "testtype = " << testtype << std::endl;
             // free(varName);

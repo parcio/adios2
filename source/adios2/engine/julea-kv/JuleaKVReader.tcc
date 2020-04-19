@@ -202,7 +202,7 @@ JuleaKVReader::AllStepsBlocksInfo(const core::Variable<T> &variable) const
         const size_t step = pair.first;
         const std::vector<size_t> &blockPositions = pair.second;
         std::cout << "--- step: " << step
-                  << "blockPositions: " << blockPositions.data() << std::endl;
+                  << "blockPositions: " << blockPositions.data()[0] << std::endl;
         // bp3 index starts at 1
         allStepsBlocksInfo[step - 1] =
             BlocksInfoCommon(variable, blockPositions);
