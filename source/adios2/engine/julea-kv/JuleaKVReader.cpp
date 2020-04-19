@@ -161,6 +161,9 @@ StepStatus JuleaKVReader::BeginStep(const StepMode mode,
     m_DeferredVariables.clear();
     m_DeferredVariablesDataSize = 0;
 
+    m_IO.ResetVariablesStepSelection(false,
+                                     "in call to JULEA Reader BeginStep");
+
     if (m_Verbosity == 5)
     {
         std::cout << "Julea Reader " << m_ReaderRank
@@ -218,6 +221,7 @@ void JuleaKVReader::EndStep()
  */
 void JuleaKVReader::PerformGets()
 {
+    std::cout << "--- PerformGets --- " << std::endl;
     if (m_Verbosity == 5)
     {
         std::cout << "Julea Reader " << m_ReaderRank << "     PerformGets()\n";
@@ -404,8 +408,8 @@ void JuleaKVReader::InitVariables()
             std::cout << "type  = " << type << std::endl;
             std::cout << "numberSteps = " << numberSteps << std::endl;
 
-            std::cout << "block[0]" << blocks[0] << std::endl;
-            std::cout << "block[1]" << blocks[1] << std::endl;
+            std::cout << "block[0] = " << blocks[0] << std::endl;
+            std::cout << "block[1] = " << blocks[1] << std::endl;
             // m_IO.DefineVariable<double>("test", shape, start, count,
             //                             constantDims);
 
@@ -413,6 +417,9 @@ void JuleaKVReader::InitVariables()
 
             DefineVariableInInitNew(&m_IO, varName, type, shape, start, count,
                                     constantDims);
+            //FIXME: blocks loose their content?! why?
+            std::cout << "block[0] = " << blocks[0] << std::endl;
+            std::cout << "block[1] = " << blocks[1] << std::endl;
             InitVariable(&m_IO, *this, varName, blocks, numberSteps, shapeID);
             const std::string testtype = m_IO.InquireVariableType(varName);
             std::cout << "testtype = " << testtype << std::endl;
@@ -620,6 +627,8 @@ void JuleaKVReader::DoClose(const int transportIndex)
     std::map<size_t, std::vector<typename Variable<T>::Info>>                  \
     JuleaKVReader::DoAllStepsBlocksInfo(const Variable<T> &variable) const     \
     {                                                                          \
+        std::cout << "------------- DoAllStepsBlocksInfo ------ \n"            \
+                  << std::endl;                                                \
         return AllStepsBlocksInfo(variable);                                   \
     }                                                                          \
     std::vector<std::vector<typename Variable<T>::Info>>                       \

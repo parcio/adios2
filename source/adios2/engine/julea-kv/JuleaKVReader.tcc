@@ -192,16 +192,8 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
 
 template <class T>
 std::map<size_t, std::vector<typename core::Variable<T>::Info>>
-JuleaKVReader::DoAllStepsBlocksInfo(const core::Variable<T> &variable) const
+JuleaKVReader::AllStepsBlocksInfo(const core::Variable<T> &variable) const
 {
-    std::cout << "\n______________ DoAllStepsBlocksInfo _____________________"
-              << std::endl;
-    std::cout << "Julea Reader " << m_ReaderRank
-              << " Reached DoAllStepsBlocksInfo" << std::endl;
-    std::cout << "Julea Reader " << m_ReaderRank << " Namespace: " << m_Name
-              << std::endl;
-    std::cout << "Julea Reader " << m_ReaderRank
-              << " Variable name: " << variable.m_Name << std::endl;
     std::map<size_t, std::vector<typename core::Variable<T>::Info>>
         allStepsBlocksInfo;
 
@@ -209,14 +201,43 @@ JuleaKVReader::DoAllStepsBlocksInfo(const core::Variable<T> &variable) const
     {
         const size_t step = pair.first;
         const std::vector<size_t> &blockPositions = pair.second;
-        std::cout << "step: " << step << std::endl;
-        std::cout << "blockPositions" << &blockPositions << std::endl;
-        // bp4 index starts at 1
-        // allStepsBlocksInfo[step - 1] =
-        //     BlocksInfoCommon(variable, blockPositions);
+        std::cout << "--- step: " << step
+                  << "blockPositions: " << blockPositions.data() << std::endl;
+        // bp3 index starts at 1
+        allStepsBlocksInfo[step - 1] =
+            BlocksInfoCommon(variable, blockPositions);
     }
     return allStepsBlocksInfo;
 }
+
+// template <class T>
+// std::map<size_t, std::vector<typename core::Variable<T>::Info>>
+// JuleaKVReader::DoAllStepsBlocksInfo(const core::Variable<T> &variable) const
+// {
+//     std::cout << "\n______________ DoAllStepsBlocksInfo
+//     _____________________"
+//               << std::endl;
+//     std::cout << "Julea Reader " << m_ReaderRank
+//               << " Reached DoAllStepsBlocksInfo" << std::endl;
+//     std::cout << "Julea Reader " << m_ReaderRank << " Namespace: " << m_Name
+//               << std::endl;
+//     std::cout << "Julea Reader " << m_ReaderRank
+//               << " Variable name: " << variable.m_Name << std::endl;
+//     std::map<size_t, std::vector<typename core::Variable<T>::Info>>
+//         allStepsBlocksInfo;
+
+//     for (const auto &pair : variable.m_AvailableStepBlockIndexOffsets)
+//     {
+//         const size_t step = pair.first;
+//         const std::vector<size_t> &blockPositions = pair.second;
+//         std::cout << "step: " << step << std::endl;
+//         std::cout << "blockPositions" << &blockPositions << std::endl;
+//         // bp4 index starts at 1
+//         allStepsBlocksInfo[step - 1] =
+//             BlocksInfoCommon(variable, blockPositions);
+//     }
+//     return allStepsBlocksInfo;
+// }
 
 template <class T>
 std::vector<std::vector<typename core::Variable<T>::Info>>
@@ -251,6 +272,22 @@ JuleaKVReader::DoBlocksInfo(const core::Variable<T> &variable,
     }
     // return BlocksInfoCommon(variable, itStep->second);
     return NULL;
+}
+
+template <class T>
+std::vector<typename core::Variable<T>::Info> JuleaKVReader::BlocksInfoCommon(
+    const core::Variable<T> &variable,
+    const std::vector<size_t> &blocksIndexOffsets) const
+{
+    std::vector<typename core::Variable<T>::Info> blocksInfo;
+    blocksInfo.reserve(blocksIndexOffsets.size());
+    for (const size_t blockIndexOffset : blocksIndexOffsets)
+    {
+        size_t position = blockIndexOffset;
+        std::cout << "position: " << position << std::endl;
+    }
+    // return variable.m_BlocksInfo[0];
+    return blocksInfo;
 }
 
 } // end namespace engine

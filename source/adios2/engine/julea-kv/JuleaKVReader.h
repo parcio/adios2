@@ -272,6 +272,10 @@ private:
 
     template <class T>
     std::map<size_t, std::vector<typename core::Variable<T>::Info>>
+    AllStepsBlocksInfo(const core::Variable<T> &variable) const;
+
+    template <class T>
+    std::map<size_t, std::vector<typename core::Variable<T>::Info>>
     DoAllStepsBlocksInfo(const core::Variable<T> &variable) const;
 
     template <class T>
@@ -281,6 +285,14 @@ private:
     template <class T>
     std::vector<typename core::Variable<T>::Info>
     DoBlocksInfo(const core::Variable<T> &variable, const size_t step) const;
+    // std::map<size_t, std::vector<typename core::Variable<T>::Info>>    \
+    // AllStepsBlocksInfo(const core::Variable<T> &) const;      \
+
+
+    template <class T>
+    std::vector<typename core::Variable<T>::Info>
+    BlocksInfoCommon(const core::Variable<T> &variable,
+                     const std::vector<size_t> &blocksIndexOffsets) const;
 
 #define declare_type(T)                                                        \
     std::map<size_t, std::vector<typename Variable<T>::Info>>                  \

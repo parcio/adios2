@@ -114,41 +114,49 @@ InitVariableBlockInfo(core::Variable<T> &variable, T *data)
     return variable.SetBlockInfo(data, stepsStart, stepsCount);
 }
 
-template <class T>
-void SetVariable(Variable<T> &variable, size_t *blocks, size_t numberSteps,
-                 ShapeID shapeID)
-{
-}
-
 void InitVariable(core::IO *io, core::Engine &engine, std::string varName,
                   size_t *blocks, size_t numberSteps, ShapeID shapeID)
 {
-    // auto &var = io.Inquire
+    std::cout << "----- InitVariable ---" << std::endl;
     const std::string type(io->InquireVariableType(varName));
+    std::cout << "----- type ---" << type << std::endl;
+    std::cout << "-- DEBUG: " << std::endl;
+    std::cout << "blocks: " << blocks << std::endl;
+    std::cout << "blocks: " << &blocks << std::endl;
+    std::cout << "blocks: " << *blocks << std::endl;
+    std::cout << "blocks: " << &blocks[0] << std::endl;
+    std::cout << "blocks: " << blocks[0] << std::endl;
+    // std::cout << "blocks: " << blocks[1] << std::endl;
 
     if (type == "compound")
     {
     }
-#define declare_type(T)                                                        \
-    else if (type == helper::GetType<T>())                                     \
-    {                                                                          \
-        auto var = io->InquireVariable<T>(varName);                            \
-        var->m_ShapeID = shapeID;                                              \
-        for (uint i = 0; i < numberSteps; i++)                                 \
-        {                                                                      \
-            for (uint j = 0; j < blocks[i]; j++)                               \
-            {                                                                  \
-                var->m_AvailableStepBlockIndexOffsets[i + 1].push_back(j);     \
-            }                                                                  \
-            var->m_AvailableStepsStart = i;                                    \
-            var->m_AvailableStepsCount++;                                      \
-        }                                                                      \
-        variable->m_StepsStart =                                               \
-            variable->m_AvailableStepBlockIndexOffsets.begin()->first - 1;     \
-        variable->m_Engine = &engine;                                          \
-    }                                                                          \
-    ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
-#undef declare_type
+// #define declare_type(T)                                                        \
+//     else if (type == helper::GetType<T>())                                     \
+//     {                                                                          \
+//         std::cout << "-- DEBUG 1: " << std::endl;                              \
+//         auto var = io->InquireVariable<T>(varName);                            \
+//         std::cout << "-- DEBUG 2: " << std::endl;                              \
+//         var->m_ShapeID = shapeID;                                              \
+//         std::cout << "-- DEBUG 3: " << std::endl;                              \
+//         for (uint i = 0; i < numberSteps; i++)                                 \
+//         {                                                                      \
+//             std::cout << "i: " << i << std::endl;\
+//             for (uint j = 0; j < blocks[i]; j++)                               \
+//             {                                                                  \
+//                 std::cout << "-- DEBUG 4: " << std::endl;                      \
+//                 var->m_AvailableStepBlockIndexOffsets[i + 1].push_back(j);     \
+//                 std::cout << "i: " << i << "j: " << j << std::endl;            \
+//             }                                                                  \
+//             var->m_AvailableStepsStart = i;                                    \
+//             var->m_AvailableStepsCount++;                                      \
+//         }                                                                      \
+//         var->m_StepsStart =                                               \
+//             var->m_AvailableStepBlockIndexOffsets.begin()->first - 1;     \
+//         var->m_Engine = &engine;                                          \
+//     }
+//     ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
+// #undef declare_type
 
     // var.m_IsFirstStreamingStep = true; //TODO: necessary?
     // for(int i = 0; i < 2; i++ )
@@ -251,7 +259,6 @@ void DefineVariableInInitNew(core::IO *io, const std::string varName,
         auto &var = io->DefineVariable<std::complex<float>>(
             varName, shape, start, count, constantDims);
         std::cout << "Defined variable of type: " << type << std::endl;
-
     }
     else if (strcmp(type, "complex double") == 0)
     {
@@ -294,20 +301,19 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
 
     memcpy(&isConstantDims, tmpBuffer, sizeof(bool));
     tmpBuffer += sizeof(bool);
-    // std::cout << "constantDims: " << isConstantDims << std::endl;
+    std::cout << "constantDims: " << isConstantDims << std::endl;
 
     /** --- type --- */
     memcpy(&typeLen, tmpBuffer, sizeof(size_t));
     tmpBuffer += sizeof(size_t);
-    // std::cout << "typeLen: " << typeLen << std::endl;
+    std::cout << "typeLen: " << typeLen << std::endl;
     char tmpType[typeLen];
 
     memcpy(&tmpType, tmpBuffer, typeLen);
     tmpBuffer += typeLen;
     std::string t(tmpType);
     *type = t;
-    // std::cout << "tmpType: " << tmpType << std::endl;
-    std::cout << "--- DEBUG " << std::endl;
+    std::cout << "tmpType: " << tmpType << std::endl;
 
     /** --- shapeID */
     memcpy(&tmpShapeID, tmpBuffer, sizeof(int));
@@ -362,7 +368,7 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
     {
         Dims tmpCount(tmpCountBuffer, tmpCountBuffer + countSize);
         *count = tmpCount;
-        // std::cout << "count: " << count->front() <<std::endl;
+        std::cout << "count: " << count->front() <<std::endl;
     }
 
     size_t steps = 0;
@@ -372,19 +378,20 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
     tmpBuffer += sizeof(size_t);
 
     std::cout << "numberSteps: " << steps << std::endl;
-    std::cout << "numberSteps: " << &steps << std::endl;
+    // std::cout << "numberSteps: " << &steps << std::endl;
 
     size_t blocksLen = steps * sizeof(size_t);
     // if((buffer + 65) == tmpBuffer)
     // {
     //     std::cout << "test length" << std::endl;
     // }
-    size_t tmpBlocks[blocksLen];
+    // size_t tmpBlocks[blocksLen];
+    size_t tmpBlocks[steps];
     memcpy(&tmpBlocks, tmpBuffer, blocksLen); // FIXME: heap-buffer overflow
-    memcpy(&tmpBlocks, tmpBuffer, blocksLen); // FIXME: heap-buffer overflow
+    // memcpy(&tmpBlocks, tmpBuffer, blocksLen); // FIXME: heap-buffer overflow
 
-    std::cout << "block[0]" << tmpBlocks[0] << std::endl;
-    std::cout << "block[1]" << tmpBlocks[1] << std::endl;
+    std::cout << "block[0]: " << tmpBlocks[0] << std::endl;
+    std::cout << "block[1]: " << tmpBlocks[1] << std::endl;
     *blocks = tmpBlocks;
     // (char*) blocks=tmpBlocks;
 

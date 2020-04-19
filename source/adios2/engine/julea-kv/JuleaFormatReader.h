@@ -36,9 +36,7 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
 void DefineVariableInInitNew(core::IO *io, const std::string varName,
                              std::string type, Dims shape, Dims start,
                              Dims count, bool constantDims);
-template <class T>
-void SetVariable(Variable<T> &variable, size_t *blocks, size_t numberSteps,
-                 ShapeID shapeID);
+
 void InitVariable(core::IO *io, core::Engine &engine, std::string varName,
                   size_t *blocks, size_t numberSteps, ShapeID shapeID);
 
