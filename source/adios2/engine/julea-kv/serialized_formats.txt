@@ -31,7 +31,7 @@ struct Metadata
     Dims MemoryCount;
 
     // std::vector<core::IO::Operation> Operations;
-    std::vector<core::VariableBase::Operation> Operations; // TODO serialize
+    // std::vector<core::VariableBase::Operation> Operations; // TODO serialize
     // std::vector<T> Values;
     // std::vector<T> MinMaxs; // sub-block level min-max
 
@@ -84,9 +84,7 @@ struct StepMetadata
 
                     ---block metadata-- -
 
-    size_t typeLen = 0;
-char *type = nullptr;
-size_t shapeSize = 0;
+    size_t shapeSize = 0;
 size_t *shape = nullptr;
 size_t startSize = 0;
 size_t *start = nullptr;
@@ -100,6 +98,7 @@ size_t *memoryCount = nullptr;
 
 sizeof(T) min;
 sizeof(T) max;
+sizeof(T) value;
 
 size_t StepsStart = 0;
 size_t StepsCount = 0;
@@ -112,10 +111,16 @@ bool IsReadAsJoined = false;
 bool IsReadAsLocalValue = false;
 bool IsRandomAccess = true;
 bool IsValue = false;
+/** used in streaming mode, true: first variable encounter, false: variable
+ * already encountered in previous step */
+bool m_FirstStreamingStep = true;
 
 ---step metadata-- - bool isConstantDims;
 size_t typeLen = 0;
 char *type = nullptr;
+
+ShapeID m_ShapeID = ShapeID::Unknown; ///< see shape types in ADIOSTypes.h
+
 size_t shapeSize = 0;
 size_t *shape = nullptr;
 size_t startSize = 0;

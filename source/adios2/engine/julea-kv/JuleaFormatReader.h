@@ -27,12 +27,21 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
 void DeserializeVariableMetadata(gpointer buffer, std::string *type,
                                  Dims *shape, Dims *start, Dims *count,
                                  bool *constantDims, size_t **blocks,
-                                 size_t *numberSteps);
+                                 size_t *numberSteps, ShapeID *shapeID);
 
+// void DefineVariableInInitNew(core::IO *io, const std::string varName,
+//                              std::string type, Dims shape, Dims start,
+//                              Dims count, bool constantDims, size_t *blocks,
+//                              size_t numberSteps, ShapeID shapeID);
 void DefineVariableInInitNew(core::IO *io, const std::string varName,
                              std::string type, Dims shape, Dims start,
-                             Dims count, bool constantDims, size_t *blocks,
-                             size_t numberSteps);
+                             Dims count, bool constantDims);
+template <class T>
+void SetVariable(Variable<T> &variable, size_t *blocks, size_t numberSteps,
+                 ShapeID shapeID);
+void InitVariable(core::IO *io, core::Engine &engine, std::string varName,
+                  size_t *blocks, size_t numberSteps, ShapeID shapeID);
+
 /**
  * Initializes a block inside variable.m_BlocksInfo
  * @param variable input
@@ -104,6 +113,8 @@ void GetAdiosTypeString(int type, std::string *typeString);
         Variable<T> &variable, gpointer buffer, size_t block);                 \
     extern template typename core::Variable<T>::Info &InitVariableBlockInfo(   \
         core::Variable<T> &variable, T *data);                                 \
+    extern template void SetVariable(Variable<T> &variable, size_t *blocks,    \
+                                     size_t numberSteps, ShapeID shapeID);     \
     extern template void SetVariableBlockInfo(                                 \
         core::Variable<T> &variable, typename core::Variable<T>::Info &info);  \
     extern template void ParseVariableFromBSON(                                \

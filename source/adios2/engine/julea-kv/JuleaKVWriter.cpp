@@ -111,8 +111,7 @@ void JuleaKVWriter::EndStep()
         std::cout << "m_DeferredVariables.size() = "
                   << m_DeferredVariables.size() << std::endl;
         PerformPuts(); //
-            m_PutBlockID = 0;
-
+                       // m_PutBlockID = 0;
     }
 
     // TODO

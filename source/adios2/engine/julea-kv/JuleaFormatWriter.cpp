@@ -33,11 +33,16 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
                                    size_t currStep)
 {
     bool constantDims = variable.IsConstantDims();
+    int shapeID = (int)variable.m_ShapeID;
+
     const char *type = variable.m_Type.c_str();
     size_t shapeSize = variable.m_Shape.size();
     size_t startSize = variable.m_Start.size();
     size_t countSize = variable.m_Count.size();
     size_t numberSteps = currStep + 1;
+
+    std::cout << "variable.m_ShapeID: " << variable.m_ShapeID << std::endl;
+    std::cout << "shapeID: " << shapeID << std::endl;
     // std::cout << "constantDims: " << constantDims << std::endl;
     // std::cout << "type: " << type << std::endl;
     // std::cout << "shapeSize: " << shapeSize << std::endl;
@@ -45,6 +50,7 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     // std::cout << "countSize: " << countSize << std::endl;
     // std::cout << "numberSteps: " << numberSteps << std::endl;
 
+    size_t shapeIDLen = sizeof(int);
     size_t typeLen = sizeof(variable.m_Type.c_str());
     // std::cout << "typeLen: " << typeLen << std::endl;
 
@@ -57,7 +63,7 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     uint numberBools = 1;   // constantDims
 
     len = numberVectors * sizeof(size_t) + typeLen + shapeLen + startLen +
-          countLen + blocksLen + numberBools * sizeof(bool);
+          countLen + blocksLen + numberBools * sizeof(bool) + shapeIDLen;
     std::cout << "--- variable metadata buffer length: " << len << std::endl;
 
     char *buffer = (char *)g_slice_alloc(len);
@@ -79,6 +85,10 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     buffer += sizeof(size_t);
     memcpy(buffer, type, typeLen);
     buffer += typeLen;
+
+    /** --- shapeID --- */
+    memcpy(buffer, &shapeID, shapeIDLen);
+    buffer += shapeIDLen;
 
     /** --- shape ---*/
     memcpy(buffer, &shapeSize, sizeof(size_t));
@@ -154,6 +164,7 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
 
     size_t minLen = sizeof(variable.m_Min);
     size_t maxLen = sizeof(variable.m_Max);
+    size_t valueLen = sizeof(variable.m_Value);
 
     size_t stepsStart = blockInfo.StepsStart;
     size_t stepsCount = blockInfo.StepsCount;
@@ -191,7 +202,7 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     //       minLen + maxLen;
     len = numberVectors * sizeof(size_t) + shapeLen + startLen + countLen +
           memoryStartLen + memoryCountLen + numberVariables * sizeof(size_t) +
-          numberBools * sizeof(bool) + minLen + maxLen;
+          numberBools * sizeof(bool) + minLen + maxLen + valueLen;
 
     std::cout << "--- block metadata buffer length: " << len << std::endl;
 
@@ -289,6 +300,9 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
 
     memcpy(buffer, &variable.m_Max, maxLen); // Max
     buffer += maxLen;
+
+    memcpy(buffer, &variable.m_Value, valueLen); // Value
+    buffer += valueLen;
 
     memcpy(buffer, &stepsStart, sizeof(size_t)); // stepsStart
     buffer += sizeof(size_t);

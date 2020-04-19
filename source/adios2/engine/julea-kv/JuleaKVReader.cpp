@@ -376,6 +376,7 @@ void JuleaKVReader::InitVariables()
             Dims shape;
             Dims start;
             Dims count;
+            ShapeID shapeID;
 
             bool constantDims;
             std::string type;
@@ -393,7 +394,7 @@ void JuleaKVReader::InitVariables()
 
             DeserializeVariableMetadata(md_buffer, &type, &shape, &start,
                                         &count, &constantDims, &blocks,
-                                        &numberSteps);
+                                        &numberSteps, &shapeID);
             // std::cout << "shape size = " << shape.size() << std::endl;
             // std::cout << "start size = " << start.size() << std::endl;
             std::cout << "count size = " << count.size() << std::endl;
@@ -409,8 +410,10 @@ void JuleaKVReader::InitVariables()
             //                             constantDims);
 
             // FIXME: add blocks + numberSteps as paarams
+
             DefineVariableInInitNew(&m_IO, varName, type, shape, start, count,
-                                    constantDims, blocks, numberSteps);
+                                    constantDims);
+            InitVariable(&m_IO, *this, varName, blocks, numberSteps, shapeID);
             const std::string testtype = m_IO.InquireVariableType(varName);
             std::cout << "testtype = " << testtype << std::endl;
             // free(varName);
