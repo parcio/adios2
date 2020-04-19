@@ -185,233 +185,80 @@ void DefineVariableInInitNew(core::IO *io, const std::string varName,
     {
         auto &var = io->DefineVariable<std::string>(varName, shape, start,
                                                     count, constantDims);
-        // for (uint i = 0; i < numberSteps; i++)
-        // {
-        //     var.m_AvailableStepBlockIndexOffsets[i + 1] =
-        //         std::vector<size_t>({blocks[i]});
-        //     var.m_AvailableStepsStart = i;
-        //     if (0 == var.m_AvailableStepsCount)
-        //     {
-        //         var.m_AvailableStepsCount++;
-        //     }
-        // }
         std::cout << "Defined variable of type: " << type << std::endl;
     }
     else if (strcmp(type, "int8_t") == 0)
     {
         auto &var = io->DefineVariable<int8_t>(varName, shape, start, count,
                                                constantDims);
-        // for (uint i = 0; i < numberSteps; i++)
-        // {
-        //     var.m_AvailableStepBlockIndexOffsets[i + 1] =
-        //         std::vector<size_t>({blocks[i]});
-        //     var.m_AvailableStepsStart = i;
-        //     if (0 == var.m_AvailableStepsCount)
-        //     {
-        //         var.m_AvailableStepsCount++;
-        //     }
-        // }
         std::cout << "Defined variable of type: " << type << std::endl;
     }
     else if (strcmp(type, "uint8_t") == 0)
     {
         auto &var = io->DefineVariable<uint8_t>(varName, shape, start, count,
                                                 constantDims);
-        // for (uint i = 0; i < numberSteps; i++)
-        // {
-        //     var.m_AvailableStepBlockIndexOffsets[i + 1] =
-        //         std::vector<size_t>({blocks[i]});
-        //     var.m_AvailableStepsStart = i;
-        //     if (0 == var.m_AvailableStepsCount)
-        //     {
-        //         var.m_AvailableStepsCount++;
-        //     }
-        // }
     }
     else if (strcmp(type, "int16_t") == 0)
     {
         auto &var = io->DefineVariable<int16_t>(varName, shape, start, count,
                                                 constantDims);
-        // for (uint i = 0; i < numberSteps; i++)
-        // {
-        //     var.m_AvailableStepBlockIndexOffsets[i + 1] =
-        //         std::vector<size_t>({blocks[i]});
-        //     var.m_AvailableStepsStart = i;
-        //     if (0 == var.m_AvailableStepsCount)
-        //     {
-        //         var.m_AvailableStepsCount++;
-        //     }
-        // }
     }
     else if (strcmp(type, "uint16_t") == 0)
     {
         auto &var = io->DefineVariable<uint16_t>(varName, shape, start, count,
                                                  constantDims);
-        // for (uint i = 0; i < numberSteps; i++)
-        // {
-        //     var.m_AvailableStepBlockIndexOffsets[i + 1] =
-        //         std::vector<size_t>({blocks[i]});
-        //     var.m_AvailableStepsStart = i;
-        //     if (0 == var.m_AvailableStepsCount)
-        //     {
-        //         var.m_AvailableStepsCount++;
-        //     }
-        // }
     }
     else if (strcmp(type, "int32_t") == 0)
     {
         auto &var = io->DefineVariable<int32_t>(varName, shape, start, count,
                                                 constantDims);
-        // for (uint i = 0; i < numberSteps; i++)
-        // {
-        //     var.m_AvailableStepBlockIndexOffsets[i + 1] =
-        //         std::vector<size_t>({blocks[i]});
-        //     var.m_AvailableStepsStart = i;
-        //     if (0 == var.m_AvailableStepsCount)
-        //     {
-        //         var.m_AvailableStepsCount++;
-        //     }
-        // }
     }
     else if (strcmp(type, "uint32_t") == 0)
     {
         auto &var = io->DefineVariable<uint32_t>(varName, shape, start, count,
                                                  constantDims);
-        // for (uint i = 0; i < numberSteps; i++)
-        // {
-        //     var.m_AvailableStepBlockIndexOffsets[i + 1] =
-        //         std::vector<size_t>({blocks[i]});
-        //     var.m_AvailableStepsStart = i;
-        //     if (0 == var.m_AvailableStepsCount)
-        //     {
-        //         var.m_AvailableStepsCount++;
-        //     }
-        // }
     }
     else if (strcmp(type, "int64_t") == 0)
     {
         auto &var = io->DefineVariable<int64_t>(varName, shape, start, count,
                                                 constantDims);
-        // for (uint i = 0; i < numberSteps; i++)
-        // {
-        //     var.m_AvailableStepBlockIndexOffsets[i + 1] =
-        //         std::vector<size_t>({blocks[i]});
-        //     var.m_AvailableStepsStart = i;
-        //     if (0 == var.m_AvailableStepsCount)
-        //     {
-        //         var.m_AvailableStepsCount++;
-        //     }
-        // }
     }
     else if (strcmp(type, "uint64_t") == 0)
     {
         auto &var = io->DefineVariable<uint64_t>(varName, shape, start, count,
                                                  constantDims);
-        // for (uint i = 0; i < numberSteps; i++)
-        // {
-        //     var.m_AvailableStepBlockIndexOffsets[i + 1] =
-        //         std::vector<size_t>({blocks[i]});
-        //     var.m_AvailableStepsStart = i;
-        //     if (0 == var.m_AvailableStepsCount)
-        //     {
-        //         var.m_AvailableStepsCount++;
-        //     }
-        // }
     }
     else if (strcmp(type, "float") == 0)
     {
         auto &var = io->DefineVariable<float>(varName, shape, start, count,
                                               constantDims);
-        // for (uint i = 0; i < numberSteps; i++)
-        // {
-        //     var.m_AvailableStepBlockIndexOffsets[i + 1] =
-        //         std::vector<size_t>({blocks[i]});
-        //     var.m_AvailableStepsStart = i;
-        //     if (0 == var.m_AvailableStepsCount)
-        //     {
-        //         var.m_AvailableStepsCount++;
-        //     }
-        // }
         std::cout << "Defined variable of type: " << type << std::endl;
     }
     else if (strcmp(type, "double") == 0)
     {
-        // FIXME: is there a way not to set m_AvailableStepBlockIndexOffsets for
-        // every type on its own?
         auto &var = io->DefineVariable<double>(varName, shape, start, count,
                                                constantDims);
-        // for (uint i = 0; i < numberSteps; i++)
-        // {
-        //     var.m_AvailableStepBlockIndexOffsets[i + 1] =
-        //         std::vector<size_t>({blocks[i]});
-        //     var.m_AvailableStepsStart = i;
-        //     if (0 == var.m_AvailableStepsCount)
-        //     {
-        //         var.m_AvailableStepsCount++;
-        //     }
-        //     var.m_ShapeID = shapeID;
-        //     // var.m_IsFirstStreamingStep = true; //TODO: necessary?
-        // }
-
-        // copied from BP3Deserializer.tcc DefineVariableInEngineIO
-        /* Update variable's starting step, which equals to the min value in
-the sorted map minus one */
-        var.m_StepsStart =
-            var.m_AvailableStepBlockIndexOffsets.begin()->first - 1;
-        // return *var;
         std::cout << "Defined variable of type: " << type << std::endl;
     }
     else if (strcmp(type, "long double") == 0)
     {
         auto &var = io->DefineVariable<long double>(varName, shape, start,
                                                     count, constantDims);
-        // for (uint i = 0; i < numberSteps; i++)
-        // {
-        //     var.m_AvailableStepBlockIndexOffsets[i + 1] =
-        //         std::vector<size_t>({blocks[i]});
-        //     var.m_AvailableStepsStart = i;
-        //     if (0 == var.m_AvailableStepsCount)
-        //     {
-        //         var.m_AvailableStepsCount++;
-        //     }
-        // }
+        std::cout << "Defined variable of type: " << type << std::endl;
     }
     else if (strcmp(type, "complex float") == 0)
     {
         auto &var = io->DefineVariable<std::complex<float>>(
             varName, shape, start, count, constantDims);
-        // for (uint i = 0; i < numberSteps; i++)
-        // {
-        //     var.m_AvailableStepBlockIndexOffsets[i + 1] =
-        //         std::vector<size_t>({blocks[i]});
-        //     var.m_AvailableStepsStart = i;
-        //     if (0 == var.m_AvailableStepsCount)
-        //     {
-        //         var.m_AvailableStepsCount++;
-        //     }
-        // }
+        std::cout << "Defined variable of type: " << type << std::endl;
+
     }
     else if (strcmp(type, "complex double") == 0)
     {
         auto &var = io->DefineVariable<std::complex<double>>(
             varName, shape, start, count, constantDims);
-        // for (uint i = 0; i < numberSteps; i++)
-        // {
-        //     var.m_AvailableStepBlockIndexOffsets[i + 1] =
-        //         std::vector<size_t>({blocks[i]});
-        //     var.m_AvailableStepsStart = i;
-        //     if (0 == var.m_AvailableStepsCount)
-        //     {
-        //         var.m_AvailableStepsCount++;
-        //     }
-        // }
+        std::cout << "Defined variable of type: " << type << std::endl;
     }
-
-    //   for(uint i = 0; i < numberSteps; i++)
-    // {
-    // var.m_AvailableStepBlockIndexOffsets[1] = std::vector<size_t>({0});
-    // //FIXME var.m_AvailableStepsStart = 1; //FIXME
-    // }
 
     std::map<std::string, Params> varMap = io->GetAvailableVariables();
 
