@@ -167,12 +167,14 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
                               &buffer_len, stepBlockID);
     std::cout << "buffer_len = " << buffer_len << std::endl;
 
+    typename core::Variable<T>::Info infoTest;
 
-    typename core::Variable<T>::Info info = DeserializeBlockMetadata(variable, md_buffer, m_CurrentBlockID);
+    // DeserializeBlockMetadata2(infoTest, md_buffer, m_CurrentBlockID);
+    typename core::Variable<T>::Info info =
+        *DeserializeBlockMetadata(variable, md_buffer, m_CurrentBlockID);
     std::cout << "finished DeserializeBlockMetadata" << std::endl;
 
-        // variable.m_BlocksInfo.push_back(info);
-
+    variable.m_BlocksInfo.push_back(info);
 
     // FIXME: m_CurrentBlockID
     size_t numberElements =
@@ -216,15 +218,16 @@ JuleaKVReader::AllStepsBlocksInfo(const core::Variable<T> &variable) const
         }
         // bp3 index starts at 1
         allStepsBlocksInfo[step - 1] =
-            BlocksInfoCommon(variable, blockPositions, step-1);
+            BlocksInfoCommon(variable, blockPositions, step - 1);
     }
     return allStepsBlocksInfo;
 }
 
 template <class T>
-std::vector<typename core::Variable<T>::Info> JuleaKVReader::BlocksInfoCommon(
-    const core::Variable<T> &variable,
-    const std::vector<size_t> &blocksIndexOffsets, size_t step) const
+std::vector<typename core::Variable<T>::Info>
+JuleaKVReader::BlocksInfoCommon(const core::Variable<T> &variable,
+                                const std::vector<size_t> &blocksIndexOffsets,
+                                size_t step) const
 {
     std::cout << "--- BlocksInfoCommon --- " << std::endl;
     std::vector<typename core::Variable<T>::Info> blocksInfo;
@@ -246,21 +249,23 @@ std::vector<typename core::Variable<T>::Info> JuleaKVReader::BlocksInfoCommon(
         auto nameSpace = m_Name;
         long unsigned int dataSize = 0;
         auto stepBlockID = g_strdup_printf("%lu_%lu", step, i);
-        std::cout << "blocksIndexOffsets.size(): " << blocksIndexOffsets.size() <<std::endl;
+        std::cout << "blocksIndexOffsets.size(): " << blocksIndexOffsets.size()
+                  << std::endl;
         std::cout << "stepBlockID: " << stepBlockID << std::endl;
 
         // // TODO: check if variable.m_StepsStart set correctly!
         // variable.SetBlockInfo(data, variable.m_StepsStart,
         // variable.m_StepsCount);
-
+        size_t test = i;
         GetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
                                   &buffer_len, stepBlockID);
         std::cout << "buffer_len = " << buffer_len << std::endl;
 
-        // DeserializeBlockMetadata(variable, md_buffer, i);
+        // FIXME: const variable -> incompatible cv-qualifier
+        // typename core::Variable<T>::Info info =
+        // DeserializeBlockMetadata(variable, md_buffer, test);
         // std::cout << "finished DeserializeBlockMetadata" << std::endl;
-            blocksInfo.push_back(blockInfo);
-
+        blocksInfo.push_back(blockInfo);
     }
     // return variable.m_BlocksInfo[0];
     return blocksInfo;

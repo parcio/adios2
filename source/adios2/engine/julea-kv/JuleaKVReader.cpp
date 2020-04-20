@@ -297,12 +297,12 @@ void JuleaKVReader::PerformGets()
 }
 
 // PRIVATE
+// m_CurrentBlockID++;                                                    \
 
 #define declare_type(T)                                                        \
     void JuleaKVReader::DoGetSync(Variable<T> &variable, T *data)              \
     {                                                                          \
         GetSyncCommon(variable, data);                                         \
-        m_CurrentBlockID++;                                                    \
     }                                                                          \
     void JuleaKVReader::DoGetDeferred(Variable<T> &variable, T *data)          \
     {                                                                          \

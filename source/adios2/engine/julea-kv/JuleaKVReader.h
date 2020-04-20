@@ -292,7 +292,8 @@ private:
     template <class T>
     std::vector<typename core::Variable<T>::Info>
     BlocksInfoCommon(const core::Variable<T> &variable,
-                     const std::vector<size_t> &blocksIndexOffsets, size_t step) const;
+                     const std::vector<size_t> &blocksIndexOffsets,
+                     size_t step) const;
 
 #define declare_type(T)                                                        \
     std::map<size_t, std::vector<typename Variable<T>::Info>>                  \
