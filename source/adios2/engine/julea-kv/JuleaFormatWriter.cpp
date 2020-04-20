@@ -184,15 +184,6 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     size_t stepsCount = blockInfo.StepsCount;
     size_t blockID = block;
 
-    // size_t currentStep = currStep; // Julea Engine
-    // size_t blockNumber = block;    // Julea Engine
-    // std::cout << "block: " << block << std::endl;
-
-    // bool isValue = variable.m_SingleValue;
-    // bool isReadAsJoined = variable.m_ReadAsJoined;
-    // bool isReadAsLocalValue = variable.m_ReadAsLocalValue;
-    // bool isRandomAccess = variable.m_RandomAccess;
-    // bool isValue = variable.m_BlocksInfo[block].IsValue;
     bool isValue = blockInfo.IsValue;
 
     std::cout << "variable minimum: " << variable.m_Min << std::endl;
@@ -200,54 +191,33 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     // std::cout << "variable min size: " << minLen << std::endl;
     // std::cout << "size of T: " << sizeof(T) << std::endl;
 
-    // type + shape + start + count + memoryStart + memoryCount
-    // uint numberVectors = 6; //TODO: changed -> now without type!
+    // shape + start + count + memoryStart + memoryCount
     uint numberVectors = 5;
-    // StepsStart + StepsCount + BlockID + currentStep + blockNumber
-    // uint numberVariables = 5; //TODO changed now without currentStep and
-    // blockNumber
+    // StepsStart + StepsCount + BlockID
     uint numberVariables = 3;
-    // ReadAsJoined + ReadAsLocalValue + RandomAccess + SingleValue
-    // uint numberBools = 4;//TODO changed now only singleValue in block, rest
-    // in stepMD
+    // SingleValue
     uint numberBools = 1;
 
     // calculating buffer size
-    // len = numberVectors * sizeof(size_t) + typeLen + shapeLen + startLen +
-    //       countLen + memoryStartLen + memoryCountLen +
-    //       numberVariables * sizeof(size_t) + numberBools * sizeof(bool) +
-    //       minLen + maxLen;
     len = numberVectors * sizeof(size_t) + shapeLen + startLen + countLen +
           memoryStartLen + memoryCountLen + numberVariables * sizeof(size_t) +
           numberBools * sizeof(bool) + minLen + maxLen + valueLen;
-
     std::cout << "--- block metadata buffer length: " << len << std::endl;
 
     char *buffer = (char *)g_slice_alloc(len);
 
-    /** allocate memory for variable holding the length of the vector +
-    memory for the vector data itself */
-    // memcpy(buffer, &typeLen, sizeof(size_t)); // type
-    // buffer += sizeof(size_t);
-    // memcpy(buffer, type, typeLen);
-    // buffer += typeLen;
-
     /** --- shape ---*/
     memcpy(buffer, &shapeSize, sizeof(size_t));
     std::cout << "shapeSize: " << shapeSize << std::endl;
-    // std::cout << "buffer: " << (void *)buffer << std::endl;
     buffer += sizeof(size_t);
-    // std::cout << "buffer: " << (void *)buffer << std::endl;
 
     size_t shapeBuffer[shapeSize];
     for (uint i = 0; i < shapeSize; i++)
     {
-        // shapeBuffer[i] = variable.m_Shape.data()[i];
         shapeBuffer[i] = blockInfo.Shape.data()[i];
     }
     memcpy(buffer, shapeBuffer, shapeLen);
     buffer += shapeLen;
-    // std::cout << "buffer: " << (void *)buffer << std::endl;
 
     std::cout << "shapeLen:" << shapeLen << std::endl;
     // std::cout << "var: shape.data: " << variable.m_Shape.data() << std::endl;
@@ -257,41 +227,35 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     /** ---start --- */
     memcpy(buffer, &startSize, sizeof(size_t));
     buffer += sizeof(size_t);
-    // std::cout << "buffer: " << (void *)buffer << std::endl;
 
     size_t startBuffer[startSize];
     for (uint i = 0; i < startSize; i++)
     {
-        // startBuffer[i] = variable.m_Start.data()[i];
         startBuffer[i] = blockInfo.Start.data()[i];
     }
 
     memcpy(buffer, startBuffer, startLen);
     buffer += startLen;
-    // std::cout << "buffer: " << (void *)buffer << std::endl;
 
     /** --- count --- */
     memcpy(buffer, &countSize, sizeof(size_t));
     buffer += sizeof(size_t);
-    // std::cout << "buffer: " << (void *)buffer << std::endl;
 
     size_t countBuffer[countSize];
     for (uint i = 0; i < countSize; i++)
     {
-        // countBuffer[i] = variable.m_Count.data()[i];
         countBuffer[i] = blockInfo.Count.data()[i];
     }
     memcpy(buffer, countBuffer, countLen);
     buffer += countLen;
-    // std::cout << "buffer: " << (void *)buffer << std::endl;
 
     /** ---memorystart --- */
     memcpy(buffer, &memoryStartSize, sizeof(size_t));
     buffer += sizeof(size_t);
+
     size_t memoryStartBuffer[memoryStartSize];
     for (uint i = 0; i < memoryStartSize; i++)
     {
-        // memoryStartBuffer[i] = variable.m_MemoryStart.data()[i];
         memoryStartBuffer[i] = blockInfo.MemoryStart.data()[i];
     }
 
@@ -301,17 +265,17 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     /** ---memorycount --- */
     memcpy(buffer, &memoryCountSize, sizeof(size_t));
     buffer += sizeof(size_t);
+
     size_t memoryCountBuffer[memoryCountSize];
     for (uint i = 0; i < memoryCountSize; i++)
     {
-        // memoryCountBuffer[i] = variable.m_MemoryCount.data()[i];
         memoryCountBuffer[i] = blockInfo.MemoryCount.data()[i];
     }
 
     memcpy(buffer, memoryCountBuffer, memoryCountLen);
     buffer += memoryCountLen;
 
-    /** no more vectors from here on */
+    /** --- no more vectors from here on --- */
     memcpy(buffer, &variable.m_Min, minLen); // Min
     buffer += minLen;
 
@@ -333,23 +297,7 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     buffer += sizeof(size_t);
     std::cout << "blockID: " << blockID << std::endl;
 
-    // memcpy(buffer, &currentStep, sizeof(size_t)); // currentStep
-    // buffer += sizeof(size_t);
-
-    // memcpy(buffer, &blockNumber, sizeof(size_t)); // blockNumber
-    // buffer += sizeof(size_t);
-
-    // memcpy(buffer, &isReadAsJoined, sizeof(bool)); // isReadAsJoined
-    // buffer += sizeof(bool);
-
-    // memcpy(buffer, &isReadAsLocalValue, sizeof(bool)); // isReadAsLocalValue
-    // buffer += sizeof(bool);
-
-    // memcpy(buffer, &isRandomAccess, sizeof(bool)); // isRandomAccess
-    // buffer += sizeof(bool);
-
     memcpy(buffer, &isValue, sizeof(bool)); // isValue
-    // buffer += sizeof(bool);
 
     // rewind buffer
     buffer -= len - sizeof(bool);
