@@ -20,8 +20,12 @@ namespace core
 {
 namespace engine
 {
+// template <class T>
+// void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
+                              // size_t block, std::vector<typename core::Variable<T>::Info> &infos);
+
 template <class T>
-void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
+typename core::Variable<T>::Info & DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
                               size_t block);
 
 void DeserializeVariableMetadata(gpointer buffer, std::string *type,
@@ -104,10 +108,11 @@ void GetAdiosTypeString(int type, std::string *typeString);
 // extern template void DefineAttributeInInit(                                \
         core::IO *io, const std::string attrName, T *data, int type,           \
         bool IsSingleValue, size_t numberElements);                            \
-
+    extern template void DeserializeBlockMetadata(                             \
+        Variable<T> &variable, gpointer buffer, size_t block);                 \
 
 #define variable_template_instantiation(T)                                     \
-    extern template void DeserializeBlockMetadata(                             \
+    extern template typename core::Variable<T>::Info & DeserializeBlockMetadata(                             \
         Variable<T> &variable, gpointer buffer, size_t block);                 \
     extern template typename core::Variable<T>::Info &InitVariableBlockInfo(   \
         core::Variable<T> &variable, T *data);                                 \

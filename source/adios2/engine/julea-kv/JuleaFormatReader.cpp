@@ -134,18 +134,19 @@ void InitVariable(core::IO *io, core::Engine &engine, std::string varName,
         var->m_ShapeID = shapeID;                                              \
         for (uint i = 0; i < numberSteps; i++)                                 \
         {                                                                      \
-            std::cout << "i: " << i << std::endl;\
+            std::cout << "i: " << i << std::endl;                              \
             for (uint j = 0; j < blocks[i]; j++)                               \
             {                                                                  \
-                var->m_AvailableStepBlockIndexOffsets[i + 1].push_back(42+i);     \
+                var->m_AvailableStepBlockIndexOffsets[i + 1].push_back(42 +    \
+                                                                       i);     \
                 std::cout << "i: " << i << "j: " << j << std::endl;            \
             }                                                                  \
             var->m_AvailableStepsStart = i;                                    \
             var->m_AvailableStepsCount++;                                      \
         }                                                                      \
-        var->m_StepsStart =                                               \
-            var->m_AvailableStepBlockIndexOffsets.begin()->first - 1;     \
-        var->m_Engine = &engine;                                          \
+        var->m_StepsStart =                                                    \
+            var->m_AvailableStepBlockIndexOffsets.begin()->first - 1;          \
+        var->m_Engine = &engine;                                               \
     }
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
@@ -360,7 +361,7 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
     {
         Dims tmpCount(tmpCountBuffer, tmpCountBuffer + countSize);
         *count = tmpCount;
-        std::cout << "count: " << count->front() <<std::endl;
+        std::cout << "count: " << count->front() << std::endl;
     }
 
     size_t steps = 0;
@@ -393,13 +394,14 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
 
 // FIXME: implement rest
 template <class T>
-void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
+typename core::Variable<T>::Info &DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
                               size_t block)
 {
     std::cout << "------ DeserializeBlockMetadata ----------" << std::endl;
     // FIXME
     // typename Variable<T>::Info info = variable.m_BlocksInfo[block];
-    typename Variable<T>::Info info = variable.m_BlocksInfo[0];
+    // typename Variable<T>::Info info = variable.m_BlocksInfo[0];
+    typename Variable<T>::Info info;
 
     char *tmpBuffer = (char *)buffer;
     // size_t typeLen = sizeof(variable.m_Type.c_str());
@@ -604,11 +606,12 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
     //     //           << std::endl;
     //     // variable.m_BlocksInfo.push_back(info);
     // }
-    // std::cout << "Adding blockinfo of block: " << block
-    //               << " to BlocksInfo of size: " <<
-    //               variable.m_BlocksInfo.size()
-    //               << std::endl;
-    //     variable.m_BlocksInfo.push_back(info);
+    std::cout << "Adding blockinfo of block: " << block
+              << " to BlocksInfo of size: " << variable.m_BlocksInfo.size()
+              << std::endl;
+    variable.m_BlocksInfo.push_back(info);
+    // infos.push_back(info);
+    return variable.m_BlocksInfo.back();
 }
 
 void GetAdiosTypeString(int type, std::string *typeString)
@@ -1332,9 +1335,12 @@ void ParseVarTypeFromBSON<std::complex<double>>(
 // template void DefineVariableInInitNew(core::IO *io, const std::string varName,\
     //                          std::string stringType, Dims shape, Dims start,\
     //                          Dims count, bool constantDims);\
+    template void DeserializeBlockMetadata(Variable<T> &variable,              \
+                                           gpointer buffer, size_t block, std::vector<typename core::Variable<T>::Info> &infos);     \
+
 
 #define variable_template_instantiation(T)                                     \
-    template void DeserializeBlockMetadata(Variable<T> &variable,              \
+    template typename core::Variable<T>::Info & DeserializeBlockMetadata(Variable<T> &variable,              \
                                            gpointer buffer, size_t block);     \
     template void SetVariableBlockInfo(                                        \
         core::Variable<T> &variable,                                           \
