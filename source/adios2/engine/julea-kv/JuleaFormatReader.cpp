@@ -296,6 +296,7 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
     size_t shapeSize = 0;
     size_t startSize = 0;
     size_t countSize = 0;
+    size_t steps = 0;
 
     memcpy(&constantDims, tmpBuffer, sizeof(bool));
     tmpBuffer += sizeof(bool);
@@ -387,33 +388,21 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
         std::cout << "count: " << count->front() << std::endl;
     }
 
-    size_t steps = 0;
-
+    /** --- blocks --- */
     memcpy(&steps, tmpBuffer, sizeof(size_t));
-    memcpy(numberSteps, tmpBuffer, sizeof(size_t));
     tmpBuffer += sizeof(size_t);
+    *numberSteps = steps;
 
-    std::cout << "numberSteps: " << steps << std::endl;
-    // std::cout << "numberSteps: " << &steps << std::endl;
+    std::cout << "steps: " << steps << std::endl;
+    std::cout << "numberSteps: " << *numberSteps << std::endl;
 
     size_t blocksLen = steps * sizeof(size_t);
-    // if((buffer + 65) == tmpBuffer)
-    // {
-    //     std::cout << "test length" << std::endl;
-    // }
-    // size_t tmpBlocks[blocksLen];
-    // size_t tmpBlocks[steps];
-    size_t *tmpBLOCKS = new size_t[steps];
-    // memcpy(&tmpBlocks, tmpBuffer, blocksLen); // FIXME: heap-buffer overflow
-    memcpy(tmpBLOCKS, tmpBuffer, blocksLen); // FIXME: heap-buffer overflow
+    size_t *tmpBlocks = new size_t[steps];
+    memcpy(tmpBlocks, tmpBuffer, blocksLen);
 
-    std::cout << "block[0]: " << tmpBLOCKS[0] << std::endl;
-    std::cout << "block[1]: " << tmpBLOCKS[1] << std::endl;
-    *blocks = tmpBLOCKS;
-    // (char*) blocks=tmpBlocks;
-
-    // buffer += sizeof(size_t);
-    // memcpy(buffer, blocks, blocksLen);
+    std::cout << "block[0]: " << tmpBlocks[0] << std::endl;
+    std::cout << "block[1]: " << tmpBlocks[1] << std::endl;
+    *blocks = tmpBlocks;
 }
 
 // template<class T>
