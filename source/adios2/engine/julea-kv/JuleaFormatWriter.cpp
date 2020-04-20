@@ -113,7 +113,7 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     }
     memcpy(buffer, shapeBuffer, shapeLen);
     buffer += shapeLen;
-    std::cout << "shape.data = " << variable.m_Shape.data() << std::endl;
+    // std::cout << "shape.data = " << variable.m_Shape.data() << std::endl;
 
     /** ---start --- */
     memcpy(buffer, &startSize, sizeof(size_t));
@@ -157,9 +157,6 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
                                 size_t currStep, size_t block,
                                 const typename Variable<T>::Info &blockInfo)
 {
-    // size_t typeLen = sizeof(variable.m_Type.c_str());
-    // const char *type = variable.m_Type.c_str();
-
     std::cout << "--- SerializeBlockMetadata : block = " << block << std::endl;
     std::cout << "m_BlocksInfo.size() : " << variable.m_BlocksInfo.size()
               << std::endl;
@@ -208,7 +205,7 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
 
     /** --- shape ---*/
     memcpy(buffer, &shapeSize, sizeof(size_t));
-    std::cout << "shapeSize: " << shapeSize << std::endl;
+    // std::cout << "shapeSize: " << shapeSize << std::endl;
     buffer += sizeof(size_t);
 
     size_t shapeBuffer[shapeSize];
@@ -219,7 +216,7 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     memcpy(buffer, shapeBuffer, shapeLen);
     buffer += shapeLen;
 
-    std::cout << "shapeLen:" << shapeLen << std::endl;
+    // std::cout << "shapeLen:" << shapeLen << std::endl;
     // std::cout << "var: shape.data: " << variable.m_Shape.data() << std::endl;
     // std::cout << "blockInfo:shape.data: " << variable.m_Shape.data()
     //           << std::endl;
@@ -287,8 +284,8 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
 
     memcpy(buffer, &stepsStart, sizeof(size_t)); // stepsStart
     buffer += sizeof(size_t);
-    std::cout << "stepsStart" << stepsStart << std::endl;
-    std::cout << "stepsCount" << stepsCount << std::endl;
+    // std::cout << "stepsStart" << stepsStart << std::endl;
+    // std::cout << "stepsCount" << stepsCount << std::endl;
 
     memcpy(buffer, &stepsCount, sizeof(size_t)); // stepsCount
     buffer += sizeof(size_t);
