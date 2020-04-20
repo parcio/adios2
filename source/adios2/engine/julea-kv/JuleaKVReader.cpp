@@ -422,22 +422,18 @@ void JuleaKVReader::InitVariables()
             // m_IO.DefineVariable<double>("test", shape, start, count,
             //                             constantDims);
 
-            // FIXME: add blocks + numberSteps as paarams
-
             DefineVariableInInitNew(&m_IO, varName, type, shape, start, count,
                                     constantDims);
-            // FIXME: blocks loose their content?! why?
-            std::cout << "block[0] = " << blocks[0] << std::endl;
-            std::cout << "block[1] = " << blocks[1] << std::endl;
-            // std::cout << "block[0] = " << tmpBlocks[0] << std::endl;
-            // std::cout << "block[0] = " << tmpBlocks[1] << std::endl;
+            // std::cout << "block[0] = " << blocks[0] << std::endl;
+            // std::cout << "block[1] = " << blocks[1] << std::endl;
+
             InitVariable(&m_IO, *this, varName, blocks, numberSteps, shapeID);
             delete[] blocks;
             // InitVariable(&m_IO, *this, varName, tmpBlocks, numberSteps,
             // InitVariable(&m_IO, *this, varName, blocks, numberSteps,
             // shapeID);
             const std::string testtype = m_IO.InquireVariableType(varName);
-            std::cout << "testtype = " << testtype << std::endl;
+            // std::cout << "testtype = " << testtype << std::endl;
             // free(varName);
             // free(&varName);
         }

@@ -142,13 +142,10 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
 
     std::cout << "\n__________ReadVariableBlocks_____________" << std::endl;
 
-    std::cout << "Julea Reader " << m_ReaderRank << " Namespace: " << m_Name
-              << std::endl;
-    std::cout << "Julea Reader " << m_ReaderRank
-              << " Variable name: " << variable.m_Name << std::endl;
-    /* all the additional metadata which is not used in InitVariables has to be
-     * read again */
-    // FIXME:
+    // std::cout << "Julea Reader " << m_ReaderRank << " Namespace: " << m_Name
+    // << std::endl;
+    // std::cout << "Julea Reader " << m_ReaderRank
+    // << " Variable name: " << variable.m_Name << std::endl;
 
     guint32 buffer_len;
     gpointer md_buffer = nullptr;
@@ -167,34 +164,16 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
                               &buffer_len, stepBlockID);
     std::cout << "buffer_len = " << buffer_len << std::endl;
 
-    typename core::Variable<T>::Info infoTest;
-
-    // DeserializeBlockMetadata2(infoTest, md_buffer, m_CurrentBlockID);
-    // typename core::Variable<T>::Info info =
-    // *DeserializeBlockMetadata(variable, md_buffer, m_CurrentBlockID);
     DeserializeBlockMetadata(variable, md_buffer);
-    // std::cout << "finished DeserializeBlockMetadata" << std::endl;
 
-    // variable.m_BlocksInfo.push_back(info);
-
-    // FIXME: m_CurrentBlockID
     size_t numberElements =
-        helper::GetTotalSize(variable.m_BlocksInfo[0].Count);
+        helper::GetTotalSize(variable.m_BlocksInfo[m_CurrentBlockID].Count);
     dataSize = numberElements * variable.m_ElementSize;
-    T *data = variable.m_BlocksInfo[0].Data;
+    T *data = variable.m_BlocksInfo[m_CurrentBlockID].Data;
     GetVariableDataFromJulea(variable, data, nameSpace, dataSize, m_CurrentStep,
                              m_CurrentBlockID);
-    // std::cout <<"data: " <<variable.m_Data[0] << std::endl;
     std::cout << "data: " << data[0] << std::endl;
     std::cout << "data: " << data[1] << std::endl;
-
-    // data = variable.m_BlocksInfo[m_CurrentBlockID].Data;
-    // std::cout << "data: " << data[0] << std::endl;
-    // std::cout << "data: " << data[1] << std::endl;
-    // data = variable.m_Data;
-    // std::cout << "data: " << data[0] << std::endl;
-    // std::cout << "data: " << data[1] << std::endl;
-    // std::cout << "data: " << data[1] << std::endl;
 }
 
 template <class T>

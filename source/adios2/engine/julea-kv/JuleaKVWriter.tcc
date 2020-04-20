@@ -33,12 +33,9 @@ template <class T>
 void JuleaKVWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
                                    const typename Variable<T>::Info &blockInfo)
 {
-    std::cout << "------------------ PutSyncToJulea --------------------"
-              << std::endl;
-    // std::cout << " --------------------- m_PutBlockID: " << m_PutBlockID <<
-    // std::endl;
-    std::cout << " --------------------- m_CurrentBlockID: " << m_CurrentBlockID
-              << std::endl;
+    std::cout << "------------------ PutSyncToJulea --------- BlockID: "
+              << m_CurrentBlockID << std::endl;
+
     guint32 blockMD_len = 0;
     guint32 varMD_len = 0;
     gpointer md_buffer = NULL;
@@ -47,7 +44,7 @@ void JuleaKVWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     SetMinMax(variable, data);
     auto stepBlockID =
         g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
-    std::cout << "stepBlockID: " << stepBlockID << std::endl;
+    std::cout << "--- stepBlockID: " << stepBlockID << std::endl;
 
     gpointer varMD =
         SerializeVariableMetadata(variable, varMD_len, m_CurrentStep);
@@ -58,7 +55,7 @@ void JuleaKVWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     auto itVariableWritten = m_WrittenVariableNames.find(variable.m_Name);
     if (itVariableWritten == m_WrittenVariableNames.end())
     {
-        std::cout << "---- DEBUG: Variable name not yet written " << std::endl;
+        std::cout << "--- Variable name not yet written " << std::endl;
 
         PutNameToJulea(variable.m_Name, m_Name, "variable_names");
         m_WrittenVariableNames.insert(variable.m_Name);
@@ -68,7 +65,7 @@ void JuleaKVWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     for (auto it = m_WrittenVariableNames.begin();
          it != m_WrittenVariableNames.end(); ++it)
     {
-        std::cout << ' ' << *it << std::endl;
+        std::cout << "___ Written variables:" << ' ' << *it << std::endl;
     }
 
     PutVariableMetadataToJulea(m_Name, varMD, varMD_len, variable.m_Name);
@@ -97,12 +94,7 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
     std::cout << "Julea Writer " << m_WriterRank
               << " Variable name: " << variable.m_Name << std::endl;
 
-    std::cout << "DEBUG: CurrentStep" << m_CurrentStep << std::endl;
-    std::cout << "---------------------\n" << std::endl;
-
-    // FIXME: needed for serializing but does it introduce new problems?
-    // const typename Variable<T>::Info blockInfoTmp =
-    // variable.SetBlockInfo(data, CurrentStep());
+    std::cout << "--- CurrentStep: " << m_CurrentStep << std::endl;
     PutSyncToJulea(variable, blockInfo.Data, blockInfo);
 
     if (m_Verbosity == 5)
@@ -123,8 +115,8 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
     std::cout << "Julea Writer " << m_WriterRank
               << " Variable name: " << variable.m_Name << std::endl;
 
-    std::cout << "DEBUG: CurrentStep" << m_CurrentStep << std::endl;
-    std::cout << "---------------------\n" << std::endl;
+    std::cout << "--- CurrentStep: " << m_CurrentStep << std::endl;
+
     // FIXME: needed for serializing but does it introduce new problems?
     const typename Variable<T>::Info blockInfo =
         variable.SetBlockInfo(data, CurrentStep());
@@ -193,6 +185,7 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
 
         variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].push_back(
             m_CurrentBlockID);
+
         // std::cout << "variable.m_BlocksInfo.size() = "
         //           << variable.m_BlocksInfo.size() << std::endl;
 
