@@ -26,17 +26,17 @@ namespace engine
 
 template <class T>
 typename core::Variable<T>::Info *
-DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer, size_t block);
-
+DeserializeBlockMetadata(const core::Variable<T> &variable, gpointer buffe);
 
 template <class T>
-void
-DeserializeBlockMetadataRead(Variable<T> &variable, gpointer buffer);
+void DeserializeBlockMetadataRead(Variable<T> &variable, gpointer buffer);
 
 void DeserializeVariableMetadata(gpointer buffer, std::string *type,
                                  Dims *shape, Dims *start, Dims *count,
                                  bool *constantDims, size_t **blocks,
-                                 size_t *numberSteps, ShapeID *shapeID);
+                                 size_t *numberSteps, ShapeID *shapeID,
+                                 bool *readAsJoined, bool *readAsLocalValue,
+                                 bool *randomAccess);
 
 // void DefineVariableInInitNew(core::IO *io, const std::string varName,
 //                              std::string type, Dims shape, Dims start,
@@ -68,8 +68,6 @@ InitVariableBlockInfo(core::Variable<T> &variable, T *data);
 template <class T>
 void SetVariableBlockInfo(core::Variable<T> &variable,
                           typename core::Variable<T>::Info &blockInfo);
-
-
 
 // void DefineAttributeInInit(core::IO *io, const std::string varName, int type,
 // bool IsSingleValue);
@@ -122,9 +120,10 @@ void GetAdiosTypeString(int type, std::string *typeString);
 
 #define variable_template_instantiation(T)                                     \
     extern template typename core::Variable<T>::Info *                         \
-    DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,           \
-                             size_t block);                                    \
-     extern template void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer);                                    \
+    DeserializeBlockMetadata(const core::Variable<T> &variable,                \
+                             gpointer buffer);                                 \
+    extern template void DeserializeBlockMetadataRead(Variable<T> &variable,   \
+                                                      gpointer buffer);        \
     extern template typename core::Variable<T>::Info &InitVariableBlockInfo(   \
         core::Variable<T> &variable, T *data);                                 \
     extern template void SetVariable(Variable<T> &variable, size_t *blocks,    \

@@ -33,6 +33,9 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
                                    size_t currStep)
 {
     bool constantDims = variable.IsConstantDims();
+    bool isReadAsJoined = variable.m_ReadAsJoined;
+    bool isReadAsLocalValue = variable.m_ReadAsLocalValue;
+    bool isRandomAccess = variable.m_RandomAccess;
     int shapeID = (int)variable.m_ShapeID;
 
     const char *type = variable.m_Type.c_str();
@@ -60,7 +63,8 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     size_t blocksLen = numberSteps * sizeof(size_t);
 
     uint numberVectors = 5; // type + shape + start + count + blocks
-    uint numberBools = 1;   // constantDims
+    uint numberBools =
+        4; // constantDims + readAsJoined + readAsLocalValue + randomAccess
 
     len = numberVectors * sizeof(size_t) + typeLen + shapeLen + startLen +
           countLen + blocksLen + numberBools * sizeof(bool) + shapeIDLen;
@@ -77,6 +81,15 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     }
 
     memcpy(buffer, &constantDims, sizeof(bool));
+    buffer += sizeof(bool);
+
+    memcpy(buffer, &isReadAsJoined, sizeof(bool));
+    buffer += sizeof(bool);
+
+    memcpy(buffer, &isReadAsLocalValue, sizeof(bool));
+    buffer += sizeof(bool);
+
+    memcpy(buffer, &isRandomAccess, sizeof(bool));
     buffer += sizeof(bool);
 
     /** allocate memory for variable holding the length of the vector +
@@ -175,9 +188,9 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     size_t blockNumber = block;    // Julea Engine
 
     // bool isValue = variable.m_SingleValue;
-    bool isReadAsJoined = variable.m_ReadAsJoined;
-    bool isReadAsLocalValue = variable.m_ReadAsLocalValue;
-    bool isRandomAccess = variable.m_RandomAccess;
+    // bool isReadAsJoined = variable.m_ReadAsJoined;
+    // bool isReadAsLocalValue = variable.m_ReadAsLocalValue;
+    // bool isRandomAccess = variable.m_RandomAccess;
     // bool isValue = variable.m_BlocksInfo[block].IsValue;
     bool isValue = blockInfo.IsValue;
 
@@ -194,7 +207,9 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     // blockNumber
     uint numberVariables = 3;
     // ReadAsJoined + ReadAsLocalValue + RandomAccess + SingleValue
-    uint numberBools = 4;
+    // uint numberBools = 4;//TODO changed now only singleValue in block, rest
+    // in stepMD
+    uint numberBools = 1;
 
     // calculating buffer size
     // len = numberVectors * sizeof(size_t) + typeLen + shapeLen + startLen +
@@ -320,14 +335,14 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     // memcpy(buffer, &blockNumber, sizeof(size_t)); // blockNumber
     // buffer += sizeof(size_t);
 
-    memcpy(buffer, &isReadAsJoined, sizeof(bool)); // isReadAsJoined
-    buffer += sizeof(bool);
+    // memcpy(buffer, &isReadAsJoined, sizeof(bool)); // isReadAsJoined
+    // buffer += sizeof(bool);
 
-    memcpy(buffer, &isReadAsLocalValue, sizeof(bool)); // isReadAsLocalValue
-    buffer += sizeof(bool);
+    // memcpy(buffer, &isReadAsLocalValue, sizeof(bool)); // isReadAsLocalValue
+    // buffer += sizeof(bool);
 
-    memcpy(buffer, &isRandomAccess, sizeof(bool)); // isRandomAccess
-    buffer += sizeof(bool);
+    // memcpy(buffer, &isRandomAccess, sizeof(bool)); // isRandomAccess
+    // buffer += sizeof(bool);
 
     memcpy(buffer, &isValue, sizeof(bool)); // isValue
     // buffer += sizeof(bool);

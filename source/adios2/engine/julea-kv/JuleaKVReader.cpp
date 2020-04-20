@@ -383,6 +383,10 @@ void JuleaKVReader::InitVariables()
             ShapeID shapeID;
 
             bool constantDims;
+            bool isReadAsJoined;
+            bool isReadAsLocalValue;
+            bool isRandomAccess;
+
             std::string type;
             guint32 buffer_len;
             gpointer md_buffer = nullptr;
@@ -398,7 +402,8 @@ void JuleaKVReader::InitVariables()
 
             DeserializeVariableMetadata(md_buffer, &type, &shape, &start,
                                         &count, &constantDims, &blocks,
-                                        &numberSteps, &shapeID);
+                                        &numberSteps, &shapeID, &isReadAsJoined,
+                                        &isReadAsLocalValue, &isRandomAccess);
             // std::cout << "shape size = " << shape.size() << std::endl;
             // std::cout << "start size = " << start.size() << std::endl;
             std::cout << "count size = " << count.size() << std::endl;
@@ -410,8 +415,10 @@ void JuleaKVReader::InitVariables()
 
             std::cout << "block[0] = " << blocks[0] << std::endl;
             std::cout << "block[1] = " << blocks[1] << std::endl;
-            size_t *tmpBlocks =
-                (size_t *)g_memdup(blocks, numberSteps * sizeof(size_t));
+            // size_t *tmpBlocks =
+                // (size_t *)g_memdup(blocks, numberSteps * sizeof(size_t));
+            // std::cout << "block[0] = " << blocks[0] << std::endl;
+            // std::cout << "block[1] = " << blocks[1] << std::endl;
             // m_IO.DefineVariable<double>("test", shape, start, count,
             //                             constantDims);
 
@@ -422,10 +429,12 @@ void JuleaKVReader::InitVariables()
             // FIXME: blocks loose their content?! why?
             std::cout << "block[0] = " << blocks[0] << std::endl;
             std::cout << "block[1] = " << blocks[1] << std::endl;
-            std::cout << "block[0] = " << tmpBlocks[0] << std::endl;
-            std::cout << "block[0] = " << tmpBlocks[1] << std::endl;
-            InitVariable(&m_IO, *this, varName, tmpBlocks, numberSteps,
+            // std::cout << "block[0] = " << tmpBlocks[0] << std::endl;
+            // std::cout << "block[0] = " << tmpBlocks[1] << std::endl;
+            InitVariable(&m_IO, *this, varName, blocks, numberSteps,
                          shapeID);
+            delete[] blocks;
+            // InitVariable(&m_IO, *this, varName, tmpBlocks, numberSteps,
             // InitVariable(&m_IO, *this, varName, blocks, numberSteps,
             // shapeID);
             const std::string testtype = m_IO.InquireVariableType(varName);
