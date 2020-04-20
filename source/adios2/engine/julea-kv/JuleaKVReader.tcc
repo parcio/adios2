@@ -173,7 +173,7 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
     // typename core::Variable<T>::Info info =
     // *DeserializeBlockMetadata(variable, md_buffer, m_CurrentBlockID);
     DeserializeBlockMetadata(variable, md_buffer);
-    std::cout << "finished DeserializeBlockMetadata" << std::endl;
+    // std::cout << "finished DeserializeBlockMetadata" << std::endl;
 
     // variable.m_BlocksInfo.push_back(info);
 

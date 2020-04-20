@@ -119,11 +119,10 @@ void GetAdiosTypeString(int type, std::string *typeString);
         gpointer buffer, typename core::Variable<T>::Info &info);              \
 
 #define variable_template_instantiation(T)                                     \
-    extern template typename core::Variable<T>::Info *                         \
-    GetDeserializedMetadata(const core::Variable<T> &variable,                \
-                             gpointer buffer);                                 \
-    extern template void DeserializeBlockMetadata(Variable<T> &variable,   \
-                                                      gpointer buffer);        \
+    extern template typename core::Variable<T>::Info *GetDeserializedMetadata( \
+        const core::Variable<T> &variable, gpointer buffer);                   \
+    extern template void DeserializeBlockMetadata(Variable<T> &variable,       \
+                                                  gpointer buffer);            \
     extern template typename core::Variable<T>::Info &InitVariableBlockInfo(   \
         core::Variable<T> &variable, T *data);                                 \
     extern template void SetVariable(Variable<T> &variable, size_t *blocks,    \

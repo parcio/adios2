@@ -119,12 +119,14 @@ void InitVariable(core::IO *io, core::Engine &engine, std::string varName,
 {
     std::cout << "----- InitVariable ---" << std::endl;
     const std::string type(io->InquireVariableType(varName));
-    std::cout << "----- type ---" << type << std::endl;
-    std::cout << "-- DEBUG: " << std::endl;
-    std::cout << "blocks: " << blocks[0] << std::endl;
-    std::cout << "blocks: " << blocks[1] << std::endl;
+    // std::cout << "----- type ---" << type << std::endl;
+    // std::cout << "-- DEBUG: " << std::endl;
+    // std::cout << "blocks: " << blocks[0] << std::endl;
+    // std::cout << "blocks: " << blocks[1] << std::endl;
     // std::cout << "i: " << i << "j: " << j << std::endl;            \
 
+    /** no sensible information yet to store in AvailableStepBlockIndexOffsets.
+     * So it is filled with dummy values. (42 + BlockID) */
     if (type == "compound")
     {
     }
@@ -296,42 +298,32 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
     /** --- isConstantDims --- */
     memcpy(&constantDims, tmpBuffer, sizeof(bool));
     tmpBuffer += sizeof(bool);
-    // std::cout << "constantDims: " << isConstantDims << std::endl;
 
     /** --- isReadAsJoined ---*/
     memcpy(&readAsJoined, tmpBuffer, sizeof(bool));
     tmpBuffer += sizeof(bool);
-    // std::cout << "variable.m_ReadAsJoined: " << variable.m_ReadAsJoined
-    // << std::endl;
 
     /** --- isReadAsLocalValue ---*/
     memcpy(&readAsLocalValue, tmpBuffer, sizeof(bool));
     tmpBuffer += sizeof(bool);
-    // std::cout << "variable.m_ReadAsLocalValue: " <<
-    // variable.m_ReadAsLocalValue << std::endl;
 
     /** --- isRandomAccess ---*/
     memcpy(&randomAccess, tmpBuffer, sizeof(bool));
     tmpBuffer += sizeof(bool);
-    // std::cout << "variable.m_RandomAccess: " << variable.m_RandomAccess
-    // << std::endl;
 
     /** --- type --- */
     memcpy(&typeLen, tmpBuffer, sizeof(size_t));
     tmpBuffer += sizeof(size_t);
-    // std::cout << "typeLen: " << typeLen << std::endl;
     char tmpType[typeLen];
 
     memcpy(&tmpType, tmpBuffer, typeLen);
     tmpBuffer += typeLen;
     std::string t(tmpType);
     *type = t;
-    // std::cout << "tmpType: " << tmpType << std::endl;
 
     /** --- shapeID --- */
     memcpy(&tmpShapeID, tmpBuffer, sizeof(int));
     tmpBuffer += sizeof(int);
-    // std::cout << "tmpShapeID: " << tmpShapeID << std::endl;
     shapeID = (ShapeID *)tmpShapeID;
 
     /** --- shape --- */
@@ -371,12 +363,10 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
     tmpBuffer += sizeof(size_t);
     countLen = sizeof(size_t) * (countSize); //
 
-    // std::cout << "count size" << countSize << std::endl;
     size_t tmpCountBuffer[countSize];
 
     memcpy(&tmpCountBuffer, tmpBuffer, countLen);
     tmpBuffer += countLen;
-    // std::cout << "tmpCountBuffer[0] = " << tmpCountBuffer[0] << std::endl;
     if (countSize > 0)
     {
         Dims tmpCount(tmpCountBuffer, tmpCountBuffer + countSize);
@@ -389,18 +379,34 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
     tmpBuffer += sizeof(size_t);
     *numberSteps = steps;
 
-    // std::cout << "steps: " << steps << std::endl;
-    // std::cout << "numberSteps: " << *numberSteps << std::endl;
-
     size_t blocksLen = steps * sizeof(size_t);
     size_t *tmpBlocks = new size_t[steps];
     memcpy(tmpBlocks, tmpBuffer, blocksLen);
 
+    // std::cout << "constantDims: " << isConstantDims << std::endl;
+    // std::cout << "variable.m_ReadAsJoined: " << variable.m_ReadAsJoined
+    // << std::endl;
+    // std::cout << "variable.m_ReadAsLocalValue: " <<
+    // variable.m_ReadAsLocalValue << std::endl;
+    // std::cout << "variable.m_RandomAccess: " << variable.m_RandomAccess
+    // << std::endl;
+
+    // std::cout << "typeLen: " << typeLen << std::endl;
+    // std::cout << "tmpShapeID: " << tmpShapeID << std::endl;
+    // std::cout << "tmpType: " << tmpType << std::endl;
+    // std::cout << "count size" << countSize << std::endl;
+    // std::cout << "steps: " << steps << std::endl;
+    // std::cout << "numberSteps: " << *numberSteps << std::endl;
+
     // std::cout << "block[0]: " << tmpBlocks[0] << std::endl;
     // std::cout << "block[1]: " << tmpBlocks[1] << std::endl;
+
     *blocks = tmpBlocks;
 }
 
+/**
+ * Deserializes the passed buffer and adds the created blockinfo to the variable
+ */
 template <class T>
 void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer)
 {
@@ -433,8 +439,6 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer)
 
     /** shape */
     memcpy(&shapeSize, tmpBuffer, sizeof(size_t));
-    // std::cout << "shapeSize: " << shapeSize << std::endl;
-
     tmpBuffer += sizeof(size_t);
 
     shapeLen = sizeof(size_t) * shapeSize;
@@ -451,7 +455,6 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer)
     /** start */
     memcpy(&startSize, tmpBuffer, sizeof(size_t));
     tmpBuffer += sizeof(size_t);
-    // std::cout << "startSize: " << startSize << std::endl;
 
     startLen = sizeof(size_t) * startSize;
     size_t tmpStartBuffer[startSize];
@@ -465,9 +468,8 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer)
     }
 
     /** count */
-    memcpy(&countSize, tmpBuffer, sizeof(size_t)); // count
+    memcpy(&countSize, tmpBuffer, sizeof(size_t));
     tmpBuffer += sizeof(size_t);
-    // std::cout << "countSize: " << countSize << std::endl;
 
     size_t tmpCountBuffer[countSize];
     countLen = sizeof(size_t) * countSize;
@@ -482,9 +484,8 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer)
     }
 
     /** ---memorystart --- */
-    memcpy(&memoryStartSize, tmpBuffer, sizeof(size_t)); // count
+    memcpy(&memoryStartSize, tmpBuffer, sizeof(size_t));
     tmpBuffer += sizeof(size_t);
-    // std::cout << "memoryStartSize: " << memoryStartSize << std::endl;
 
     size_t tmpMemoryStartBuffer[memoryStartSize];
     memoryStartLen = sizeof(size_t) * memoryStartSize;
@@ -500,9 +501,8 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer)
     }
 
     /** ---memorycount --- */
-    memcpy(&memoryCountSize, tmpBuffer, sizeof(size_t)); // count
+    memcpy(&memoryCountSize, tmpBuffer, sizeof(size_t));
     tmpBuffer += sizeof(size_t);
-    // std::cout << "memoryCountSize: " << memoryCountSize << std::endl;
 
     size_t tmpMemoryCountBuffer[memoryCountSize];
     memoryCountLen = sizeof(size_t) * memoryCountSize;
@@ -517,8 +517,7 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer)
         info.MemoryCount = tmpMemoryCount;
     }
 
-    /** no more vectors from here on */
-
+    /** --- no more vectors from here on --- */
     memcpy(&info.Min, tmpBuffer, minLen); // Min
     tmpBuffer += sizeof(minLen);
 
@@ -540,15 +539,20 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer)
     memcpy(&info.IsValue, tmpBuffer, sizeof(bool)); // isValue
     tmpBuffer += sizeof(bool);
 
-    std::cout << "info.Min: " << info.Min << std::endl;
-    std::cout << "info.Max: " << info.Max << std::endl;
-    std::cout << "info.Value: " << info.Value << std::endl;
-    std::cout << "info.StepsStart: " << info.StepsStart << std::endl;
-    std::cout << "info.StepsCount: " << info.StepsCount << std::endl;
-    std::cout << "info.BlockID: " << info.BlockID << std::endl;
-    std::cout << "info.IsValue: " << info.IsValue << std::endl;
-    std::cout << "size: m_BlocksInfo " << variable.m_BlocksInfo.size()
-              << std::endl;
+    // std::cout << "shapeSize: " << shapeSize << std::endl;
+    // std::cout << "startSize: " << startSize << std::endl;
+    // std::cout << "countSize: " << countSize << std::endl;
+    // std::cout << "memoryStartSize: " << memoryStartSize << std::endl;
+    // std::cout << "memoryCountSize: " << memoryCountSize << std::endl;
+    // std::cout << "info.Min: " << info.Min << std::endl;
+    // std::cout << "info.Max: " << info.Max << std::endl;
+    // std::cout << "info.Value: " << info.Value << std::endl;
+    // std::cout << "info.StepsStart: " << info.StepsStart << std::endl;
+    // std::cout << "info.StepsCount: " << info.StepsCount << std::endl;
+    // std::cout << "info.BlockID: " << info.BlockID << std::endl;
+    // std::cout << "info.IsValue: " << info.IsValue << std::endl;
+    // std::cout << "size: m_BlocksInfo " << variable.m_BlocksInfo.size()
+    //           << std::endl;
 
     // TODO: is this correct?
     // only append every block once. and since they should be in the blockID
@@ -559,29 +563,21 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer)
     }
 }
 
-// FIXME: implement rest
+/**
+ * Deserializes the passed buffer and returns the created info struct.
+ *
+ * Note: the variable is only passed, because it seems to be no possible to have
+ * an info struct without a variable. Template type cannot be deduced then.
+ * Variable is const as this function is called with bpls.
+ */
 template <class T>
 typename core::Variable<T>::Info *
 GetDeserializedMetadata(const core::Variable<T> &variable, gpointer buffer)
 {
     std::cout << "------ GetDeserializedMetadata ----------" << std::endl;
-    // FIXME
-    // typename Variable<T>::Info info = variable.m_BlocksInfo[block];
-    // typename Variable<T>::Info info = variable.m_BlocksInfo[0];
-    typename Variable<T>::Info info;
-    // typename Variable<T>::Info &info2 = new typename Variable<T>::Info() ;
-    typename Variable<T>::Info *info2 = new (typename Variable<T>::Info);
-    typename Variable<T>::Info info3{};
-    typename core::Variable<T>::Info info4 = typename Variable<T>::Info();
-    typename core::Variable<T>::Info *info5 =
-        (typename Variable<T>::Info *)calloc(
-            1, sizeof(typename Variable<T>::Info));
-
+    typename Variable<T>::Info *info = new (typename Variable<T>::Info);
     char *tmpBuffer = (char *)buffer;
-    // size_t typeLen = sizeof(variable.m_Type.c_str());
-    // const char *type = variable.m_Type.c_str();
 
-    // std::cout << "typeLen: " << typeLen << std::endl;
     size_t shapeSize = 0;
     size_t startSize = 0;
     size_t countSize = 0;
@@ -594,99 +590,64 @@ GetDeserializedMetadata(const core::Variable<T> &variable, gpointer buffer)
     size_t memoryStartLen = 0;
     size_t memoryCountLen = 0;
 
-    std::cout << "sizeof (T) " << sizeof(T) << std::endl;
     size_t minLen = sizeof(T);
     size_t maxLen = sizeof(T);
+    size_t valueLen = sizeof(T);
 
     size_t stepsStart = 0;
     size_t stepsCount = 0;
     size_t blockID = 0;
 
-    size_t currentStep = 0; // Julea Engine
-    size_t blockNumber = 0; // Julea Engine
-
-    bool isReadAsJoined = false;
-    bool isReadAsLocalValue = false;
-    bool isRandomAccess = false;
     bool isValue = false;
 
-    /** type */
-    // TODO: not needed?! type is already set in DefineVariable
-    // memcpy(&typeLen, tmpBuffer, sizeof(size_t));
-    // tmpBuffer += sizeof(size_t);
-    // char tmpType[typeLen];
-
-    // memcpy(&tmpType, tmpBuffer, typeLen);
-    // tmpBuffer += typeLen;
-
-    // std::cout << "tmpType: " << tmpType << std::endl;
-
-    /** shape */
+    /** --- shape --- */
     memcpy(&shapeSize, tmpBuffer, sizeof(size_t));
-    std::cout << "shapeSize: " << shapeSize << std::endl;
-
-    // std::cout << "tmpBuffer1: " << (void*) tmpBuffer << std::endl;
     tmpBuffer += sizeof(size_t);
-    // std::cout << "tmpBuffer: " << (void*) tmpBuffer << std::endl;
 
     shapeLen = sizeof(size_t) * shapeSize;
     size_t tmpShapeBuffer[shapeSize];
-    // size_t tmpShapeBuffer[0];
 
     memcpy(&tmpShapeBuffer, tmpBuffer, shapeLen);
     tmpBuffer += shapeLen;
-    // std::cout << "tmpBuffer: " << (void*) tmpBuffer << std::endl;
     if (shapeSize > 0)
     {
         Dims tmpShape(tmpShapeBuffer, tmpShapeBuffer + shapeSize);
-        info.Shape = tmpShape;
+        info->Shape = tmpShape;
     }
 
-    /** start */
+    /** --- start --- */
     memcpy(&startSize, tmpBuffer, sizeof(size_t));
-    std::cout << "startSize: " << startSize << std::endl;
-
     tmpBuffer += sizeof(size_t);
-    // std::cout << "tmpBuffer: " << (void*) tmpBuffer << std::endl;
 
-    // startLen = sizeof(size_t) * startSize;
-    startLen = sizeof(size_t) * 0;
-
+    startLen = sizeof(size_t) * startSize;
     size_t tmpStartBuffer[startSize];
-    // size_t tmpStartBuffer[0];
 
     memcpy(&tmpStartBuffer, tmpBuffer, startLen);
     tmpBuffer += startLen;
-    // std::cout << "tmpBuffer5: " << (void*) tmpBuffer << std::endl;
     if (startSize > 0)
     {
         Dims tmpStart(tmpStartBuffer, tmpStartBuffer + startSize);
-        info.Start = tmpStart;
+        info->Start = tmpStart;
     }
 
-    /** count */
+    /** --- count --- */
     memcpy(&countSize, tmpBuffer, sizeof(size_t)); // count
-    std::cout << "countSize: " << countSize << std::endl;
     tmpBuffer += sizeof(size_t);
-    // std::cout << "tmpBuffer: " << (void*) tmpBuffer << std::endl;
 
-    // countSize = 1;
     size_t tmpCountBuffer[countSize];
     countLen = sizeof(size_t) * countSize;
 
     memcpy(&tmpCountBuffer, tmpBuffer, countLen);
     tmpBuffer += countLen;
-    // std::cout << "tmpBuffer: " << (void*) tmpBuffer << std::endl;
     if (countSize > 0)
     {
         Dims tmpCount(tmpCountBuffer, tmpCountBuffer + countSize);
-        info.Count = tmpCount;
-        std::cout << "count: " << info.Count.front() << std::endl;
+        info->Count = tmpCount;
+        // std::cout << "count: " << info.Count.front() << std::endl;
     }
 
-    /** ---memorystart --- */
+    /** --- memorystart --- */
     memcpy(&memoryStartSize, tmpBuffer, sizeof(size_t)); // count
-    std::cout << "memoryStartSize: " << memoryStartSize << std::endl;
     tmpBuffer += sizeof(size_t);
 
     size_t tmpMemoryStartBuffer[memoryStartSize];
@@ -699,12 +660,11 @@ GetDeserializedMetadata(const core::Variable<T> &variable, gpointer buffer)
     {
         Dims tmpMemoryStart(tmpMemoryStartBuffer,
                             tmpMemoryStartBuffer + memoryStartLen);
-        info.MemoryStart = tmpMemoryStart;
+        info->MemoryStart = tmpMemoryStart;
     }
 
-    /** ---memorycount --- */
+    /** --- memorycount --- */
     memcpy(&memoryCountSize, tmpBuffer, sizeof(size_t)); // count
-    std::cout << "memoryCountSize: " << memoryCountSize << std::endl;
     tmpBuffer += sizeof(size_t);
 
     size_t tmpMemoryCountBuffer[memoryCountSize];
@@ -717,82 +677,45 @@ GetDeserializedMetadata(const core::Variable<T> &variable, gpointer buffer)
     {
         Dims tmpMemoryCount(tmpMemoryCountBuffer,
                             tmpMemoryCountBuffer + memoryCountLen);
-        info.MemoryCount = tmpMemoryCount;
+        info->MemoryCount = tmpMemoryCount;
     }
 
-    /** no more vectors from here on */
-
-    memcpy(&info.Min, tmpBuffer, minLen); // Min
-    std::cout << "info.Min: " << info.Min << std::endl;
+    /** --- no more vectors from here on --- */
+    memcpy(&info->Min, tmpBuffer, minLen); // Min
     tmpBuffer += sizeof(minLen);
 
-    memcpy(&info.Max, tmpBuffer, maxLen); // Max
-    std::cout << "info.Max: " << info.Max << std::endl;
+    memcpy(&info->Max, tmpBuffer, maxLen); // Max
     tmpBuffer += sizeof(maxLen);
 
-    memcpy(&info.StepsStart, tmpBuffer, sizeof(size_t)); // StepsStart
-    std::cout << "info.StepsStart: " << info.StepsStart << std::endl;
+    memcpy(&info->Value, tmpBuffer, valueLen); // Value
+    tmpBuffer += sizeof(maxLen);
+
+    memcpy(&info->StepsStart, tmpBuffer, sizeof(size_t)); // StepsStart
     tmpBuffer += sizeof(size_t);
 
-    memcpy(&info.StepsCount, tmpBuffer, sizeof(size_t)); // StepsCount
-    std::cout << "info.StepsCount: " << info.StepsCount << std::endl;
+    memcpy(&info->StepsCount, tmpBuffer, sizeof(size_t)); // StepsCount
     tmpBuffer += sizeof(size_t);
 
-    memcpy(&info.BlockID, tmpBuffer, sizeof(size_t)); // BlockID
-    std::cout << "info.BlockID: " << info.BlockID << std::endl;
+    memcpy(&info->BlockID, tmpBuffer, sizeof(size_t)); // BlockID
     tmpBuffer += sizeof(size_t);
 
-    // TODO: currentStep and blocknumer not necessary to read. already known.
-
-    // memcpy(&variable.m_ReadAsJoined, tmpBuffer, sizeof(bool)); //
-    // isReadAsJoined std::cout << "variable.m_ReadAsJoined: " <<
-    // variable.m_ReadAsJoined
-    //           << std::endl;
-    // tmpBuffer += sizeof(bool);
-
-    // memcpy(&variable.m_ReadAsLocalValue, tmpBuffer,
-    //        sizeof(bool)); // isReadAsLocalValue
-    // std::cout << "variable.m_ReadAsLocalValue: " <<
-    // variable.m_ReadAsLocalValue
-    //           << std::endl;
-    // tmpBuffer += sizeof(bool);
-
-    // memcpy(&variable.m_RandomAccess, tmpBuffer, sizeof(bool)); //
-    // isRandomAccess std::cout << "variable.m_RandomAccess: " <<
-    // variable.m_RandomAccess
-    //           << std::endl;
-    // tmpBuffer += sizeof(bool);
-
-    memcpy(&info.IsValue, tmpBuffer, sizeof(bool)); // isValue
-    std::cout << "info.IsValue: " << info.IsValue << std::endl;
+    memcpy(&info->IsValue, tmpBuffer, sizeof(bool)); // isValue
     tmpBuffer += sizeof(bool);
 
-    // std::cout << "size: m_BlocksInfo " << variable.m_BlocksInfo.size()
-    // << std::endl;
-    // std::cout << "block: " << block << std::endl;
+    std::cout << "shapeSize: " << shapeSize << std::endl;
+    std::cout << "startSize: " << startSize << std::endl;
+    std::cout << "countSize: " << countSize << std::endl;
+    std::cout << "memoryStartSize: " << memoryStartSize << std::endl;
+    std::cout << "memoryCountSize: " << memoryCountSize << std::endl;
+    std::cout << "info.Min: " << info->Min << std::endl;
+    std::cout << "info.Max: " << info->Max << std::endl;
+    std::cout << "info.Value: " << info->Value << std::endl;
+    std::cout << "info.StepsStart: " << info->StepsStart << std::endl;
+    std::cout << "info.StepsCount: " << info->StepsCount << std::endl;
+    std::cout << "info.BlockID: " << info->BlockID << std::endl;
+    std::cout << "info.IsValue: " << info->IsValue << std::endl;
 
-    // FIXME: check if this works in all cases and what to do in the else case
-    // not working if blocks are written synchronously
-    // is this check even necessary? how could there be more blocksInfo entries
-    // for one variable block?
-    // if (variable.m_BlocksInfo.size()  == block)
-    // {
-    //     // std::cout << "Adding blockinfo of block: " << block
-    //     //           << " to BlocksInfo of size: " <<
-    //     variable.m_BlocksInfo.size()
-    //     //           << std::endl;
-    //     // variable.m_BlocksInfo.push_back(info);
-    // }
-    // std::cout << "Adding blockinfo of block: " << block
-    // << " to BlocksInfo of size: " << variable.m_BlocksInfo.size()
-    // << std::endl;
-    // variable.m_BlocksInfo.push_back(info);
-    // infos.push_back(info);
-    // return variable.m_BlocksInfo.back();
-    return info2;
-    // return info4;
-    // return info5;
-    // return info3;
+    return info;
 }
 
 void GetAdiosTypeString(int type, std::string *typeString)
@@ -1522,10 +1445,10 @@ void ParseVarTypeFromBSON<std::complex<double>>(
 
 
 #define variable_template_instantiation(T)                                     \
-    template typename core::Variable<T>::Info *GetDeserializedMetadata(       \
+    template typename core::Variable<T>::Info *GetDeserializedMetadata(        \
         const core::Variable<T> &variable, gpointer buffer);                   \
-    template void DeserializeBlockMetadata(Variable<T> &variable,          \
-                                               gpointer buffer);               \
+    template void DeserializeBlockMetadata(Variable<T> &variable,              \
+                                           gpointer buffer);                   \
     template void SetVariableBlockInfo(                                        \
         core::Variable<T> &variable,                                           \
         typename core::Variable<T>::Info &blockInfo);                          \
