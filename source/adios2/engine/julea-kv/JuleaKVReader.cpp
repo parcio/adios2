@@ -416,7 +416,7 @@ void JuleaKVReader::InitVariables()
             std::cout << "block[0] = " << blocks[0] << std::endl;
             std::cout << "block[1] = " << blocks[1] << std::endl;
             // size_t *tmpBlocks =
-                // (size_t *)g_memdup(blocks, numberSteps * sizeof(size_t));
+            // (size_t *)g_memdup(blocks, numberSteps * sizeof(size_t));
             // std::cout << "block[0] = " << blocks[0] << std::endl;
             // std::cout << "block[1] = " << blocks[1] << std::endl;
             // m_IO.DefineVariable<double>("test", shape, start, count,
@@ -431,8 +431,7 @@ void JuleaKVReader::InitVariables()
             std::cout << "block[1] = " << blocks[1] << std::endl;
             // std::cout << "block[0] = " << tmpBlocks[0] << std::endl;
             // std::cout << "block[0] = " << tmpBlocks[1] << std::endl;
-            InitVariable(&m_IO, *this, varName, blocks, numberSteps,
-                         shapeID);
+            InitVariable(&m_IO, *this, varName, blocks, numberSteps, shapeID);
             delete[] blocks;
             // InitVariable(&m_IO, *this, varName, tmpBlocks, numberSteps,
             // InitVariable(&m_IO, *this, varName, blocks, numberSteps,

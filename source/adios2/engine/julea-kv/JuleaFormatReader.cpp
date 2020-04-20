@@ -123,7 +123,7 @@ void InitVariable(core::IO *io, core::Engine &engine, std::string varName,
     std::cout << "-- DEBUG: " << std::endl;
     std::cout << "blocks: " << blocks[0] << std::endl;
     std::cout << "blocks: " << blocks[1] << std::endl;
-                // std::cout << "i: " << i << "j: " << j << std::endl;            \
+    // std::cout << "i: " << i << "j: " << j << std::endl;            \
 
     if (type == "compound")
     {
@@ -280,12 +280,7 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
                                  bool *randomAccess)
 {
     std::cout << "------ DeserializeVariableMetadata ----------" << std::endl;
-    // char tmpType[8];
     char *tmpBuffer = (char *)buffer;
-    // bool isConstantDims = true;
-    // bool isReadAsJoined = false;
-    // bool isReadAsLocalValue = false;
-    // bool isRandomAccess = true;
     int tmpShapeID = 0;
 
     size_t typeLen = 0;
@@ -298,27 +293,28 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
     size_t countSize = 0;
     size_t steps = 0;
 
+    /** --- isConstantDims --- */
     memcpy(&constantDims, tmpBuffer, sizeof(bool));
     tmpBuffer += sizeof(bool);
     // std::cout << "constantDims: " << isConstantDims << std::endl;
-    // constantDims = isConstantDims;
-    //
-    memcpy(&readAsJoined, tmpBuffer, sizeof(bool)); // isReadAsJoined
+
+    /** --- isReadAsJoined ---*/
+    memcpy(&readAsJoined, tmpBuffer, sizeof(bool));
+    tmpBuffer += sizeof(bool);
     // std::cout << "variable.m_ReadAsJoined: " << variable.m_ReadAsJoined
     // << std::endl;
-    tmpBuffer += sizeof(bool);
 
-    memcpy(&readAsLocalValue, tmpBuffer,
-           sizeof(bool)); // isReadAsLocalValue
+    /** --- isReadAsLocalValue ---*/
+    memcpy(&readAsLocalValue, tmpBuffer, sizeof(bool));
+    tmpBuffer += sizeof(bool);
     // std::cout << "variable.m_ReadAsLocalValue: " <<
-    // variable.m_ReadAsLocalValue
-    // << std::endl;
-    tmpBuffer += sizeof(bool);
+    // variable.m_ReadAsLocalValue << std::endl;
 
-    memcpy(&randomAccess, tmpBuffer, sizeof(bool)); // isRandomAccess
+    /** --- isRandomAccess ---*/
+    memcpy(&randomAccess, tmpBuffer, sizeof(bool));
+    tmpBuffer += sizeof(bool);
     // std::cout << "variable.m_RandomAccess: " << variable.m_RandomAccess
     // << std::endl;
-    tmpBuffer += sizeof(bool);
 
     /** --- type --- */
     memcpy(&typeLen, tmpBuffer, sizeof(size_t));
@@ -332,7 +328,7 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
     *type = t;
     std::cout << "tmpType: " << tmpType << std::endl;
 
-    /** --- shapeID */
+    /** --- shapeID --- */
     memcpy(&tmpShapeID, tmpBuffer, sizeof(int));
     tmpBuffer += sizeof(int);
     std::cout << "tmpShapeID: " << tmpShapeID << std::endl;
@@ -404,12 +400,6 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
     std::cout << "block[1]: " << tmpBlocks[1] << std::endl;
     *blocks = tmpBlocks;
 }
-
-// template<class T>
-// void internalTest(typename core::Variable<T>::Info &info, gpointer buffer )
-// {
-//     std::cout << "test" << std::endl;
-// }
 
 template <class T>
 void DeserializeBlockMetadataRead(Variable<T> &variable, gpointer buffer)
