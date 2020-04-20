@@ -58,7 +58,7 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
 
     len = numberVectors * sizeof(size_t) + typeLen + shapeLen + startLen +
           countLen + blocksLen + numberBools * sizeof(bool) + shapeIDLen;
-    std::cout << "--- variable metadata buffer length: " << len << std::endl;
+    std::cout << "    variable metadata buffer length: " << len << std::endl;
 
     char *buffer = (char *)g_slice_alloc(len);
 
@@ -158,7 +158,7 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
                                 const typename Variable<T>::Info &blockInfo)
 {
     std::cout << "--- SerializeBlockMetadata --- BlockID:" << block << std::endl;
-    std::cout << "--- m_BlocksInfo.size(): " << variable.m_BlocksInfo.size()
+    std::cout << "    m_BlocksInfo.size(): " << variable.m_BlocksInfo.size()
               << std::endl;
 
     size_t shapeSize = blockInfo.Shape.size();
@@ -183,8 +183,8 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
 
     bool isValue = blockInfo.IsValue;
 
-    std::cout << "--- variable minimum: " << variable.m_Min << std::endl;
-    std::cout << "--- variable maximum: " << variable.m_Max << std::endl;
+    std::cout << "    variable minimum: " << variable.m_Min << std::endl;
+    std::cout << "    variable maximum: " << variable.m_Max << std::endl;
     // std::cout << "variable min size: " << minLen << std::endl;
     // std::cout << "size of T: " << sizeof(T) << std::endl;
 
@@ -199,7 +199,7 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     len = numberVectors * sizeof(size_t) + shapeLen + startLen + countLen +
           memoryStartLen + memoryCountLen + numberVariables * sizeof(size_t) +
           numberBools * sizeof(bool) + minLen + maxLen + valueLen;
-    std::cout << "--- block metadata buffer length: " << len << std::endl;
+    std::cout << "    block metadata buffer length: " << len << std::endl;
 
     char *buffer = (char *)g_slice_alloc(len);
 

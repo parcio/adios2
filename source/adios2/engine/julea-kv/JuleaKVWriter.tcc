@@ -44,7 +44,7 @@ void JuleaKVWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     SetMinMax(variable, data);
     auto stepBlockID =
         g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
-    std::cout << "--- stepBlockID: " << stepBlockID << std::endl;
+    std::cout << "    stepBlockID: " << stepBlockID << std::endl;
 
     gpointer varMD =
         SerializeVariableMetadata(variable, varMD_len, m_CurrentStep);
@@ -94,7 +94,7 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable,
     std::cout << "Julea Writer " << m_WriterRank
               << " Variable name: " << variable.m_Name << std::endl;
 
-    std::cout << "--- CurrentStep: " << m_CurrentStep << std::endl;
+    std::cout << "    CurrentStep: " << m_CurrentStep << std::endl;
     PutSyncToJulea(variable, blockInfo.Data, blockInfo);
 
     if (m_Verbosity == 5)
@@ -115,7 +115,7 @@ void JuleaKVWriter::PutSyncCommon(Variable<T> &variable, const T *data)
     std::cout << "Julea Writer " << m_WriterRank
               << " Variable name: " << variable.m_Name << std::endl;
 
-    std::cout << "--- CurrentStep: " << m_CurrentStep << std::endl;
+    std::cout << "    CurrentStep: " << m_CurrentStep << std::endl;
 
     // FIXME: needed for serializing but does it introduce new problems?
     const typename Variable<T>::Info blockInfo =
@@ -174,20 +174,9 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
               << std::endl;
     for (size_t i = 0; i < variable.m_BlocksInfo.size(); ++i)
     {
-        // std::cout
-        //     << "------- TEST for different info block sizes ----------------"
-        //     << std::endl;
-        std::cout << "variable:" << variable.m_Name << std::endl;
-        std::cout << "i = " << i << std::endl;
-        // std::cout << "Map size = "
-        // << variable.m_AvailableStepBlockIndexOffsets.size()
-        // << std::endl;
-
+        std::cout << "variable: " << variable.m_Name << "--- i: " << i << std::endl;
         variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].push_back(
             m_CurrentBlockID);
-
-        // std::cout << "variable.m_BlocksInfo.size() = "
-        //           << variable.m_BlocksInfo.size() << std::endl;
 
         // FIXME: needed for deserialize problem with m_BlocksInfo.size()?
         //  const typename Variable<T>::Info blockInfo =
@@ -197,24 +186,15 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
         auto itSpanBlock = variable.m_BlocksSpan.find(i);
         if (itSpanBlock == variable.m_BlocksSpan.end())
         {
-            std::cout << "m_CurrentBlockID = i: " << m_CurrentBlockID
-                      << std::endl;
+            // std::cout << "m_CurrentBlockID = i: " << m_CurrentBlockID
+                      // << std::endl;
             PutSyncCommon(variable,
-                          variable.m_BlocksInfo[i]); // FIXME: check BSON stuff
+                          variable.m_BlocksInfo[i]);
             m_CurrentBlockID = m_CurrentBlockID + i + 1;
         }
         // else
         // {
         //     m_BP3Serializer.PutSpanMetadata(variable, itSpanBlock->second);
-        // }
-
-        // std::cout << "Map size = "
-        // << variable.m_AvailableStepBlockIndexOffsets.size()
-        // << std::endl;
-        // // DEBUG:
-        // if (variable.m_AvailableStepBlockIndexOffsets.size() > 0)
-        // {
-        //     auto it = variable.m_AvailableStepBlockIndexOffsets.begin();
         // }
     }
 

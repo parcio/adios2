@@ -59,7 +59,7 @@ void PutNameToJulea(std::string paramName, std::string nameSpace,
     err = j_batch_execute(batch);
     // g_assert_true(j_batch_execute(batch) == true);
 
-    std::cout << "valueLen: " << valueLen << std::endl;
+    // std::cout << "valueLen: " << valueLen << std::endl;
     if (valueLen == 0)
     {
         bsonNames = bson_new();
@@ -111,10 +111,8 @@ void PutVariableMetadataToJulea(const std::string nameSpace, gpointer buffer,
     auto stringMetadataKV =
         g_strdup_printf("%s_%s", nameSpace.c_str(), "variables");
     auto kvVarMetadata = j_kv_new(stringMetadataKV, varName.c_str());
-    std::cout << "--- WriteVarMetadataToJuleaKV --- kv = " << stringMetadataKV
-              << " key = " << varName.c_str() << " --- " << std::endl;
-
-    // buffer = SerializeVarMetadata(variable, &bufferLen, currStep);
+    std::cout << "--- WriteVarMetadataToJuleaKV --- kv: " << stringMetadataKV
+              << " --- key: " << varName.c_str() << " --- " << std::endl;
 
     metaDataBuf = g_memdup(buffer, bufferLen);
 
@@ -140,7 +138,7 @@ void PutBlockMetadataToJulea(const std::string nameSpace,
         // g_strdup_printf("%s_%s", nameSpace.c_str(), "variableblocks");
         g_strdup_printf("%s_%s_%s", nameSpace.c_str(), varName.c_str(),
                         "variableblocks");
-    std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
+    std::cout << "PutBlockMetadataToJulea: " << stringMetadataKV << std::endl;
 
     auto kvObjectMetadata = j_kv_new(stringMetadataKV, stepBlockID.c_str());
 
@@ -205,22 +203,24 @@ void PutVariableDataToJulea(Variable<T> &variable, const T *data,
                             const std::string nameSpace, size_t currStep,
                             size_t block)
 {
-    std::cout << "-- PutVariableDataToJulea ----- " << std::endl;
+    std::cout << "--- PutVariableDataToJulea ----- " << std::endl;
+
     guint64 bytesWritten = 0;
+    std::string objName = "variableblocks";
+
     auto numberElements = adios2::helper::GetTotalSize(variable.m_Count);
     auto dataSize = variable.m_ElementSize * numberElements;
-    std::cout << "dataSize: " << dataSize << std::endl;
-
-    std::string objName = "variableblocks";
     auto stepBlockID = g_strdup_printf("%lu_%lu", currStep, block);
-    std::cout << "stepBlockID: " << stepBlockID << std::endl;
     auto stringDataObject =
         g_strdup_printf("%s_%s_%s", nameSpace.c_str(), variable.m_Name.c_str(),
                         objName.c_str());
-    std::cout << "stringDataObject " << stringDataObject << std::endl;
 
-    std::cout << "data [0] = " << data[0] << std::endl;
-    std::cout << "data [1] = " << data[1] << std::endl;
+    // std::cout << "dataSize: " << dataSize << std::endl;
+    // std::cout << "stepBlockID: " << stepBlockID << std::endl;
+    std::cout << "    kv namespace: " << stringDataObject << std::endl;
+
+    // std::cout << "data [0] = " << data[0] << std::endl;
+    // std::cout << "data [1] = " << data[1] << std::endl;
 
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
