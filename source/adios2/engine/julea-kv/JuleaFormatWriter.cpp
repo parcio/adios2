@@ -182,10 +182,11 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
 
     size_t stepsStart = blockInfo.StepsStart;
     size_t stepsCount = blockInfo.StepsCount;
-    size_t blockID = blockInfo.BlockID;
+    size_t blockID = block;
 
-    size_t currentStep = currStep; // Julea Engine
-    size_t blockNumber = block;    // Julea Engine
+    // size_t currentStep = currStep; // Julea Engine
+    // size_t blockNumber = block;    // Julea Engine
+    // std::cout << "block: " << block << std::endl;
 
     // bool isValue = variable.m_SingleValue;
     // bool isReadAsJoined = variable.m_ReadAsJoined;
@@ -322,12 +323,15 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
 
     memcpy(buffer, &stepsStart, sizeof(size_t)); // stepsStart
     buffer += sizeof(size_t);
+    std::cout << "stepsStart" << stepsStart << std::endl;
+    std::cout << "stepsCount" << stepsCount << std::endl;
 
     memcpy(buffer, &stepsCount, sizeof(size_t)); // stepsCount
     buffer += sizeof(size_t);
 
     memcpy(buffer, &blockID, sizeof(size_t)); // blockID
     buffer += sizeof(size_t);
+    std::cout << "blockID: " << blockID << std::endl;
 
     // memcpy(buffer, &currentStep, sizeof(size_t)); // currentStep
     // buffer += sizeof(size_t);

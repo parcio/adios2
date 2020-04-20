@@ -429,13 +429,14 @@ void DeserializeBlockMetadataRead(Variable<T> &variable, gpointer buffer)
     std::cout << "sizeof (T) " << sizeof(T) << std::endl;
     size_t minLen = sizeof(T);
     size_t maxLen = sizeof(T);
+    size_t valueLen = sizeof(T);
 
     size_t stepsStart = 0;
     size_t stepsCount = 0;
     size_t blockID = 0;
 
-    size_t currentStep = 0; // Julea Engine
-    size_t blockNumber = 0; // Julea Engine
+    // size_t currentStep = 0; // Julea Engine
+    // size_t blockNumber = 0; // Julea Engine
 
     // bool isReadAsJoined = false;
     // bool isReadAsLocalValue = false;
@@ -562,6 +563,10 @@ void DeserializeBlockMetadataRead(Variable<T> &variable, gpointer buffer)
 
     memcpy(&info.Max, tmpBuffer, maxLen); // Max
     std::cout << "info.Max: " << info.Max << std::endl;
+    tmpBuffer += sizeof(maxLen);
+
+    memcpy(&info.Value, tmpBuffer, valueLen); // Value
+    std::cout << "info.Value: " << info.Value << std::endl;
     tmpBuffer += sizeof(maxLen);
 
     memcpy(&info.StepsStart, tmpBuffer, sizeof(size_t)); // StepsStart
