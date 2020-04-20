@@ -190,6 +190,10 @@ private:
 
     template <class T>
     std::vector<typename core::Variable<T>::Info>
+    BlocksInfo(const core::Variable<T> &variable, const size_t step) const;
+
+    template <class T>
+    std::vector<typename core::Variable<T>::Info>
     DoBlocksInfo(const core::Variable<T> &variable, const size_t step) const;
     // std::map<size_t, std::vector<typename core::Variable<T>::Info>>    \
     // AllStepsBlocksInfo(const core::Variable<T> &) const;      \

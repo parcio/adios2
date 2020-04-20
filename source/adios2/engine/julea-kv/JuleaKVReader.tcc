@@ -279,7 +279,7 @@ JuleaKVReader::DoAllRelativeStepsBlocksInfo(
 
 template <class T>
 std::vector<typename core::Variable<T>::Info>
-JuleaKVReader::DoBlocksInfo(const core::Variable<T> &variable,
+JuleaKVReader::BlocksInfo(const core::Variable<T> &variable,
                             const size_t step) const
 {
 
@@ -290,7 +290,7 @@ JuleaKVReader::DoBlocksInfo(const core::Variable<T> &variable,
     {
         return std::vector<typename core::Variable<T>::Info>();
     }
-    return BlocksInfoCommon(variable, itStep->second);
+    return BlocksInfoCommon(variable, itStep->second, step);
     // return NULL;
 }
 

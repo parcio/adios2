@@ -110,8 +110,12 @@ void write_simple(std::string engine, std::string fileName)
 
     // writer.Put<double>(varV0, v6.data());
     // writer.Put<double>(varV0, v2.data());
+
+    //TODO: easier to test without these first
     writer.Put<double>(varV0, v3.data(), adios2::Mode::Sync);
     writer.Put<double>(varV0, v4.data(),adios2::Mode::Deferred);
+
+
     // writer.Put<double>(varV0, v1.data(), adios2::Mode::Sync);
     // writer.Put<double>(varV0, v5.data());
 
@@ -311,18 +315,19 @@ void read_simple(std::string engine, std::string fileName)
         reader.BeginStep();
         std::cout << "Step: " << step << std::endl;
         reader.Get<double>(varV0, v0.data(), adios2::Mode::Sync);
-        reader.Get<double>(varV1, v1.data(), adios2::Mode::Sync);
-        reader.Get<double>(varV2, v2.data(), adios2::Mode::Sync);
-        reader.Get<double>(varV3, v3.data(), adios2::Mode::Sync);
+        // reader.Get<double>(varV0, v0.data(), adios2::Mode::Deferred);
+        // reader.Get<double>(varV1, v1.data(), adios2::Mode::Sync);
+        // reader.Get<double>(varV2, v2.data(), adios2::Mode::Sync);
+        // reader.Get<double>(varV3, v3.data(), adios2::Mode::Sync);
 
         reader.EndStep();
 
         std::cout << "----- step ---- " << step << std::endl;
         // std::cout << "v[0]: " << value[0] << " v[1]: " << value[1] << std::endl;
         std::cout << "v0[0]: " << v0[0] << " v0[1]: " << v0[1] << std::endl;
-        std::cout << "v1[0]: " << v1[0] << " v1[1]: " << v1[1] << std::endl;
-        std::cout << "v2[0]: " << v2[0] << " v2[1]: " << v2[1] << std::endl;
-        std::cout << "v3[0]: " << v3[0] << " v3[1]: " << v3[1] << std::endl;
+        // std::cout << "v1[0]: " << v1[0] << " v1[1]: " << v1[1] << std::endl;
+        // std::cout << "v2[0]: " << v2[0] << " v2[1]: " << v2[1] << std::endl;
+        // std::cout << "v3[0]: " << v3[0] << " v3[1]: " << v3[1] << std::endl;
 
     }
 
@@ -373,7 +378,9 @@ void read_selection(std::string engine, std::string fileName)
     for (size_t step = 0; step < 2; step++)
     {
         reader.BeginStep(adios2::StepMode::Read);
+        std::cout << "--DEBUG-- " << std::endl;
         auto blocksInfo = reader.BlocksInfo(varV0, step);
+        std::cout << "--DEBUG 1-- " << std::endl;
 
         std::cout << " v0 " << " has " << blocksInfo.size()
                   << " blocks in step " << step << std::endl;
@@ -382,6 +389,7 @@ void read_selection(std::string engine, std::string fileName)
         std::vector<std::vector<double>> dataSet;
         dataSet.resize(blocksInfo.size());
 
+        std::cout << "--DEBUG 2-- " << std::endl;
         /** to test stuff */
         // reader.Get<double>(varV1, v1.data(), adios2::Mode::Sync);
         // std::cout << "\nv1[0]: " << v1[0] << " v1[1]: " << v1[1] << std::endl;
@@ -462,7 +470,7 @@ int main(int argc, char *argv[])
         // read_simple("bp3", "SimpleSteps.bp");
         // read_simple("julea-kv", "SimpleSteps.jv");
         read_selection("bp3", "SimpleSteps.bp");
-        // read_selection("julea-kv", "SimpleSteps.jv");
+        read_selection("julea-kv", "SimpleSteps.jv");
     }
     catch (std::invalid_argument &e)
     {
