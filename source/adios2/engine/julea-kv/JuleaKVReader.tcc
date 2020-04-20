@@ -209,7 +209,7 @@ JuleaKVReader::BlocksInfoCommon(const core::Variable<T> &variable,
                                 const std::vector<size_t> &blocksIndexOffsets,
                                 size_t step) const
 {
-    std::cout << "--- BlocksInfoCommon --- " << std::endl;
+    std::cout << "____ BlocksInfoCommon _____ " << std::endl;
     std::vector<typename core::Variable<T>::Info> blocksInfo;
     blocksInfo.reserve(blocksIndexOffsets.size());
     typename core::Variable<T>::Info blockInfo;
@@ -229,9 +229,9 @@ JuleaKVReader::BlocksInfoCommon(const core::Variable<T> &variable,
         auto nameSpace = m_Name;
         long unsigned int dataSize = 0;
         auto stepBlockID = g_strdup_printf("%lu_%lu", step, i);
-        std::cout << "blocksIndexOffsets.size(): " << blocksIndexOffsets.size()
+        std::cout << "---- blocksIndexOffsets.size(): " << blocksIndexOffsets.size()
                   << std::endl;
-        std::cout << "stepBlockID: " << stepBlockID << std::endl;
+        std::cout << "---- stepBlockID: " << stepBlockID << std::endl;
 
         // // TODO: check if variable.m_StepsStart set correctly!
         // variable.SetBlockInfo(data, variable.m_StepsStart,
@@ -243,6 +243,8 @@ JuleaKVReader::BlocksInfoCommon(const core::Variable<T> &variable,
         // DeserializeBlockMetadata2(infoTest, md_buffer, m_CurrentBlockID);
         typename core::Variable<T>::Info info =
             *GetDeserializedMetadata(variable, md_buffer);
+        std::cout << "--- DEBUG --- " << std::endl;
+
         // FIXME: const variable -> incompatible cv-qualifier
         // typename core::Variable<T>::Info info =
         // DeserializeBlockMetadata(variable, md_buffer, test);
@@ -258,6 +260,7 @@ std::vector<std::vector<typename core::Variable<T>::Info>>
 JuleaKVReader::DoAllRelativeStepsBlocksInfo(
     const core::Variable<T> &variable) const
 {
+    std::cout << "--- DoAllRelativeStepsBlocksInfo --- " << std::endl;
     std::vector<std::vector<typename core::Variable<T>::Info>>
         allRelativeStepsBlocksInfo(
             variable.m_AvailableStepBlockIndexOffsets.size());
@@ -278,14 +281,16 @@ std::vector<typename core::Variable<T>::Info>
 JuleaKVReader::DoBlocksInfo(const core::Variable<T> &variable,
                             const size_t step) const
 {
+
+    std::cout << "--- DoBlocksInfo --- " << std::endl;
     // bp4 format starts at 1
     auto itStep = variable.m_AvailableStepBlockIndexOffsets.find(step + 1);
     if (itStep == variable.m_AvailableStepBlockIndexOffsets.end())
     {
         return std::vector<typename core::Variable<T>::Info>();
     }
-    // return BlocksInfoCommon(variable, itStep->second);
-    return NULL;
+    return BlocksInfoCommon(variable, itStep->second);
+    // return NULL;
 }
 
 // template <class T>
