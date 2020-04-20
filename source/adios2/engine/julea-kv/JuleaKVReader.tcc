@@ -172,7 +172,7 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
     // DeserializeBlockMetadata2(infoTest, md_buffer, m_CurrentBlockID);
     // typename core::Variable<T>::Info info =
     // *DeserializeBlockMetadata(variable, md_buffer, m_CurrentBlockID);
-    DeserializeBlockMetadataRead(variable, md_buffer);
+    DeserializeBlockMetadata(variable, md_buffer);
     std::cout << "finished DeserializeBlockMetadata" << std::endl;
 
     // variable.m_BlocksInfo.push_back(info);
@@ -263,7 +263,7 @@ JuleaKVReader::BlocksInfoCommon(const core::Variable<T> &variable,
         std::cout << "buffer_len = " << buffer_len << std::endl;
         // DeserializeBlockMetadata2(infoTest, md_buffer, m_CurrentBlockID);
         typename core::Variable<T>::Info info =
-            *DeserializeBlockMetadata(variable, md_buffer);
+            *GetDeserializedMetadata(variable, md_buffer);
         // FIXME: const variable -> incompatible cv-qualifier
         // typename core::Variable<T>::Info info =
         // DeserializeBlockMetadata(variable, md_buffer, test);

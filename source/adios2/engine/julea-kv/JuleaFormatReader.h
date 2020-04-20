@@ -26,10 +26,10 @@ namespace engine
 
 template <class T>
 typename core::Variable<T>::Info *
-DeserializeBlockMetadata(const core::Variable<T> &variable, gpointer buffe);
+GetDeserializedMetadata(const core::Variable<T> &variable, gpointer buffe);
 
 template <class T>
-void DeserializeBlockMetadataRead(Variable<T> &variable, gpointer buffer);
+void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer);
 
 void DeserializeVariableMetadata(gpointer buffer, std::string *type,
                                  Dims *shape, Dims *start, Dims *count,
@@ -120,9 +120,9 @@ void GetAdiosTypeString(int type, std::string *typeString);
 
 #define variable_template_instantiation(T)                                     \
     extern template typename core::Variable<T>::Info *                         \
-    DeserializeBlockMetadata(const core::Variable<T> &variable,                \
+    GetDeserializedMetadata(const core::Variable<T> &variable,                \
                              gpointer buffer);                                 \
-    extern template void DeserializeBlockMetadataRead(Variable<T> &variable,   \
+    extern template void DeserializeBlockMetadata(Variable<T> &variable,   \
                                                       gpointer buffer);        \
     extern template typename core::Variable<T>::Info &InitVariableBlockInfo(   \
         core::Variable<T> &variable, T *data);                                 \
