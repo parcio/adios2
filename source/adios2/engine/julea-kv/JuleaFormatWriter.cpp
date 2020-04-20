@@ -157,7 +157,8 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
                                 size_t currStep, size_t block,
                                 const typename Variable<T>::Info &blockInfo)
 {
-    std::cout << "--- SerializeBlockMetadata --- BlockID:" << block << std::endl;
+    std::cout << "--- SerializeBlockMetadata --- BlockID:" << block
+              << std::endl;
     std::cout << "    m_BlocksInfo.size(): " << variable.m_BlocksInfo.size()
               << std::endl;
 

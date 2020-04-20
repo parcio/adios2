@@ -324,7 +324,7 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
     /** --- shapeID --- */
     memcpy(&tmpShapeID, tmpBuffer, sizeof(int));
     tmpBuffer += sizeof(int);
-    shapeID = (ShapeID *)tmpShapeID;
+    std::cout << "tmpShapeID: " << tmpShapeID << std::endl;
 
     /** --- shape --- */
     memcpy(&shapeSize, tmpBuffer, sizeof(size_t));
@@ -382,6 +382,33 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
     size_t blocksLen = steps * sizeof(size_t);
     size_t *tmpBlocks = new size_t[steps];
     memcpy(tmpBlocks, tmpBuffer, blocksLen);
+
+    // shapeID = (ShapeID *)tmpShapeID;
+    // std::cout << "shapeID: " << shapeID << std::endl;
+
+    switch (tmpShapeID)
+    {
+    case 0:
+        *shapeID = ShapeID::Unknown;
+        // std::cout << "test: " << std::endl;
+        break;
+    case 1:
+        *shapeID = ShapeID::GlobalValue;
+        break;
+    case 2:
+        *shapeID = ShapeID::GlobalArray;
+        break;
+    case 3:
+        *shapeID = ShapeID::JoinedArray;
+        break;
+    case 4:
+        *shapeID = ShapeID::LocalValue;
+        break;
+    case 5:
+        *shapeID = ShapeID::LocalArray;
+        // std::cout << "shapeID: " << *shapeID << std::endl;
+        break;
+    }
 
     // std::cout << "constantDims: " << isConstantDims << std::endl;
     // std::cout << "variable.m_ReadAsJoined: " << variable.m_ReadAsJoined
@@ -574,7 +601,7 @@ template <class T>
 typename core::Variable<T>::Info *
 GetDeserializedMetadata(const core::Variable<T> &variable, gpointer buffer)
 {
-    std::cout << "------ GetDeserializedMetadata ----------" << std::endl;
+    // std::cout << "------ GetDeserializedMetadata ----------" << std::endl;
     typename Variable<T>::Info *info = new (typename Variable<T>::Info);
     char *tmpBuffer = (char *)buffer;
 
@@ -702,18 +729,18 @@ GetDeserializedMetadata(const core::Variable<T> &variable, gpointer buffer)
     memcpy(&info->IsValue, tmpBuffer, sizeof(bool)); // isValue
     tmpBuffer += sizeof(bool);
 
-    std::cout << "shapeSize: " << shapeSize << std::endl;
-    std::cout << "startSize: " << startSize << std::endl;
-    std::cout << "countSize: " << countSize << std::endl;
-    std::cout << "memoryStartSize: " << memoryStartSize << std::endl;
-    std::cout << "memoryCountSize: " << memoryCountSize << std::endl;
-    std::cout << "info.Min: " << info->Min << std::endl;
-    std::cout << "info.Max: " << info->Max << std::endl;
-    std::cout << "info.Value: " << info->Value << std::endl;
-    std::cout << "info.StepsStart: " << info->StepsStart << std::endl;
-    std::cout << "info.StepsCount: " << info->StepsCount << std::endl;
-    std::cout << "info.BlockID: " << info->BlockID << std::endl;
-    std::cout << "info.IsValue: " << info->IsValue << std::endl;
+    // std::cout << "shapeSize: " << shapeSize << std::endl;
+    // std::cout << "startSize: " << startSize << std::endl;
+    // std::cout << "countSize: " << countSize << std::endl;
+    // std::cout << "memoryStartSize: " << memoryStartSize << std::endl;
+    // std::cout << "memoryCountSize: " << memoryCountSize << std::endl;
+    // std::cout << "info.Min: " << info->Min << std::endl;
+    // std::cout << "info.Max: " << info->Max << std::endl;
+    // std::cout << "info.Value: " << info->Value << std::endl;
+    // std::cout << "info.StepsStart: " << info->StepsStart << std::endl;
+    // std::cout << "info.StepsCount: " << info->StepsCount << std::endl;
+    // std::cout << "info.BlockID: " << info->BlockID << std::endl;
+    // std::cout << "info.IsValue: " << info->IsValue << std::endl;
 
     return info;
 }

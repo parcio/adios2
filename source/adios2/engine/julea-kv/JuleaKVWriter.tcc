@@ -174,7 +174,8 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
               << std::endl;
     for (size_t i = 0; i < variable.m_BlocksInfo.size(); ++i)
     {
-        std::cout << "variable: " << variable.m_Name << "--- i: " << i << std::endl;
+        std::cout << "variable: " << variable.m_Name << "--- i: " << i
+                  << std::endl;
         variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].push_back(
             m_CurrentBlockID);
 
@@ -187,9 +188,8 @@ void JuleaKVWriter::PerformPutCommon(Variable<T> &variable)
         if (itSpanBlock == variable.m_BlocksSpan.end())
         {
             // std::cout << "m_CurrentBlockID = i: " << m_CurrentBlockID
-                      // << std::endl;
-            PutSyncCommon(variable,
-                          variable.m_BlocksInfo[i]);
+            // << std::endl;
+            PutSyncCommon(variable, variable.m_BlocksInfo[i]);
             m_CurrentBlockID = m_CurrentBlockID + i + 1;
         }
         // else

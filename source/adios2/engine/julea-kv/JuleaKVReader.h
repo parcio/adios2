@@ -63,13 +63,12 @@ public:
     void EndStep() final;
     void PerformGets() final;
 
-
 private:
     // JuleaInfo *m_JuleaInfo;
     JSemantics *m_JuleaSemantics;
     StepMode m_StepMode = StepMode::Append;
 
-    int m_Verbosity = 5; // TODO: changed to 5 for debugging
+    int m_Verbosity = 0; // TODO: changed to 5 for debugging
     int m_ReaderRank;    // my rank in the readers' comm
 
     // EndStep must call PerformGets if necessary

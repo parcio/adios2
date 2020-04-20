@@ -221,9 +221,9 @@ void JuleaKVReader::EndStep()
  */
 void JuleaKVReader::PerformGets()
 {
-    std::cout << "--- PerformGets --- " << std::endl;
     if (m_Verbosity == 5)
     {
+        std::cout << "--- PerformGets --- " << std::endl;
         std::cout << "Julea Reader " << m_ReaderRank << "     PerformGets()\n";
     }
 
@@ -253,11 +253,12 @@ void JuleaKVReader::PerformGets()
         //     // it->second.begin()
         //     // << '\n';
         // }
-        std::cout << "----- for loop m_DeferredVariables " << std::endl;
-        std::cout << "variableName = " << variableName << std::endl;
+
+        // std::cout << "----- for loop m_DeferredVariables " << std::endl;
+        // std::cout << "variableName = " << variableName << std::endl;
 
         const std::string type = m_IO.InquireVariableType(variableName);
-        std::cout << "type = " << type << std::endl;
+        // std::cout << "type = " << type << std::endl;
 
         // const std::string type = "double";
 
@@ -270,13 +271,10 @@ void JuleaKVReader::PerformGets()
 #define declare_type(T)                                                        \
     else if (type == helper::GetType<T>())                                     \
     {                                                                          \
-        std::cout << "DEBUG: type " << type << std::endl;                      \
         Variable<T> &variable = FindVariable<T>(                               \
             variableName, "in call to PerformGets, EndStep or Close");         \
-        std::cout << "found variable name: " << variable.m_Name << std::endl;  \
         for (auto &blockInfo : variable.m_BlocksInfo)                          \
         {                                                                      \
-            std::cout << "-------------------for loop reached " << std::endl;  \
             SetVariableBlockInfo(variable, blockInfo);                         \
         }                                                                      \
         ReadVariableBlocks(variable);                                          \
@@ -380,7 +378,7 @@ void JuleaKVReader::InitVariables()
             Dims shape;
             Dims start;
             Dims count;
-            ShapeID shapeID;
+            ShapeID shapeID = ShapeID::Unknown;
 
             bool constantDims;
             bool isReadAsJoined;
@@ -394,27 +392,28 @@ void JuleaKVReader::InitVariables()
             size_t numberSteps = 0;
 
             std::string varName(bson_iter_key(&b_iter));
-            std::cout << "-- Variable name " << varName << std::endl;
+            // std::cout << "-- Variable name " << varName << std::endl;
 
             GetVariableMetadataFromJulea(nameSpace, varName, &md_buffer,
                                          &buffer_len);
-            std::cout << "buffer_len = " << buffer_len << std::endl;
+            // std::cout << "buffer_len = " << buffer_len << std::endl;
 
             DeserializeVariableMetadata(md_buffer, &type, &shape, &start,
                                         &count, &constantDims, &blocks,
                                         &numberSteps, &shapeID, &isReadAsJoined,
                                         &isReadAsLocalValue, &isRandomAccess);
+            std::cout << "shapeID = " << shapeID << std::endl;
             // std::cout << "shape size = " << shape.size() << std::endl;
             // std::cout << "start size = " << start.size() << std::endl;
-            std::cout << "count size = " << count.size() << std::endl;
-            std::cout << "shape size = " << shape.size() << std::endl;
-            std::cout << "start size= " << start.size() << std::endl;
-            std::cout << "count = " << count.front() << std::endl;
-            std::cout << "type  = " << type << std::endl;
-            std::cout << "numberSteps = " << numberSteps << std::endl;
+            // std::cout << "count size = " << count.size() << std::endl;
+            // std::cout << "shape size = " << shape.size() << std::endl;
+            // std::cout << "start size= " << start.size() << std::endl;
+            // std::cout << "count = " << count.front() << std::endl;
+            // std::cout << "type  = " << type << std::endl;
+            // std::cout << "numberSteps = " << numberSteps << std::endl;
 
-            std::cout << "block[0] = " << blocks[0] << std::endl;
-            std::cout << "block[1] = " << blocks[1] << std::endl;
+            // std::cout << "block[0] = " << blocks[0] << std::endl;
+            // std::cout << "block[1] = " << blocks[1] << std::endl;
             // size_t *tmpBlocks =
             // (size_t *)g_memdup(blocks, numberSteps * sizeof(size_t));
             // std::cout << "block[0] = " << blocks[0] << std::endl;
@@ -633,13 +632,13 @@ void JuleaKVReader::DoClose(const int transportIndex)
 /// FIXME: implement AllStepsBlocksInfo
 // return m_BP4Deserializer.AllStepsBlocksInfo(variable);                 \
         return m_BP4Deserializer.BlocksInfo(variable, step);                   \
+        std::cout << "\n ------------- DoAllStepsBlocksInfo ------ \n"         \
+                  << std::endl;                                                \
 
 #define declare_type(T)                                                        \
     std::map<size_t, std::vector<typename Variable<T>::Info>>                  \
     JuleaKVReader::DoAllStepsBlocksInfo(const Variable<T> &variable) const     \
     {                                                                          \
-        std::cout << "\n ------------- DoAllStepsBlocksInfo ------ \n"         \
-                  << std::endl;                                                \
         return AllStepsBlocksInfo(variable);                                   \
     }                                                                          \
     std::vector<std::vector<typename Variable<T>::Info>>                       \

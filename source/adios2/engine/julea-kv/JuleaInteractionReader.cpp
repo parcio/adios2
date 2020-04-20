@@ -75,7 +75,7 @@ void GetBlockMetadataFromJulea(const std::string nameSpace,
                                guint32 *buffer_len,
                                const std::string stepBlockID)
 {
-    std::cout << "-- GetBlockMetadataFromJulea -----" << std::endl;
+    // std::cout << "-- GetBlockMetadataFromJulea -----" << std::endl;
     // bson_t *bsonMetadata = NULL;
 
     void *metaDataBuf = NULL;
@@ -84,7 +84,7 @@ void GetBlockMetadataFromJulea(const std::string nameSpace,
 
     auto stringMetadataKV = g_strdup_printf("%s_%s_%s", nameSpace.c_str(),
                                             varName.c_str(), "variableblocks");
-    std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
+    // std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
 
     auto kvBlockMetadata = j_kv_new(stringMetadataKV, stepBlockID.c_str());
 
