@@ -206,15 +206,15 @@ private:
                      size_t step) const;
 
     /**
- * Initializes a block inside variable.m_BlocksInfo
- * @param variable input
- * @param data user data pointer
- * @return a reference inside variable.m_BlocksInfo (invalidated if called
- * twice)
- */
-template <class T>
-typename core::Variable<T>::Info &
-InitVariableBlockInfo(core::Variable<T> &variable, T *data);
+     * Initializes a block inside variable.m_BlocksInfo
+     * @param variable input
+     * @param data user data pointer
+     * @return a reference inside variable.m_BlocksInfo (invalidated if called
+     * twice)
+     */
+    template <class T>
+    typename core::Variable<T>::Info &
+    InitVariableBlockInfo(core::Variable<T> &variable, T *data);
 
     // typename core::Variable<T>::Info &InitVariableBlockInfo(   \
     //     core::Variable<T> &variable, T *data);                                 \

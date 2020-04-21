@@ -161,8 +161,7 @@ StepStatus JuleaKVReader::BeginStep(const StepMode mode,
     m_DeferredVariables.clear();
     m_DeferredVariablesDataSize = 0;
 
-    m_IO.ResetVariablesStepSelection(false,
-                                     "in call to JULEA Reader BeginStep");
+    m_IO.ResetVariablesStepSelection(true, "in call to JULEA Reader BeginStep");
 
     if (m_Verbosity == 5)
     {
@@ -396,13 +395,13 @@ void JuleaKVReader::InitVariables()
 
             GetVariableMetadataFromJulea(nameSpace, varName, &md_buffer,
                                          &buffer_len);
-            std::cout << "buffer_len = " << buffer_len << std::endl;
+            // std::cout << "buffer_len = " << buffer_len << std::endl;
 
             DeserializeVariableMetadata(md_buffer, &type, &shape, &start,
                                         &count, &constantDims, &blocks,
                                         &numberSteps, &shapeID, &isReadAsJoined,
                                         &isReadAsLocalValue, &isRandomAccess);
-            std::cout << "shapeID = " << shapeID << std::endl;
+            // std::cout << "shapeID = " << shapeID << std::endl;
             // std::cout << "shape size = " << shape.size() << std::endl;
             // std::cout << "start size = " << start.size() << std::endl;
             // std::cout << "count size = " << count.size() << std::endl;
@@ -411,7 +410,7 @@ void JuleaKVReader::InitVariables()
             // std::cout << "count = " << count.front() << std::endl;
             // std::cout << "type  = " << type << std::endl;
             // std::cout << "numberSteps = " << numberSteps << std::endl;
-            std::cout << "constantDims = " << constantDims << std::endl;
+            // std::cout << "constantDims = " << constantDims << std::endl;
 
             // std::cout << "block[0] = " << blocks[0] << std::endl;
             // std::cout << "block[1] = " << blocks[1] << std::endl;
@@ -657,7 +656,6 @@ void JuleaKVReader::DoClose(const int transportIndex)
 
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
-
 
 // #define declare_type(T)                                                        \
 //     std::map<size_t, std::vector<typename Variable<T>::Info>>                  \

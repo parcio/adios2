@@ -41,7 +41,7 @@
 // #include <array>
 // #include <chrono>
 // #include <ios>       //std::ios_base::failure
-#include <iostream>  //std::cout
+#include <iostream> //std::cout
 // #include <stdexcept> //std::invalid_argument std::exception
 // #include <string>
 // #include <thread>
@@ -90,10 +90,10 @@ void write_simple(std::string engine, std::string fileName)
     // Open file. "w" means we overwrite any existing file on disk,
     // but Advance() will append steps to the same file.
     adios2::Engine writer = io.Open(fileName, adios2::Mode::Write);
-    // adios2::Engine writer = io.Open("SimpleSteps-APPEND-MODE", adios2::Mode::Append);
-    // io.Open("JULEA-SimpleSteps.bp", adios2::Mode::Write);
-    // adios2::Engine writer = io.Open("JULEAlocalArray.bp",
-    // adios2::Mode::Append);
+    // adios2::Engine writer = io.Open("SimpleSteps-APPEND-MODE",
+    // adios2::Mode::Append); io.Open("JULEA-SimpleSteps.bp",
+    // adios2::Mode::Write); adios2::Engine writer =
+    // io.Open("JULEAlocalArray.bp", adios2::Mode::Append);
 
     // v1[0] = -42;
     // v1[1] = 42;
@@ -111,10 +111,9 @@ void write_simple(std::string engine, std::string fileName)
     // writer.Put<double>(varV0, v6.data());
     // writer.Put<double>(varV0, v2.data());
 
-    //TODO: easier to test without these first
+    // TODO: easier to test without these first
     writer.Put<double>(varV0, v3.data(), adios2::Mode::Sync);
-    writer.Put<double>(varV0, v4.data(),adios2::Mode::Deferred);
-
+    writer.Put<double>(varV0, v4.data(), adios2::Mode::Deferred);
 
     // writer.Put<double>(varV0, v1.data(), adios2::Mode::Sync);
     // writer.Put<double>(varV0, v5.data());
@@ -274,14 +273,15 @@ void write_complex(std::string engine, std::string fileName)
 
 void read_simple(std::string engine, std::string fileName)
 {
-     std::cout << "\n---------- Application: Read "
-                 "-------------------------------------\n" << std::endl;
+    std::cout << "\n---------- Application: Read "
+                 "-------------------------------------\n"
+              << std::endl;
     // v0 has the same size on every process at every step
     const size_t Nglobal = 2;
-        std::vector<double> v0(Nglobal);
-    std::vector<double> v1 = {-12345,-12345};
-        std::vector<double> v2(Nglobal);
-        std::vector<double> v3(Nglobal);
+    std::vector<double> v0(Nglobal);
+    std::vector<double> v1 = {-12345, -12345};
+    std::vector<double> v2(Nglobal);
+    std::vector<double> v3(Nglobal);
     v0.resize(2);
     v1.resize(2);
     v2.resize(2);
@@ -295,12 +295,10 @@ void read_simple(std::string engine, std::string fileName)
     // but Advance() will append steps to the same file.
     adios2::Engine reader = io.Open(fileName, adios2::Mode::Read);
 
-
     adios2::Variable<double> varV0 = io.InquireVariable<double>("v0");
     adios2::Variable<double> varV1 = io.InquireVariable<double>("v0");
     adios2::Variable<double> varV2 = io.InquireVariable<double>("v0");
     adios2::Variable<double> varV3 = io.InquireVariable<double>("v0");
-
 
     size_t steps = varV0.Steps();
     std::cout << "SIMPLE_STEPS: steps: " << steps << std::endl;
@@ -323,12 +321,12 @@ void read_simple(std::string engine, std::string fileName)
         reader.EndStep();
 
         std::cout << "----- step ---- " << step << std::endl;
-        // std::cout << "v[0]: " << value[0] << " v[1]: " << value[1] << std::endl;
+        // std::cout << "v[0]: " << value[0] << " v[1]: " << value[1] <<
+        // std::endl;
         std::cout << "v0[0]: " << v0[0] << " v0[1]: " << v0[1] << std::endl;
         // std::cout << "v1[0]: " << v1[0] << " v1[1]: " << v1[1] << std::endl;
         // std::cout << "v2[0]: " << v2[0] << " v2[1]: " << v2[1] << std::endl;
         // std::cout << "v3[0]: " << v3[0] << " v3[1]: " << v3[1] << std::endl;
-
     }
 
     // varV0.SetStepSelection(adios2::Box<std::size_t>(0, 3));
@@ -350,12 +348,13 @@ void read_simple(std::string engine, std::string fileName)
 
 void read_selection(std::string engine, std::string fileName)
 {
-     std::cout << "\n---------- Application: Read "
-                 "-------------------------------------\n" << std::endl;
+    std::cout << "\n---------- Application: Read "
+                 "-------------------------------------\n"
+              << std::endl;
     // v0 has the same size on every process at every step
     const size_t Nglobal = 2;
-        std::vector<double> v0(Nglobal);
-    std::vector<double> v1 = {-12345,-12345};
+    std::vector<double> v0(Nglobal);
+    std::vector<double> v1 = {-12345, -12345};
 
     v0.resize(2);
     v1.resize(2);
@@ -370,7 +369,7 @@ void read_selection(std::string engine, std::string fileName)
     adios2::Variable<double> varV1 = io.InquireVariable<double>("v0");
 
     size_t steps = varV0.Steps();
-    std::cout << "SIMPLE_STEPS: steps: " << steps << std::endl;
+    std::cout << "\nSIMPLE_STEPS: steps: " << steps << std::endl;
 
     size_t stepsstart = varV0.StepsStart();
     std::cout << "stepsstart: " << stepsstart << std::endl;
@@ -378,12 +377,16 @@ void read_selection(std::string engine, std::string fileName)
     for (size_t step = 0; step < 2; step++)
     {
         reader.BeginStep(adios2::StepMode::Read);
-        std::cout << "--DEBUG-- " << std::endl;
-        auto blocksInfo = reader.BlocksInfo(varV0, step);
-        std::cout << "--DEBUG 1-- " << std::endl;
 
-        std::cout << " v0 " << " has " << blocksInfo.size()
-                  << " blocks in step " << step << std::endl;
+        std::cout << "------ DEBUG -- " << std::endl;
+        stepsstart = varV0.StepsStart();
+        std::cout << "--- stepsstart: " << stepsstart << std::endl;
+
+        auto blocksInfo = reader.BlocksInfo(varV0, step);
+
+        std::cout << " v0 "
+                  << " has " << blocksInfo.size() << " blocks in step " << step
+                  << std::endl;
 
         // create a data vector for each block
         std::vector<std::vector<double>> dataSet;
@@ -392,18 +395,20 @@ void read_selection(std::string engine, std::string fileName)
         std::cout << "--DEBUG 2-- " << std::endl;
         /** to test stuff */
         // reader.Get<double>(varV1, v1.data(), adios2::Mode::Sync);
-        // std::cout << "\nv1[0]: " << v1[0] << " v1[1]: " << v1[1] << std::endl;
+        // std::cout << "\nv1[0]: " << v1[0] << " v1[1]: " << v1[1] <<
+        // std::endl;
 
         // schedule a read operation for each block separately
         int i = 0;
-        for (auto &info : blocksInfo)
-        {
-            std::cout << "test number blocksinfo: i= " << i << std::endl;
-            std::cout << "info.BlockID = " << info.BlockID << std::endl;
-            varV0.SetBlockSelection(info.BlockID);
-            reader.Get<double>(varV0, dataSet[i], adios2::Mode::Deferred);
-            ++i;
-        }
+        // for (auto &info : blocksInfo)
+        // {
+        //     std::cout << "test number blocksinfo: i= " << i << std::endl;
+        //     std::cout << "info.BlockID = " << info.BlockID << std::endl;
+        //     varV0.SetBlockSelection(info.BlockID);
+        //     reader.Get<double>(varV0, dataSet[i], adios2::Mode::Sync);
+        //     // reader.Get<double>(varV0, dataSet[i], adios2::Mode::Deferred);
+        //     ++i;
+        // }
 
         // Read in all blocks at once now
         reader.PerformGets();
@@ -411,11 +416,12 @@ void read_selection(std::string engine, std::string fileName)
 
         /** to test stuff */
         // reader.Get<double>(varV1, v1.data(), adios2::Mode::Sync);
-        // std::cout << "\n v1[0]: " << v1[0] << " v1[1]: " << v1[1] << std::endl;
+        // std::cout << "\n v1[0]: " << v1[0] << " v1[1]: " << v1[1] <<
+        // std::endl;
 
-
-
-        std::cout << "\n--------------- APPLICATION loop over blocksInfo ------- " << std::endl;
+        std::cout
+            << "\n--------------- APPLICATION loop over blocksInfo ------- "
+            << std::endl;
         i = 0;
         for (const auto &info : blocksInfo)
         {
@@ -432,7 +438,6 @@ void read_selection(std::string engine, std::string fileName)
         }
 
         reader.EndStep();
-
     }
 
     // varV0.SetStepSelection(adios2::Box<std::size_t>(0, 3));

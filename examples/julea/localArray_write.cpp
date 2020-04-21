@@ -126,7 +126,8 @@ int main(int argc, char *argv[])
 
         // Open file. "w" means we overwrite any existing file on disk,
         // but Advance() will append steps to the same file.
-        adios2::Engine writer = io.Open("JULEA-LocalArray.bp", adios2::Mode::Write);
+        adios2::Engine writer =
+            io.Open("JULEA-LocalArray.bp", adios2::Mode::Write);
 
         for (int step = 0; step < NSTEPS; step++)
         {

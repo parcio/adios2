@@ -34,7 +34,6 @@ void SetVariableBlockInfo(Variable<T> &variable,
     // FIXME: probably annoying complicated blockselection stuff to be done here
 }
 
-
 void InitVariable(core::IO *io, core::Engine &engine, std::string varName,
                   size_t *blocks, size_t numberSteps, ShapeID shapeID)
 {
@@ -63,13 +62,17 @@ void InitVariable(core::IO *io, core::Engine &engine, std::string varName,
             {                                                                  \
                 var->m_AvailableStepBlockIndexOffsets[i + 1].push_back(42 +    \
                                                                        i);     \
+                std::cout << "AvailableStepBlockIndexOffsets.size"             \
+                          << var->m_AvailableStepBlockIndexOffsets.size()      \
+                          << std::endl;                                        \
             }                                                                  \
             var->m_AvailableStepsStart = i;                                    \
             var->m_AvailableStepsCount++;                                      \
         }                                                                      \
-        var->m_StepsStart =                                                    \
-            var->m_AvailableStepBlockIndexOffsets.begin()->first - 1;          \
+        var->m_StepsStart = 0;                                                 \
+        std::cout << "m_StepsStart: " << var->m_StepsStart << std::endl;       \
         var->m_Engine = &engine;                                               \
+        var->m_FirstStreamingStep = true;                                      \
     }
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
@@ -224,7 +227,6 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
     memcpy(constantDims, tmpBuffer, sizeof(bool));
     memcpy(&isConstantDims, tmpBuffer, sizeof(bool));
     tmpBuffer += sizeof(bool);
-    std::cout << "isConstantDims: " << isConstantDims << std::endl;
 
     /** --- isReadAsJoined ---*/
     memcpy(readAsJoined, tmpBuffer, sizeof(bool));
@@ -252,7 +254,6 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
     /** --- shapeID --- */
     memcpy(&tmpShapeID, tmpBuffer, sizeof(int));
     tmpBuffer += sizeof(int);
-    std::cout << "tmpShapeID: " << tmpShapeID << std::endl;
 
     /** --- shape --- */
     memcpy(&shapeSize, tmpBuffer, sizeof(size_t));
@@ -338,22 +339,17 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
         break;
     }
 
-    // std::cout << "variable.m_ReadAsJoined: " << variable.m_ReadAsJoined
-    // << std::endl;
-    // std::cout << "variable.m_ReadAsLocalValue: " <<
-    // variable.m_ReadAsLocalValue << std::endl;
-    // std::cout << "variable.m_RandomAccess: " << variable.m_RandomAccess
-    // << std::endl;
+    // std::cout << "isConstantDims: " << isConstantDims << std::endl;
+    // std::cout << "tmpShapeID: " << tmpShapeID << std::endl;
+    // std::cout << "typeLen: " << typeLen << std::endl;
+    // std::cout << "tmpShapeID: " << tmpShapeID << std::endl;
+    // std::cout << "tmpType: " << tmpType << std::endl;
+    // std::cout << "count size" << countSize << std::endl;
+    // std::cout << "steps: " << steps << std::endl;
+    // std::cout << "numberSteps: " << *numberSteps << std::endl;
 
-    std::cout << "typeLen: " << typeLen << std::endl;
-    std::cout << "tmpShapeID: " << tmpShapeID << std::endl;
-    std::cout << "tmpType: " << tmpType << std::endl;
-    std::cout << "count size" << countSize << std::endl;
-    std::cout << "steps: " << steps << std::endl;
-    std::cout << "numberSteps: " << *numberSteps << std::endl;
-
-    std::cout << "block[0]: " << tmpBlocks[0] << std::endl;
-    std::cout << "block[1]: " << tmpBlocks[1] << std::endl;
+    // std::cout << "block[0]: " << tmpBlocks[0] << std::endl;
+    // std::cout << "block[1]: " << tmpBlocks[1] << std::endl;
 
     *blocks = tmpBlocks;
 }
@@ -501,7 +497,7 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer)
     // std::cout << "info.Min: " << info.Min << std::endl;
     // std::cout << "info.Max: " << info.Max << std::endl;
     // std::cout << "info.Value: " << info.Value << std::endl;
-    // std::cout << "info.StepsStart: " << info.StepsStart << std::endl;
+    std::cout << "info.StepsStart: " << info.StepsStart << std::endl;
     // std::cout << "info.StepsCount: " << info.StepsCount << std::endl;
     // std::cout << "info.BlockID: " << info.BlockID << std::endl;
     // std::cout << "info.IsValue: " << info.IsValue << std::endl;
@@ -515,6 +511,7 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer)
     {
         variable.m_BlocksInfo.push_back(info);
     }
+    // variable.m_BlocksInfo.push_back(info);
 }
 
 /**
@@ -664,7 +661,7 @@ GetDeserializedMetadata(const core::Variable<T> &variable, gpointer buffer)
     // std::cout << "info.Min: " << info->Min << std::endl;
     // std::cout << "info.Max: " << info->Max << std::endl;
     // std::cout << "info.Value: " << info->Value << std::endl;
-    // std::cout << "info.StepsStart: " << info->StepsStart << std::endl;
+    std::cout << "info.StepsStart: " << info->StepsStart << std::endl;
     // std::cout << "info.StepsCount: " << info->StepsCount << std::endl;
     // std::cout << "info.BlockID: " << info->BlockID << std::endl;
     // std::cout << "info.IsValue: " << info->IsValue << std::endl;

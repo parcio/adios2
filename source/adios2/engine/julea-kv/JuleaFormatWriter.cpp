@@ -139,21 +139,21 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     // rewind buffer
     buffer -= len - blocksLen;
 
-    std::cout << "typeLen: " << typeLen << std::endl;
-    std::cout << "variable.m_ShapeID: " << variable.m_ShapeID << std::endl;
-    std::cout << "shapeID: " << shapeID << std::endl;
-    std::cout << "constantDims: " << constantDims << std::endl;
-    std::cout << "isReadAsJoined: " << isReadAsJoined << std::endl;
-    std::cout << "isReadAsLocalValue: " << isReadAsLocalValue << std::endl;
-    std::cout << "isRandomAccess: " << isRandomAccess << std::endl;
-    std::cout << "type: " << type << std::endl;
-    std::cout << "shapeSize: " << shapeSize << std::endl;
-    std::cout << "startSize: " << startSize << std::endl;
-    std::cout << "countSize: " << countSize << std::endl;
-    std::cout << "numberSteps: " << numberSteps << std::endl;
-    std::cout << "shape.data = " << variable.m_Shape.data() << std::endl;
-    std::cout << "count.data = " << variable.m_Count.data() << std::endl;
-    std::cout << "numberSteps: " << numberSteps << std::endl;
+    // std::cout << "typeLen: " << typeLen << std::endl;
+    // std::cout << "variable.m_ShapeID: " << variable.m_ShapeID << std::endl;
+    // std::cout << "shapeID: " << shapeID << std::endl;
+    // std::cout << "constantDims: " << constantDims << std::endl;
+    // std::cout << "isReadAsJoined: " << isReadAsJoined << std::endl;
+    // std::cout << "isReadAsLocalValue: " << isReadAsLocalValue << std::endl;
+    // std::cout << "isRandomAccess: " << isRandomAccess << std::endl;
+    // std::cout << "type: " << type << std::endl;
+    // std::cout << "shapeSize: " << shapeSize << std::endl;
+    // std::cout << "startSize: " << startSize << std::endl;
+    // std::cout << "countSize: " << countSize << std::endl;
+    // std::cout << "numberSteps: " << numberSteps << std::endl;
+    // std::cout << "shape.data = " << variable.m_Shape.data() << std::endl;
+    // std::cout << "count.data = " << variable.m_Count.data() << std::endl;
+    // std::cout << "numberSteps: " << numberSteps << std::endl;
 
     return (gpointer)buffer;
 }

@@ -21,7 +21,6 @@ namespace core
 namespace engine
 {
 
-
 template <class T>
 typename core::Variable<T>::Info *
 GetDeserializedMetadata(const core::Variable<T> &variable, gpointer buffe);
