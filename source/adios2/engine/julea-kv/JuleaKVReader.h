@@ -68,7 +68,7 @@ private:
     JSemantics *m_JuleaSemantics;
     StepMode m_StepMode = StepMode::Append;
 
-    int m_Verbosity = 0; // TODO: changed to 5 for debugging
+    int m_Verbosity = 5; // TODO: changed to 5 for debugging
     int m_ReaderRank;    // my rank in the readers' comm
 
     // EndStep must call PerformGets if necessary
@@ -204,6 +204,20 @@ private:
     BlocksInfoCommon(const core::Variable<T> &variable,
                      const std::vector<size_t> &blocksIndexOffsets,
                      size_t step) const;
+
+    /**
+ * Initializes a block inside variable.m_BlocksInfo
+ * @param variable input
+ * @param data user data pointer
+ * @return a reference inside variable.m_BlocksInfo (invalidated if called
+ * twice)
+ */
+template <class T>
+typename core::Variable<T>::Info &
+InitVariableBlockInfo(core::Variable<T> &variable, T *data);
+
+    // typename core::Variable<T>::Info &InitVariableBlockInfo(   \
+    //     core::Variable<T> &variable, T *data);                                 \
 
 #define declare_type(T)                                                        \
     std::map<size_t, std::vector<typename Variable<T>::Info>>                  \

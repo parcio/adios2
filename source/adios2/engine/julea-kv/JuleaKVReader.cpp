@@ -396,7 +396,7 @@ void JuleaKVReader::InitVariables()
 
             GetVariableMetadataFromJulea(nameSpace, varName, &md_buffer,
                                          &buffer_len);
-            // std::cout << "buffer_len = " << buffer_len << std::endl;
+            std::cout << "buffer_len = " << buffer_len << std::endl;
 
             DeserializeVariableMetadata(md_buffer, &type, &shape, &start,
                                         &count, &constantDims, &blocks,
@@ -411,6 +411,7 @@ void JuleaKVReader::InitVariables()
             // std::cout << "count = " << count.front() << std::endl;
             // std::cout << "type  = " << type << std::endl;
             // std::cout << "numberSteps = " << numberSteps << std::endl;
+            std::cout << "constantDims = " << constantDims << std::endl;
 
             // std::cout << "block[0] = " << blocks[0] << std::endl;
             // std::cout << "block[1] = " << blocks[1] << std::endl;
@@ -656,6 +657,30 @@ void JuleaKVReader::DoClose(const int transportIndex)
 
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
+
+
+// #define declare_type(T)                                                        \
+//     std::map<size_t, std::vector<typename Variable<T>::Info>>                  \
+//     JuleaKVReader::DoAllStepsBlocksInfo(const Variable<T> &variable) const     \
+//     {                                                                          \
+//         return AllStepsBlocksInfo(variable, m_Name);                                   \
+//     }                                                                          \
+//     std::vector<std::vector<typename Variable<T>::Info>>                       \
+//     JuleaKVReader::DoAllRelativeStepsBlocksInfo(const Variable<T> &variable)   \
+//         const                                                                  \
+//     {                                                                          \
+//         return AllRelativeStepsBlocksInfo(variable);                           \
+//     }                                                                          \
+//                                                                                \
+//     std::vector<typename Variable<T>::Info> JuleaKVReader::DoBlocksInfo(       \
+//         const Variable<T> &variable, const size_t step) const                  \
+//     {                                                                          \
+//         return BlocksInfo(variable, step, m_Name);                                     \
+//     }
+
+// ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
+// #undef declare_type
+
 //                                                                            \
     // std::vector<typename Variable<T>::Info> JuleaKVReader::DoBlocksInfo(       \
     //     const Variable<T> &variable, const size_t step)                   \

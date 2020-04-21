@@ -131,11 +131,11 @@ void JuleaKVReader::GetDeferredCommon(Variable<T> &variable, T *data)
         std::cout << "Julea Reader " << m_ReaderRank << "     GetDeferred("
                   << variable.m_Name << ")\n";
     }
-    variable.SetBlockInfo(data, variable.m_StepsStart, variable.m_StepsCount);
+    // variable.SetBlockInfo(data, variable.m_StepsStart, variable.m_StepsCount);
     // m_NeedPerformGets = true;
 
     // returns immediately without populating data
-    // m_BP4Deserializer.InitVariableBlockInfo(variable, data);  //TODO: needed?
+   InitVariableBlockInfo(variable, data);  //TODO: needed?
     m_DeferredVariables.insert(variable.m_Name);
 }
 
@@ -168,6 +168,14 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
     // std::cout << "buffer_len = " << buffer_len << std::endl;
 
     DeserializeBlockMetadata(variable, md_buffer);
+
+    if(variable.m_SingleValue)
+    {
+        std::cout << "Single value" << std::endl;
+        return;
+    }
+
+    std::cout << " isConstantDims: " << variable.IsConstantDims() <<std::endl;
 
     size_t numberElements =
         helper::GetTotalSize(variable.m_BlocksInfo[m_CurrentBlockID].Count);
@@ -292,6 +300,87 @@ JuleaKVReader::BlocksInfo(const core::Variable<T> &variable,
     }
     return BlocksInfoCommon(variable, itStep->second, step);
     // return NULL;
+}
+
+template <class T>
+typename core::Variable<T>::Info &
+JuleaKVReader::InitVariableBlockInfo(core::Variable<T> &variable, T *data)
+{
+    const size_t stepsStart = variable.m_StepsStart;
+    const size_t stepsCount = variable.m_StepsCount;
+    std::cout << "--- InitVariableBlockInfo --- selectionType: " << variable.m_SelectionType << std::endl;
+
+    // if (m_DebugMode)
+    // {
+    //     const auto &indices = variable.m_AvailableStepBlockIndexOffsets;
+    //     const size_t maxStep = indices.rbegin()->first;
+    //     if (stepsStart + 1 > maxStep)
+    //     {
+    //         throw std::invalid_argument(
+    //             "ERROR: steps start " + std::to_string(stepsStart) +
+    //             " from SetStepsSelection or BeginStep is larger than "
+    //             "the maximum available step " +
+    //             std::to_string(maxStep - 1) + " for variable " +
+    //             variable.m_Name + ", in call to Get\n");
+    //     }
+
+    //     auto itStep = std::next(indices.begin(), stepsStart);
+
+    //     for (size_t i = 0; i < stepsCount; ++i)
+    //     {
+    //         if (itStep == indices.end())
+    //         {
+    //             throw std::invalid_argument(
+    //                 "ERROR: offset " + std::to_string(i) +
+    //                 " from steps start " + std::to_string(stepsStart) +
+    //                 " in variable " + variable.m_Name +
+    //                 " is beyond the largest available step = " +
+    //                 std::to_string(maxStep - 1) +
+    //                 ", check Variable SetStepSelection argument stepsCount "
+    //                 "(random access), or "
+    //                 "number of BeginStep calls (streaming), in call to Get");
+    //         }
+    //         ++itStep;
+    //     }
+    // }
+
+    if (variable.m_SelectionType == SelectionType::WriteBlock)
+    {
+        std::cout << "--- DEBUG: Selection Type " << std::endl;
+        const std::vector<typename core::Variable<T>::Info> blocksInfo =
+            JuleaKVReader::BlocksInfo(variable, stepsStart);
+
+
+            if (variable.m_BlockID >= blocksInfo.size())
+            {
+                throw std::invalid_argument(
+                    "ERROR: invalid blockID " +
+                    std::to_string(variable.m_BlockID) + " from steps start "
+                    + std::to_string(stepsStart) + " in variable " +
+                    variable.m_Name +
+                    ", check argument to Variable<T>::SetBlockID, in call "
+                    "to Get\n");
+            }
+
+
+        // switch to bounding box for global array
+        if (variable.m_ShapeID == ShapeID::GlobalArray)
+        {
+            const Dims &start = blocksInfo[variable.m_BlockID].Start;
+            const Dims &count = blocksInfo[variable.m_BlockID].Count;
+
+            variable.SetSelection({start, count});
+        }
+        else if (variable.m_ShapeID == ShapeID::LocalArray)
+        {
+            // TODO keep Count for block updated
+            variable.m_Count = blocksInfo[variable.m_BlockID].Count;
+        }
+    }
+
+    // create block info
+    // FIXME: only create once for every block!
+    return variable.SetBlockInfo(data, stepsStart, stepsCount);
 }
 
 // template <class T>

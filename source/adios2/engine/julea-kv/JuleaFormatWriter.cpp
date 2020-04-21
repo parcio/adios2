@@ -70,20 +70,23 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
         // std::cout << "i: " << i << "  blocks: " << blocks[i] << std::endl;
     }
 
+    /** --- constantDims --- */
     memcpy(buffer, &constantDims, sizeof(bool));
     buffer += sizeof(bool);
 
+    /** --- isReadAsJoined --- */
     memcpy(buffer, &isReadAsJoined, sizeof(bool));
     buffer += sizeof(bool);
 
+    /** --- isReadAsLocalValue --- */
     memcpy(buffer, &isReadAsLocalValue, sizeof(bool));
     buffer += sizeof(bool);
 
+    /** --- isRandomAccess --- */
     memcpy(buffer, &isRandomAccess, sizeof(bool));
     buffer += sizeof(bool);
 
-    /** allocate memory for variable holding the length of the vector +
-    memory for the vector data itself */
+    /** --- type --- */
     memcpy(buffer, &typeLen, sizeof(size_t)); // type
     buffer += sizeof(size_t);
     memcpy(buffer, type, typeLen);
@@ -136,18 +139,21 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     // rewind buffer
     buffer -= len - blocksLen;
 
-    // std::cout << "typeLen: " << typeLen << std::endl;
-    // std::cout << "variable.m_ShapeID: " << variable.m_ShapeID << std::endl;
-    // std::cout << "shapeID: " << shapeID << std::endl;
-    // std::cout << "constantDims: " << constantDims << std::endl;
-    // std::cout << "type: " << type << std::endl;
-    // std::cout << "shapeSize: " << shapeSize << std::endl;
-    // std::cout << "startSize: " << startSize << std::endl;
-    // std::cout << "countSize: " << countSize << std::endl;
-    // std::cout << "numberSteps: " << numberSteps << std::endl;
-    // std::cout << "shape.data = " << variable.m_Shape.data() << std::endl;
-    // std::cout << "count.data = " << variable.m_Count.data() << std::endl;
-    // std::cout << "numberSteps: " << numberSteps << std::endl;
+    std::cout << "typeLen: " << typeLen << std::endl;
+    std::cout << "variable.m_ShapeID: " << variable.m_ShapeID << std::endl;
+    std::cout << "shapeID: " << shapeID << std::endl;
+    std::cout << "constantDims: " << constantDims << std::endl;
+    std::cout << "isReadAsJoined: " << isReadAsJoined << std::endl;
+    std::cout << "isReadAsLocalValue: " << isReadAsLocalValue << std::endl;
+    std::cout << "isRandomAccess: " << isRandomAccess << std::endl;
+    std::cout << "type: " << type << std::endl;
+    std::cout << "shapeSize: " << shapeSize << std::endl;
+    std::cout << "startSize: " << startSize << std::endl;
+    std::cout << "countSize: " << countSize << std::endl;
+    std::cout << "numberSteps: " << numberSteps << std::endl;
+    std::cout << "shape.data = " << variable.m_Shape.data() << std::endl;
+    std::cout << "count.data = " << variable.m_Count.data() << std::endl;
+    std::cout << "numberSteps: " << numberSteps << std::endl;
 
     return (gpointer)buffer;
 }
