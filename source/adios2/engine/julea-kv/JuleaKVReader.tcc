@@ -174,7 +174,8 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
                                   &buffer_len, stepBlockID);
         // std::cout << "buffer_len = " << buffer_len << std::endl;
 
-        DeserializeBlockMetadata(variable, md_buffer);
+        // DeserializeBlockMetadata(variable, md_buffer, variable.m_BlockID, blockInfo);
+        DeserializeBlockMetadata(variable, md_buffer, variable.m_BlockID, blockInfo);
 
         if (variable.m_SingleValue)
         {
@@ -185,17 +186,19 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
         std::cout << " isConstantDims: " << variable.IsConstantDims()
                   << std::endl;
 
+        // size_t count = blockInfo.Count;
         size_t numberElements =
-            helper::GetTotalSize(variable.m_BlocksInfo[m_CurrentBlockID].Count);
+            // helper::GetTotalSize(variable.m_BlocksInfo[m_CurrentBlockID].Count);
+            helper::GetTotalSize(blockInfo.Count);
         dataSize = numberElements * variable.m_ElementSize;
         std::cout << "numberElements: " << numberElements << std::endl;
 
-        // T *data = blockInfo.Data;
-        T *data = variable.m_BlocksInfo[m_CurrentBlockID].Data;
+        T *data = blockInfo.Data;
+        // T *data = variable.m_BlocksInfo[m_CurrentBlockID].Data;
         GetVariableDataFromJulea(variable, data, nameSpace, dataSize,
                                  m_CurrentStep, m_CurrentBlockID);
-        // std::cout << "data: " << data[0] << std::endl;
-        // std::cout << "data: " << data[1] << std::endl;
+        std::cout << "data: " << data[0] << std::endl;
+        std::cout << "data: " << data[1] << std::endl;
         m_CurrentBlockID++;
     }
 }
@@ -211,9 +214,12 @@ JuleaKVReader::AllStepsBlocksInfo(const core::Variable<T> &variable) const
     {
         const size_t step = pair.first;
         const std::vector<size_t> &blockPositions = pair.second;
-        // std::cout << "--- step: " << step
+        std::cout << "--- step: " << step
         // << "blockPositions: " << blockPositions.size() << std::endl;
-        // << "blockPositions: " << blockPositions.data()[0] << std::endl;
+        << " blockPositions: " << blockPositions.data()[0] << std::endl;
+        std::cout << "--- step: " << step
+        << " blockPositions: " << blockPositions.size() << std::endl;
+
         for (int i = 0; i < blockPositions.size(); i++)
         {
             // allStepsBlocksInfo[step -1 ] = variable.m_BlocksInfo[i];
@@ -224,6 +230,7 @@ JuleaKVReader::AllStepsBlocksInfo(const core::Variable<T> &variable) const
         allStepsBlocksInfo[step - 1] =
             BlocksInfoCommon(variable, blockPositions, step - 1);
     }
+    std::cout << "--- finished allStepsBlocksInfo --- " << std::endl;
     return allStepsBlocksInfo;
 }
 
@@ -233,7 +240,7 @@ JuleaKVReader::BlocksInfoCommon(const core::Variable<T> &variable,
                                 const std::vector<size_t> &blocksIndexOffsets,
                                 size_t step) const
 {
-    // std::cout << "____ BlocksInfoCommon _____ " << std::endl;
+    std::cout << "____ BlocksInfoCommon _____ step: " << step << std::endl;
     std::vector<typename core::Variable<T>::Info> blocksInfo;
     blocksInfo.reserve(blocksIndexOffsets.size());
     typename core::Variable<T>::Info blockInfo;
@@ -272,6 +279,7 @@ JuleaKVReader::BlocksInfoCommon(const core::Variable<T> &variable,
         // std::cout << "--- DEBUG --- " << std::endl;
 
         blocksInfo.push_back(info);
+        std::cout << "BlocksInfoCommon - blocksInfo.size(): " << blocksInfo.size() << std::endl;
     }
     // return variable.m_BlocksInfo[0];
     return blocksInfo;
@@ -304,12 +312,18 @@ JuleaKVReader::BlocksInfo(const core::Variable<T> &variable,
                           const size_t step) const
 {
 
-    std::cout << "--- DoBlocksInfo --- " << std::endl;
+    std::cout << "--- BlocksInfo --- " << std::endl;
+
+    // std::cout << "variable.m_AvailableStepBlockIndexOffsets.size() " << variable.m_AvailableStepBlockIndexOffsets.size() <<std::endl;
+    // std::cout << "variable.m_AvailableStepBlockIndexOffsets.find(step + 1) " << variable.m_AvailableStepBlockIndexOffsets.find(step + 1) <<std::endl;
+    std::cout << "BlocksInfo: step = " << step <<std::endl;
     // bp4 format starts at 1
-    auto itStep = variable.m_AvailableStepBlockIndexOffsets.find(step + 1);
+    // auto itStep = variable.m_AvailableStepBlockIndexOffsets.find(step + 1);
+    auto itStep = variable.m_AvailableStepBlockIndexOffsets.find(step+1);
     if (itStep == variable.m_AvailableStepBlockIndexOffsets.end())
     {
         return std::vector<typename core::Variable<T>::Info>();
+        std::cout << " --- step not found in m_AvailableStepBlockIndexOffsets " << std::endl;
     }
     return BlocksInfoCommon(variable, itStep->second, step);
     // return NULL;
@@ -325,38 +339,39 @@ JuleaKVReader::InitVariableBlockInfo(core::Variable<T> &variable, T *data)
               << variable.m_SelectionType << std::endl;
 
     // if (m_DebugMode)
-    // {
-    //     const auto &indices = variable.m_AvailableStepBlockIndexOffsets;
-    //     const size_t maxStep = indices.rbegin()->first;
-    //     if (stepsStart + 1 > maxStep)
-    //     {
-    //         throw std::invalid_argument(
-    //             "ERROR: steps start " + std::to_string(stepsStart) +
-    //             " from SetStepsSelection or BeginStep is larger than "
-    //             "the maximum available step " +
-    //             std::to_string(maxStep - 1) + " for variable " +
-    //             variable.m_Name + ", in call to Get\n");
-    //     }
+    if (m_Verbosity == 5)
+    {
+        const auto &indices = variable.m_AvailableStepBlockIndexOffsets;
+        const size_t maxStep = indices.rbegin()->first;
+        if (stepsStart + 1 > maxStep)
+        {
+            throw std::invalid_argument(
+                "ERROR: steps start " + std::to_string(stepsStart) +
+                " from SetStepsSelection or BeginStep is larger than "
+                "the maximum available step " +
+                std::to_string(maxStep - 1) + " for variable " +
+                variable.m_Name + ", in call to Get\n");
+        }
 
-    //     auto itStep = std::next(indices.begin(), stepsStart);
+        auto itStep = std::next(indices.begin(), stepsStart);
 
-    //     for (size_t i = 0; i < stepsCount; ++i)
-    //     {
-    //         if (itStep == indices.end())
-    //         {
-    //             throw std::invalid_argument(
-    //                 "ERROR: offset " + std::to_string(i) +
-    //                 " from steps start " + std::to_string(stepsStart) +
-    //                 " in variable " + variable.m_Name +
-    //                 " is beyond the largest available step = " +
-    //                 std::to_string(maxStep - 1) +
-    //                 ", check Variable SetStepSelection argument stepsCount "
-    //                 "(random access), or "
-    //                 "number of BeginStep calls (streaming), in call to Get");
-    //         }
-    //         ++itStep;
-    //     }
-    // }
+        for (size_t i = 0; i < stepsCount; ++i)
+        {
+            if (itStep == indices.end())
+            {
+                throw std::invalid_argument(
+                    "ERROR: offset " + std::to_string(i) +
+                    " from steps start " + std::to_string(stepsStart) +
+                    " in variable " + variable.m_Name +
+                    " is beyond the largest available step = " +
+                    std::to_string(maxStep - 1) +
+                    ", check Variable SetStepSelection argument stepsCount "
+                    "(random access), or "
+                    "number of BeginStep calls (streaming), in call to Get");
+            }
+            ++itStep;
+        }
+    }
 
     if (variable.m_SelectionType == SelectionType::WriteBlock)
     {
@@ -399,7 +414,8 @@ JuleaKVReader::InitVariableBlockInfo(core::Variable<T> &variable, T *data)
             variable.m_Count = blocksInfo[variable.m_BlockID].Count;
         }
     }
-
+    std::cout << "stepsstart: " << stepsStart << std::endl;
+    std::cout << "stepsCount: " << stepsCount << std::endl;
     // create block info
     // FIXME: only create once for every block!
     return variable.SetBlockInfo(data, stepsStart, stepsCount);

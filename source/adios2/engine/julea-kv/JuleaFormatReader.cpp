@@ -66,11 +66,10 @@ void InitVariable(core::IO *io, core::Engine &engine, std::string varName,
                           << var->m_AvailableStepBlockIndexOffsets.size()      \
                           << std::endl;                                        \
             }                                                                  \
-            var->m_AvailableStepsStart = i;                                    \
             var->m_AvailableStepsCount++;                                      \
         }                                                                      \
+            var->m_AvailableStepsStart = 0;                                      \
         var->m_StepsStart = 0;                                                 \
-        std::cout << "m_StepsStart: " << var->m_StepsStart << std::endl;       \
         var->m_Engine = &engine;                                               \
         var->m_FirstStreamingStep = true;                                      \
     }
@@ -358,10 +357,13 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
  * Deserializes the passed buffer and adds the created blockinfo to the variable
  */
 template <class T>
-void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer)
+void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer, size_t block,typename core::Variable<T>::Info &infoParam )
 {
     std::cout << "------ DeserializeBlockMetadata ----------" << std::endl;
-    typename Variable<T>::Info info;
+    // typename Variable<T>::Info info;
+    // typename Variable<T>::Info info = variable.m_BlocksInfo[block-1];
+    // typename Variable<T>::Info info = variable.m_BlocksInfo[0];
+    typename Variable<T>::Info info = infoParam;
     char *tmpBuffer = (char *)buffer;
 
     size_t shapeSize = 0;
@@ -497,7 +499,7 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer)
     // std::cout << "info.Min: " << info.Min << std::endl;
     // std::cout << "info.Max: " << info.Max << std::endl;
     // std::cout << "info.Value: " << info.Value << std::endl;
-    std::cout << "info.StepsStart: " << info.StepsStart << std::endl;
+    // std::cout << "info.StepsStart: " << info.StepsStart << std::endl;
     // std::cout << "info.StepsCount: " << info.StepsCount << std::endl;
     // std::cout << "info.BlockID: " << info.BlockID << std::endl;
     // std::cout << "info.IsValue: " << info.IsValue << std::endl;
@@ -507,11 +509,12 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer)
     // TODO: is this correct?
     // only append every block once. and since they should be in the blockID
     // order this should work
-    if (variable.m_BlocksInfo.size() == info.BlockID)
-    {
-        variable.m_BlocksInfo.push_back(info);
-    }
+    // if (variable.m_BlocksInfo.size() == info.BlockID)
+    // {
+        // variable.m_BlocksInfo.push_back(info);
+    // }
     // variable.m_BlocksInfo.push_back(info);
+    variable.m_BlocksInfo[0] = info;
 }
 
 /**
@@ -525,7 +528,7 @@ template <class T>
 typename core::Variable<T>::Info *
 GetDeserializedMetadata(const core::Variable<T> &variable, gpointer buffer)
 {
-    // std::cout << "------ GetDeserializedMetadata ----------" << std::endl;
+    std::cout << "------ GetDeserializedMetadata ----------" << std::endl;
     typename Variable<T>::Info *info = new (typename Variable<T>::Info);
     char *tmpBuffer = (char *)buffer;
 
@@ -661,7 +664,7 @@ GetDeserializedMetadata(const core::Variable<T> &variable, gpointer buffer)
     // std::cout << "info.Min: " << info->Min << std::endl;
     // std::cout << "info.Max: " << info->Max << std::endl;
     // std::cout << "info.Value: " << info->Value << std::endl;
-    std::cout << "info.StepsStart: " << info->StepsStart << std::endl;
+    // std::cout << "info.StepsStart: " << info->StepsStart << std::endl;
     // std::cout << "info.StepsCount: " << info->StepsCount << std::endl;
     // std::cout << "info.BlockID: " << info->BlockID << std::endl;
     // std::cout << "info.IsValue: " << info->IsValue << std::endl;
@@ -1397,7 +1400,7 @@ void ParseVarTypeFromBSON<std::complex<double>>(
     template typename core::Variable<T>::Info *GetDeserializedMetadata(        \
         const core::Variable<T> &variable, gpointer buffer);                   \
     template void DeserializeBlockMetadata(Variable<T> &variable,              \
-                                           gpointer buffer);                   \
+                                           gpointer buffer, size_t block,typename core::Variable<T>::Info &info);                   \
     template void SetVariableBlockInfo(                                        \
         core::Variable<T> &variable,                                           \
         typename core::Variable<T>::Info &blockInfo);                          \

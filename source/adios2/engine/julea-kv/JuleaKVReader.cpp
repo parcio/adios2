@@ -274,7 +274,6 @@ void JuleaKVReader::PerformGets()
             variableName, "in call to PerformGets, EndStep or Close");         \
         for (auto &blockInfo : variable.m_BlocksInfo)                          \
         {                                                                      \
-            SetVariableBlockInfo(variable, blockInfo);                         \
         }                                                                      \
         ReadVariableBlocks(variable);                                          \
         variable.m_BlocksInfo.clear();                                         \
@@ -287,6 +286,7 @@ void JuleaKVReader::PerformGets()
     m_DeferredVariables.clear();
     m_NeedPerformGets = false; // TODO: needed?
 
+            // SetVariableBlockInfo(variable, blockInfo);                         \
     // FIXME: needs to be in for loop in 274
     // variable.SetBlockInfo(data, variable.m_StepsStart,
     // variable.m_StepsCount);\
@@ -651,6 +651,7 @@ void JuleaKVReader::DoClose(const int transportIndex)
     std::vector<typename Variable<T>::Info> JuleaKVReader::DoBlocksInfo(       \
         const Variable<T> &variable, const size_t step) const                  \
     {                                                                          \
+                std::cout << "--- DoBlocksInfo ---" << std::endl;\
         return BlocksInfo(variable, step);                                     \
     }
 
