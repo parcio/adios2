@@ -21,25 +21,6 @@ namespace core
 namespace engine
 {
 
- // template <class T>
- //    std::map<size_t, std::vector<typename core::Variable<T>::Info>>
- //    AllStepsBlocksInfo(const core::Variable<T> &variable, std::string nameSpace);
-
- //    template <class T>
- //    std::vector<typename core::Variable<T>::Info>
- //    BlocksInfo(const core::Variable<T> &variable, const size_t step, std::string nameSpace);
-
-
- //    template <class T>
- //    std::vector<typename core::Variable<T>::Info>
- //    BlocksInfoCommon(const core::Variable<T> &variable,
- //                     const std::vector<size_t> &blocksIndexOffsets,
- //                     size_t step, std::string nameSpace);
-
-
-// template <class T>
-// void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
-// size_t block, std::vector<typename core::Variable<T>::Info> &infos);
 
 template <class T>
 typename core::Variable<T>::Info *
@@ -65,17 +46,6 @@ void DefineVariableInInitNew(core::IO *io, const std::string varName,
 
 void InitVariable(core::IO *io, core::Engine &engine, std::string varName,
                   size_t *blocks, size_t numberSteps, ShapeID shapeID);
-
-/**
- * Initializes a block inside variable.m_BlocksInfo
- * @param variable input
- * @param data user data pointer
- * @return a reference inside variable.m_BlocksInfo (invalidated if called
- * twice)
- */
-// template <class T>
-// typename core::Variable<T>::Info &
-// InitVariableBlockInfo(core::Variable<T> &variable, T *data);
 
 /**
  * Sets read block information from the available metadata information
@@ -134,10 +104,6 @@ void GetAdiosTypeString(int type, std::string *typeString);
         Variable<T> &variable, gpointer buffer, size_t block);                 \
     extern template void SetVariableBlockInfoNEW(                              \
         gpointer buffer, typename core::Variable<T>::Info &info);              \
-
- // extern template typename core::Variable<T>::Info &InitVariableBlockInfo(   \
-        core::Variable<T> &variable, T *data);                                 \
-
 
 #define variable_template_instantiation(T)                                     \
     extern template typename core::Variable<T>::Info *GetDeserializedMetadata( \
