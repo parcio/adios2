@@ -33,6 +33,7 @@ namespace core
 namespace engine
 {
 
+
 /** used for Variables and Attributes, name, type, type-index */
 using DataMap =
     std::unordered_map<std::string, std::pair<std::string, unsigned int>>;
@@ -63,10 +64,13 @@ public:
     void EndStep() final;
     void PerformGets() final;
 
+    // bool m_UseJuleaInBPLS = false;
 private:
     // JuleaInfo *m_JuleaInfo;
     JSemantics *m_JuleaSemantics;
     StepMode m_StepMode = StepMode::Append;
+
+    mutable bool m_UseKeysForBPLS = false;
 
     int m_Verbosity = 0; // TODO: changed to 5 for debugging
     int m_ReaderRank;    // my rank in the readers' comm

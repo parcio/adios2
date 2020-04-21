@@ -24,6 +24,11 @@ namespace core
 namespace engine
 {
 
+// void JuleaKVReader::SetUseKeysForBPLS (bool useKeysForBPLS)
+// {
+//     m_UseKeysForBPLS = useKeysForBPLS;
+// }
+
 template <>
 void JuleaKVReader::GetSyncCommon(Variable<std::string> &variable,
                                   std::string *data)
@@ -151,6 +156,7 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
     // std::cout << "Julea Reader " << m_ReaderRank
     // << " Variable name: " << variable.m_Name << std::endl;
 
+        size_t localBlockCount = 0;
     for (typename Variable<T>::Info &blockInfo : variable.m_BlocksInfo)
     {
         guint32 buffer_len;
@@ -158,6 +164,7 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
 
         auto nameSpace = m_Name;
         long unsigned int dataSize = 0;
+    std::cout << "localBlockCount: " << localBlockCount << std::endl;
     std::cout << "m_CurrentBlockID: " << m_CurrentBlockID << std::endl;
 
         /** when called from bpls there is no endStep or anything */
@@ -175,12 +182,25 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
     std::cout << "m_CurrentBlockID: " << m_CurrentBlockID << std::endl;
     std::cout << "m_CurrentStep: " << m_CurrentStep << std::endl;
 
-        auto stepBlockID =
-            g_strdup_printf("%lu_%lu", variable.m_StepsStart, variable.m_BlockID);
+        std::string stepBlockID;
+        // auto stepBlockID2 =
+            // g_strdup_printf("%lu_%lu", variable.m_StepsStart, variable.m_BlockID);
 
-        std::cout << "variable.m... stepBlockID: " << stepBlockID << std::endl;
-        stepBlockID = g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
-        std::cout << "m_Current... stepBlockID: " << stepBlockID << std::endl;
+
+        if(m_UseKeysForBPLS)
+        {
+            std::cout << "m_UseKeysForBPLS: " << m_UseKeysForBPLS << std::endl;
+            stepBlockID =
+            g_strdup_printf("%lu_%lu", variable.m_StepsStart, variable.m_BlockID);
+            std::cout << "variable.m... stepBlockID: " << stepBlockID << std::endl;
+
+        }
+        else
+        {
+            std::cout << "m_UseKeysForBPLS: " << m_UseKeysForBPLS << std::endl;
+            stepBlockID = g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
+            std::cout << "m_Current... stepBlockID: " << stepBlockID << std::endl;
+        }
         // std::cout << "blocksInfos.size: " << variable.m_BlocksInfo.size()
                   // << std::endl;
 
@@ -213,12 +233,22 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
 
         T *data = blockInfo.Data;
         // T *data = variable.m_BlocksInfo[m_CurrentBlockID].Data;
+        if(m_UseKeysForBPLS)
+        {
+            GetVariableDataFromJulea(variable, data, nameSpace, dataSize,
+                                 variable.m_StepsStart, variable.m_BlockID);
+                                 // m_CurrentStep, m_CurrentBlockID);
+        }
+        else{
         GetVariableDataFromJulea(variable, data, nameSpace, dataSize,
                                  // variable.m_StepsStart, variable.m_BlockID);
                                  m_CurrentStep, m_CurrentBlockID);
+
+        }
         std::cout << "data: " << data[0] << std::endl;
         std::cout << "data: " << data[1] << std::endl;
         m_CurrentBlockID++;
+        localBlockCount++;
     }
     // m_CurrentBlockID = 0;
 }
@@ -230,6 +260,11 @@ JuleaKVReader::AllStepsBlocksInfo(const core::Variable<T> &variable) const
     std::map<size_t, std::vector<typename core::Variable<T>::Info>>
         allStepsBlocksInfo;
 
+
+    //TODO: this assumes that only bpls calls AllStepsBlocksInfo. for now that should be ok
+    // now = 21.04.2020
+    m_UseKeysForBPLS = true;
+    // SetUseKeysForBPLS(true);
     for (const auto &pair : variable.m_AvailableStepBlockIndexOffsets)
     {
         const size_t step = pair.first;
@@ -248,6 +283,7 @@ JuleaKVReader::AllStepsBlocksInfo(const core::Variable<T> &variable) const
         // bp3 index starts at 1
         allStepsBlocksInfo[step - 1] =
             BlocksInfoCommon(variable, blockPositions, step - 1);
+            // BlocksInfoCommon(variable, blockPositions, step - 1, true);
     }
     // std::cout << "--- finished allStepsBlocksInfo --- " << std::endl;
     return allStepsBlocksInfo;
