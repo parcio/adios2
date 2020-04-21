@@ -359,7 +359,7 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
 template <class T>
 void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer, size_t block,typename core::Variable<T>::Info &infoParam )
 {
-    std::cout << "------ DeserializeBlockMetadata ----------" << std::endl;
+    // std::cout << "------ DeserializeBlockMetadata ----------" << std::endl;
     // typename Variable<T>::Info info;
     // typename Variable<T>::Info info = variable.m_BlocksInfo[block-1];
     // typename Variable<T>::Info info = variable.m_BlocksInfo[0];
@@ -528,7 +528,7 @@ template <class T>
 typename core::Variable<T>::Info *
 GetDeserializedMetadata(const core::Variable<T> &variable, gpointer buffer)
 {
-    std::cout << "------ GetDeserializedMetadata ----------" << std::endl;
+    // std::cout << "------ GetDeserializedMetadata ----------" << std::endl;
     typename Variable<T>::Info *info = new (typename Variable<T>::Info);
     char *tmpBuffer = (char *)buffer;
 

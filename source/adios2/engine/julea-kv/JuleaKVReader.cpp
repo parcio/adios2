@@ -651,7 +651,6 @@ void JuleaKVReader::DoClose(const int transportIndex)
     std::vector<typename Variable<T>::Info> JuleaKVReader::DoBlocksInfo(       \
         const Variable<T> &variable, const size_t step) const                  \
     {                                                                          \
-                std::cout << "--- DoBlocksInfo ---" << std::endl;\
         return BlocksInfo(variable, step);                                     \
     }
 
