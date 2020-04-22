@@ -31,19 +31,6 @@ namespace core
 namespace engine
 {
 
-// template <class T>
-// void GetVariableMetadataFromJulea(Variable<T> &variable,
-//                                   const std::string nameSpace,
-//                                   long unsigned int *dataSize, size_t step,
-//                                   size_t block)
-// {
-//     std::cout << "-- GetVariableMetadataFromJulea -----" << std::endl;
-//     bson_t *bsonMetadata = NULL;
-
-//     GetVariableBSONFromJulea(nameSpace, variable.m_Name, &bsonMetadata);
-//     ParseVariableFromBSON(variable, bsonMetadata, nameSpace, dataSize);
-//     bson_destroy(bsonMetadata);
-// }
 
 void GetVariableMetadataFromJulea(const std::string nameSpace,
                                   const std::string varName, gpointer *md,
@@ -61,13 +48,8 @@ void GetVariableMetadataFromJulea(const std::string nameSpace,
     auto kvVarMetadata = j_kv_new(stringMetadataKV, varName.c_str());
 
     j_kv_get(kvVarMetadata, md, buffer_len, batch);
-    // j_kv_get(kvVarMetadata, &metaDataBuf, buffer_len, batch);
-
-    // j_kv_get(kvVarMetadata, &metaDataBuf, &valueLen, batch);
     g_assert_true(j_batch_execute(batch) == true);
-    // j_batch_execute(batch);
 
-    // md = g_memdup(metaDataBuf, *buffer_len);
 }
 
 void GetBlockMetadataFromJulea(const std::string nameSpace,
@@ -76,8 +58,6 @@ void GetBlockMetadataFromJulea(const std::string nameSpace,
                                const std::string stepBlockID)
 {
     // std::cout << "-- GetBlockMetadataFromJulea -----" << std::endl;
-    // bson_t *bsonMetadata = NULL;
-
     void *metaDataBuf = NULL;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
@@ -90,40 +70,11 @@ void GetBlockMetadataFromJulea(const std::string nameSpace,
 
     j_kv_get(kvBlockMetadata, md, buffer_len, batch);
     g_assert_true(j_batch_execute(batch) == true);
-    // j_batch_execute(batch);
 
     g_free(stringMetadataKV);
     j_kv_unref(kvBlockMetadata);
     j_batch_unref(batch);
     j_semantics_unref(semantics);
-}
-
-template <class T>
-void ReadVarMetadataFromJuleaKV(Variable<T> &variable,
-                                const std::string nameSpace, size_t currStep)
-{
-    // guint32 valueLen = 0;
-    // void *metaDataBuf = NULL;
-
-    // auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    // auto batch = j_batch_new(semantics);
-
-    // auto stringMetadataKV =
-    //     g_strdup_printf("%s_%s", nameSpace.c_str(), "variables");
-    // auto kvVarMetadata = j_kv_new(stringMetadataKV, variable.m_Name.c_str());
-    // // std::cout << "nameSpace " << nameSpace << std::endl;
-    // // std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
-
-    // JuleaKVWriter::StepMetadata *md =
-    // g_slice_new(JuleaKVWriter::StepMetadata);
-
-    // j_kv_get(kvVarMetadata, (gpointer *) &md, &valueLen, batch);
-    // j_batch_execute(batch);
-
-    // std::cout << "md->numberSteps: " << md->numberSteps << std::endl;
-    //     std::cout << "md->blocks: " << md->blocks[0] << std::endl;
-    //     std::cout << "md->blocks: " << md->blocks[1] << std::endl;
-    // std::cout << "======== DEBUG =====================" << std::endl;
 }
 
 template <class T>
@@ -152,7 +103,6 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
     auto dataObject = j_object_new(stringDataObject, stepBlockID);
 
     j_object_read(dataObject, data, dataSize, 0, &bytesRead, batch);
-    // j_batch_execute(batch);
     g_assert_true(j_batch_execute(batch) == true);
 
     if (bytesRead == dataSize)
@@ -171,27 +121,19 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
     g_free(stringDataObject);
     j_object_unref(dataObject);
 }
-// template void GetBlockMetadataFromJulea(Variable<T> &variable,          \
-    //                                            const std::string nameSpace,    \
-    //                                            long unsigned int *dataSize, size_t step, size_t block);   \
 
-#define variable_template_instantiation(T)                                     \
-    template void GetVariableDataFromJulea(                                    \
-        Variable<T> &variable, T *data, const std::string nameSpace,           \
-        long unsigned int dataSize, size_t step, size_t block);
-ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
-#undef variable_template_instantiation
-
+/** Retrieves all variable names from key-value store. They are all stored in one bson. */
 void GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
                        unsigned int *varCount, bool isVariable)
 {
     std::cout << "-- GetNamesFromJulea ------" << std::endl;
     guint32 valueLen = 0;
+    int err = 0;
     void *namesBuf = NULL;
 
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
-    char *kvName;
+    std::string kvName;
 
     if (isVariable)
     {
@@ -202,16 +144,19 @@ void GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
         kvName = "attribute_names";
     }
 
-    auto kvObject = j_kv_new(kvName, nameSpace.c_str());
+    auto kvObject = j_kv_new(kvName.c_str(), nameSpace.c_str());
     std::cout << "kvName :" << kvName << std::endl;
 
     j_kv_get(kvObject, &namesBuf, &valueLen, batch);
-    j_batch_execute(batch);
-    // g_assert_true(j_batch_execute(batch) == true);
+    err = j_batch_execute(batch);
+
+    if(err != 0)
+    {
+        std::cout << "j_batch_execute failed in GetNamesFromJulea. " <<std::endl;
+    }
 
     if (valueLen == 0)
     {
-        // bsonNames = bson_new();
         std::cout << "WARNING: The kv store: " << kvName << " is empty!"
                   << std::endl;
 
@@ -225,13 +170,9 @@ void GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
     else
     {
         *bsonNames = bson_new_from_data((const uint8_t *)namesBuf, valueLen);
-        // std::cout << "-- bsonNames length: " << (*bsonNames)->len <<
-        // std::endl;
     }
 
     *varCount = bson_count_keys(*bsonNames);
-    // printf("-- JADIOS DEBUG PRINT: count_names %d\n", *varCount);
-    // std::cout << "-- count_names: " << *varCount << std::endl;
 
     j_semantics_unref(semantics);
     j_kv_unref(kvObject);
@@ -239,40 +180,13 @@ void GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
     free(namesBuf);
 }
 
-void GetVariableBSONFromJulea(const std::string nameSpace,
-                              const std::string varName, bson_t **bsonMetadata)
-{
-    guint32 valueLen = 0;
-    void *metaDataBuf = NULL;
-    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    auto batch = j_batch_new(semantics);
+#define variable_template_instantiation(T)                                     \
+    template void GetVariableDataFromJulea(                                    \
+        Variable<T> &variable, T *data, const std::string nameSpace,           \
+        long unsigned int dataSize, size_t step, size_t block);
+ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
+#undef variable_template_instantiation
 
-    std::cout << "-- GetVariableBSONFromJulea ---- " << std::endl;
-
-    auto stringMetadataKV = g_strdup_printf("%s_variables", nameSpace.c_str());
-    std::cout << "stringMetadataKV: " << stringMetadataKV << std::endl;
-    auto kvObject = j_kv_new(stringMetadataKV, varName.c_str());
-
-    j_kv_get(kvObject, &metaDataBuf, &valueLen, batch);
-    // j_batch_execute(batch);
-    g_assert_true(j_batch_execute(batch) == true);
-
-    if (valueLen == 0)
-    {
-        printf("WARNING: The variable key-value store is empty! \n");
-    }
-    else
-    {
-        *bsonMetadata =
-            bson_new_from_data((const uint8_t *)metaDataBuf, valueLen);
-    }
-
-    g_free(stringMetadataKV);
-    j_kv_unref(kvObject);
-    j_semantics_unref(semantics);
-    j_batch_unref(batch);
-    free(metaDataBuf);
-}
 
 /** ------------------------- Attributes -----------------------------------**/
 
@@ -282,6 +196,7 @@ void GetAttributeBSONFromJulea(const std::string nameSpace,
 {
     // guint32 valueLen = 0;
     void *metaDataBuf = NULL;
+    int err = 0;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
@@ -289,15 +204,16 @@ void GetAttributeBSONFromJulea(const std::string nameSpace,
 
     auto stringMetadataKV = g_strdup_printf("attributes_%s", nameSpace.c_str());
     auto kvObject = j_kv_new(stringMetadataKV, attrName.c_str());
-    // std::cout << "-- stringMetadataKV: " << stringMetadataKV << std::endl;
 
     j_kv_get(kvObject, &metaDataBuf, valueLen, batch);
-    j_batch_execute(batch);
-    // g_assert_true(j_batch_execute(batch) == true);
+    err = j_batch_execute(batch);
+    if(err != 0)
+    {
+        std::cout << "j_batch_execute failed in GetAttributeBSONFromJulea" << std::endl;
+    }
 
     if (valueLen == 0)
     {
-        // bson_names = bson_new();
         printf("WARNING: The attribute key-value store is empty! \n");
     }
     else

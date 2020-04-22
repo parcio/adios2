@@ -21,36 +21,15 @@ namespace core
 namespace engine
 {
 
-// TODO: implement according to Writer
-// template <class T>
-// void GetVariableDataFromJulea(Variable<T> &variable, const T *data,
-//                             const std::string nameSpace, size_t currentStep,
-//                             size_t blockID);
-// template <class T>
-// void GetVariableMetadataFromJulea(Variable<T> &variable, gpointer &md,
-//                                 guint32 valueLen, const std::string
-//                                 nameSpace, size_t currentStep, size_t
-//                                 blockID, bool isNameWritten);
 
 /* Variables */
 void GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
                        unsigned int *varCount, bool isVariable);
 
-/* Variables */
-void GetVariableBSONFromJulea(const std::string nameSpace,
-                              const std::string varName, bson_t **bsonMetadata);
 
 void GetVariableMetadataFromJulea(const std::string nameSpace,
                                   const std::string varName, gpointer *md,
                                   guint32 *buffer_len);
-// void GetVariableMetadataFromJuleaNew(const std::string nameSpace, const
-// std::string varName, gpointer md_buffer, guint32 buffer_len);
-
-// template <class T>
-// void GetBlockMetadataFromJulea(Variable<T> &variable,
-//                                   const std::string nameSpace,
-//                                   long unsigned int *dataSize, size_t step,
-//                                   size_t block);
 
 void GetBlockMetadataFromJulea(const std::string nameSpace,
                                const std::string varName, gpointer *md,
@@ -88,9 +67,6 @@ void GetAttributeStringDataFromJulea(const std::string attrName, char *data,
                                      const std::string nameSpace,
                                      long unsigned int completeSize,
                                      bool IsSingleValue, size_t numberElements);
-// extern template void GetBlockMetadataFromJulea(                         \
-    //     Variable<T> &variable, const std::string nameSpace,                    \
-    //     long unsigned int *dataSize, size_t step, size_t block);                                          \
 
 #define variable_template_instantiation(T)                                     \
     extern template void GetVariableDataFromJulea(                             \
