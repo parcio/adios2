@@ -30,7 +30,7 @@ namespace engine
  * @param count        [description]
  * @param constantDims [description]
  */
-void DefineVariableInInitNew(core::IO *io, const std::string varName,
+void DefineVariableInInit(core::IO *io, const std::string varName,
                              std::string type, Dims shape, Dims start,
                              Dims count, bool constantDims);
 /**
@@ -92,6 +92,7 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
  * Variable is const as this function is called with bpls.
  * @param variable          variable
  * @param buffer            metadata buffer from JULEA key-value store
+ * @returns smart pointer to info struct. So that the allocated memory is not leaked in bpls
  */
 template <class T>
 std::unique_ptr<typename core::Variable<T>::Info>
@@ -120,9 +121,9 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
                                         Dims *shape, Dims *start, Dims *count,
                                         bool *constantDims);
 
-void DefineVariableInInit(core::IO *io, const std::string varName, int type,
-                          Dims shape, Dims start, Dims count,
-                          bool constantDims);
+// void DefineVariableInInit(core::IO *io, const std::string varName, int type,
+//                           Dims shape, Dims start, Dims count,
+//                           bool constantDims);
 
 template <class T>
 void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,

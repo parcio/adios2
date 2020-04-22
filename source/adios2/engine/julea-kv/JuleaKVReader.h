@@ -92,9 +92,6 @@ private:
     int m_Verbosity = 0; // TODO: changed to 5 for debugging
     int m_ReaderRank;    // my rank in the readers' comm
 
-    // EndStep must call PerformGets if necessary
-    bool m_NeedPerformGets = false;
-
     bool m_CollectiveMetadata = true;
 
     // step info should be received from the writer side in BeginStep()

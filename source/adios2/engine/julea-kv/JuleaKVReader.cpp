@@ -284,17 +284,9 @@ void JuleaKVReader::PerformGets()
 #undef declare_type
     }
     m_DeferredVariables.clear();
-    m_NeedPerformGets = false; // TODO: needed?
-
-    // SetVariableBlockInfo(variable, blockInfo);                         \
-    // FIXME: needs to be in for loop in 274
-    // variable.SetBlockInfo(data, variable.m_StepsStart,
-    // variable.m_StepsCount);\
-            //
 }
 
-// PRIVATE
-// m_CurrentBlockID++;                                                    \
+
 
 #define declare_type(T)                                                        \
     void JuleaKVReader::DoGetSync(Variable<T> &variable, T *data)              \
@@ -364,7 +356,10 @@ void JuleaKVReader::InitVariables()
 
     if (varCount == 0)
     {
+        if(m_Verbosity == 5)
+        {
         std::cout << "++ InitVariables: no variables stored in KV" << std::endl;
+        }
     }
     else
     {
@@ -391,53 +386,26 @@ void JuleaKVReader::InitVariables()
             size_t numberSteps = 0;
 
             std::string varName(bson_iter_key(&b_iter));
-            // std::cout << "-- Variable name " << varName << std::endl;
 
             GetVariableMetadataFromJulea(nameSpace, varName, &md_buffer,
                                          &buffer_len);
-            // std::cout << "buffer_len = " << buffer_len << std::endl;
 
             DeserializeVariableMetadata(md_buffer, &type, &shape, &start,
                                         &count, &constantDims, &blocks,
                                         &numberSteps, &shapeID, &isReadAsJoined,
                                         &isReadAsLocalValue, &isRandomAccess);
-            // std::cout << "shapeID = " << shapeID << std::endl;
-            // std::cout << "shape size = " << shape.size() << std::endl;
-            // std::cout << "start size = " << start.size() << std::endl;
-            // std::cout << "count size = " << count.size() << std::endl;
-            // std::cout << "shape size = " << shape.size() << std::endl;
-            // std::cout << "start size= " << start.size() << std::endl;
-            // std::cout << "count = " << count.front() << std::endl;
-            // std::cout << "type  = " << type << std::endl;
-            // std::cout << "numberSteps = " << numberSteps << std::endl;
-            // std::cout << "constantDims = " << constantDims << std::endl;
 
-            // std::cout << "block[0] = " << blocks[0] << std::endl;
-            // std::cout << "block[1] = " << blocks[1] << std::endl;
-            // size_t *tmpBlocks =
-            // (size_t *)g_memdup(blocks, numberSteps * sizeof(size_t));
-            // std::cout << "block[0] = " << blocks[0] << std::endl;
-            // std::cout << "block[1] = " << blocks[1] << std::endl;
-            // m_IO.DefineVariable<double>("test", shape, start, count,
-            //                             constantDims);
 
-            DefineVariableInInitNew(&m_IO, varName, type, shape, start, count,
+            DefineVariableInInit(&m_IO, varName, type, shape, start, count,
                                     constantDims);
-            // std::cout << "block[0] = " << blocks[0] << std::endl;
-            // std::cout << "block[1] = " << blocks[1] << std::endl;
+
 
             InitVariable(&m_IO, *this, varName, blocks, numberSteps, shapeID);
             delete[] blocks;
-            // InitVariable(&m_IO, *this, varName, tmpBlocks, numberSteps,
-            // InitVariable(&m_IO, *this, varName, blocks, numberSteps,
-            // shapeID);
+
             const std::string testtype = m_IO.InquireVariableType(varName);
-            // std::cout << "testtype = " << testtype << std::endl;
-            // free(varName);
-            // free(&varName);
+
         }
-        // free(varName);
-        // TODO how to free varName?
         bson_destroy(bsonNames);
     }
 }
