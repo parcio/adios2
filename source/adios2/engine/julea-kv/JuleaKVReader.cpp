@@ -30,15 +30,15 @@ JuleaKVReader::JuleaKVReader(IO &io, const std::string &name, const Mode mode,
 : Engine("JuleaReader", io, name, mode, std::move(comm))
 
 {
-
-    // MPI_Comm_rank(mpiComm, &m_ReaderRank); //TODO: change in release_25
-    m_ReaderRank = m_Comm.Rank();
-    Init();
     if (m_Verbosity == 5)
     {
         std::cout << "Julea Reader " << m_ReaderRank << " Open(" << m_Name
                   << ") in constructor." << std::endl;
     }
+
+    // MPI_Comm_rank(mpiComm, &m_ReaderRank); //TODO: change in release_25
+    m_ReaderRank = m_Comm.Rank();
+    Init();
 }
 
 JuleaKVReader::~JuleaKVReader()
@@ -55,6 +55,11 @@ JuleaKVReader::~JuleaKVReader()
 StepStatus JuleaKVReader::BeginStep(const StepMode mode,
                                     const float timeoutSeconds)
 {
+    if (m_Verbosity == 5)
+    {
+        std::cout << "Julea Reader " << m_ReaderRank
+                  << "   BeginStep() new step " << m_CurrentStep << "\n";
+    }
     if (m_DebugMode)
     {
         if (!m_DeferredVariables.empty())
@@ -73,13 +78,9 @@ StepStatus JuleaKVReader::BeginStep(const StepMode mode,
     m_DeferredVariables.clear();
     m_DeferredVariablesDataSize = 0;
 
+    // first param is "zero-init" which initializes stepsStart to 0
     m_IO.ResetVariablesStepSelection(true, "in call to JULEA Reader BeginStep");
 
-    if (m_Verbosity == 5)
-    {
-        std::cout << "Julea Reader " << m_ReaderRank
-                  << "   BeginStep() new step " << m_CurrentStep << "\n";
-    }
     return StepStatus::OK;
 }
 
@@ -95,6 +96,12 @@ size_t JuleaKVReader::CurrentStep() const
 
 void JuleaKVReader::EndStep()
 {
+    if (m_Verbosity == 5)
+    {
+        std::cout << "\n______________EndStep _____________________"
+                  << std::endl;
+        std::cout << "Julea Reader " << m_ReaderRank << "   EndStep()\n";
+    }
 
     if (m_DeferredVariables.size() > 0)
     {
@@ -113,13 +120,6 @@ void JuleaKVReader::EndStep()
     //     Flush();
     // }
     m_CurrentBlockID = 0;
-
-    if (m_Verbosity == 5)
-    {
-        std::cout << "\n______________EndStep _____________________"
-                  << std::endl;
-        std::cout << "Julea Reader " << m_ReaderRank << "   EndStep()\n";
-    }
 }
 
 void JuleaKVReader::PerformGets()
@@ -303,8 +303,11 @@ void JuleaKVReader::InitAttributes()
     long unsigned int completeSize;
     unsigned long *dataSizes;
 
-    std::cout << "\n______________InitAttributes_____________________"
-              << std::endl;
+    if (m_Verbosity == 5)
+    {
+        std::cout << "\n______________InitAttributes_____________________"
+                  << std::endl;
+    }
     GetNamesFromJulea(nameSpace, &bsonNames, &attrCount,
                       false); // TODO: get all attribute names
 

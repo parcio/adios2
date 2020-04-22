@@ -20,22 +20,55 @@ namespace core
 {
 namespace engine
 {
-
+/**
+ * Stores variable name in a BSON in the key-value store.
+ * @param paramName name of attribute/variable
+ * @param nameSpace file name
+ * @param kvName    name of the key value store (variable_names/attribute_names)
+ */
 void PutNameToJulea(std::string paramName, std::string nameSpace,
                     std::string kvName);
+
+/** --- Variables --- */
+
+/**
+ * Put the variable metadata that does not change from block to block into the
+ * JULEA key-value store
+ * @param nameSpace file name
+ * @param buffer    buffer of serialized metadata
+ * @param bufferLen length of buffer
+ * @param varName   variable name = key for the kv store
+ */
 void PutVariableMetadataToJulea(const std::string nameSpace, gpointer buffer,
                                 guint32 bufferLen, const std::string varName);
+/**
+ * Put the metadata for a specific block in a specific step to JULEA key-value
+ * store.
+ * @param nameSpace   file name
+ * @param varName     variableName; is part of the kv-namespace
+ * @param buffer      buffer of serialized metadata
+ * @param bufferLen   length of buffer
+ * @param stepBlockID key for the kv-store: currentStep_currentBlock
+ */
 void PutBlockMetadataToJulea(const std::string nameSpace,
                              const std::string varName, gpointer &buffer,
                              guint32 bufferLen, const std::string stepBlockID);
 
-/* Variable Functions */
+/**
+ * Store variable data in JULEA object store. The key is:
+ * currentStep_currentBlock. Variable name is in the kv-namespace.
+ * @param variable      variable
+ * @param data data     pointer
+ * @param nameSpace     file name
+ * @param currentStep   current step (part of key)
+ * @param blockID       current block (part of key)
+ */
 template <class T>
 void PutVariableDataToJulea(Variable<T> &variable, const T *data,
                             const std::string nameSpace, size_t currentStep,
                             size_t blockID);
 
-/* Attribute Functions */
+/** --- Attributes --- */
 template <class T>
 void PutAttributeDataToJulea(Attribute<T> &attribute,
                              const std::string nameSpace);

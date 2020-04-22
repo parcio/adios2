@@ -21,25 +21,27 @@ namespace core
 namespace engine
 {
 
-template <class T>
-void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);
-
-template <class T>
-void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);
-#define attribute_template_instantiation(T)                                    \
-    extern template void ParseAttributeToBSON(Attribute<T> &attribute,         \
-                                              bson_t *bsonMetadata);           \
-    extern template void ParseAttrTypeToBSON(Attribute<T> &attribute,          \
-                                             bson_t *bsonMetadata);            \
-    ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(attribute_template_instantiation)
-#undef attribute_template_instantiation
-
+/** --- Variables --- */
+/**
+ * Set the minimum and maximum before storing the variable metadata.
+ */
 template <class T>
 void SetMinMax(Variable<T> &variable, const T *data);
 
+/**
+ * Serialize the variable metadata that does not change from block to block.
+ * Also needed for initialization of variables in reader.
+ * @returns the buffer with the serialized metadata to store in JULEA key-value
+ * store
+ */
 template <class T>
 gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &buffer_len,
                                    size_t step);
+/**
+ *  Serialize the metadata for the given block in the given step.
+ * @returns the buffer with the serialized metadata to store in JULEA key-value
+ * store
+ */
 template <class T>
 gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &buffer_len,
                                 size_t step, size_t block,
@@ -55,6 +57,24 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &buffer_len,
         size_t block;                                                          \
     ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
+
+/** --- Attributes --- */
+
+/**
+ * The attributes are still stored using BSON. No real need to change it yet.
+ */
+template <class T>
+void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);
+
+template <class T>
+void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata);
+#define attribute_template_instantiation(T)                                    \
+    extern template void ParseAttributeToBSON(Attribute<T> &attribute,         \
+                                              bson_t *bsonMetadata);           \
+    extern template void ParseAttrTypeToBSON(Attribute<T> &attribute,          \
+                                             bson_t *bsonMetadata);            \
+    ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(attribute_template_instantiation)
+#undef attribute_template_instantiation
 
 } // end namespace engine
 } // end namespace core

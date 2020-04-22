@@ -28,6 +28,8 @@ namespace core
 namespace engine
 {
 
+/** --------- Variables -------- */
+
 template <class T>
 gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
                                    size_t currStep)
@@ -52,10 +54,12 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     size_t countLen = countSize * sizeof(size_t);
     size_t blocksLen = numberSteps * sizeof(size_t);
 
-    uint numberVectors = 5; // type + shape + start + count + blocks
-    uint numberBools =
-        4; // constantDims + readAsJoined + readAsLocalValue + randomAccess
+    /** type + shape + start + count + blocks */
+    uint numberVectors = 5;
+    /** constantDims + readAsJoined + readAsLocalValue + randomAccess */
+    uint numberBools = 4;
 
+    /** calculating buffer size */
     len = numberVectors * sizeof(size_t) + typeLen + shapeLen + startLen +
           countLen + blocksLen + numberBools * sizeof(bool) + shapeIDLen;
     std::cout << "    variable metadata buffer length: " << len << std::endl;
@@ -65,7 +69,6 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     size_t blocks[numberSteps];
     for (uint i = 0; i < numberSteps; i++)
     {
-        // std::cout << "--- DEBUG ---" << std::endl;
         blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].size();
         // std::cout << "i: " << i << "  blocks: " << blocks[i] << std::endl;
     }
@@ -136,7 +139,7 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     buffer += sizeof(size_t);
     memcpy(buffer, blocks, blocksLen);
 
-    // rewind buffer
+    /** rewind buffer */
     buffer -= len - blocksLen;
 
     // std::cout << "typeLen: " << typeLen << std::endl;
@@ -163,10 +166,10 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
                                 size_t currStep, size_t block,
                                 const typename Variable<T>::Info &blockInfo)
 {
-    std::cout << "--- SerializeBlockMetadata --- BlockID:" << block
-              << std::endl;
-    std::cout << "    m_BlocksInfo.size(): " << variable.m_BlocksInfo.size()
-              << std::endl;
+    // std::cout << "--- SerializeBlockMetadata --- BlockID:" << block
+    // << std::endl;
+    // std::cout << "    m_BlocksInfo.size(): " << variable.m_BlocksInfo.size()
+    // << std::endl;
 
     size_t shapeSize = blockInfo.Shape.size();
     size_t startSize = blockInfo.Start.size();
@@ -190,29 +193,22 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
 
     bool isValue = blockInfo.IsValue;
 
-    std::cout << "    variable minimum: " << variable.m_Min << std::endl;
-    std::cout << "    variable maximum: " << variable.m_Max << std::endl;
-    // std::cout << "variable min size: " << minLen << std::endl;
-    // std::cout << "size of T: " << sizeof(T) << std::endl;
-
-    // shape + start + count + memoryStart + memoryCount
+    /** shape + start + count + memoryStart + memoryCount */
     uint numberVectors = 5;
-    // StepsStart + StepsCount + BlockID
+    /** StepsStart + StepsCount + BlockID */
     uint numberVariables = 3;
-    // SingleValue
+    /** SingleValue */
     uint numberBools = 1;
 
-    // calculating buffer size
+    /** calculating buffer size */
     len = numberVectors * sizeof(size_t) + shapeLen + startLen + countLen +
           memoryStartLen + memoryCountLen + numberVariables * sizeof(size_t) +
           numberBools * sizeof(bool) + minLen + maxLen + valueLen;
-    std::cout << "    block metadata buffer length: " << len << std::endl;
 
     char *buffer = (char *)g_slice_alloc(len);
 
     /** --- shape ---*/
     memcpy(buffer, &shapeSize, sizeof(size_t));
-    // std::cout << "shapeSize: " << shapeSize << std::endl;
     buffer += sizeof(size_t);
 
     size_t shapeBuffer[shapeSize];
@@ -222,11 +218,6 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
     }
     memcpy(buffer, shapeBuffer, shapeLen);
     buffer += shapeLen;
-
-    // std::cout << "shapeLen:" << shapeLen << std::endl;
-    // std::cout << "var: shape.data: " << variable.m_Shape.data() << std::endl;
-    // std::cout << "blockInfo:shape.data: " << variable.m_Shape.data()
-    //           << std::endl;
 
     /** ---start --- */
     memcpy(buffer, &startSize, sizeof(size_t));
@@ -291,17 +282,28 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
 
     memcpy(buffer, &stepsStart, sizeof(size_t)); // stepsStart
     buffer += sizeof(size_t);
-    // std::cout << "stepsStart" << stepsStart << std::endl;
-    // std::cout << "stepsCount" << stepsCount << std::endl;
 
     memcpy(buffer, &stepsCount, sizeof(size_t)); // stepsCount
     buffer += sizeof(size_t);
 
     memcpy(buffer, &blockID, sizeof(size_t)); // blockID
     buffer += sizeof(size_t);
-    // std::cout << "blockID: " << blockID << std::endl;
 
     memcpy(buffer, &isValue, sizeof(bool)); // isValue
+
+    // std::cout << "    block metadata buffer length: " << len << std::endl;
+    // std::cout << "shapeSize: " << shapeSize << std::endl;
+    // std::cout << "shapeLen:" << shapeLen << std::endl;
+    // std::cout << "var: shape.data: " << variable.m_Shape.data() << std::endl;
+    // std::cout << "blockInfo:shape.data: " << variable.m_Shape.data()
+    //           << std::endl;
+    // std::cout << "    variable minimum: " << variable.m_Min << std::endl;
+    // std::cout << "    variable maximum: " << variable.m_Max << std::endl;
+    // std::cout << "variable min size: " << minLen << std::endl;
+    // std::cout << "size of T: " << sizeof(T) << std::endl;
+    // std::cout << "stepsStart" << stepsStart << std::endl;
+    // std::cout << "stepsCount" << stepsCount << std::endl;
+    // std::cout << "blockID: " << blockID << std::endl;
 
     // rewind buffer
     buffer -= len - sizeof(bool);
@@ -319,6 +321,19 @@ void SetMinMax(Variable<T> &variable, const T *data)
     variable.m_Min = min;
     variable.m_Max = max;
 }
+
+#define variable_template_instantiation(T)                                     \
+    template void SetMinMax(Variable<T> &variable, const T *data);             \
+    template gpointer SerializeVariableMetadata(                               \
+        Variable<T> &variable, guint32 &buffer_len, size_t step);              \
+    template gpointer SerializeBlockMetadata(                                  \
+        Variable<T> &variable, guint32 &buffer_len, size_t step, size_t block, \
+        const typename Variable<T>::Info &blockInfo);
+
+ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
+#undef variable_template_instantiation
+
+/** --------- Attributes --------- */
 
 template <class T>
 void ParseAttributeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
@@ -446,17 +461,6 @@ void ParseAttrTypeToBSON(Attribute<T> &attribute, bson_t *bsonMetadata)
     // std::cout << "-- bsonMetadata length: " << bsonMetadata->len <<
     // std::endl; std::cout << "-- type: " << attribute.m_Type << std::endl;
 }
-
-#define variable_template_instantiation(T)                                     \
-    template void SetMinMax(Variable<T> &variable, const T *data);             \
-    template gpointer SerializeVariableMetadata(                               \
-        Variable<T> &variable, guint32 &buffer_len, size_t step);              \
-    template gpointer SerializeBlockMetadata(                                  \
-        Variable<T> &variable, guint32 &buffer_len, size_t step, size_t block, \
-        const typename Variable<T>::Info &blockInfo);
-
-ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
-#undef variable_template_instantiation
 
 #define attribute_template_instantiation(T)                                    \
     template void ParseAttributeToBSON(Attribute<T> &attribute,                \
