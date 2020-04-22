@@ -524,8 +524,8 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
 /**
  * Deserializes the passed buffer and returns the created info struct.
  *
- * Note: the variable is only passed, because it seems to be no possible to have
- * an info struct without a variable. Template type cannot be deduced then.
+ * Note: the variable is only passed, because it seems to be not possible to
+ * have an info struct without a variable. Template type cannot be deduced then.
  * Variable is const as this function is called with bpls.
  */
 // typename core::Variable<T>::Info *

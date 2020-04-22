@@ -20,31 +20,85 @@ namespace core
 {
 namespace engine
 {
+/**
+ * Defines the variable in the passed io.
+ * @param io           [description]
+ * @param varName      [description]
+ * @param type         [description]
+ * @param shape        [description]
+ * @param start        [description]
+ * @param count        [description]
+ * @param constantDims [description]
+ */
+void DefineVariableInInitNew(core::IO *io, const std::string varName,
+                             std::string type, Dims shape, Dims start,
+                             Dims count, bool constantDims);
+/**
+ * Initializes all the fields that ADIOS is relying on without actually
+ * requiring when defining the variable at the io.
+ * @param io          IO to define variable at
+ * @param engine      engine that defined the variable
+ * @param varName     variableName
+ * @param blocks      array how many blocks there are per step (index starting
+ * at 0)
+ * @param numberSteps blocks-size (simple array does not know its length)
+ * @param shapeID     ID whether it is a global/local array/value, important!
+ */
+void InitVariable(core::IO *io, core::Engine &engine, std::string varName,
+                  size_t *blocks, size_t numberSteps, ShapeID shapeID);
 
-template <class T>
-std::unique_ptr<typename core::Variable<T>::Info>
-GetDeserializedMetadata(const core::Variable<T> &variable, gpointer buffe);
-
-template <class T>
-void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
-                              size_t block,
-                              typename core::Variable<T>::Info &info);
-
+/**
+ * Deserialize the metadata for a variable that stays the same for each block.
+ * This information is needed for the definition of the variable in the engines
+ * init.
+ * @param buffer           metadata buffer from JULEA key-value store
+ * @param type             variableType
+ * @param shape            dimension: shape
+ * @param start            dimension: start
+ * @param count            dimension: count
+ * @param constantDims     isConstantDims
+ * @param blocks           array how many blocks there are per step (index
+ * starting at 0)
+ * @param numberSteps      blocks-size (simple array does not know its length)
+ * @param shapeID          ID whether it is a global/local array/value,
+ * important!
+ * @param readAsJoined     variable read as joined
+ * @param readAsLocalValue read as local value
+ * @param randomAccess     reading using either streaming oder random access
+ */
 void DeserializeVariableMetadata(gpointer buffer, std::string *type,
                                  Dims *shape, Dims *start, Dims *count,
                                  bool *constantDims, size_t **blocks,
                                  size_t *numberSteps, ShapeID *shapeID,
                                  bool *readAsJoined, bool *readAsLocalValue,
                                  bool *randomAccess);
-
-void DefineVariableInInitNew(core::IO *io, const std::string varName,
-                             std::string type, Dims shape, Dims start,
-                             Dims count, bool constantDims);
-
-void InitVariable(core::IO *io, core::Engine &engine, std::string varName,
-                  size_t *blocks, size_t numberSteps, ShapeID shapeID);
+/**
+ * Deserialize the metadata of a single block of a step of a variable.
+ * @param variable         variable
+ * @param buffer           metadata buffer from JULEA key-value store
+ * @param blockID          blockID (0 index)
+ * @param info             info struct to store block infos in
+ */
+template <class T>
+void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
+                              size_t blockID,
+                              typename core::Variable<T>::Info &info);
 
 /**
+ * Deserializes the passed buffer and returns the created info struct.
+ *
+ * Note: the variable is only passed, because it seems to be not possible to
+ * have an info struct without a variable. Template type cannot be deduced then.
+ * Variable is const as this function is called with bpls.
+ * @param variable          variable
+ * @param buffer            metadata buffer from JULEA key-value store
+ */
+template <class T>
+std::unique_ptr<typename core::Variable<T>::Info>
+GetDeserializedMetadata(const core::Variable<T> &variable, gpointer buffer);
+
+/**
+ * //TODO: currently not implemented. May not be necessary
  * Sets read block information from the available metadata information
  * @param variable
  * @param blockInfo
@@ -53,6 +107,13 @@ template <class T>
 void SetVariableBlockInfo(core::Variable<T> &variable,
                           typename core::Variable<T>::Info &blockInfo);
 
+/**
+ * Set the minimum and the maximum for the variable.
+ */
+template <class T>
+void SetMinMax(Variable<T> &variable, const T *data);
+
+/* --- old BSON stuff--- */
 void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
                                         const std::string varName,
                                         bson_t *bsonMetadata, int *type,
@@ -71,9 +132,6 @@ void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
 template <class T>
 void ParseVarTypeFromBSON(Variable<T> &variable, bson_iter_t *b_iter);
 
-template <class T>
-void SetMinMax(Variable<T> &variable, const T *data);
-
 void ParseAttributeFromBSON(const std::string nameSpace,
                             const std::string attrName, bson_t *bsonMetadata,
                             long unsigned int *dataSize, size_t *numberElements,
@@ -87,26 +145,19 @@ void ParseAttributeFromBSON(const std::string nameSpace,
 
 void GetAdiosTypeString(int type, std::string *typeString);
 
-// extern template void DefineAttributeInInit(                                \
-        core::IO *io, const std::string attrName, T *data, int type,           \
-        bool IsSingleValue, size_t numberElements);                            \
-    extern template void DeserializeBlockMetadata(                             \
-        Variable<T> &variable, gpointer buffer, size_t block);                 \
-    extern template void SetVariableBlockInfoNEW(                              \
-        gpointer buffer, typename core::Variable<T>::Info &info);              \
-    extern template typename core::Variable<T>::Info *GetDeserializedMetadata( \
-
 #define variable_template_instantiation(T)                                     \
-    extern template std::unique_ptr<typename core::Variable<T>::Info>          \
-    GetDeserializedMetadata(const core::Variable<T> &variable,                 \
-                            gpointer buffer);                                  \
     extern template void DeserializeBlockMetadata(                             \
         Variable<T> &variable, gpointer buffer, size_t block,                  \
         typename core::Variable<T>::Info &info);                               \
+    extern template std::unique_ptr<typename core::Variable<T>::Info>          \
+    GetDeserializedMetadata(const core::Variable<T> &variable,                 \
+                            gpointer buffer);                                  \
+                                                                               \
     extern template void SetVariable(Variable<T> &variable, size_t *blocks,    \
                                      size_t numberSteps, ShapeID shapeID);     \
     extern template void SetVariableBlockInfo(                                 \
         core::Variable<T> &variable, typename core::Variable<T>::Info &info);  \
+                                                                               \
     extern template void ParseVariableFromBSON(                                \
         Variable<T> &variable, bson_t *bsonMetadata,                           \
         const std::string nameSpace, long unsigned int *dataSize);             \
