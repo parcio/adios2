@@ -180,22 +180,6 @@ private:
     // void DoClose();
 
     /**
-     * DESIGN
-     * N-to-N data buffers writes, including metadata file
-     * @param transportIndex
-     */
-    void WriteData(const bool isFinal, const int transportIndex = -1);
-    // void WriteData(const bool isFinal);
-
-    /**
-     * DESIGN
-     * N-to-M (aggregation) data buffers writes, including metadata file
-     * @param transportIndex
-     */
-    void AggregateWriteData(const bool isFinal, const int transportIndex = -1);
-    // void AggregateWriteData(const bool isFinal);
-
-    /**
      * Put Attributes to file.
      * @param io [description]
      */
