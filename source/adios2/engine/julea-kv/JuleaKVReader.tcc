@@ -156,7 +156,7 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
     // std::cout << "Julea Reader " << m_ReaderRank
     // << " Variable name: " << variable.m_Name << std::endl;
 
-        size_t localBlockCount = 0;
+    size_t localBlockCount = 0;
     for (typename Variable<T>::Info &blockInfo : variable.m_BlocksInfo)
     {
         guint32 buffer_len;
@@ -164,45 +164,52 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
 
         auto nameSpace = m_Name;
         long unsigned int dataSize = 0;
-    std::cout << "localBlockCount: " << localBlockCount << std::endl;
-    std::cout << "m_CurrentBlockID: " << m_CurrentBlockID << std::endl;
+        // std::cout << "localBlockCount: " << localBlockCount << std::endl;
+        // std::cout << "m_CurrentBlockID: " << m_CurrentBlockID << std::endl;
 
         /** when called from bpls there is no endStep or anything */
-        if(variable.m_BlockID == 0)
+        if (variable.m_BlockID == 0)
         {
             // m_CurrentBlockID = 0;
             // m_CurrentStep ++;
             // m_CurrentStep = variable.m_StepsStart;
         }
-    std::cout << "variable.m_BlockID: " << variable.m_BlockID << std::endl;
-    std::cout << "variable.m_StepsStart: " << variable.m_StepsStart << std::endl;
-    std::cout << "variable.m_StepsCount " << variable.m_StepsCount << std::endl;
-    std::cout << "variable.m_AvailableStepsStart " << variable.m_AvailableStepsStart << std::endl;
-    std::cout << "variable.m_AvailableStepsCount " << variable.m_AvailableStepsCount << std::endl;
-    std::cout << "m_CurrentBlockID: " << m_CurrentBlockID << std::endl;
-    std::cout << "m_CurrentStep: " << m_CurrentStep << std::endl;
+        // std::cout << "variable.m_BlockID: " << variable.m_BlockID <<
+        // std::endl; std::cout << "variable.m_StepsStart: " <<
+        // variable.m_StepsStart << std::endl; std::cout <<
+        // "variable.m_StepsCount " << variable.m_StepsCount << std::endl;
+        // std::cout << "variable.m_AvailableStepsStart " <<
+        // variable.m_AvailableStepsStart << std::endl; std::cout <<
+        // "variable.m_AvailableStepsCount " << variable.m_AvailableStepsCount
+        // << std::endl; std::cout << "m_CurrentBlockID: " << m_CurrentBlockID
+        // << std::endl; std::cout << "m_CurrentStep: " << m_CurrentStep <<
+        // std::endl;
 
         std::string stepBlockID;
         // auto stepBlockID2 =
-            // g_strdup_printf("%lu_%lu", variable.m_StepsStart, variable.m_BlockID);
+        // g_strdup_printf("%lu_%lu", variable.m_StepsStart,
+        // variable.m_BlockID);
 
-
-        if(m_UseKeysForBPLS)
+        if (m_UseKeysForBPLS)
         {
-            std::cout << "m_UseKeysForBPLS: " << m_UseKeysForBPLS << std::endl;
-            stepBlockID =
-            g_strdup_printf("%lu_%lu", variable.m_StepsStart, variable.m_BlockID);
-            std::cout << "variable.m... stepBlockID: " << stepBlockID << std::endl;
-
+            // std::cout << "m_UseKeysForBPLS: " << m_UseKeysForBPLS <<
+            // std::endl;
+            stepBlockID = g_strdup_printf("%lu_%lu", variable.m_StepsStart,
+                                          variable.m_BlockID);
+            // std::cout << "variable.m... stepBlockID: " << stepBlockID <<
+            // std::endl;
         }
         else
         {
-            std::cout << "m_UseKeysForBPLS: " << m_UseKeysForBPLS << std::endl;
-            stepBlockID = g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
-            std::cout << "m_Current... stepBlockID: " << stepBlockID << std::endl;
+            // std::cout << "m_UseKeysForBPLS: " << m_UseKeysForBPLS <<
+            // std::endl;
+            stepBlockID =
+                g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
+            // std::cout << "m_Current... stepBlockID: " << stepBlockID <<
+            // std::endl;
         }
         // std::cout << "blocksInfos.size: " << variable.m_BlocksInfo.size()
-                  // << std::endl;
+        // << std::endl;
 
         // // TODO: check if variable.m_StepsStart set correctly!
         // variable.SetBlockInfo(data, variable.m_StepsStart,
@@ -212,8 +219,10 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
                                   &buffer_len, stepBlockID);
         // std::cout << "buffer_len = " << buffer_len << std::endl;
 
-        // DeserializeBlockMetadata(variable, md_buffer, variable.m_BlockID, blockInfo);
-        DeserializeBlockMetadata(variable, md_buffer, variable.m_BlockID, blockInfo);
+        // DeserializeBlockMetadata(variable, md_buffer, variable.m_BlockID,
+        // blockInfo);
+        DeserializeBlockMetadata(variable, md_buffer, variable.m_BlockID,
+                                 blockInfo);
 
         if (variable.m_SingleValue)
         {
@@ -222,7 +231,7 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
         }
 
         // std::cout << " isConstantDims: " << variable.IsConstantDims()
-                  // << std::endl;
+        // << std::endl;
 
         // size_t count = blockInfo.Count;
         size_t numberElements =
@@ -233,20 +242,21 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
 
         T *data = blockInfo.Data;
         // T *data = variable.m_BlocksInfo[m_CurrentBlockID].Data;
-        if(m_UseKeysForBPLS)
+        if (m_UseKeysForBPLS)
         {
             GetVariableDataFromJulea(variable, data, nameSpace, dataSize,
-                                 variable.m_StepsStart, variable.m_BlockID);
-                                 // m_CurrentStep, m_CurrentBlockID);
+                                     variable.m_StepsStart, variable.m_BlockID);
+            // m_CurrentStep, m_CurrentBlockID);
         }
-        else{
-        GetVariableDataFromJulea(variable, data, nameSpace, dataSize,
-                                 // variable.m_StepsStart, variable.m_BlockID);
-                                 m_CurrentStep, m_CurrentBlockID);
-
+        else
+        {
+            GetVariableDataFromJulea(
+                variable, data, nameSpace, dataSize,
+                // variable.m_StepsStart, variable.m_BlockID);
+                m_CurrentStep, m_CurrentBlockID);
         }
-        std::cout << "data: " << data[0] << std::endl;
-        std::cout << "data: " << data[1] << std::endl;
+        // std::cout << "data: " << data[0] << std::endl;
+        // std::cout << "data: " << data[1] << std::endl;
         m_CurrentBlockID++;
         localBlockCount++;
     }
@@ -260,8 +270,8 @@ JuleaKVReader::AllStepsBlocksInfo(const core::Variable<T> &variable) const
     std::map<size_t, std::vector<typename core::Variable<T>::Info>>
         allStepsBlocksInfo;
 
-
-    //TODO: this assumes that only bpls calls AllStepsBlocksInfo. for now that should be ok
+    // TODO: this assumes that only bpls calls AllStepsBlocksInfo. for now that
+    // should be ok
     // now = 21.04.2020
     m_UseKeysForBPLS = true;
     // SetUseKeysForBPLS(true);
@@ -283,7 +293,7 @@ JuleaKVReader::AllStepsBlocksInfo(const core::Variable<T> &variable) const
         // bp3 index starts at 1
         allStepsBlocksInfo[step - 1] =
             BlocksInfoCommon(variable, blockPositions, step - 1);
-            // BlocksInfoCommon(variable, blockPositions, step - 1, true);
+        // BlocksInfoCommon(variable, blockPositions, step - 1, true);
     }
     // std::cout << "--- finished allStepsBlocksInfo --- " << std::endl;
     return allStepsBlocksInfo;
@@ -334,7 +344,8 @@ JuleaKVReader::BlocksInfoCommon(const core::Variable<T> &variable,
         // std::cout << "--- DEBUG --- " << std::endl;
 
         blocksInfo.push_back(info);
-        // std::cout << "BlocksInfoCommon - blocksInfo.size(): " << blocksInfo.size() << std::endl;
+        // std::cout << "BlocksInfoCommon - blocksInfo.size(): " <<
+        // blocksInfo.size() << std::endl;
     }
     // return variable.m_BlocksInfo[0];
     return blocksInfo;
@@ -369,16 +380,19 @@ JuleaKVReader::BlocksInfo(const core::Variable<T> &variable,
 
     // std::cout << "--- BlocksInfo --- " << std::endl;
 
-    // std::cout << "variable.m_AvailableStepBlockIndexOffsets.size() " << variable.m_AvailableStepBlockIndexOffsets.size() <<std::endl;
-    // std::cout << "variable.m_AvailableStepBlockIndexOffsets.find(step + 1) " << variable.m_AvailableStepBlockIndexOffsets.find(step + 1) <<std::endl;
+    // std::cout << "variable.m_AvailableStepBlockIndexOffsets.size() " <<
+    // variable.m_AvailableStepBlockIndexOffsets.size() <<std::endl; std::cout
+    // << "variable.m_AvailableStepBlockIndexOffsets.find(step + 1) " <<
+    // variable.m_AvailableStepBlockIndexOffsets.find(step + 1) <<std::endl;
     // std::cout << "BlocksInfo: step = " << step <<std::endl;
     // bp4 format starts at 1
     // auto itStep = variable.m_AvailableStepBlockIndexOffsets.find(step + 1);
-    auto itStep = variable.m_AvailableStepBlockIndexOffsets.find(step+1);
+    auto itStep = variable.m_AvailableStepBlockIndexOffsets.find(step + 1);
     if (itStep == variable.m_AvailableStepBlockIndexOffsets.end())
     {
         return std::vector<typename core::Variable<T>::Info>();
-        std::cout << " --- step not found in m_AvailableStepBlockIndexOffsets " << std::endl;
+        std::cout << " --- step not found in m_AvailableStepBlockIndexOffsets "
+                  << std::endl;
     }
     return BlocksInfoCommon(variable, itStep->second, step);
     // return NULL;
@@ -391,7 +405,7 @@ JuleaKVReader::InitVariableBlockInfo(core::Variable<T> &variable, T *data)
     const size_t stepsStart = variable.m_StepsStart;
     const size_t stepsCount = variable.m_StepsCount;
     // std::cout << "--- InitVariableBlockInfo --- selectionType: "
-              // << variable.m_SelectionType << std::endl;
+    // << variable.m_SelectionType << std::endl;
 
     // if (m_DebugMode)
     if (m_Verbosity == 5)
@@ -448,22 +462,22 @@ JuleaKVReader::InitVariableBlockInfo(core::Variable<T> &variable, T *data)
         if (variable.m_ShapeID == ShapeID::GlobalArray)
         {
             // std::cout
-                // << "----------- DEBUG: switch to bounding box for global array "
-                // << std::endl;
+            // << "----------- DEBUG: switch to bounding box for global array "
+            // << std::endl;
             const Dims &start = blocksInfo[variable.m_BlockID].Start;
             const Dims &count = blocksInfo[variable.m_BlockID].Count;
             // std::cout << "variable.m_BlockID " << variable.m_BlockID
-                      // << std::endl;
+            // << std::endl;
 
             variable.SetSelection({start, count});
         }
         else if (variable.m_ShapeID == ShapeID::LocalArray)
         {
             // std::cout
-                // << "----------- DEBUG: switch to bounding box for local array "
-                // << std::endl;
+            // << "----------- DEBUG: switch to bounding box for local array "
+            // << std::endl;
             // std::cout << "variable.m_BlockID " << variable.m_BlockID
-                      // << std::endl;
+            // << std::endl;
 
             // TODO keep Count for block updated
             variable.m_Count = blocksInfo[variable.m_BlockID].Count;

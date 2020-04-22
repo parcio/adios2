@@ -33,7 +33,6 @@ namespace core
 namespace engine
 {
 
-
 /** used for Variables and Attributes, name, type, type-index */
 using DataMap =
     std::unordered_map<std::string, std::pair<std::string, unsigned int>>;
@@ -64,12 +63,30 @@ public:
     void EndStep() final;
     void PerformGets() final;
 
-    // bool m_UseJuleaInBPLS = false;
 private:
     // JuleaInfo *m_JuleaInfo;
     JSemantics *m_JuleaSemantics;
     StepMode m_StepMode = StepMode::Append;
 
+    /**
+     * This is not at all beautiful!
+     * Caution! This assumes that only bpls calls AllStepsBlocksInfo!
+     *
+     * However, I found no other way to ensure that the keys for the key-value
+     * store and the object store are correct for all of the following
+     * scenarios:
+     * - begin step, setblockselection, get, endstep
+     * - setstepselection, get
+     * - begin, multiple get, endstep (this should always return the same
+     * block!)
+     * - bpls: allstepsblocksinfo = return all blocks for all steps without
+     * actually increasing the step (no endStep called)
+     *
+     * Either stepsstart and co are working fine or m_CurrentBlockID and
+     * m_CurrentStep. Trying to implement a macro/function/... in bpls when
+     * adding Julea to the engine list was not working.
+     *
+     */
     mutable bool m_UseKeysForBPLS = false;
 
     int m_Verbosity = 0; // TODO: changed to 5 for debugging

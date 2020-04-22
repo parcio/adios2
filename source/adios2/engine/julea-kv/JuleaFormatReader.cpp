@@ -68,7 +68,7 @@ void InitVariable(core::IO *io, core::Engine &engine, std::string varName,
             }                                                                  \
             var->m_AvailableStepsCount++;                                      \
         }                                                                      \
-            var->m_AvailableStepsStart = 0;                                      \
+        var->m_AvailableStepsStart = 0;                                        \
         var->m_StepsStart = 0;                                                 \
         var->m_Engine = &engine;                                               \
         var->m_FirstStreamingStep = true;                                      \
@@ -357,7 +357,9 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
  * Deserializes the passed buffer and adds the created blockinfo to the variable
  */
 template <class T>
-void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer, size_t block,typename core::Variable<T>::Info &infoParam )
+void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
+                              size_t block,
+                              typename core::Variable<T>::Info &infoParam)
 {
     // std::cout << "------ DeserializeBlockMetadata ----------" << std::endl;
     // typename Variable<T>::Info info;
@@ -511,7 +513,7 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer, size_t blo
     // order this should work
     // if (variable.m_BlocksInfo.size() == info.BlockID)
     // {
-        // variable.m_BlocksInfo.push_back(info);
+    // variable.m_BlocksInfo.push_back(info);
     // }
     // variable.m_BlocksInfo.push_back(info);
     variable.m_BlocksInfo[0] = info;
@@ -1399,8 +1401,9 @@ void ParseVarTypeFromBSON<std::complex<double>>(
 #define variable_template_instantiation(T)                                     \
     template typename core::Variable<T>::Info *GetDeserializedMetadata(        \
         const core::Variable<T> &variable, gpointer buffer);                   \
-    template void DeserializeBlockMetadata(Variable<T> &variable,              \
-                                           gpointer buffer, size_t block,typename core::Variable<T>::Info &info);                   \
+    template void DeserializeBlockMetadata(                                    \
+        Variable<T> &variable, gpointer buffer, size_t block,                  \
+        typename core::Variable<T>::Info &info);                               \
     template void SetVariableBlockInfo(                                        \
         core::Variable<T> &variable,                                           \
         typename core::Variable<T>::Info &blockInfo);                          \

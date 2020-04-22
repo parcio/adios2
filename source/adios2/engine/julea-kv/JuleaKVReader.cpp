@@ -286,7 +286,7 @@ void JuleaKVReader::PerformGets()
     m_DeferredVariables.clear();
     m_NeedPerformGets = false; // TODO: needed?
 
-            // SetVariableBlockInfo(variable, blockInfo);                         \
+    // SetVariableBlockInfo(variable, blockInfo);                         \
     // FIXME: needs to be in for loop in 274
     // variable.SetBlockInfo(data, variable.m_StepsStart,
     // variable.m_StepsCount);\

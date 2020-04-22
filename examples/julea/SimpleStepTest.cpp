@@ -392,7 +392,7 @@ void read_selection(std::string engine, std::string fileName)
         std::vector<std::vector<double>> dataSet;
         dataSet.resize(blocksInfo.size());
 
-        std::cout << "--DEBUG 2-- " << std::endl;
+        // std::cout << "--DEBUG 2-- " << std::endl;
         /** to test stuff */
         // reader.Get<double>(varV1, v1.data(), adios2::Mode::Sync);
         // std::cout << "\nv1[0]: " << v1[0] << " v1[1]: " << v1[1] <<
@@ -400,15 +400,19 @@ void read_selection(std::string engine, std::string fileName)
 
         // schedule a read operation for each block separately
         int i = 0;
-        // for (auto &info : blocksInfo)
-        // {
-        //     std::cout << "test number blocksinfo: i= " << i << std::endl;
-        //     std::cout << "info.BlockID = " << info.BlockID << std::endl;
-        //     varV0.SetBlockSelection(info.BlockID);
-        //     reader.Get<double>(varV0, dataSet[i], adios2::Mode::Sync);
-        //     // reader.Get<double>(varV0, dataSet[i], adios2::Mode::Deferred);
-        //     ++i;
-        // }
+        for (auto &info : blocksInfo)
+        {
+            // std::cout << "------------------------ BLOCK LOOP: ------- i = "
+            // << i << std::endl; std::cout << "test number blocksinfo: i= " <<
+            // i << std::endl; std::cout << "info.BlockID = " << info.BlockID <<
+            // std::endl; std::cout << "---- Application: SetBlockSelection ---
+            // " << std::endl;
+            varV0.SetBlockSelection(info.BlockID);
+            // std::cout << "---- Application: Get --- " << std::endl;
+            // reader.Get<double>(varV0, dataSet[i], adios2::Mode::Sync);
+            reader.Get<double>(varV0, dataSet[i], adios2::Mode::Deferred);
+            ++i;
+        }
 
         // Read in all blocks at once now
         reader.PerformGets();

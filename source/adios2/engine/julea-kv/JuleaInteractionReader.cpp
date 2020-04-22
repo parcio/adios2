@@ -157,8 +157,8 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
 
     if (bytesRead == dataSize)
     {
-        std::cout << "++ Julea Interaction Reader: Read data for variable "
-                  << varName << std::endl;
+        // std::cout << "++ Julea Interaction Reader: Read data for variable "
+                  // << varName << std::endl;
     }
     else
     {

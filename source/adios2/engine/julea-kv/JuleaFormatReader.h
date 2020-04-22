@@ -26,7 +26,9 @@ typename core::Variable<T>::Info *
 GetDeserializedMetadata(const core::Variable<T> &variable, gpointer buffe);
 
 template <class T>
-void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer, size_t block,typename core::Variable<T>::Info &info);
+void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
+                              size_t block,
+                              typename core::Variable<T>::Info &info);
 
 void DeserializeVariableMetadata(gpointer buffer, std::string *type,
                                  Dims *shape, Dims *start, Dims *count,
@@ -107,8 +109,9 @@ void GetAdiosTypeString(int type, std::string *typeString);
 #define variable_template_instantiation(T)                                     \
     extern template typename core::Variable<T>::Info *GetDeserializedMetadata( \
         const core::Variable<T> &variable, gpointer buffer);                   \
-    extern template void DeserializeBlockMetadata(Variable<T> &variable,       \
-                                                  gpointer buffer, size_t block,typename core::Variable<T>::Info &info);            \
+    extern template void DeserializeBlockMetadata(                             \
+        Variable<T> &variable, gpointer buffer, size_t block,                  \
+        typename core::Variable<T>::Info &info);                               \
     extern template void SetVariable(Variable<T> &variable, size_t *blocks,    \
                                      size_t numberSteps, ShapeID shapeID);     \
     extern template void SetVariableBlockInfo(                                 \
