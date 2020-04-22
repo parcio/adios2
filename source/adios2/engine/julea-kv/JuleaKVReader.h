@@ -121,24 +121,22 @@ private:
     unsigned int m_StatsLevel = 0;
 
     /** contains data buffer for this rank */
-    format::BufferSTL m_Data;
+    // format::BufferSTL m_Data;
 
     /** contains collective metadata buffer, only used by rank 0 */
-    format::BufferSTL m_Metadata;
+    // format::BufferSTL m_Metadata;
 
-    // HELP! how do I actually get the compiler to accept MetadataSet as a type?
     /** contains bp1 format metadata indices*/ // DESIGN: needed?
-    format::BP3Base::MetadataSet m_MetadataSet;
+    // format::BP3Base::MetadataSet m_MetadataSet;
 
-    // format::BP3Deserializer m_BP3Deserializer;  //HELP! is this really a good
-    // idea?
+    // format::BP3Deserializer m_BP3Deserializer;
 
     // DESIGN
     /** Manage BP data files Transports from IO AddTransport */
-    // transportman::TransportMan m_FileDataManager; //FIXME: compiler?!
+    // transportman::TransportMan m_FileDataManager; /
 
     /** Manages the optional collective metadata files */
-    // transportman::TransportMan m_FileMetadataManager; FIXME: compiler?!
+    // transportman::TransportMan m_FileMetadataManager;
 
     void Init() final; ///< called from constructor, gets the selected Skeleton
                        /// transport method from settings
@@ -152,11 +150,6 @@ private:
     void InitVariables(); // needs to be final? HELP
     void InitAttributes();
 
-// #define declare_type(T)                                                        \
-//     void DoGetSync(Variable<T> &, T *) final;                                  \
-//     void DoGetDeferred(Variable<T> &, T *) final;
-//     ADIOS2_FOREACH_TYPE_1ARG(declare_type)
-// #undef declare_type
 #define declare_type(T)                                                        \
     void DoGetSync(Variable<T> &, T *) final;                                  \
     void DoGetDeferred(Variable<T> &, T *) final;
@@ -166,33 +159,17 @@ private:
     template <class T>
     void ReadVariableBlocks(Variable<T> &variable);
 
-    //  template <class T>
-    // void SetVariableBlockInfo(Variable<T> &variable,typename
-    // core::Variable<T>::Info &blockInfo);
-
     template <class T>
     void GetSyncCommon(Variable<T> &variable, T *data);
 
     template <class T>
     void GetDeferredCommon(Variable<T> &variable, T *data);
 
-    // template <class T>
-    // void ReadVariableBlocks(Variable<T> &variable); //TODO:needed?
-
     void DoClose(const int transportIndex = -1);
 
     // void ReadData();
 
     // void AggregateReadData();
-
-    /**
-     * DESIGN: is this function needed here? is there something one would want
-     * to do different with a variable coming from JULEA?
-     *
-     * Sets read block information from the available metadata information
-     * @param variable
-     * @param blockInfo
-     */
 
     template <class T>
     std::map<size_t, std::vector<typename core::Variable<T>::Info>>
@@ -217,9 +194,6 @@ private:
     template <class T>
     std::vector<typename core::Variable<T>::Info>
     DoBlocksInfo(const core::Variable<T> &variable, const size_t step) const;
-    // std::map<size_t, std::vector<typename core::Variable<T>::Info>>    \
-    // AllStepsBlocksInfo(const core::Variable<T> &) const;      \
-
 
     template <class T>
     std::vector<typename core::Variable<T>::Info>
@@ -238,9 +212,6 @@ private:
     typename core::Variable<T>::Info &
     InitVariableBlockInfo(core::Variable<T> &variable, T *data);
 
-    // typename core::Variable<T>::Info &InitVariableBlockInfo(   \
-    //     core::Variable<T> &variable, T *data);                                 \
-
 #define declare_type(T)                                                        \
     std::map<size_t, std::vector<typename Variable<T>::Info>>                  \
     DoAllStepsBlocksInfo(const Variable<T> &variable) const final;             \
@@ -253,18 +224,6 @@ private:
 
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
-    // std::vector<typename Variable<T>::Info> DoBlocksInfo(                      \
-    //     const Variable<T> &variable, const size_t step)  final;
-
-    //     #define declare_type(T)                                                        \
-//     std::map<size_t, std::vector<typename Variable<T>::Info>>                  \
-//     DoAllStepsBlocksInfo(const Variable<T> &variable) const final;             \
-//                                                                                \
-//     std::vector<typename Variable<T>::Info> DoBlocksInfo(                      \
-//         const Variable<T> &variable, const size_t step) const final;
-
-    //     ADIOS2_FOREACH_TYPE_1ARG(declare_type)
-    // #undef declare_type
 };
 
 } // end namespace engine
