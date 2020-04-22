@@ -298,7 +298,7 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
     *numberSteps = steps;
 
     size_t blocksLen = steps * sizeof(size_t);
-    size_t *tmpBlocks = new size_t[steps]; //TODO mem leak?
+    size_t *tmpBlocks = new size_t[steps]; // TODO mem leak?
     memcpy(tmpBlocks, tmpBuffer, blocksLen);
 
     switch (tmpShapeID)

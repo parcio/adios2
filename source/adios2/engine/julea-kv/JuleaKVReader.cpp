@@ -440,7 +440,6 @@ void JuleaKVReader::DoClose(const int transportIndex)
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
 
-
 } // end namespace engine
 } // end namespace core
 } // end namespace adios2

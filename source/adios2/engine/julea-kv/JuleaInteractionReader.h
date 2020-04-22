@@ -21,28 +21,45 @@ namespace core
 namespace engine
 {
 
+/* --- Variables --- */
 
-/* Variables */
+/** Retrieves all variable names from key-value store. They are all stored in
+ * one bson. */
 void GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
                        unsigned int *varCount, bool isVariable);
 
-
+/** Retrieves the metadata buffer for the variable metadata that do not vary
+ * from block to block. The key is the variable name. */
 void GetVariableMetadataFromJulea(const std::string nameSpace,
-                                  const std::string varName, gpointer *md,
+                                  const std::string varName, gpointer *buffer,
                                   guint32 *buffer_len);
 
+/** Retrieves the block metadata buffer from the key-value store. The key is:
+ * currentStep_currentBlock. The variable name and the nameSpace from the
+ * key-value namespace. */
 void GetBlockMetadataFromJulea(const std::string nameSpace,
-                               const std::string varName, gpointer *md,
+                               const std::string varName, gpointer *buffer,
                                guint32 *buffer_len,
                                const std::string stepBlockID);
 
+/** Passing the data pointer from application to the key-value store. Space for
+ * the data is allocated in the application. */
 template <class T>
 void GetVariableDataFromJulea(Variable<T> &variable, T *data,
                               const std::string nameSpace,
                               long unsigned int dataSize, size_t step,
                               size_t block);
 
-/* Attributes */
+#define variable_template_instantiation(T)                                     \
+    extern template void GetVariableDataFromJulea(                             \
+        Variable<T> &variable, T *data, const std::string nameSpace,           \
+        long unsigned int dataSize, size_t step, size_t block);
+ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
+#undef variable_template_instantiation
+
+/* --- Attributes --- */
+/** Attributes are still implemented using BSON. It was not urgent enough to
+ * change anything. */
 void GetAttributeMetadataFromJulea(const std::string attrName,
                                    const std::string nameSpace,
                                    long unsigned int *dataSize,
@@ -67,13 +84,6 @@ void GetAttributeStringDataFromJulea(const std::string attrName, char *data,
                                      const std::string nameSpace,
                                      long unsigned int completeSize,
                                      bool IsSingleValue, size_t numberElements);
-
-#define variable_template_instantiation(T)                                     \
-    extern template void GetVariableDataFromJulea(                             \
-        Variable<T> &variable, T *data, const std::string nameSpace,           \
-        long unsigned int dataSize, size_t step, size_t block);
-ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
-#undef variable_template_instantiation
 
 #define attribute_template_instantiation(T)                                    \
     extern template void GetAttributeDataFromJulea(                            \

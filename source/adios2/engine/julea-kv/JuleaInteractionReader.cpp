@@ -31,7 +31,6 @@ namespace core
 namespace engine
 {
 
-
 void GetVariableMetadataFromJulea(const std::string nameSpace,
                                   const std::string varName, gpointer *md,
                                   guint32 *buffer_len)
@@ -49,7 +48,6 @@ void GetVariableMetadataFromJulea(const std::string nameSpace,
 
     j_kv_get(kvVarMetadata, md, buffer_len, batch);
     g_assert_true(j_batch_execute(batch) == true);
-
 }
 
 void GetBlockMetadataFromJulea(const std::string nameSpace,
@@ -83,7 +81,6 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
                               size_t step, size_t block)
 {
     // std::cout << "-- GetVariableDataFromJulea ----- " << std::endl;
-    // std::cout << "-- Datasize = " << dataSize << std::endl;
 
     guint64 bytesRead = 0;
     const char *varName = variable.m_Name.c_str();
@@ -122,7 +119,8 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
     j_object_unref(dataObject);
 }
 
-/** Retrieves all variable names from key-value store. They are all stored in one bson. */
+/** Retrieves all variable names from key-value store. They are all stored in
+ * one bson. */
 void GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
                        unsigned int *varCount, bool isVariable)
 {
@@ -150,9 +148,10 @@ void GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
     j_kv_get(kvObject, &namesBuf, &valueLen, batch);
     err = j_batch_execute(batch);
 
-    if(err != 0)
+    if (err != 0)
     {
-        std::cout << "j_batch_execute failed in GetNamesFromJulea. " <<std::endl;
+        std::cout << "j_batch_execute failed in GetNamesFromJulea. "
+                  << std::endl;
     }
 
     if (valueLen == 0)
@@ -187,7 +186,6 @@ void GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 
-
 /** ------------------------- Attributes -----------------------------------**/
 
 void GetAttributeBSONFromJulea(const std::string nameSpace,
@@ -207,9 +205,10 @@ void GetAttributeBSONFromJulea(const std::string nameSpace,
 
     j_kv_get(kvObject, &metaDataBuf, valueLen, batch);
     err = j_batch_execute(batch);
-    if(err != 0)
+    if (err != 0)
     {
-        std::cout << "j_batch_execute failed in GetAttributeBSONFromJulea" << std::endl;
+        std::cout << "j_batch_execute failed in GetAttributeBSONFromJulea"
+                  << std::endl;
     }
 
     if (valueLen == 0)
