@@ -31,8 +31,8 @@ namespace engine
  * @param constantDims [description]
  */
 void DefineVariableInInit(core::IO *io, const std::string varName,
-                             std::string type, Dims shape, Dims start,
-                             Dims count, bool constantDims);
+                          std::string type, Dims shape, Dims start, Dims count,
+                          bool constantDims);
 /**
  * Initializes all the fields that ADIOS is relying on without actually
  * requiring when defining the variable at the io.
@@ -92,7 +92,8 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
  * Variable is const as this function is called with bpls.
  * @param variable          variable
  * @param buffer            metadata buffer from JULEA key-value store
- * @returns smart pointer to info struct. So that the allocated memory is not leaked in bpls
+ * @returns smart pointer to info struct. So that the allocated memory is not
+ * leaked in bpls
  */
 template <class T>
 std::unique_ptr<typename core::Variable<T>::Info>

@@ -33,30 +33,24 @@ namespace core
 namespace engine
 {
 
-/** used for Variables and Attributes, name, type, type-index */
-using DataMap =
-    std::unordered_map<std::string, std::pair<std::string, unsigned int>>;
-
 class JuleaKVReader : public Engine
 {
 public:
     /**
-     * Constructor for single BP capsule engine, writes in BP format into a
-     * single
-     * heap capsule
+     * Constructor for JULEA kv engine, writes metadata into key-value store in
+     * JULEA.
      * @param name unique name given to the engine
      * @param accessMode
      * @param mpiComm
      * @param method
      * @param debugMode
-     * @param hostLanguage
      */
     JuleaKVReader(IO &adios, const std::string &name, const Mode mode,
                   helper::Comm comm);
 
     virtual ~JuleaKVReader();
-    // StepStatus BeginStep(StepMode mode = StepMode::NextAvailable,
-    //                      const float timeoutSeconds = -1.0) final;
+    ;
+    // StepMode::NextAvailable is no longer a stepmode?!
     StepStatus BeginStep(StepMode mode = StepMode::Read,
                          const float timeoutSeconds = -1.0) final;
     size_t CurrentStep() const final;
@@ -64,7 +58,6 @@ public:
     void PerformGets() final;
 
 private:
-    // JuleaInfo *m_JuleaInfo;
     JSemantics *m_JuleaSemantics;
     StepMode m_StepMode = StepMode::Append;
 
@@ -89,7 +82,7 @@ private:
      */
     mutable bool m_UseKeysForBPLS = false;
 
-    int m_Verbosity = 0; // TODO: changed to 5 for debugging
+    int m_Verbosity = 0; // change to 5 for debugging
     int m_ReaderRank;    // my rank in the readers' comm
 
     bool m_CollectiveMetadata = true;
@@ -106,7 +99,7 @@ private:
     size_t m_FlushStepsCount = 1;
 
     /** manages all communication tasks in aggregation */
-    aggregator::MPIChain m_Aggregator;
+    // aggregator::MPIChain m_Aggregator;
 
     /** tracks Put and Get variables in deferred mode */
     std::set<std::string> m_DeferredVariables;
@@ -120,31 +113,8 @@ private:
     /** statistics verbosity, only 0 is supported */
     unsigned int m_StatsLevel = 0;
 
-    /** contains data buffer for this rank */
-    // format::BufferSTL m_Data;
-
-    /** contains collective metadata buffer, only used by rank 0 */
-    // format::BufferSTL m_Metadata;
-
-    /** contains bp1 format metadata indices*/ // DESIGN: needed?
-    // format::BP3Base::MetadataSet m_MetadataSet;
-
-    // format::BP3Deserializer m_BP3Deserializer;
-
-    // DESIGN
-    /** Manage BP data files Transports from IO AddTransport */
-    // transportman::TransportMan m_FileDataManager; /
-
-    /** Manages the optional collective metadata files */
-    // transportman::TransportMan m_FileMetadataManager;
-
     void Init() final; ///< called from constructor, gets the selected Skeleton
                        /// transport method from settings
-
-    /** Parses parameters from IO SetParameters */
-    void InitParameters() final;
-    /** Parses transports and parameters from IO AddTransport */
-    void InitTransports() final;
 
     // template <class T>
     void InitVariables(); // needs to be final? HELP
@@ -157,11 +127,7 @@ private:
 #undef declare_type
 
     template <class T>
-    void ReadVariableBlocks(Variable<T> &variable);
-
-    template <class T>
     void GetSyncCommon(Variable<T> &variable, T *data);
-
     template <class T>
     void GetDeferredCommon(Variable<T> &variable, T *data);
 
@@ -171,6 +137,27 @@ private:
 
     // void AggregateReadData();
 
+    /**
+     * Initializes a block inside variable.m_BlocksInfo
+     * @param variable input
+     * @param data user data pointer
+     * @return a reference inside variable.m_BlocksInfo (invalidated if called
+     * twice)
+     */
+    template <class T>
+    typename core::Variable<T>::Info &
+    InitVariableBlockInfo(core::Variable<T> &variable, T *data);
+
+    template <class T>
+    void ReadVariableBlocks(Variable<T> &variable);
+
+    template <class T>
+    std::vector<typename core::Variable<T>::Info>
+    BlocksInfoCommon(const core::Variable<T> &variable,
+                     const std::vector<size_t> &blocksIndexOffsets,
+                     size_t step) const;
+
+    /** ---------- the following functions are mainly used for bpls */
     template <class T>
     std::map<size_t, std::vector<typename core::Variable<T>::Info>>
     AllStepsBlocksInfo(const core::Variable<T> &variable) const;
@@ -194,23 +181,6 @@ private:
     template <class T>
     std::vector<typename core::Variable<T>::Info>
     DoBlocksInfo(const core::Variable<T> &variable, const size_t step) const;
-
-    template <class T>
-    std::vector<typename core::Variable<T>::Info>
-    BlocksInfoCommon(const core::Variable<T> &variable,
-                     const std::vector<size_t> &blocksIndexOffsets,
-                     size_t step) const;
-
-    /**
-     * Initializes a block inside variable.m_BlocksInfo
-     * @param variable input
-     * @param data user data pointer
-     * @return a reference inside variable.m_BlocksInfo (invalidated if called
-     * twice)
-     */
-    template <class T>
-    typename core::Variable<T>::Info &
-    InitVariableBlockInfo(core::Variable<T> &variable, T *data);
 
 #define declare_type(T)                                                        \
     std::map<size_t, std::vector<typename Variable<T>::Info>>                  \

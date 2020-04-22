@@ -37,13 +37,8 @@ void SetVariableBlockInfo(Variable<T> &variable,
 void InitVariable(core::IO *io, core::Engine &engine, std::string varName,
                   size_t *blocks, size_t numberSteps, ShapeID shapeID)
 {
-    std::cout << "----- InitVariable ---" << std::endl;
+    // std::cout << "----- InitVariable ---" << std::endl;
     const std::string type(io->InquireVariableType(varName));
-    // std::cout << "----- type ---" << type << std::endl;
-    // std::cout << "-- DEBUG: " << std::endl;
-    // std::cout << "blocks: " << blocks[0] << std::endl;
-    // std::cout << "blocks: " << blocks[1] << std::endl;
-    // std::cout << "i: " << i << "j: " << j << std::endl;            \
 
     /** no sensible information yet to store in AvailableStepBlockIndexOffsets.
      * So it is filled with dummy values. (42 + BlockID) */
@@ -87,14 +82,9 @@ void InitVariable(core::IO *io, core::Engine &engine, std::string varName,
     // }
 }
 
-// FIXME: some overflow sometimes!
-// void DefineVariableInInitNew(core::IO *io, const std::string varName,
-//                              std::string stringType, Dims shape, Dims start,
-//                              Dims count, bool constantDims, size_t *blocks,
-//                              size_t numberSteps, ShapeID shapeID)
 void DefineVariableInInit(core::IO *io, const std::string varName,
-                             std::string stringType, Dims shape, Dims start,
-                             Dims count, bool constantDims)
+                          std::string stringType, Dims shape, Dims start,
+                          Dims count, bool constantDims)
 {
     const char *type = stringType.c_str();
     std::cout << "------ DefineVariableInInit ----------" << std::endl;
@@ -308,9 +298,7 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
     *numberSteps = steps;
 
     size_t blocksLen = steps * sizeof(size_t);
-    size_t *tmpBlocks = new size_t[steps];
-    // std::unique_ptr<size_t> tmpBlocks(steps);
-    // std::unique_ptr<size_t> tmpBlocks(new size_t[steps]);
+    size_t *tmpBlocks = new size_t[steps]; //TODO mem leak?
     memcpy(tmpBlocks, tmpBuffer, blocksLen);
 
     // shapeID = (ShapeID *)tmpShapeID;
@@ -364,9 +352,7 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
                               typename core::Variable<T>::Info &infoParam)
 {
     // std::cout << "------ DeserializeBlockMetadata ----------" << std::endl;
-    // typename Variable<T>::Info info;
-    // typename Variable<T>::Info info = variable.m_BlocksInfo[block-1];
-    // typename Variable<T>::Info info = variable.m_BlocksInfo[0];
+
     typename Variable<T>::Info info = infoParam;
     char *tmpBuffer = (char *)buffer;
 
@@ -382,7 +368,6 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
     size_t memoryStartLen = 0;
     size_t memoryCountLen = 0;
 
-    // std::cout << "sizeof (T) " << sizeof(T) << std::endl;
     size_t minLen = sizeof(T);
     size_t maxLen = sizeof(T);
     size_t valueLen = sizeof(T);
@@ -516,8 +501,8 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
 /**
  * Deserializes the passed buffer and returns the created info struct.
  *
- * Note: the variable is only passed, because it seems to be not possible to have
- * an info struct without a variable. Template type cannot be deduced then.
+ * Note: the variable is only passed, because it seems to be not possible to
+ * have an info struct without a variable. Template type cannot be deduced then.
  * Variable is const as this function is called with bpls.
  */
 // typename core::Variable<T>::Info *
@@ -933,7 +918,8 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
 }
 
 // void DefineVariableInInit(core::IO *io, const std::string varName, int type,
-//                           Dims shape, Dims start, Dims count, bool constantDims)
+//                           Dims shape, Dims start, Dims count, bool
+//                           constantDims)
 // {
 //     switch (type)
 //     {
@@ -948,38 +934,38 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
 //                                         constantDims);
 //         break;
 //     case INT8:
-//         io->DefineVariable<int8_t>(varName, shape, start, count, constantDims);
-//         break;
+//         io->DefineVariable<int8_t>(varName, shape, start, count,
+//         constantDims); break;
 //     case UINT8:
-//         io->DefineVariable<uint8_t>(varName, shape, start, count, constantDims);
-//         break;
+//         io->DefineVariable<uint8_t>(varName, shape, start, count,
+//         constantDims); break;
 //     case INT16:
-//         io->DefineVariable<int16_t>(varName, shape, start, count, constantDims);
-//         break;
+//         io->DefineVariable<int16_t>(varName, shape, start, count,
+//         constantDims); break;
 //     case UINT16:
 //         io->DefineVariable<uint16_t>(varName, shape, start, count,
 //                                      constantDims);
 //         break;
 //     case INT32:
-//         io->DefineVariable<int32_t>(varName, shape, start, count, constantDims);
-//         break;
+//         io->DefineVariable<int32_t>(varName, shape, start, count,
+//         constantDims); break;
 //     case UINT32:
 //         io->DefineVariable<uint32_t>(varName, shape, start, count,
 //                                      constantDims);
 //         break;
 //     case INT64:
-//         io->DefineVariable<int64_t>(varName, shape, start, count, constantDims);
-//         break;
+//         io->DefineVariable<int64_t>(varName, shape, start, count,
+//         constantDims); break;
 //     case UINT64:
 //         io->DefineVariable<uint64_t>(varName, shape, start, count,
 //                                      constantDims);
 //         break;
 //     case FLOAT:
-//         io->DefineVariable<float>(varName, shape, start, count, constantDims);
-//         break;
+//         io->DefineVariable<float>(varName, shape, start, count,
+//         constantDims); break;
 //     case DOUBLE:
-//         io->DefineVariable<double>(varName, shape, start, count, constantDims);
-//         break;
+//         io->DefineVariable<double>(varName, shape, start, count,
+//         constantDims); break;
 //     case LONG_DOUBLE:
 //         io->DefineVariable<long double>(varName, shape, start, count,
 //                                         constantDims);
@@ -989,7 +975,8 @@ void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
 //                                                 constantDims);
 //         break;
 //     case COMPLEX_DOUBLE:
-//         io->DefineVariable<std::complex<double>>(varName, shape, start, count,
+//         io->DefineVariable<std::complex<double>>(varName, shape, start,
+//         count,
 //                                                  constantDims);
 //         break;
 //     }
