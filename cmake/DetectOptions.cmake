@@ -47,6 +47,7 @@ if(ADIOS2_USE_JULEA)
     pkg_check_modules(JULEA REQUIRED IMPORTED_TARGET
       julea
       julea-kv
+      julea-db
       julea-object
       julea-item
     )

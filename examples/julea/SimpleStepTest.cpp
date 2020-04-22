@@ -90,10 +90,6 @@ void write_simple(std::string engine, std::string fileName)
     // Open file. "w" means we overwrite any existing file on disk,
     // but Advance() will append steps to the same file.
     adios2::Engine writer = io.Open(fileName, adios2::Mode::Write);
-    // adios2::Engine writer = io.Open("SimpleSteps-APPEND-MODE",
-    // adios2::Mode::Append); io.Open("JULEA-SimpleSteps.bp",
-    // adios2::Mode::Write); adios2::Engine writer =
-    // io.Open("JULEAlocalArray.bp", adios2::Mode::Append);
 
     // v1[0] = -42;
     // v1[1] = 42;
@@ -178,8 +174,7 @@ void write_complex(std::string engine, std::string fileName)
 
     adios2::ADIOS adios(adios2::DebugON);
     adios2::IO io = adios.DeclareIO("Output");
-    // io.SetEngine("julea-kv");
-    // io.SetEngine("bp3");
+
     io.SetEngine(engine);
     /*
      * Define local array: type, name, local size
@@ -392,8 +387,6 @@ void read_selection(std::string engine, std::string fileName)
         std::vector<std::vector<double>> dataSet;
         dataSet.resize(blocksInfo.size());
 
-        // std::cout << "--DEBUG 2-- " << std::endl;
-        /** to test stuff */
         // reader.Get<double>(varV1, v1.data(), adios2::Mode::Sync);
         // std::cout << "\nv1[0]: " << v1[0] << " v1[1]: " << v1[1] <<
         // std::endl;
@@ -402,11 +395,7 @@ void read_selection(std::string engine, std::string fileName)
         int i = 0;
         for (auto &info : blocksInfo)
         {
-            // std::cout << "------------------------ BLOCK LOOP: ------- i = "
-            // << i << std::endl; std::cout << "test number blocksinfo: i= " <<
-            // i << std::endl; std::cout << "info.BlockID = " << info.BlockID <<
-            // std::endl; std::cout << "---- Application: SetBlockSelection ---
-            // " << std::endl;
+            // std::cout << "---- Application: SetBlockSelection --- " << std::endl;
             varV0.SetBlockSelection(info.BlockID);
             // std::cout << "---- Application: Get --- " << std::endl;
             // reader.Get<double>(varV0, dataSet[i], adios2::Mode::Sync);
@@ -417,11 +406,6 @@ void read_selection(std::string engine, std::string fileName)
         // Read in all blocks at once now
         reader.PerformGets();
         // data vectors now are filled with data
-
-        /** to test stuff */
-        // reader.Get<double>(varV1, v1.data(), adios2::Mode::Sync);
-        // std::cout << "\n v1[0]: " << v1[0] << " v1[1]: " << v1[1] <<
-        // std::endl;
 
         std::cout
             << "\n--------------- APPLICATION loop over blocksInfo ------- "

@@ -77,8 +77,8 @@
 #include "adios2/engine/julea-kv/JuleaKVWriter.h"
 #include "adios2/engine/julea-test/JuleaTestReader.h"
 #include "adios2/engine/julea-test/JuleaTestWriter.h"
-// #include "adios2/engine/julea-db/JuleaDBReader.h"
-// #include "adios2/engine/julea-db/JuleaDBWriter.h"
+#include "adios2/engine/julea-db/JuleaDBReader.h"
+#include "adios2/engine/julea-db/JuleaDBWriter.h"
 #endif
 
 namespace adios2

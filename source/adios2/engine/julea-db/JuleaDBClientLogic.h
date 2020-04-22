@@ -11,7 +11,7 @@
 #ifndef ADIOS2_ENGINE_JULEACLIENTLOGIC_H_
 #define ADIOS2_ENGINE_JULEACLIENTLOGIC_H_
 
-#include "JuleaDBMetadata.h"
+// #include "JuleaDBMetadata.h"
 #include <julea.h>
 
 namespace adios2
@@ -25,35 +25,35 @@ namespace engine
 // void j_adios_finish(void);
 
 /* performs data put AND metadata put*/
-void PutVariableToJuleaDB(char *name_space, Metadata *metadata,
-                        const void *data_pointer, JBatch *batch);
-void PutAttributeToJuleaDB(char *name_space, AttributeMetadata *attr_metadata,
-                         void *data_pointer, JBatch *batch);
+// void PutVariableToJuleaDB(char *name_space, Metadata *metadata,
+//                         const void *data_pointer, JBatch *batch);
+// void PutAttributeToJuleaDB(char *name_space, AttributeMetadata *attr_metadata,
+//                          void *data_pointer, JBatch *batch);
 
-/* get data from object store*/
-void GetVarDataFromJuleaDB(char *name_space, char *variable_name,
-                         unsigned int length, void *data_pointer,
-                         JBatch *batch);
-void GetAttrDataFromJuleaDB(char *name_space, char *attribute_name,
-                          unsigned int length, void *data_pointer,
-                          JBatch *batch);
+// /* get data from object store*/
+// void GetVarDataFromJuleaDB(char *name_space, char *variable_name,
+//                          unsigned int length, void *data_pointer,
+//                          JBatch *batch);
+// void GetAttrDataFromJuleaDB(char *name_space, char *attribute_name,
+//                           unsigned int length, void *data_pointer,
+//                           JBatch *batch);
 
-/* get metadata from kv store; hopefully soon from SMD backend*/
-void GetAllVarNamesFromKV(char *name_space, char ***names, int **types,
-                          unsigned int *count_names, JSemantics *semantics);
-void GetVarMetadataFromKV(char *name_space, char *var_name, Metadata *metadata,
-                          JSemantics *semantics);
+// /* get metadata from kv store; hopefully soon from SMD backend*/
+// void GetAllVarNamesFromKV(char *name_space, char ***names, int **types,
+//                           unsigned int *count_names, JSemantics *semantics);
+// void GetVarMetadataFromKV(char *name_space, char *var_name, Metadata *metadata,
+//                           JSemantics *semantics);
 
-/* get attributes from kv store; hopefully soon from SMD backend */
-void GetAllAttrNamesFromKV(char *name_space, char ***names, int **types,
-                           unsigned int *count_names, JSemantics *semantics);
-void GetAttrMetadataFromKV(char *name_space, char *var_name,
-                           AttributeMetadata *attr_metadata,
-                           JSemantics *semantics);
+// /* get attributes from kv store; hopefully soon from SMD backend */
+// void GetAllAttrNamesFromKV(char *name_space, char ***names, int **types,
+//                            unsigned int *count_names, JSemantics *semantics);
+// void GetAttrMetadataFromKV(char *name_space, char *var_name,
+//                            AttributeMetadata *attr_metadata,
+//                            JSemantics *semantics);
 
-/* delete variable data as well as metadata */
-void DeleteVariable(char *name_space, char *var_name, JBatch *batch);
-void DeleteAttribute(char *name_space, char *attr_name, JBatch *batch);
+// /* delete variable data as well as metadata */
+// void DeleteVariable(char *name_space, char *var_name, JBatch *batch);
+// void DeleteAttribute(char *name_space, char *attr_name, JBatch *batch);
 
 } // end namespace engine
 } // end namespace core
