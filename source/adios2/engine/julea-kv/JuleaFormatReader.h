@@ -116,23 +116,6 @@ template <class T>
 void SetMinMax(Variable<T> &variable, const T *data);
 
 /* --- old BSON stuff--- */
-void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
-                                        const std::string varName,
-                                        bson_t *bsonMetadata, int *type,
-                                        Dims *shape, Dims *start, Dims *count,
-                                        bool *constantDims);
-
-// void DefineVariableInInit(core::IO *io, const std::string varName, int type,
-//                           Dims shape, Dims start, Dims count,
-//                           bool constantDims);
-
-template <class T>
-void ParseVariableFromBSON(Variable<T> &variable, bson_t *bsonMetadata,
-                           const std::string nameSpace,
-                           long unsigned int *dataSize);
-
-template <class T>
-void ParseVarTypeFromBSON(Variable<T> &variable, bson_iter_t *b_iter);
 
 void ParseAttributeFromBSON(const std::string nameSpace,
                             const std::string attrName, bson_t *bsonMetadata,
@@ -159,10 +142,6 @@ void GetAdiosTypeString(int type, std::string *typeString);
                                      size_t numberSteps, ShapeID shapeID);     \
     extern template void SetVariableBlockInfo(                                 \
         core::Variable<T> &variable, typename core::Variable<T>::Info &info);  \
-                                                                               \
-    extern template void ParseVariableFromBSON(                                \
-        Variable<T> &variable, bson_t *bsonMetadata,                           \
-        const std::string nameSpace, long unsigned int *dataSize);             \
     ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 
