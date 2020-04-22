@@ -31,7 +31,6 @@ namespace engine
 JuleaKVWriter::JuleaKVWriter(IO &io, const std::string &name, const Mode mode,
                              helper::Comm comm)
 : Engine("JuleaKVWriter", io, name, mode, std::move(comm))
-// : Engine("JuleaKVWriter", io, name, mode, mpiComm), m_Julea(io.m_DebugMode)
 {
     // m_EndMessage = " in call to JuleaKVWriter " + m_Name + " Open\n";
 
@@ -48,7 +47,6 @@ JuleaKVWriter::JuleaKVWriter(IO &io, const std::string &name, const Mode mode,
 JuleaKVWriter::~JuleaKVWriter()
 {
     // DoClose();
-    // if (m_Verbosity == 5)
     if (m_Verbosity == 5)
     {
         std::cout << "Julea Writer " << m_WriterRank << " deconstructor on "
@@ -66,18 +64,19 @@ JuleaKVWriter::~JuleaKVWriter()
  */
 StepStatus JuleaKVWriter::BeginStep(StepMode mode, const float timeoutSeconds)
 {
-    // std::cout << "JULEA ENGINE: BeginStep" << std::endl;
-    // m_CurrentStep++; // 0 is the first step
     if (m_Verbosity == 5)
     {
         std::cout << "Julea Writer " << m_WriterRank
                   << "   BeginStep() new step " << m_CurrentStep << "\n";
+        std::cout << "StepMode mode: " << mode << std::endl;
     }
-    std::cout << "StepMode mode: " << mode << std::endl;
+
     m_StepMode = mode;
-    m_DeferredVariables
-        .clear(); // FIXME: can this work for deferred put before first step?
+    /** still not completely sure why writes before first step are not forgotten
+     * by this. */
+    m_DeferredVariables.clear();
     m_DeferredVariablesDataSize = 0;
+
     return StepStatus::OK;
 }
 
@@ -110,28 +109,19 @@ void JuleaKVWriter::EndStep()
         std::cout << "--- DEBUG : EndStep2" << std::endl;
         std::cout << "m_DeferredVariables.size() = "
                   << m_DeferredVariables.size() << std::endl;
-        PerformPuts(); //
-                       // m_PutBlockID = 0;
+        PerformPuts();
     }
 
-    // TODO
-    // SerializeData in BP3
-    // - Profiler ?!
-    // - SerializeDataBuffer (write attributes?!)
-    // --- CopyToBuffer
-    // --- attributesSizeInData
-    // -
     PutAttributes(m_IO);
 
     /* advance step */
-    // ++m_MetadataSet.TimeStep;
-    // ++m_MetadataSet.CurrentStep;
-    ++m_TimeStep;
+    // ++m_TimeStep;
     ++m_CurrentStep;
 
     /* ------ original EndStep */
     const size_t currentStep = CurrentStep();
     const size_t flushStepsCount = m_FlushStepsCount;
+
     if (m_CurrentStep % m_FlushStepsCount == 0)
     {
         Flush();
@@ -142,7 +132,6 @@ void JuleaKVWriter::EndStep()
     {
         std::cout << "\n______________EndStep _____________________"
                   << std::endl;
-        // std::cout << "Julea Writer " << m_WriterRank << "   EndStep()\n";
     }
 }
 
@@ -152,7 +141,6 @@ void JuleaKVWriter::EndStep()
  */
 void JuleaKVWriter::PerformPuts()
 {
-    // std::cout << "JULEA ENGINE: PerformPuts" << std::endl;
     if (m_Verbosity == 5)
     {
         std::cout << "Julea Writer " << m_WriterRank << "     PerformPuts()\n";
@@ -163,9 +151,6 @@ void JuleaKVWriter::PerformPuts()
     {
         return;
     }
-
-    // m_BP3Serializer.ResizeBuffer(m_BP3Serializer.m_DeferredVariablesDataSize,
-    //                              "in call to PerformPuts");
 
     /** Call PutSyncCommon for every variable that has been deferred */
     for (const std::string &variableName : m_DeferredVariables)
@@ -190,7 +175,6 @@ void JuleaKVWriter::PerformPuts()
 #undef declare_template_instantiation
     }
     m_DeferredVariables.clear();
-    // m_NeedPerformPuts = false;
 }
 // ADIOS2_FOREACH_TYPE_1ARG(declare_template_instantiation)
 
@@ -202,18 +186,18 @@ void JuleaKVWriter::PerformPuts()
 // void JuleaKVWriter::Flush()
 void JuleaKVWriter::Flush(const int transportIndex)
 {
-    std::cout << "\n______________Flush  _____________________" << std::endl;
+
+    if (m_Verbosity == 5)
+    {
+        std::cout << "\n______________Flush  _____________________"
+                  << std::endl;
+        std::cout << "Julea Writer " << m_WriterRank << "   Flush()\n";
+    }
     DoFlush(false);
-    // ResetBuffer(m_Data);
 
     if (m_CollectiveMetadata)
     {
         // WriteCollectiveMetadataFile
-    }
-
-    if (m_Verbosity == 5)
-    {
-        // std::cout << "Julea Writer " << m_WriterRank << "   Flush()\n";
     }
 }
 
@@ -224,6 +208,12 @@ void JuleaKVWriter::Flush(const int transportIndex)
  */
 void JuleaKVWriter::Init()
 {
+    if (m_Verbosity == 5)
+    {
+        std::cout << "Julea Writer " << m_WriterRank << "   Init() "
+                  << std::endl;
+    }
+
     if (m_OpenMode == Mode::Append)
     {
         throw std::invalid_argument("JuleaKVWriter: OpenMode   -- Append --   "
@@ -240,17 +230,14 @@ void JuleaKVWriter::Init()
         << std::endl;
 
     std::cout << "JULEA WRITER: Namespace = " << m_Name << std::endl;
-    // TODO: which order?
 
     m_JuleaSemantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
 
-    // j_init();
     InitParameters();
-    InitTransports();
     InitVariables();
 }
 
-/**TODO
+/**TODO needed?
  * see BP3Base InitParameters
  */
 void JuleaKVWriter::InitParameters()
@@ -291,58 +278,24 @@ void JuleaKVWriter::InitParameters()
     }
 }
 
-/**TODO
- * [JuleaWriter::InitTransports description]
- */
-void JuleaKVWriter::InitTransports()
-{
-    // Nothing to process from m_IO.m_TransportsParameters
-    // std::cout << "JULEA ENGINE: Init Transport" << std::endl;
-    if (m_Verbosity == 5)
-    {
-        std::cout << "Julea Writer " << m_WriterRank << " InitTransports()\n";
-    }
-}
-
 /**
  * [JuleaWriter::InitVariables description]
  */
 void JuleaKVWriter::InitVariables()
 {
-    // m_DeferredVariables.init() FIXME: how to init set of strings?
-    // constructur? Nothing to process from m_IO.m_TransportsParameters
-    // std::cout << "JULEA ENGINE: Init Transport" << std::endl;
+    // TODO: do something here with deferredVariables?
     if (m_Verbosity == 5)
     {
         std::cout << "Julea Writer " << m_WriterRank << " InitVariables()\n";
     }
 }
 
-/**TODO
- * [declare_type description]
+/**
+ * Puts variable to JULEA object store. Afterwards deletes related blockinfo
+ * struct from variable m_BlocksInfo vector [declare_type description]
  * @param  T [description]
  * @return   [description]
  */
-// #define declare_type(T)                                                        \
-//     void JuleaWriter::DoPutSync(Variable<T> &variable, const T *data)          \
-//     {                                                                          \
-//         PutSyncCommon(variable, variable.SetBlockInfo(data, CurrentStep()));   \
-//         variable.m_BlocksInfo.clear();                                         \
-//     }                                                                          \
-//     void JuleaWriter::DoPutDeferred(Variable<T> &variable, const T *data)      \
-//     {                                                                          \
-//         PutDeferredCommon(variable, data);                                     \
-//     }
-// ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
-// #undef declare_type
-// ADIOS2_FOREACH_TYPE_1ARG(declare_type)
-
-/**TODO
- * [declare_type description]
- * @param  T [description]
- * @return   [description]
- */
-// PutSyncCommon(variable, variable.SetBlockInfo(data, CurrentStep()));   \
 
 #define declare_type(T)                                                        \
     void JuleaKVWriter::DoPutSync(Variable<T> &variable, const T *data)        \
@@ -360,35 +313,18 @@ void JuleaKVWriter::InitVariables()
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
 
-// #define declare_type(T)                                                        \
-//     void JuleaKVWriter::DoPutSync(Variable<T> &variable, const T *data)        \
-//     {                                                                          \
-//        std::cout << " SYNC ---- data[0] --- " << data[0] << std::endl;\
-//        std::cout << " SYNC ---- data[1] --- " << data[1] << std::endl;\
-//     }                                                                          \
-//     void JuleaKVWriter::DoPutDeferred(Variable<T> &variable, const T *data)    \
-//     {                                                                          \
-//        std::cout << " DEFERRED ---- data[0] --- " << data[0] << std::endl;\
-//        std::cout << " DEFERRED ---- data[1] --- " << data[1] << std::endl;\
-//    }
-// ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
-// #undef declare_type
-
-// ADIOS2_FOREACH_TYPE_1ARG(declare_type)
-
 /**TODO
  * [JuleaWriter::DoClose description]
  * @param transportIndex [description]
  */
-// void JuleaKVWriter::DoClose()
 void JuleaKVWriter::DoClose(const int transportIndex)
 {
     if (m_Verbosity == 5)
     {
         std::cout << "\n______________DoClose_____________________"
                   << std::endl;
-        // std::cout << "Julea Writer " << m_WriterRank << " Close(" << m_Name
-        // << ")\n";
+        std::cout << "Julea Writer " << m_WriterRank << " Close(" << m_Name
+        << ")\n";
     }
     // TODO: free semantics
     /* Write deferred variables*/
@@ -412,7 +348,7 @@ void JuleaKVWriter::DoFlush(const bool isFinal, const int transportIndex)
     {
         std::cout << "\n______________DoFlush_____________________"
                   << std::endl;
-        // std::cout << "Julea Writer " << m_WriterRank << " DoFlush \n";
+        std::cout << "Julea Writer " << m_WriterRank << " DoFlush \n";
     }
     if (m_Aggregator.m_IsActive)
     {
@@ -427,20 +363,6 @@ void JuleaKVWriter::DoFlush(const bool isFinal, const int transportIndex)
         // WriteData(isFinal);
     }
 }
-
-// void JuleaKVWriter::GetStepMetadata(variable, )
-// {
-//     struct StepMetadata *md;
-//     md.numberSteps = variable.m_AvailableStepBlockIndexOffsets.size();
-//     size_t blocks[m_CurrentStep+1];
-//     for (uint i = 0; i <= m_CurrentStep; i++)
-//     {
-//         //only one element in vector -> number of blocks for this step
-//         blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].at(0);
-//         std::cout << "i: " << i << "  blocks: " << blocks[i] << std::endl;
-//     }
-//     size_t len = (currStep+1) * sizeof(size_t);
-// }
 
 /**
  * TODO

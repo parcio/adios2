@@ -87,7 +87,7 @@ private:
      * updated with EndStep, if append it will be updated to last,
      * starts with one in BPBase! legacy of Adios 1?!
      */
-    uint32_t m_TimeStep = 1; // starts at 1
+    // uint32_t m_TimeStep = 1; // starts at 1
 
     /** Similar to TimeStep, but uses uint64_t and start from zero. Used for
      * streaming a large number of steps */
@@ -141,7 +141,7 @@ private:
     /** Parses parameters from IO SetParameters */
     void InitParameters() final;
     /** Parses transports and parameters from IO AddTransport */
-    void InitTransports() final;
+    // void InitTransports() final;
 
     void InitVariables();
 
