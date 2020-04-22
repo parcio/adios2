@@ -207,6 +207,10 @@ private:
 
     template <class T>
     std::vector<std::vector<typename core::Variable<T>::Info>>
+    AllRelativeStepsBlocksInfo(const core::Variable<T> &variable) const;
+
+    template <class T>
+    std::vector<std::vector<typename core::Variable<T>::Info>>
     DoAllRelativeStepsBlocksInfo(const core::Variable<T> &variable) const;
 
     template <class T>

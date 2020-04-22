@@ -309,6 +309,8 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
 
     size_t blocksLen = steps * sizeof(size_t);
     size_t *tmpBlocks = new size_t[steps];
+    // std::unique_ptr<size_t> tmpBlocks(steps);
+    // std::unique_ptr<size_t> tmpBlocks(new size_t[steps]);
     memcpy(tmpBlocks, tmpBuffer, blocksLen);
 
     // shapeID = (ShapeID *)tmpShapeID;
@@ -526,12 +528,15 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
  * an info struct without a variable. Template type cannot be deduced then.
  * Variable is const as this function is called with bpls.
  */
+// typename core::Variable<T>::Info *
 template <class T>
-typename core::Variable<T>::Info *
+std::unique_ptr<typename core::Variable<T>::Info>
 GetDeserializedMetadata(const core::Variable<T> &variable, gpointer buffer)
 {
     // std::cout << "------ GetDeserializedMetadata ----------" << std::endl;
-    typename Variable<T>::Info *info = new (typename Variable<T>::Info);
+    // typename Variable<T>::Info *infoOLD = new (typename Variable<T>::Info);
+    std::unique_ptr<typename Variable<T>::Info> info(
+        new (typename Variable<T>::Info));
     char *tmpBuffer = (char *)buffer;
 
     size_t shapeSize = 0;
@@ -600,6 +605,7 @@ GetDeserializedMetadata(const core::Variable<T> &variable, gpointer buffer)
         Dims tmpCount(tmpCountBuffer, tmpCountBuffer + countSize);
         info->Count = tmpCount;
         // std::cout << "count: " << info.Count.front() << std::endl;
+        // delete tmpCount;
     }
 
     /** --- memorystart --- */
@@ -1397,10 +1403,12 @@ void ParseVarTypeFromBSON<std::complex<double>>(
     //                          Dims count, bool constantDims);\
                             \
 
+// template typename core::Variable<T>::Info *GetDeserializedMetadata(        \
 
 #define variable_template_instantiation(T)                                     \
-    template typename core::Variable<T>::Info *GetDeserializedMetadata(        \
-        const core::Variable<T> &variable, gpointer buffer);                   \
+    template std::unique_ptr<typename core::Variable<T>::Info>                 \
+    GetDeserializedMetadata(const core::Variable<T> &variable,                 \
+                            gpointer buffer);                                  \
     template void DeserializeBlockMetadata(                                    \
         Variable<T> &variable, gpointer buffer, size_t block,                  \
         typename core::Variable<T>::Info &info);                               \

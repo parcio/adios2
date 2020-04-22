@@ -22,7 +22,7 @@ namespace engine
 {
 
 template <class T>
-typename core::Variable<T>::Info *
+std::unique_ptr<typename core::Variable<T>::Info>
 GetDeserializedMetadata(const core::Variable<T> &variable, gpointer buffe);
 
 template <class T>
@@ -37,10 +37,6 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
                                  bool *readAsJoined, bool *readAsLocalValue,
                                  bool *randomAccess);
 
-// void DefineVariableInInitNew(core::IO *io, const std::string varName,
-//                              std::string type, Dims shape, Dims start,
-//                              Dims count, bool constantDims, size_t *blocks,
-//                              size_t numberSteps, ShapeID shapeID);
 void DefineVariableInInitNew(core::IO *io, const std::string varName,
                              std::string type, Dims shape, Dims start,
                              Dims count, bool constantDims);
@@ -56,13 +52,6 @@ void InitVariable(core::IO *io, core::Engine &engine, std::string varName,
 template <class T>
 void SetVariableBlockInfo(core::Variable<T> &variable,
                           typename core::Variable<T>::Info &blockInfo);
-
-// void DefineAttributeInInit(core::IO *io, const std::string varName, int type,
-// bool IsSingleValue);
-// template <class T>
-// void DefineAttributeInInit(core::IO *io, const std::string attrName, T *data,
-//                            int type, bool IsSingleValue, size_t
-//                            numberElements);
 
 void GetVariableMetadataForInitFromBSON(const std::string nameSpace,
                                         const std::string varName,
@@ -105,10 +94,12 @@ void GetAdiosTypeString(int type, std::string *typeString);
         Variable<T> &variable, gpointer buffer, size_t block);                 \
     extern template void SetVariableBlockInfoNEW(                              \
         gpointer buffer, typename core::Variable<T>::Info &info);              \
+    extern template typename core::Variable<T>::Info *GetDeserializedMetadata( \
 
 #define variable_template_instantiation(T)                                     \
-    extern template typename core::Variable<T>::Info *GetDeserializedMetadata( \
-        const core::Variable<T> &variable, gpointer buffer);                   \
+    extern template std::unique_ptr<typename core::Variable<T>::Info>          \
+    GetDeserializedMetadata(const core::Variable<T> &variable,                 \
+                            gpointer buffer);                                  \
     extern template void DeserializeBlockMetadata(                             \
         Variable<T> &variable, gpointer buffer, size_t block,                  \
         typename core::Variable<T>::Info &info);                               \

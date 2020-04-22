@@ -24,50 +24,60 @@ namespace core
 namespace engine
 {
 
-// void JuleaKVReader::SetUseKeysForBPLS (bool useKeysForBPLS)
-// {
-//     m_UseKeysForBPLS = useKeysForBPLS;
-// }
-
+// TODO: check whether this is sufficient for strings!
+// is separate data stored which needs to be read or just metadata?
 template <>
 void JuleaKVReader::GetSyncCommon(Variable<std::string> &variable,
                                   std::string *data)
 {
-    g_autoptr(JBatch) batch = NULL;
-    g_autoptr(JSemantics) semantics;
-
-    gboolean use_batch = TRUE;
-    semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    batch = j_batch_new(semantics);
-
-    // FIXME: still using metadata struct
-    // gchar *name_space = strdup(m_Name.c_str());
-    // Metadata *metadata = g_slice_new(Metadata);
-    // metadata->name = g_strdup(variable.m_Name.c_str());
-
-    // std::cout << "\n______________GetSync String_____________________" <<
-    // std::endl; std::cout << "Julea Reader " << m_ReaderRank
-    //           << " Reached Get Sync Common (String, String) " << std::endl;
-    // std::cout << "Julea Reader " << m_ReaderRank << " Namespace of variable "
-    //           << m_Name << std::endl;
-    // GetVarDataFromJulea(name_space, metadata->name, metadata->data_size,
-    //                     (void *)(data), batch);
-
-    // FIXME: additional metadata infos as "IsReadAsJoined" need to be stored in
-    // ADIOS
-
-    // std::cout << "JULEA ENGINE: GetSyncCommon (string data)" << std::endl;
-    variable.m_Data = data;
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Reader " << m_ReaderRank << "     GetSync("
-                  << variable.m_Name << ")\n";
+        std::cout << "\n______________GetSync String_____________________"
+                  << std::endl;
+        std::cout << "Julea Reader " << m_ReaderRank << " Namespace: " << m_Name
+                  << " Variable name: " << variable.m_Name << std::endl;
     }
-    j_batch_unref(batch);
-    j_semantics_unref(semantics);
+
+    for (typename Variable<std::string>::Info &blockInfo :
+         variable.m_BlocksInfo)
+    {
+        long unsigned int dataSize = 0;
+        guint32 buffer_len = 0;
+        std::string nameSpace = m_Name;
+        std::string stepBlockID;
+        gpointer md_buffer = nullptr;
+
+        if (m_UseKeysForBPLS)
+        {
+            stepBlockID = g_strdup_printf("%lu_%lu", variable.m_StepsStart,
+                                          variable.m_BlockID);
+            // std::cout << "variable.m... stepBlockID: " << stepBlockID <<
+            // std::endl;
+        }
+        else
+        {
+            stepBlockID =
+                g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
+            // std::cout << "m_Current... stepBlockID: " << stepBlockID <<
+            // std::endl;
+        }
+        // std::cout << "blocksInfos.size: " << variable.m_BlocksInfo.size()
+        // << std::endl;
+
+        GetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
+                                  &buffer_len, stepBlockID);
+        DeserializeBlockMetadata(variable, md_buffer, variable.m_BlockID,
+                                 blockInfo);
+
+        if (variable.m_SingleValue)
+        {
+            std::cout << "Single value" << std::endl;
+            return;
+        }
+        m_CurrentBlockID++;
+    }
 }
 
-// inline needed? is in skeleton-engine
 template <class T>
 void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
 {
@@ -85,42 +95,10 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
 
     if (variable.m_SingleValue)
     {
+        // FIXME: just read metadata from kv. value is stored in there.
         // m_BP3Deserializer.GetValueFromMetadata(variable, data);
         // return;
     }
-
-    // guint32 buffer_len;
-    // gpointer md_buffer = nullptr;
-
-    // auto nameSpace = m_Name;
-    // long unsigned int dataSize = 0;
-    // auto stepBlockID =
-    //     g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
-    // std::cout << "stepBlockID: " << stepBlockID << std::endl;
-
-    // // TODO: check if variable.m_StepsStart set correctly!
-    // variable.SetBlockInfo(data, variable.m_StepsStart,
-    // variable.m_StepsCount);
-
-    // GetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
-    //                           &buffer_len, stepBlockID);
-    // std::cout << "buffer_len = " << buffer_len << std::endl;
-
-    // DeserializeBlockMetadata(variable, md_buffer, m_CurrentBlockID);
-    // size_t numberElements =
-    //     helper::GetTotalSize(variable.m_BlocksInfo[m_CurrentBlockID].Count);
-    // dataSize = numberElements * variable.m_ElementSize;
-    // GetVariableDataFromJulea(variable, data, nameSpace, dataSize,
-    // m_CurrentStep,
-    //                          m_CurrentBlockID);
-
-    // std::cout << "data: " << data[0] << std::endl;
-    // std::cout << "data: " << data[1] << std::endl;
-
-    // TODO: InitVariableBlockInfo -> store data pointer in BlockInfo
-    // typename Variable<T>::Info &blockInfo =
-    // InitVariableBlockInfo(variable, data);
-    // SetVariableBlockInfo(variable,blockinfo)
 
     InitVariableBlockInfo(variable, data);
     ReadVariableBlocks(variable);
@@ -130,15 +108,11 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
 template <class T>
 void JuleaKVReader::GetDeferredCommon(Variable<T> &variable, T *data)
 {
-    // std::cout << "JULEA ENGINE: GetDeferredCommon" << std::endl;
-    // returns immediately
     if (m_Verbosity == 5)
     {
         std::cout << "Julea Reader " << m_ReaderRank << "     GetDeferred("
                   << variable.m_Name << ")\n";
     }
-    // variable.SetBlockInfo(data, variable.m_StepsStart,
-    // variable.m_StepsCount); m_NeedPerformGets = true;
 
     // returns immediately without populating data
     InitVariableBlockInfo(variable, data); // TODO: needed?
@@ -148,52 +122,23 @@ void JuleaKVReader::GetDeferredCommon(Variable<T> &variable, T *data)
 template <class T>
 void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
 {
+    if (m_Verbosity == 5)
+    {
+        std::cout << "\n__________ReadVariableBlocks_____________" << std::endl;
+        std::cout << "Julea Reader " << m_ReaderRank << " Namespace: " << m_Name
+                  << " Variable name: " << variable.m_Name << std::endl;
+    }
 
-    // std::cout << "\n__________ReadVariableBlocks_____________" << std::endl;
-
-    // std::cout << "Julea Reader " << m_ReaderRank << " Namespace: " << m_Name
-    // << std::endl;
-    // std::cout << "Julea Reader " << m_ReaderRank
-    // << " Variable name: " << variable.m_Name << std::endl;
-
-    size_t localBlockCount = 0;
     for (typename Variable<T>::Info &blockInfo : variable.m_BlocksInfo)
     {
-        guint32 buffer_len;
-        gpointer md_buffer = nullptr;
-
-        auto nameSpace = m_Name;
         long unsigned int dataSize = 0;
-        // std::cout << "localBlockCount: " << localBlockCount << std::endl;
-        // std::cout << "m_CurrentBlockID: " << m_CurrentBlockID << std::endl;
-
-        /** when called from bpls there is no endStep or anything */
-        if (variable.m_BlockID == 0)
-        {
-            // m_CurrentBlockID = 0;
-            // m_CurrentStep ++;
-            // m_CurrentStep = variable.m_StepsStart;
-        }
-        // std::cout << "variable.m_BlockID: " << variable.m_BlockID <<
-        // std::endl; std::cout << "variable.m_StepsStart: " <<
-        // variable.m_StepsStart << std::endl; std::cout <<
-        // "variable.m_StepsCount " << variable.m_StepsCount << std::endl;
-        // std::cout << "variable.m_AvailableStepsStart " <<
-        // variable.m_AvailableStepsStart << std::endl; std::cout <<
-        // "variable.m_AvailableStepsCount " << variable.m_AvailableStepsCount
-        // << std::endl; std::cout << "m_CurrentBlockID: " << m_CurrentBlockID
-        // << std::endl; std::cout << "m_CurrentStep: " << m_CurrentStep <<
-        // std::endl;
-
+        guint32 buffer_len = 0;
+        std::string nameSpace = m_Name;
         std::string stepBlockID;
-        // auto stepBlockID2 =
-        // g_strdup_printf("%lu_%lu", variable.m_StepsStart,
-        // variable.m_BlockID);
+        gpointer md_buffer = nullptr;
 
         if (m_UseKeysForBPLS)
         {
-            // std::cout << "m_UseKeysForBPLS: " << m_UseKeysForBPLS <<
-            // std::endl;
             stepBlockID = g_strdup_printf("%lu_%lu", variable.m_StepsStart,
                                           variable.m_BlockID);
             // std::cout << "variable.m... stepBlockID: " << stepBlockID <<
@@ -201,8 +146,6 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
         }
         else
         {
-            // std::cout << "m_UseKeysForBPLS: " << m_UseKeysForBPLS <<
-            // std::endl;
             stepBlockID =
                 g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
             // std::cout << "m_Current... stepBlockID: " << stepBlockID <<
@@ -211,16 +154,8 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
         // std::cout << "blocksInfos.size: " << variable.m_BlocksInfo.size()
         // << std::endl;
 
-        // // TODO: check if variable.m_StepsStart set correctly!
-        // variable.SetBlockInfo(data, variable.m_StepsStart,
-        // variable.m_StepsCount);
-
         GetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
                                   &buffer_len, stepBlockID);
-        // std::cout << "buffer_len = " << buffer_len << std::endl;
-
-        // DeserializeBlockMetadata(variable, md_buffer, variable.m_BlockID,
-        // blockInfo);
         DeserializeBlockMetadata(variable, md_buffer, variable.m_BlockID,
                                  blockInfo);
 
@@ -230,37 +165,22 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
             return;
         }
 
-        // std::cout << " isConstantDims: " << variable.IsConstantDims()
-        // << std::endl;
-
-        // size_t count = blockInfo.Count;
-        size_t numberElements =
-            // helper::GetTotalSize(variable.m_BlocksInfo[m_CurrentBlockID].Count);
-            helper::GetTotalSize(blockInfo.Count);
+        size_t numberElements = helper::GetTotalSize(blockInfo.Count);
         dataSize = numberElements * variable.m_ElementSize;
-        // std::cout << "numberElements: " << numberElements << std::endl;
 
         T *data = blockInfo.Data;
-        // T *data = variable.m_BlocksInfo[m_CurrentBlockID].Data;
         if (m_UseKeysForBPLS)
         {
             GetVariableDataFromJulea(variable, data, nameSpace, dataSize,
                                      variable.m_StepsStart, variable.m_BlockID);
-            // m_CurrentStep, m_CurrentBlockID);
         }
         else
         {
-            GetVariableDataFromJulea(
-                variable, data, nameSpace, dataSize,
-                // variable.m_StepsStart, variable.m_BlockID);
-                m_CurrentStep, m_CurrentBlockID);
+            GetVariableDataFromJulea(variable, data, nameSpace, dataSize,
+                                     m_CurrentStep, m_CurrentBlockID);
         }
-        // std::cout << "data: " << data[0] << std::endl;
-        // std::cout << "data: " << data[1] << std::endl;
         m_CurrentBlockID++;
-        localBlockCount++;
     }
-    // m_CurrentBlockID = 0;
 }
 
 template <class T>
@@ -270,32 +190,32 @@ JuleaKVReader::AllStepsBlocksInfo(const core::Variable<T> &variable) const
     std::map<size_t, std::vector<typename core::Variable<T>::Info>>
         allStepsBlocksInfo;
 
-    // TODO: this assumes that only bpls calls AllStepsBlocksInfo. for now that
-    // should be ok
-    // now = 21.04.2020
+    // Explanation for this ugly assumption is in the header file. This assumes
+    // that only bpls calls AllStepsBlocksInfo. for now that should be ok now
+    // = 21.04.2020
     m_UseKeysForBPLS = true;
     // SetUseKeysForBPLS(true);
     for (const auto &pair : variable.m_AvailableStepBlockIndexOffsets)
     {
         const size_t step = pair.first;
         const std::vector<size_t> &blockPositions = pair.second;
-        // std::cout << "--- step: " << step
-        // << " blockPositions: " << blockPositions.data()[0] << std::endl;
-        // std::cout << "--- step: " << step
-        // << " blockPositions: " << blockPositions.size() << std::endl;
 
-        for (int i = 0; i < blockPositions.size(); i++)
+        if (m_Verbosity == 5)
         {
-            // allStepsBlocksInfo[step -1 ] = variable.m_BlocksInfo[i];
-            // allStepsBlocksInfo[step -1 ].push_back(variable.m_BlocksInfo[i]);
-            // std::cout << "i: " << i << std::endl;
+            std::cout << "\n__________AllStepsBlocksInfo_____________"
+                      << std::endl;
+            std::cout << "Julea Reader " << m_ReaderRank
+                      << " Namespace: " << m_Name
+                      << " Variable name: " << variable.m_Name << std::endl;
+            std::cout << "--- step: " << step
+                      << " blockPositions: " << blockPositions.data()[0]
+                      << std::endl;
         }
+
         // bp3 index starts at 1
         allStepsBlocksInfo[step - 1] =
             BlocksInfoCommon(variable, blockPositions, step - 1);
-        // BlocksInfoCommon(variable, blockPositions, step - 1, true);
     }
-    // std::cout << "--- finished allStepsBlocksInfo --- " << std::endl;
     return allStepsBlocksInfo;
 }
 
@@ -305,58 +225,52 @@ JuleaKVReader::BlocksInfoCommon(const core::Variable<T> &variable,
                                 const std::vector<size_t> &blocksIndexOffsets,
                                 size_t step) const
 {
-    // std::cout << "____ BlocksInfoCommon _____ step: " << step << std::endl;
+    if (m_Verbosity == 5)
+    {
+        std::cout << "\n__________BlocksInfoCommon_____________" << std::endl;
+        std::cout << "Julea Reader " << m_ReaderRank << " Namespace: " << m_Name
+                  << " Variable name: " << variable.m_Name << std::endl;
+        std::cout << "--- step: " << step << std::endl;
+    }
     std::vector<typename core::Variable<T>::Info> blocksInfo;
     blocksInfo.reserve(blocksIndexOffsets.size());
     typename core::Variable<T>::Info blockInfo;
 
-    // for (const size_t blockIndexOffset : blocksIndexOffsets)
-    // {
-    //     size_t position = blockIndexOffset;
-    //     std::cout << "position: " << position << std::endl;
-    //             blocksInfo.push_back(variable.m_BlocksInfo[0]);
-
-    // }
     for (size_t i = 0; i < blocksIndexOffsets.size(); i++)
     {
-        guint32 buffer_len;
+        guint32 buffer_len = 0;
         gpointer md_buffer = nullptr;
 
         auto nameSpace = m_Name;
         long unsigned int dataSize = 0;
         auto stepBlockID = g_strdup_printf("%lu_%lu", step, i);
-        // std::cout << "---- blocksIndexOffsets.size(): " <<
-        // blocksIndexOffsets.size()
-        // << std::endl;
-        // std::cout << "---- stepBlockID: " << stepBlockID << std::endl;
 
-        // // TODO: check if variable.m_StepsStart set correctly!
-        // variable.SetBlockInfo(data, variable.m_StepsStart,
-        // variable.m_StepsCount);
-        size_t test = i;
         GetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
                                   &buffer_len, stepBlockID);
-        // std::cout << "buffer_len = " << buffer_len << std::endl;
+
         typename core::Variable<T>::Info info =
             *GetDeserializedMetadata(variable, md_buffer);
         info.IsReverseDims = false;
         info.Step = step;
-        // std::cout << "--- DEBUG --- " << std::endl;
 
         blocksInfo.push_back(info);
-        // std::cout << "BlocksInfoCommon - blocksInfo.size(): " <<
-        // blocksInfo.size() << std::endl;
     }
-    // return variable.m_BlocksInfo[0];
     return blocksInfo;
 }
 
+// FIXME: not yet tested!
 template <class T>
 std::vector<std::vector<typename core::Variable<T>::Info>>
-JuleaKVReader::DoAllRelativeStepsBlocksInfo(
+JuleaKVReader::AllRelativeStepsBlocksInfo(
     const core::Variable<T> &variable) const
 {
-    // std::cout << "--- DoAllRelativeStepsBlocksInfo --- " << std::endl;
+    if (m_Verbosity == 5)
+    {
+        std::cout << "\n__________AllRelativeStepsBlocksInfo_____________"
+                  << std::endl;
+        std::cout << "Julea Reader " << m_ReaderRank << " Namespace: " << m_Name
+                  << " Variable name: " << variable.m_Name << std::endl;
+    }
     std::vector<std::vector<typename core::Variable<T>::Info>>
         allRelativeStepsBlocksInfo(
             variable.m_AvailableStepBlockIndexOffsets.size());
@@ -365,8 +279,8 @@ JuleaKVReader::DoAllRelativeStepsBlocksInfo(
     for (const auto &pair : variable.m_AvailableStepBlockIndexOffsets)
     {
         const std::vector<size_t> &blockPositions = pair.second;
-        // allRelativeStepsBlocksInfo[relativeStep] =
-        // BlocksInfoCommon(variable, blockPositions);
+        allRelativeStepsBlocksInfo[relativeStep] =
+            BlocksInfoCommon(variable, blockPositions, relativeStep);
         ++relativeStep;
     }
     return allRelativeStepsBlocksInfo;
@@ -377,16 +291,14 @@ std::vector<typename core::Variable<T>::Info>
 JuleaKVReader::BlocksInfo(const core::Variable<T> &variable,
                           const size_t step) const
 {
+    if (m_Verbosity == 5)
+    {
+        std::cout << "\n__________BlocksInfo_____________" << std::endl;
+        std::cout << "Julea Reader " << m_ReaderRank << " Namespace: " << m_Name
+                  << " Variable name: " << variable.m_Name << std::endl;
+    }
 
-    // std::cout << "--- BlocksInfo --- " << std::endl;
-
-    // std::cout << "variable.m_AvailableStepBlockIndexOffsets.size() " <<
-    // variable.m_AvailableStepBlockIndexOffsets.size() <<std::endl; std::cout
-    // << "variable.m_AvailableStepBlockIndexOffsets.find(step + 1) " <<
-    // variable.m_AvailableStepBlockIndexOffsets.find(step + 1) <<std::endl;
-    // std::cout << "BlocksInfo: step = " << step <<std::endl;
     // bp4 format starts at 1
-    // auto itStep = variable.m_AvailableStepBlockIndexOffsets.find(step + 1);
     auto itStep = variable.m_AvailableStepBlockIndexOffsets.find(step + 1);
     if (itStep == variable.m_AvailableStepBlockIndexOffsets.end())
     {
@@ -395,17 +307,21 @@ JuleaKVReader::BlocksInfo(const core::Variable<T> &variable,
                   << std::endl;
     }
     return BlocksInfoCommon(variable, itStep->second, step);
-    // return NULL;
 }
 
 template <class T>
 typename core::Variable<T>::Info &
 JuleaKVReader::InitVariableBlockInfo(core::Variable<T> &variable, T *data)
 {
+    if (m_Verbosity == 5)
+    {
+        std::cout << "\n__________InitVariableBlockInfo_____________"
+                  << std::endl;
+        std::cout << "Julea Reader " << m_ReaderRank << " Namespace: " << m_Name
+                  << " Variable name: " << variable.m_Name << std::endl;
+    }
     const size_t stepsStart = variable.m_StepsStart;
     const size_t stepsCount = variable.m_StepsCount;
-    // std::cout << "--- InitVariableBlockInfo --- selectionType: "
-    // << variable.m_SelectionType << std::endl;
 
     // if (m_DebugMode)
     if (m_Verbosity == 5)
@@ -444,7 +360,6 @@ JuleaKVReader::InitVariableBlockInfo(core::Variable<T> &variable, T *data)
 
     if (variable.m_SelectionType == SelectionType::WriteBlock)
     {
-        // std::cout << "--- DEBUG: Selection Type " << std::endl;
         const std::vector<typename core::Variable<T>::Info> blocksInfo =
             JuleaKVReader::BlocksInfo(variable, stepsStart);
 
@@ -466,8 +381,6 @@ JuleaKVReader::InitVariableBlockInfo(core::Variable<T> &variable, T *data)
             // << std::endl;
             const Dims &start = blocksInfo[variable.m_BlockID].Start;
             const Dims &count = blocksInfo[variable.m_BlockID].Count;
-            // std::cout << "variable.m_BlockID " << variable.m_BlockID
-            // << std::endl;
 
             variable.SetSelection({start, count});
         }
@@ -476,50 +389,16 @@ JuleaKVReader::InitVariableBlockInfo(core::Variable<T> &variable, T *data)
             // std::cout
             // << "----------- DEBUG: switch to bounding box for local array "
             // << std::endl;
-            // std::cout << "variable.m_BlockID " << variable.m_BlockID
-            // << std::endl;
 
-            // TODO keep Count for block updated
+            // TODO from Adios people! "keep Count for block updated"
             variable.m_Count = blocksInfo[variable.m_BlockID].Count;
         }
     }
-    // std::cout << "stepsstart: " << stepsStart << std::endl;
-    // std::cout << "stepsCount: " << stepsCount << std::endl;
-    // create block info
-    // FIXME: only create once for every block!
+
     return variable.SetBlockInfo(data, stepsStart, stepsCount);
 }
 
-// template <class T>
-// std::map<size_t, std::vector<typename core::Variable<T>::Info>>
-// JuleaKVReader::DoAllStepsBlocksInfo(const core::Variable<T> &variable) const
-// {
-//     std::cout << "\n______________ DoAllStepsBlocksInfo
-//     _____________________"
-//               << std::endl;
-//     std::cout << "Julea Reader " << m_ReaderRank
-//               << " Reached DoAllStepsBlocksInfo" << std::endl;
-//     std::cout << "Julea Reader " << m_ReaderRank << " Namespace: " << m_Name
-//               << std::endl;
-//     std::cout << "Julea Reader " << m_ReaderRank
-//               << " Variable name: " << variable.m_Name << std::endl;
-//     std::map<size_t, std::vector<typename core::Variable<T>::Info>>
-//         allStepsBlocksInfo;
-
-//     for (const auto &pair : variable.m_AvailableStepBlockIndexOffsets)
-//     {
-//         const size_t step = pair.first;
-//         const std::vector<size_t> &blockPositions = pair.second;
-//         std::cout << "step: " << step << std::endl;
-//         std::cout << "blockPositions" << &blockPositions << std::endl;
-//         // bp4 index starts at 1
-//         allStepsBlocksInfo[step - 1] =
-//             BlocksInfoCommon(variable, blockPositions);
-//     }
-//     return allStepsBlocksInfo;
-// }
-
-} // end namespace engine
+} // end namespace engineZ
 } // end namespace core
 } // end namespace adios2
 
