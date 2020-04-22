@@ -390,7 +390,7 @@ void ParseAttributeToBSON<std::string>(Attribute<std::string> &attribute,
 
             completeSize = completeSize + entrySize;
             // std::cout << "complete_data_size: " << completeSize << std::endl;
-            key = g_strdup_printf("entry_size_%d", i);
+            key = g_strdup_printf("entry_size_%lu", i);
             // std::cout << "key: " << key << std::endl;
             bson_append_int64(bsonMetadata, key, -1, entrySize);
             g_free(key);

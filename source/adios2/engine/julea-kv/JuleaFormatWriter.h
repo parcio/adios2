@@ -59,7 +59,6 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &buffer_len,
 #undef variable_template_instantiation
 
 /** --- Attributes --- */
-
 /**
  * The attributes are still stored using BSON. No real need to change it yet.
  */

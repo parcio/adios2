@@ -56,11 +56,7 @@ JuleaKVWriter::~JuleaKVWriter()
 }
 
 /**
- * TODO
- * [JuleaKVWriter::BeginStep description]
- * @param  mode           [description]
- * @param  timeoutSeconds [description]
- * @return                [description]
+ * Begins a step. Clears the deferred variable set.
  */
 StepStatus JuleaKVWriter::BeginStep(StepMode mode, const float timeoutSeconds)
 {
@@ -72,18 +68,16 @@ StepStatus JuleaKVWriter::BeginStep(StepMode mode, const float timeoutSeconds)
     }
 
     m_StepMode = mode;
+
     /** still not completely sure why writes before first step are not forgotten
-     * by this. */
+     * by clearing this set. */
     m_DeferredVariables.clear();
-    m_DeferredVariablesDataSize = 0;
 
     return StepStatus::OK;
 }
 
 /**
- * TODO
- * [JuleaWriter::CurrentStep description]
- * @return [description]
+ * Returns the current step.
  */
 size_t JuleaKVWriter::CurrentStep() const
 {
@@ -97,8 +91,7 @@ size_t JuleaKVWriter::CurrentStep() const
 }
 
 /**
- * TODO
- * [JuleaWriter::EndStep description]
+ * Ends the current step. All deferred variables are written now.
  */
 void JuleaKVWriter::EndStep()
 {
@@ -114,13 +107,7 @@ void JuleaKVWriter::EndStep()
 
     PutAttributes(m_IO);
 
-    /* advance step */
-    // ++m_TimeStep;
     ++m_CurrentStep;
-
-    /* ------ original EndStep */
-    const size_t currentStep = CurrentStep();
-    const size_t flushStepsCount = m_FlushStepsCount;
 
     if (m_CurrentStep % m_FlushStepsCount == 0)
     {
@@ -137,7 +124,7 @@ void JuleaKVWriter::EndStep()
 
 /**
  * Called to guarantee that read/write are really executed and the results
- * available. [JuleaWriter::PerformPuts description]
+ * available.
  */
 void JuleaKVWriter::PerformPuts()
 {
@@ -179,8 +166,7 @@ void JuleaKVWriter::PerformPuts()
 // ADIOS2_FOREACH_TYPE_1ARG(declare_template_instantiation)
 
 /**
- * TODO
- * [JuleaWriter::Flush description]
+ * Flushes the aggregated data.
  * @param transportIndex [description]
  */
 // void JuleaKVWriter::Flush()
@@ -203,8 +189,7 @@ void JuleaKVWriter::Flush(const int transportIndex)
 
 /** --- PRIVATE FUNCTIONS --- */
 /**
- * TODO
- * [JuleaWriter::Init description]
+ * Initalizes engine. Prints a lovely penguin :-)
  */
 void JuleaKVWriter::Init()
 {
@@ -293,8 +278,8 @@ void JuleaKVWriter::InitVariables()
 /**
  * Puts variable to JULEA object store. Afterwards deletes related blockinfo
  * struct from variable m_BlocksInfo vector [declare_type description]
- * @param  T [description]
- * @return   [description]
+ * @param variable      variable
+ * @param data          variable data
  */
 
 #define declare_type(T)                                                        \
@@ -324,7 +309,7 @@ void JuleaKVWriter::DoClose(const int transportIndex)
         std::cout << "\n______________DoClose_____________________"
                   << std::endl;
         std::cout << "Julea Writer " << m_WriterRank << " Close(" << m_Name
-        << ")\n";
+                  << ")\n";
     }
     // TODO: free semantics
     /* Write deferred variables*/
@@ -350,20 +335,19 @@ void JuleaKVWriter::DoFlush(const bool isFinal, const int transportIndex)
                   << std::endl;
         std::cout << "Julea Writer " << m_WriterRank << " DoFlush \n";
     }
-    if (m_Aggregator.m_IsActive)
-    {
-        // std::cout << "AggregateWriteData" << std::endl;
-        AggregateWriteData(isFinal, transportIndex);
-        // AggregateWriteData(isFinal);
-    }
-    else
-    {
-        // std::cout << "WriteData" << std::endl;
-        WriteData(isFinal, transportIndex);
-        // WriteData(isFinal);
-    }
+    // if (m_Aggregator.m_IsActive)
+    // {
+    //     // std::cout << "AggregateWriteData" << std::endl;
+    //     AggregateWriteData(isFinal, transportIndex);
+    //     // AggregateWriteData(isFinal);
+    // }
+    // else
+    // {
+    //     // std::cout << "WriteData" << std::endl;
+    //     WriteData(isFinal, transportIndex);
+    //     // WriteData(isFinal);
+    // }
 }
-
 
 /**
  *  Put attributes held in passed IO. Called from EndStep()

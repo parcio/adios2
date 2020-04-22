@@ -82,9 +82,11 @@ struct StepMetadata
 
 ---------------------Serialized formats-- -------------------------------
 
-                    ---block metadata-- -
+    == == == == == == == == == == == == == == block metadata == == == == == ==
+    == == == == == == == == == ==
+    =
 
-    size_t shapeSize = 0;
+        size_t shapeSize = 0;
 size_t *shape = nullptr;
 size_t startSize = 0;
 size_t *start = nullptr;
@@ -112,7 +114,9 @@ bool IsValue = false;
  * already encountered in previous step */
 bool m_FirstStreamingStep = true;
 
----step metadata-- - bool isConstantDims = true;
+== == == == == == == == == == == == == == == == step metadata == == == == == ==
+    == == == == == == == == ==
+    = bool isConstantDims = true;
 bool IsReadAsJoined = false;
 bool IsReadAsLocalValue = false;
 bool IsRandomAccess = true;

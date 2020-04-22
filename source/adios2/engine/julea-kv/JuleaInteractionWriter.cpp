@@ -57,9 +57,7 @@ void PutNameToJulea(std::string paramName, std::string nameSpace,
 
     j_kv_get(kvObjectNames, &namesBuf, &valueLen, batch);
     err = j_batch_execute(batch);
-    // g_assert_true(j_batch_execute(batch) == true);
 
-    // std::cout << "valueLen: " << valueLen << std::endl;
     if (valueLen == 0)
     {
         bsonNames = bson_new();
@@ -118,7 +116,6 @@ void PutVariableMetadataToJulea(const std::string nameSpace, gpointer buffer,
 
     j_kv_put(kvVarMetadata, metaDataBuf, bufferLen, g_free, batch);
     g_assert_true(j_batch_execute(batch) == true);
-    // j_batch_execute(batch);
 
     g_free(stringMetadataKV);
     j_kv_unref(kvVarMetadata);
@@ -134,18 +131,16 @@ void PutBlockMetadataToJulea(const std::string nameSpace,
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
-    auto stringMetadataKV =
-        // g_strdup_printf("%s_%s", nameSpace.c_str(), "variableblocks");
-        g_strdup_printf("%s_%s_%s", nameSpace.c_str(), varName.c_str(),
-                        "variableblocks");
-    std::cout << "PutBlockMetadataToJulea: " << stringMetadataKV << std::endl;
-
-    auto kvObjectMetadata = j_kv_new(stringMetadataKV, stepBlockID.c_str());
+    auto stringMetadataKV = g_strdup_printf("%s_%s_%s", nameSpace.c_str(),
+                                            varName.c_str(), "variableblocks");
+    // std::cout << "PutBlockMetadataToJulea: " << stringMetadataKV <<
+    // std::endl;
 
     metaDataBuf = g_memdup(buffer, bufferLen);
+    auto kvObjectMetadata = j_kv_new(stringMetadataKV, stepBlockID.c_str());
+
     j_kv_put(kvObjectMetadata, metaDataBuf, bufferLen, g_free, batch);
     g_assert_true(j_batch_execute(batch) == true);
-    // j_batch_execute(batch);
 
     g_free(stringMetadataKV);
     j_kv_unref(kvObjectMetadata);
@@ -203,34 +198,27 @@ void PutVariableDataToJulea(Variable<T> &variable, const T *data,
                             const std::string nameSpace, size_t currStep,
                             size_t block)
 {
-    std::cout << "--- PutVariableDataToJulea ----- " << std::endl;
+    // std::cout << "--- PutVariableDataToJulea ----- " << std::endl;
 
     guint64 bytesWritten = 0;
     std::string objName = "variableblocks";
 
+    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
+
     auto numberElements = adios2::helper::GetTotalSize(variable.m_Count);
     auto dataSize = variable.m_ElementSize * numberElements;
+
     auto stepBlockID = g_strdup_printf("%lu_%lu", currStep, block);
     auto stringDataObject =
         g_strdup_printf("%s_%s_%s", nameSpace.c_str(), variable.m_Name.c_str(),
                         objName.c_str());
-
-    // std::cout << "dataSize: " << dataSize << std::endl;
-    // std::cout << "stepBlockID: " << stepBlockID << std::endl;
-    std::cout << "    kv namespace: " << stringDataObject << std::endl;
-
-    // std::cout << "data [0] = " << data[0] << std::endl;
-    // std::cout << "data [1] = " << data[1] << std::endl;
-
-    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    auto batch = j_batch_new(semantics);
 
     auto dataObject = j_object_new(stringDataObject, stepBlockID);
 
     j_object_create(dataObject, batch);
     j_object_write(dataObject, data, dataSize, 0, &bytesWritten, batch);
     g_assert_true(j_batch_execute(batch) == true);
-    // j_batch_execute(batch);
 
     if (bytesWritten == dataSize)
     {
@@ -248,7 +236,7 @@ void PutVariableDataToJulea(Variable<T> &variable, const T *data,
     j_batch_unref(batch);
     j_semantics_unref(semantics);
 
-    std::cout << "++ Julea Interaction: PutVariableDataToJulea" << std::endl;
+    // std::cout << "++ Julea Interaction: PutVariableDataToJulea" << std::endl;
 }
 
 // FIXME: not yet implemented correctly! need to differentiate between strings
@@ -272,8 +260,8 @@ void PutAttributeDataToJuleaSmall(Attribute<T> &attribute, const T *data,
 
     // WriteDataToJuleaObjectStore(objName, attribute.m_Name, nameSpace.c_str(),
     //                             dataSize, data);
-    std::cout << "++ Julea Interaction: PutAttributeDataToJuleaSmall"
-              << std::endl;
+    // std::cout << "++ Julea Interaction: PutAttributeDataToJuleaSmall"
+    // << std::endl;
 }
 
 /** ------------ ATTRIBUTES -------------------------------------------------**/
