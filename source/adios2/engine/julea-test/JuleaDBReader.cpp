@@ -8,8 +8,8 @@
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
-#include "JuleaTestReader.h"
-#include "JuleaTestReader.tcc"
+#include "JuleaDBReader.h"
+#include "JuleaDBReader.tcc"
 
 #include "adios2/helper/adiosFunctions.h" // CSVToVector
 
@@ -22,23 +22,23 @@ namespace core
 namespace engine
 {
 
-// JuleaTestReader::JuleaTestReader(IO &io, const std::string &name, const Mode mode,
+// JuleaDBReader::JuleaDBReader(IO &io, const std::string &name, const Mode mode,
 //                                MPI_Comm mpiComm)
-// : Engine("JuleaTestReader", io, name, mode, mpiComm),
+// : Engine("JuleaDBReader", io, name, mode, mpiComm),
 //   m_BP3Deserializer(mpiComm, m_DebugMode)
 
-JuleaTestReader::JuleaTestReader(IO &io, const std::string &name, const Mode mode,
+JuleaDBReader::JuleaDBReader(IO &io, const std::string &name, const Mode mode,
                          helper::Comm comm)
-: Engine("JuleaTestReader", io, name, mode, std::move(comm))
+: Engine("JuleaDBReader", io, name, mode, std::move(comm))
 
 {
-    // m_EndMessage = " in call to IO Open JuleaTestReader " + m_Name + "\n";
+    // m_EndMessage = " in call to IO Open JuleaDBReader " + m_Name + "\n";
     // MPI_Comm_rank(mpiComm, &m_ReaderRank);
     m_ReaderRank = m_Comm.Rank();
     Init();
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Reader " << m_ReaderRank << " Open(" << m_Name
+        std::cout << "Julea DB Reader " << m_ReaderRank << " Open(" << m_Name
                   << ") in constructor." << std::endl;
     }
 
@@ -46,17 +46,17 @@ JuleaTestReader::JuleaTestReader(IO &io, const std::string &name, const Mode mod
     // DataMap variables = io.GetAvailableVariables();
 }
 
-JuleaTestReader::~JuleaTestReader()
+JuleaDBReader::~JuleaDBReader()
 {
     /* m_Skeleton deconstructor does close and finalize */
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Reader " << m_ReaderRank << " deconstructor on "
+        std::cout << "Julea DB Reader " << m_ReaderRank << " deconstructor on "
                   << m_Name << "\n";
     }
 }
 
-StepStatus JuleaTestReader::BeginStep(const StepMode mode,
+StepStatus JuleaDBReader::BeginStep(const StepMode mode,
                                   const float timeoutSeconds)
 {
     if (m_DebugMode)
@@ -81,18 +81,18 @@ StepStatus JuleaTestReader::BeginStep(const StepMode mode,
     }
 }
 
-size_t JuleaTestReader::CurrentStep() const
+size_t JuleaDBReader::CurrentStep() const
 {
     // std::cout << "JULEA ENGINE: CurrentStep" << std::endl;
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Reader " << m_ReaderRank
+        std::cout << "Julea DB Reader " << m_ReaderRank
                   << "   CurrentStep() returns " << m_CurrentStep << "\n";
     }
     return m_CurrentStep;
 }
 
-void JuleaTestReader::EndStep()
+void JuleaDBReader::EndStep()
 {
     // EndStep should call PerformGets() if there are unserved GetDeferred()
     // requests
@@ -103,7 +103,7 @@ void JuleaTestReader::EndStep()
 
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Reader " << m_ReaderRank << "   EndStep()\n";
+        std::cout << "Julea DB Reader " << m_ReaderRank << "   EndStep()\n";
     }
     // TODO: Can reading happen in steps?
     // if (m_CurrentStep % m_FlushStepsCount == 0){
@@ -112,11 +112,11 @@ void JuleaTestReader::EndStep()
 }
 
 
-void JuleaTestReader::PerformGets()
+void JuleaDBReader::PerformGets()
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Reader " << m_ReaderRank << "     PerformGets()\n";
+        std::cout << "Julea DB Reader " << m_ReaderRank << "     PerformGets()\n";
     }
 
     /** if there are no deferred variables there is nothing to do */
@@ -133,7 +133,7 @@ void JuleaTestReader::PerformGets()
         if (type == "compound")
         {
             // not supported
-            std::cout << "Julea Test Reader " << m_ReaderRank << "     PerformGets()"
+            std::cout << "Julea DB Reader " << m_ReaderRank << "     PerformGets()"
                       << "compound variable type not supported \n";
         }
 #define declare_type(T)                                                        \
@@ -159,11 +159,11 @@ void JuleaTestReader::PerformGets()
 // PRIVATE
 
 #define declare_type(T)                                                        \
-    void JuleaTestReader::DoGetSync(Variable<T> &variable, T *data)                \
+    void JuleaDBReader::DoGetSync(Variable<T> &variable, T *data)                \
     {                                                                          \
         GetSyncCommon(variable, data);                                         \
     }                                                                          \
-    void JuleaTestReader::DoGetDeferred(Variable<T> &variable, T *data)            \
+    void JuleaDBReader::DoGetDeferred(Variable<T> &variable, T *data)            \
     {                                                                          \
         GetDeferredCommon(variable, data);                                     \
     }
@@ -171,9 +171,9 @@ void JuleaTestReader::PerformGets()
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
 
-void JuleaTestReader::Init()
+void JuleaDBReader::Init()
 {
-    std::cout << "\n*********************** JULEA TEST ENGINE READER "
+    std::cout << "\n*********************** JULEA DB ENGINE READER "
                  "*************************"
               << std::endl;
     InitParameters();
@@ -187,7 +187,7 @@ void JuleaTestReader::Init()
  * variable with the according parameters.
  */
 // template <class T>
-void JuleaTestReader::InitVariables()
+void JuleaDBReader::InitVariables()
 {
     gchar **names;
     int *types;
@@ -269,32 +269,32 @@ void JuleaTestReader::InitVariables()
     }
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Reader " << m_ReaderRank << " InitVariables()\n";
+        std::cout << "Julea DB Reader " << m_ReaderRank << " InitVariables()\n";
     }
 }
 
-void JuleaTestReader::InitParameters()
+void JuleaDBReader::InitParameters()
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Reader " << m_ReaderRank << " InitParameters()\n" ;
+        std::cout << "Julea DB Reader " << m_ReaderRank << " InitParameters()\n" ;
     }
 }
 
-void JuleaTestReader::InitTransports()
+void JuleaDBReader::InitTransports()
 {
     // Nothing to process from m_IO.m_TransportsParameters
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Reader " << m_ReaderRank << " InitTransports()\n";
+        std::cout << "Julea DB Reader " << m_ReaderRank << " InitTransports()\n";
     }
 }
 
-void JuleaTestReader::DoClose(const int transportIndex)
+void JuleaDBReader::DoClose(const int transportIndex)
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Reader " << m_ReaderRank << " Close(" << m_Name
+        std::cout << "Julea DB Reader " << m_ReaderRank << " Close(" << m_Name
                   << ")\n";
     }
 }

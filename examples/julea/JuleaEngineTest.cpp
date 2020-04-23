@@ -33,7 +33,8 @@ void TestWriteVariableSync()
     /*** IO class object: settings and factory of Settings: Variables,
      * Parameters, Transports, and Execution: Engines */
     adios2::IO juleaIO = adios.DeclareIO("juleaIO");
-    juleaIO.SetEngine("julea-kv");
+    // juleaIO.SetEngine("julea-kv");
+    juleaIO.SetEngine("julea-db");
 
     /** global array: name, { shape (total dimensions) }, { start (local) },
      * { count (local) }, all are constant dimensions */
@@ -84,7 +85,8 @@ void TestReadVariableSync()
     /*** IO class object: settings and factory of Settings: Variables,
      * Parameters, Transports, and Execution: Engines */
     adios2::IO juleaIO = adios.DeclareIO("juleaIO");
-    juleaIO.SetEngine("julea-kv");
+    // juleaIO.SetEngine("julea-kv");
+    juleaIO.SetEngine("julea-db");
 
     /** Engine derived class, spawned to start IO operations */
     adios2::Engine juleaReader = juleaIO.Open("testFile", adios2::Mode::Read);
@@ -142,7 +144,8 @@ void TestWriteAttribute()
     /*** IO class object: settings and factory of Settings: Variables,
      * Parameters, Transports, and Execution: Engines */
     adios2::IO juleaIO = adios.DeclareIO("juleaIO");
-    juleaIO.SetEngine("julea-kv");
+    juleaIO.SetEngine("julea-db");
+    // juleaIO.SetEngine("julea-kv");
 
     /** global array: name, { shape (total dimensions) }, { start (local) },
      * { count (local) }, all are constant dimensions */
@@ -182,7 +185,8 @@ void TestReadAttribute()
     /*** IO class object: settings and factory of Settings: Variables,
      * Parameters, Transports, and Execution: Engines */
     adios2::IO juleaIO = adios.DeclareIO("juleaIO");
-    juleaIO.SetEngine("julea-kv");
+    // juleaIO.SetEngine("julea-kv");
+    juleaIO.SetEngine("julea-db");
 
     // adios2::Engine juleaReader = juleaIO.Open("myVector.bp",
     // adios2::Mode::Read);
@@ -251,7 +255,8 @@ void TestWriteVariableDeferred()
     adios2::ADIOS adios(adios2::DebugON);
 
     adios2::IO juleaIO = adios.DeclareIO("juleaIO");
-    juleaIO.SetEngine("julea-kv");
+    // juleaIO.SetEngine("julea-kv");
+    juleaIO.SetEngine("julea-db");
 
     adios2::Variable<float> bpFloats = juleaIO.DefineVariable<float>(
         "bpFloats", {}, {}, {Nx}, adios2::ConstantDims);
@@ -289,7 +294,8 @@ void TestReadVariableDeferred()
     adios2::ADIOS adios(adios2::DebugON);
 
     adios2::IO juleaIO = adios.DeclareIO("juleaIO");
-    juleaIO.SetEngine("julea-kv");
+    // juleaIO.SetEngine("julea-kv");
+    juleaIO.SetEngine("julea-db");
 
     adios2::Engine juleaReader = juleaIO.Open("testFile", adios2::Mode::Read);
 
@@ -338,24 +344,24 @@ int main(int argc, char *argv[])
         TestWriteVariableSync();
         std::cout << "\n JuleaEngineTest :) Write variable finished \n"
                   << std::endl;
-        TestReadVariableSync();
-        std::cout << "\n JuleaEngineTest :) Read variable finished \n"
-                  << std::endl;
-        TestWriteAttribute();
-        std::cout << "\n JuleaEngineTest :) Write attribute finished \n"
-                  << std::endl;
-        TestReadAttribute();
-        std::cout << "\n JuleaEngineTest :) Read attribute finished \n"
-                  << std::endl;
+        // TestReadVariableSync();
+        // std::cout << "\n JuleaEngineTest :) Read variable finished \n"
+                  // << std::endl;
+        // TestWriteAttribute();
+        // std::cout << "\n JuleaEngineTest :) Write attribute finished \n"
+                  // << std::endl;
+        // TestReadAttribute();
+        // std::cout << "\n JuleaEngineTest :) Read attribute finished \n"
+                  // << std::endl;
 
         TestWriteVariableDeferred();
         std::cout
             << "\n JuleaEngineTest :) Write variable asynchronous finished \n"
             << std::endl;
-        TestReadVariableDeferred();
-        std::cout
-            << "\n JuleaEngineTest :) Read variable asynchronous finished \n"
-            << std::endl;
+        // TestReadVariableDeferred();
+        // std::cout
+            // << "\n JuleaEngineTest :) Read variable asynchronous finished \n"
+            // << std::endl;
     }
     catch (std::invalid_argument &e)
     {

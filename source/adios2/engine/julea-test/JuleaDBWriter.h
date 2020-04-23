@@ -8,8 +8,8 @@
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
-#ifndef ADIOS2_ENGINE_JULEATESTWRITER_H_
-#define ADIOS2_ENGINE_JULEATESTWRITER_H_
+#ifndef ADIOS2_ENGINE_JULEADBWRITER_H_
+#define ADIOS2_ENGINE_JULEADBWRITER_H_
 
 #include "adios2/core/Engine.h"
 // #include "adios2/toolkit/format/bp3/BP3.h" //BP3Serializer
@@ -32,7 +32,7 @@ namespace core
 namespace engine
 {
 
-class JuleaTestWriter : public Engine
+class JuleaDBWriter : public Engine
 {
 
 public:
@@ -44,10 +44,10 @@ public:
      * @param method
      * @param debugMode
      */
-    JuleaTestWriter(IO &adios, const std::string &name, const Mode mode,
+    JuleaDBWriter(IO &adios, const std::string &name, const Mode mode,
                 helper::Comm comm);
 
-    ~JuleaTestWriter(); // was =default -> meaning?
+    ~JuleaDBWriter(); // was =default -> meaning?
 
     // TODO: why is there no set StepMode in the Write engine?
     StepStatus BeginStep(StepMode mode,
@@ -169,4 +169,4 @@ private:
 } // end namespace core
 } // end namespace adios2
 
-#endif /* ADIOS2_ENGINE_JULEATESTWRITER_H_ */
+#endif /* ADIOS2_ENGINE_JULEADBWRITER_H_ */

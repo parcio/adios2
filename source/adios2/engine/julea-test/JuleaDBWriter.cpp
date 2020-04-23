@@ -8,8 +8,8 @@
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
-#include "JuleaTestWriter.h"
-#include "JuleaTestWriter.tcc"
+#include "JuleaDBWriter.h"
+#include "JuleaDBWriter.tcc"
 
 #include "adios2/core/IO.h"
 #include "adios2/helper/adiosFunctions.h"
@@ -27,49 +27,49 @@ namespace core
 namespace engine
 {
 
-JuleaTestWriter::JuleaTestWriter(IO &io, const std::string &name, const Mode mode,
+JuleaDBWriter::JuleaDBWriter(IO &io, const std::string &name, const Mode mode,
                          helper::Comm comm)
-: Engine("JuleaTestWriter", io, name, mode, std::move(comm))
+: Engine("JuleaDBWriter", io, name, mode, std::move(comm))
 {
     // std::cout << "JULEA ENGINE: Constructor" << std::endl;
     // m_BP3Serializer(mpiComm, m_DebugMode),
     // m_FileDataManager(mpiComm, m_DebugMode),
-    // m_EndMessage = " in call to JuleaTestWriter " + m_Name + " Open\n";
+    // m_EndMessage = " in call to JuleaDBWriter " + m_Name + " Open\n";
     // MPI_Comm_rank(mpiComm, &m_WriterRank);
     m_WriterRank = m_Comm.Rank();
     Init();
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Writer " << m_WriterRank << " Open(" << m_Name
+        std::cout << "Julea DB Writer " << m_WriterRank << " Open(" << m_Name
                   << ") in constructor." << std::endl;
     }
 }
 
-JuleaTestWriter::~JuleaTestWriter()
+JuleaDBWriter::~JuleaDBWriter()
 {
     // DoClose();
     // if (m_Verbosity == 5)
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Writer " << m_WriterRank << " deconstructor on "
+        std::cout << "Julea DB Writer " << m_WriterRank << " deconstructor on "
                   << m_Name << "\n";
     }
 }
 
 /**
  * TODO
- * [JuleaTestWriter::BeginStep description]
+ * [JuleaDBWriter::BeginStep description]
  * @param  mode           [description]
  * @param  timeoutSeconds [description]
  * @return                [description]
  */
-StepStatus JuleaTestWriter::BeginStep(StepMode mode, const float timeoutSeconds)
+StepStatus JuleaDBWriter::BeginStep(StepMode mode, const float timeoutSeconds)
 {
     // std::cout << "JULEA ENGINE: BeginStep" << std::endl;
     m_CurrentStep++; // 0 is the first step
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Writer " << m_WriterRank
+        std::cout << "Julea DB Writer " << m_WriterRank
                   << "   BeginStep() new step " << m_CurrentStep << "\n";
     }
     m_DeferredVariables.clear();
@@ -79,15 +79,15 @@ StepStatus JuleaTestWriter::BeginStep(StepMode mode, const float timeoutSeconds)
 
 /**
  * TODO
- * [JuleaTestWriter::CurrentStep description]
+ * [JuleaDBWriter::CurrentStep description]
  * @return [description]
  */
-size_t JuleaTestWriter::CurrentStep() const
+size_t JuleaDBWriter::CurrentStep() const
 {
     // std::cout << "JULEA ENGINE: CurrentStep" << std::endl;
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Writer " << m_WriterRank
+        std::cout << "Julea DB Writer " << m_WriterRank
                   << "   CurrentStep() returns " << m_CurrentStep << "\n";
     }
     return m_CurrentStep;
@@ -95,9 +95,9 @@ size_t JuleaTestWriter::CurrentStep() const
 
 /**
  * TODO
- * [JuleaTestWriter::EndStep description]
+ * [JuleaDBWriter::EndStep description]
  */
-void JuleaTestWriter::EndStep()
+void JuleaDBWriter::EndStep()
 {
     // std::cout << "JULEA ENGINE: EndStep" << std::endl;
     if (m_NeedPerformPuts)
@@ -106,7 +106,7 @@ void JuleaTestWriter::EndStep()
     }
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Writer " << m_WriterRank << "   EndStep()\n";
+        std::cout << "Julea DB Writer " << m_WriterRank << "   EndStep()\n";
     }
 
     if (m_CurrentStep % m_FlushStepsCount == 0)
@@ -119,14 +119,14 @@ void JuleaTestWriter::EndStep()
 
 /**
  * Called to guarantee that read/write are really executed and the results
- * available. [JuleaTestWriter::PerformPuts description]
+ * available. [JuleaDBWriter::PerformPuts description]
  */
-void JuleaTestWriter::PerformPuts()
+void JuleaDBWriter::PerformPuts()
 {
     // std::cout << "JULEA ENGINE: PerformPuts" << std::endl;
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Writer " << m_WriterRank << "     PerformPuts()\n";
+        std::cout << "Julea DB Writer " << m_WriterRank << "     PerformPuts()\n";
     }
 
     /** if there are no deferred variables there is nothing to do */
@@ -142,7 +142,7 @@ void JuleaTestWriter::PerformPuts()
         if (type == "compound")
         {
             // not supported
-            std::cout << "Julea Test Writer " << m_WriterRank << "     PerformPuts()"
+            std::cout << "Julea DB Writer " << m_WriterRank << "     PerformPuts()"
                       << "compound variable type not supported \n";
         }
 #define declare_template_instantiation(T)                                      \
@@ -162,10 +162,10 @@ void JuleaTestWriter::PerformPuts()
 
 /**
  * TODO
- * [JuleaTestWriter::Flush description]
+ * [JuleaDBWriter::Flush description]
  * @param transportIndex [description]
  */
-void JuleaTestWriter::Flush(const int transportIndex)
+void JuleaDBWriter::Flush(const int transportIndex)
 {
     DoFlush(false, transportIndex);
     // ResetBuffer(m_Data);
@@ -177,18 +177,18 @@ void JuleaTestWriter::Flush(const int transportIndex)
 
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Writer " << m_WriterRank << "   Flush()\n";
+        std::cout << "Julea DB Writer " << m_WriterRank << "   Flush()\n";
     }
 }
 
 /** --- PRIVATE FUNCTIONS --- */
 /**
  * TODO
- * [JuleaTestWriter::Init description]
+ * [JuleaDBWriter::Init description]
  */
-void JuleaTestWriter::Init()
+void JuleaDBWriter::Init()
 {
-    std::cout << "\n*********************** JULEA TEST ENGINE WRITER "
+    std::cout << "\n*********************** JULEA DB ENGINE WRITER "
                  "*************************"
               << std::endl;
     InitParameters();
@@ -197,9 +197,9 @@ void JuleaTestWriter::Init()
 }
 
 /**TODO
- * [JuleaTestWriter::InitParameters description]
+ * [JuleaDBWriter::InitParameters description]
  */
-void JuleaTestWriter::InitParameters()
+void JuleaDBWriter::InitParameters()
 {
     // std::cout << "JULEA ENGINE: Init Parameters" << std::endl;
     for (const auto &pair : m_IO.m_Parameters)
@@ -225,33 +225,33 @@ void JuleaTestWriter::InitParameters()
     }
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Writer " << m_WriterRank << " InitParameters()\n";
+        std::cout << "Julea DB Writer " << m_WriterRank << " InitParameters()\n";
     }
 }
 
 /**TODO
- * [JuleaTestWriter::InitTransports description]
+ * [JuleaDBWriter::InitTransports description]
  */
-void JuleaTestWriter::InitTransports()
+void JuleaDBWriter::InitTransports()
 {
     // Nothing to process from m_IO.m_TransportsParameters
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Writer " << m_WriterRank << " InitTransports()\n";
+        std::cout << "Julea DB Writer " << m_WriterRank << " InitTransports()\n";
     }
 }
 
 /**
- * [JuleaTestWriter::InitVariables description]
+ * [JuleaDBWriter::InitVariables description]
  */
-void JuleaTestWriter::InitVariables()
+void JuleaDBWriter::InitVariables()
 {
     // m_DeferredVariables.init() FIXME: how to init set of strings?
     // constructur? Nothing to process from m_IO.m_TransportsParameters
     // std::cout << "JULEA ENGINE: Init Transport" << std::endl;
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Writer " << m_WriterRank << " InitVariables()\n";
+        std::cout << "Julea DB Writer " << m_WriterRank << " InitVariables()\n";
     }
 }
 
@@ -261,11 +261,11 @@ void JuleaTestWriter::InitVariables()
  * @return   [description]
  */
 #define declare_type(T)                                                        \
-    void JuleaTestWriter::DoPutSync(Variable<T> &variable, const T *data)          \
+    void JuleaDBWriter::DoPutSync(Variable<T> &variable, const T *data)          \
     {                                                                          \
         PutSyncCommon(variable, data);                                         \
     }                                                                          \
-    void JuleaTestWriter::DoPutDeferred(Variable<T> &variable, const T *data)      \
+    void JuleaDBWriter::DoPutDeferred(Variable<T> &variable, const T *data)      \
     {                                                                          \
         PutDeferredCommon(variable, data);                                     \
     }
@@ -273,25 +273,25 @@ ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
 
 /**TODO
- * [JuleaTestWriter::DoClose description]
+ * [JuleaDBWriter::DoClose description]
  * @param transportIndex [description]
  */
-void JuleaTestWriter::DoClose(const int transportIndex)
+void JuleaDBWriter::DoClose(const int transportIndex)
 {
     // std::cout << "JULEA ENGINE: Do close" << std::endl;
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Writer " << m_WriterRank << " Close(" << m_Name
+        std::cout << "Julea DB Writer " << m_WriterRank << " Close(" << m_Name
                   << ")\n";
     }
 }
 
 /**TODO
- * [JuleaTestWriter::DoFlush description]
+ * [JuleaDBWriter::DoFlush description]
  * @param isFinal        [description]
  * @param transportIndex [description]
  */
-void JuleaTestWriter::DoFlush(const bool isFinal, const int transportIndex)
+void JuleaDBWriter::DoFlush(const bool isFinal, const int transportIndex)
 {
     // if (m_BP3Serializer.m_Aggregator.m_IsActive)
     // {
@@ -303,37 +303,37 @@ void JuleaTestWriter::DoFlush(const bool isFinal, const int transportIndex)
     // }
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Writer " << m_WriterRank << " DoFlush \n";
+        std::cout << "Julea DB Writer " << m_WriterRank << " DoFlush \n";
     }
 }
 
 /**
  * TODO
- * [JuleaTestWriter::WriteData description]
+ * [JuleaDBWriter::WriteData description]
  * @param isFinal        [description]
  * @param transportIndex [description]
  */
-void JuleaTestWriter::WriteData(const bool isFinal, const int transportIndex)
+void JuleaDBWriter::WriteData(const bool isFinal, const int transportIndex)
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Writer " << m_WriterRank << " WriteData\n";
+        std::cout << "Julea DB Writer " << m_WriterRank << " WriteData\n";
     }
 }
 
 /**
  * TODO
- * [JuleaTestWriter::AggregateWriteData description]
+ * [JuleaDBWriter::AggregateWriteData description]
  * @param isFinal        [description]
  * @param transportIndex [description]
  */
-void JuleaTestWriter::AggregateWriteData(const bool isFinal,
+void JuleaDBWriter::AggregateWriteData(const bool isFinal,
                                      const int transportIndex)
 {
     // DESIGN: check BP3Writer
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Writer " << m_WriterRank << " AggregateWriteData\n";
+        std::cout << "Julea DB Writer " << m_WriterRank << " AggregateWriteData\n";
         std::cout << " Data aggregation for writing not yet supported."
                   << std::endl;
     }
@@ -343,7 +343,7 @@ void JuleaTestWriter::AggregateWriteData(const bool isFinal,
  *  Put attributes held in passed IO. Called from EndStep()
  * @param io [description]
  */
-void JuleaTestWriter::PutAttributes(core::IO &io)
+void JuleaDBWriter::PutAttributes(core::IO &io)
 {
 
     const auto attributesDataMap = io.GetAttributesDataMap();

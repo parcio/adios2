@@ -8,10 +8,10 @@
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
-#ifndef ADIOS2_ENGINE_JULEATESTWRITER_TCC_
-#define ADIOS2_ENGINE_JULEATESTWRITER_TCC_
+#ifndef ADIOS2_ENGINE_JULEADBWRITER_TCC_
+#define ADIOS2_ENGINE_JULEADBWRITER_TCC_
 
-#include "JuleaTestWriter.h"
+#include "JuleaDBWriter.h"
 
 #include <adios2_c.h>
 #include <fstream>
@@ -29,7 +29,7 @@ namespace engine
 
 // TODO: necessary function?
 template <class T>
-void JuleaTestWriter::PutSyncCommon(Variable<T> &variable,
+void JuleaDBWriter::PutSyncCommon(Variable<T> &variable,
                                 const typename Variable<T>::Info &blockInfo)
 {
     /* ParseVariableType */
@@ -38,13 +38,13 @@ void JuleaTestWriter::PutSyncCommon(Variable<T> &variable,
 
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Writer " << m_WriterRank << "     PutSync("
+        std::cout << "Julea DB Writer " << m_WriterRank << "     PutSync("
                   << variable.m_Name << ")\n";
     }
 }
 
 template <class T>
-void JuleaTestWriter::PutSyncCommon(Variable<T> &variable, const T *data)
+void JuleaDBWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 {
     // create and initialize metadata struct
     // parse variable to metadata struct
@@ -61,13 +61,13 @@ void JuleaTestWriter::PutSyncCommon(Variable<T> &variable, const T *data)
         // object write
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Writer " << m_WriterRank << "     PutSync("
+        std::cout << "Julea DB Writer " << m_WriterRank << "     PutSync("
                   << variable.m_Name << ")\n";
     }
 }
 
 template <class T>
-void JuleaTestWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
+void JuleaDBWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
 {
     // Parse variable type
     // get min max
@@ -80,7 +80,7 @@ void JuleaTestWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
 
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Test Writer " << m_WriterRank << "     PutDeferred("
+        std::cout << "Julea DB Writer " << m_WriterRank << "     PutDeferred("
                   << variable.m_Name << ")\n";
     }
 }
@@ -89,4 +89,4 @@ void JuleaTestWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
 } // end namespace core
 } // end namespace adios2
 
-#endif /* ADIOS2_ENGINE_JULEATESTWRITER_TCC_ */
+#endif /* ADIOS2_ENGINE_JULEADBWRITER_TCC_ */

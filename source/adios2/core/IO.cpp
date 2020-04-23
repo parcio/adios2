@@ -75,10 +75,10 @@
 // #include "adios2/engine/julea-original/JuleaWriter.h"
 #include "adios2/engine/julea-kv/JuleaKVReader.h"
 #include "adios2/engine/julea-kv/JuleaKVWriter.h"
-#include "adios2/engine/julea-test/JuleaTestReader.h"
-#include "adios2/engine/julea-test/JuleaTestWriter.h"
-#include "adios2/engine/julea-db/JuleaDBReader.h"
-#include "adios2/engine/julea-db/JuleaDBWriter.h"
+#include "adios2/engine/julea-test/JuleaDBReader.h"
+#include "adios2/engine/julea-test/JuleaDBWriter.h"
+// #include "adios2/engine/julea-db/JuleaDBReader.h"
+// #include "adios2/engine/julea-db/JuleaDBWriter.h"
 #endif
 
 namespace adios2
@@ -771,18 +771,18 @@ Engine &IO::Open(const std::string &name, const Mode mode, MPI_Comm mpiComm)
                                     "JULEA, can't use JuleaKV engine\n");
 #endif
     }
-    else if (engineTypeLC == "julea-test")
+    else if (engineTypeLC == "julea-db")
     {
 #ifdef ADIOS2_HAVE_JULEA
         if (mode == Mode::Read)
-            engine = std::make_shared<engine::JuleaTestReader>(*this, name, mode,
+            engine = std::make_shared<engine::JuleaDBReader>(*this, name, mode,
                                                               std::move(comm));
         else
-            engine = std::make_shared<engine::JuleaTestWriter>(*this, name, mode,
+            engine = std::make_shared<engine::JuleaDBWriter>(*this, name, mode,
                                                               std::move(comm));
 #else
         throw std::invalid_argument("ERROR: this version didn't compile with "
-                                    "JULEA, can't use JuleaTest engine\n");
+                                    "JULEA, can't use JuleaDB engine\n");
 #endif
     }
     // else if (engineTypeLC == "julea-db")

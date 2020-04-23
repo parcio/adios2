@@ -8,8 +8,8 @@
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
-#ifndef ADIOS2_ENGINE_JULEATESTREADER_H_
-#define ADIOS2_ENGINE_JULEATESTREADER_H_
+#ifndef ADIOS2_ENGINE_JULEADBREADER_H_
+#define ADIOS2_ENGINE_JULEADBREADER_H_
 
 // #include "adios2/ADIOSConfig.h"  //FIXME: missing
 #include "adios2/core/ADIOS.h"
@@ -30,7 +30,7 @@ namespace core
 namespace engine
 {
 
-class JuleaTestReader : public Engine
+class JuleaDBReader : public Engine
 {
 public:
     /**
@@ -44,10 +44,10 @@ public:
      * @param debugMode
      * @param hostLanguage
      */
-    JuleaTestReader(IO &adios, const std::string &name, const Mode mode,
+    JuleaDBReader(IO &adios, const std::string &name, const Mode mode,
                helper::Comm comm);
 
-    ~JuleaTestReader();
+    ~JuleaDBReader();
     // StepStatus BeginStep(StepMode mode = StepMode::NextAvailable,
     //                      const float timeoutSeconds = -1.0) final;
     StepStatus BeginStep(StepMode mode = StepMode::Read,
@@ -129,4 +129,4 @@ private:
 } // end namespace core
 } // end namespace adios2
 
-#endif /* ADIOS2_ENGINE_JULEATESTREADER_H_ */
+#endif /* ADIOS2_ENGINE_JULEADBREADER_H_ */
