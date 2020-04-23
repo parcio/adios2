@@ -11,8 +11,8 @@
 #ifndef ADIOS2_ENGINE_JULEADBWRITER_TCC_
 #define ADIOS2_ENGINE_JULEADBWRITER_TCC_
 
-#include "JuleaDBWriter.h"
 #include "JuleaDBInteractionWriter.h"
+#include "JuleaDBWriter.h"
 
 #include <adios2_c.h>
 #include <fstream>
@@ -74,14 +74,14 @@ void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     }
 
     /** updates the variable metadata as there is a new block now */
-    DBPutVariableMetadataToJulea(m_Name, varMD, varMD_len, variable.m_Name);
+    DBPutVariableMetadataToJulea(variable, m_Name, variable.m_Name, m_CurrentStep);
 
     /** put block metadata to DB */
     // PutBlockMetadataToJulea(m_Name, variable.m_Name, blockMD, blockMD_len,
-                            // stepBlockID);
+    // stepBlockID);
     /** put data to object store */
     // PutVariableDataToJulea(variable, data, m_Name, m_CurrentStep,
-                           // m_CurrentBlockID);
+    // m_CurrentBlockID);
     // bson_destroy(bsonMetadata);
 }
 

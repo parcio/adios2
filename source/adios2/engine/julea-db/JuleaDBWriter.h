@@ -45,7 +45,7 @@ public:
      * @param debugMode
      */
     JuleaDBWriter(IO &adios, const std::string &name, const Mode mode,
-                helper::Comm comm);
+                  helper::Comm comm);
 
     ~JuleaDBWriter(); // was =default -> meaning?
 

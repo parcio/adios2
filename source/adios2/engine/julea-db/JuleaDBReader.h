@@ -45,7 +45,7 @@ public:
      * @param hostLanguage
      */
     JuleaDBReader(IO &adios, const std::string &name, const Mode mode,
-               helper::Comm comm);
+                  helper::Comm comm);
 
     ~JuleaDBReader();
     // StepStatus BeginStep(StepMode mode = StepMode::NextAvailable,

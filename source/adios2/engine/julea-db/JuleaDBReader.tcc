@@ -26,7 +26,7 @@ namespace engine
 
 template <>
 void JuleaDBReader::GetSyncCommon(Variable<std::string> &variable,
-                                std::string *data)
+                                  std::string *data)
 {
     std::cout << "Julea DB Reader " << m_ReaderRank
               << " Reached Get Sync Common (String, String) " << std::endl;

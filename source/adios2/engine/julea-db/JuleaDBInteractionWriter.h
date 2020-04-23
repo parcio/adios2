@@ -27,7 +27,7 @@ namespace engine
  * @param kvName    name of the key value store (variable_names/attribute_names)
  */
 void DBPutNameToJulea(std::string paramName, std::string nameSpace,
-                    std::string kvName);
+                      std::string kvName);
 
 /** --- Variables --- */
 
@@ -39,8 +39,10 @@ void DBPutNameToJulea(std::string paramName, std::string nameSpace,
  * @param bufferLen length of buffer
  * @param varName   variable name = key for the kv store
  */
-void DBPutVariableMetadataToJulea(const std::string nameSpace, gpointer buffer,
-                                guint32 bufferLen, const std::string varName);
+template <class T>
+void DBPutVariableMetadataToJulea(Variable<T> &variable,
+                                  const std::string nameSpace,
+                                  const std::string varName, size_t currStep);
 /**
  * Put the metadata for a specific block in a specific step to JULEA key-value
  * store.
@@ -51,8 +53,9 @@ void DBPutVariableMetadataToJulea(const std::string nameSpace, gpointer buffer,
  * @param stepBlockID key for the kv-store: currentStep_currentBlock
  */
 void DBPutBlockMetadataToJulea(const std::string nameSpace,
-                             const std::string varName, gpointer &buffer,
-                             guint32 bufferLen, const std::string stepBlockID);
+                               const std::string varName, gpointer &buffer,
+                               guint32 bufferLen,
+                               const std::string stepBlockID);
 
 /**
  * Store variable data in JULEA object store. The key is:
@@ -65,39 +68,43 @@ void DBPutBlockMetadataToJulea(const std::string nameSpace,
  */
 template <class T>
 void DBPutVariableDataToJulea(Variable<T> &variable, const T *data,
-                            const std::string nameSpace, size_t currentStep,
-                            size_t blockID);
+                              const std::string nameSpace, size_t currentStep,
+                              size_t blockID);
 
 /** --- Attributes --- */
 template <class T>
 void DBPutAttributeDataToJulea(Attribute<T> &attribute,
-                             const std::string nameSpace);
+                               const std::string nameSpace);
 
 template <class T>
-void DBPutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetadata,
-                                 const std::string nameSpace);
+void DBPutAttributeMetadataToJulea(Attribute<T> &attribute,
+                                   bson_t *bsonMetadata,
+                                   const std::string nameSpace);
 
 template <class T>
 void DBPutAttributeDataToJuleaSmall(Attribute<T> &attribute, const T *data,
-                                  const std::string nameSpace);
+                                    const std::string nameSpace);
 template <class T>
 void DBPutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
-                                      bson_t *bsonMetadata,
-                                      const std::string nameSpace);
+                                        bson_t *bsonMetadata,
+                                        const std::string nameSpace);
 
 #define declare_template_instantiation(T)                                      \
-    extern template void DBPutVariableDataToJulea(                               \
+    extern template void DBPutVariableDataToJulea(                             \
         Variable<T> &variable, const T *data, const std::string nameSpace,     \
         size_t currentStep, size_t blockID);                                   \
+    extern template void DBPutVariableMetadataToJulea(                         \
+        Variable<T> &variable, const std::string nameSpace,                    \
+        const std::string varName, size_t currStep);                                            \
                                                                                \
-    extern template void DBPutAttributeDataToJulea(Attribute<T> &attribute,      \
-                                                 const std::string nameSpace); \
-    extern template void DBPutAttributeDataToJuleaSmall(                         \
+    extern template void DBPutAttributeDataToJulea(                            \
+        Attribute<T> &attribute, const std::string nameSpace);                 \
+    extern template void DBPutAttributeDataToJuleaSmall(                       \
         Attribute<T> &attribute, const T *data, const std::string nameSpace);  \
-    extern template void DBPutAttributeMetadataToJulea(                          \
+    extern template void DBPutAttributeMetadataToJulea(                        \
         Attribute<T> &attribute, bson_t *bsonMetadata,                         \
         const std::string nameSpace);                                          \
-    extern template void DBPutAttributeMetadataToJuleaSmall(                     \
+    extern template void DBPutAttributeMetadataToJuleaSmall(                   \
         Attribute<T> &attribute, bson_t *bsonMetadata,                         \
         const std::string nameSpace);                                          \
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)

@@ -28,7 +28,7 @@ namespace engine
 {
 
 JuleaDBWriter::JuleaDBWriter(IO &io, const std::string &name, const Mode mode,
-                         helper::Comm comm)
+                             helper::Comm comm)
 : Engine("JuleaDBWriter", io, name, mode, std::move(comm))
 {
     // std::cout << "JULEA ENGINE: Constructor" << std::endl;
@@ -393,7 +393,7 @@ void JuleaDBWriter::PutAttributes(core::IO &io)
             std::cout << "Attribute type is 'unknown' " << std::endl;
         }
 
-// #define declare_attribute_type(T)                                              \
+        // #define declare_attribute_type(T)                                              \
 //     else if (type == helper::GetType<T>())                                     \
 //     {                                                                          \
 //         Attribute<T> &attribute = *io.InquireAttribute<T>(name);               \
@@ -405,10 +405,10 @@ void JuleaDBWriter::PutAttributes(core::IO &io)
 //         PutAttributeDataToJulea(attribute, m_Name);                            \
 //         bson_destroy(bsonMetadata);                                            \
 //     }
-//         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
-// #undef declare_attribute_type
-//         // free(attrName);
-//         // delete(&attrName);
+        //         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
+        // #undef declare_attribute_type
+        //         // free(attrName);
+        //         // delete(&attrName);
     } // end for
 }
 
@@ -447,7 +447,6 @@ void JuleaDBWriter::InitParameterFlushStepsCount(const std::string value)
 
     m_FlushStepsCount = static_cast<size_t>(flushStepsCount);
 }
-
 
 } // end namespace engine
 } // end namespace core
