@@ -20,14 +20,6 @@ namespace core
 {
 namespace engine
 {
-/**
- * Stores variable name in a BSON in the key-value store.
- * @param paramName name of attribute/variable
- * @param nameSpace file name
- * @param kvName    name of the key value store (variable_names/attribute_names)
- */
-void DBPutNameToJulea(std::string paramName, std::string nameSpace,
-                      std::string kvName);
 
 /** --- Variables --- */
 
@@ -52,10 +44,11 @@ void DBPutVariableMetadataToJulea(Variable<T> &variable,
  * @param bufferLen   length of buffer
  * @param stepBlockID key for the kv-store: currentStep_currentBlock
  */
-void DBPutBlockMetadataToJulea(const std::string nameSpace,
-                               const std::string varName, gpointer &buffer,
-                               guint32 bufferLen,
-                               const std::string stepBlockID);
+template <class T>
+void DBPutBlockMetadataToJulea(Variable<T> &variable,
+                               const std::string nameSpace,
+                               const std::string varName, size_t step,
+                               size_t block);
 
 /**
  * Store variable data in JULEA object store. The key is:
@@ -95,7 +88,10 @@ void DBPutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
         size_t currentStep, size_t blockID);                                   \
     extern template void DBPutVariableMetadataToJulea(                         \
         Variable<T> &variable, const std::string nameSpace,                    \
-        const std::string varName, size_t currStep);                                            \
+        const std::string varName, size_t currStep);                           \
+    extern template void DBPutBlockMetadataToJulea(                            \
+        Variable<T> &variable, const std::string nameSpace,                    \
+        const std::string varName, size_t step, size_t block);                 \
                                                                                \
     extern template void DBPutAttributeDataToJulea(                            \
         Attribute<T> &attribute, const std::string nameSpace);                 \

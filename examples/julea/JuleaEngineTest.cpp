@@ -354,10 +354,10 @@ int main(int argc, char *argv[])
         // std::cout << "\n JuleaEngineTest :) Read attribute finished \n"
                   // << std::endl;
 
-        TestWriteVariableDeferred();
-        std::cout
-            << "\n JuleaEngineTest :) Write variable asynchronous finished \n"
-            << std::endl;
+        // TestWriteVariableDeferred();
+        // std::cout
+            // << "\n JuleaEngineTest :) Write variable asynchronous finished \n"
+            // << std::endl;
         // TestReadVariableDeferred();
         // std::cout
             // << "\n JuleaEngineTest :) Read variable asynchronous finished \n"

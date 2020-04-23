@@ -12,7 +12,7 @@
 #define ADIOS2_ENGINE_JULEAMETADATA_H_
 
 #include <complex.h>
-#include <julea.h>
+// #include <julea.h>
 
 namespace adios2
 {

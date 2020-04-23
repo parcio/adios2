@@ -75,8 +75,8 @@
 // #include "adios2/engine/julea-original/JuleaWriter.h"
 #include "adios2/engine/julea-kv/JuleaKVReader.h"
 #include "adios2/engine/julea-kv/JuleaKVWriter.h"
-#include "adios2/engine/julea-test/JuleaDBReader.h"
-#include "adios2/engine/julea-test/JuleaDBWriter.h"
+#include "adios2/engine/julea-db/JuleaDBReader.h"
+#include "adios2/engine/julea-db/JuleaDBWriter.h"
 // #include "adios2/engine/julea-db/JuleaDBReader.h"
 // #include "adios2/engine/julea-db/JuleaDBWriter.h"
 #endif

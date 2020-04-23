@@ -74,7 +74,8 @@ void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     }
 
     /** updates the variable metadata as there is a new block now */
-    DBPutVariableMetadataToJulea(variable, m_Name, variable.m_Name, m_CurrentStep);
+    DBPutVariableMetadataToJulea(variable, m_Name, variable.m_Name,
+                                 m_CurrentStep);
 
     /** put block metadata to DB */
     // PutBlockMetadataToJulea(m_Name, variable.m_Name, blockMD, blockMD_len,

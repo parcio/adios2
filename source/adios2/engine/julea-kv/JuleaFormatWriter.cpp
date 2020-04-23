@@ -161,6 +161,7 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     return (gpointer)buffer;
 }
 
+//FIXME: remove unused parameter currStep
 template <class T>
 gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
                                 size_t currStep, size_t block,

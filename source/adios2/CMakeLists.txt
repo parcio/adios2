@@ -152,10 +152,11 @@ if(ADIOS2_HAVE_JULEA)
       # engine/julea-kv/JuleaClientLogic-legacy.cpp
       # engine/julea-kv/JuleaFormatWriter-legacy.cpp
 
-      engine/julea-test/JuleaDBReader.cpp
-      engine/julea-test/JuleaDBReader.tcc
-      engine/julea-test/JuleaDBWriter.cpp
-      engine/julea-test/JuleaDBWriter.tcc
+      engine/julea-db/JuleaDBReader.cpp
+      engine/julea-db/JuleaDBReader.tcc
+      engine/julea-db/JuleaDBWriter.cpp
+      engine/julea-db/JuleaDBWriter.tcc
+      engine/julea-db/JuleaDBInteractionWriter.cpp
 
       toolkit/interop/julea/JuleaSerializer.cpp
       toolkit/interop/julea/JuleaSerializer.tcc

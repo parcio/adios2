@@ -29,168 +29,6 @@ namespace core
 namespace engine
 {
 
-/**
- *  Writes name of variable/attribute to Julea KV. Also checks if name is
- * already in kv. paramName = name of variable/attribute nameSpace = file kvName
- * = variable_names/ attribute_names
- */
-void DBPutNameToJulea(std::string paramName, std::string nameSpace,
-                      std::string kvName)
-{
-    //     bool err = false;
-
-    //     guint32 valueLen = 0;
-    //     bson_t *bsonNames;
-    //     bson_iter_t bIter;
-    //     g_autoptr(JDBSchema) schema = NULL;
-    //     g_autoptr(JDBEntry) entry = NULL;
-
-    //     void *namesBuf = NULL;
-    //     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    //     auto batch = j_batch_new(semantics);
-    //     auto batch2 = j_batch_new(semantics);
-    //     auto name = strdup(paramName.c_str());
-    //     gchar const* hello_world = "Hello World!";
-
-    //     std::cout << "kvName: " << kvName << std::endl;
-    //     std::cout << "nameSpace: " << nameSpace << std::endl;
-    //     std::cout << "paramName: " << paramName << std::endl;
-
-    //       bool isConstantDims = variable.IsConstantDims();
-    //     bool isReadAsJoined = variable.m_ReadAsJoined;
-    //     bool isReadAsLocalValue = variable.m_ReadAsLocalValue;
-    //     bool isRandomAccess = variable.m_RandomAccess;
-    //     int shapeID = (int)variable.m_ShapeID;
-
-    //     const char *type = variable.m_Type.c_str();
-    //     size_t shapeSize = variable.m_Shape.size();
-    //     size_t startSize = variable.m_Start.size();
-    //     size_t countSize = variable.m_Count.size();
-    //     size_t numberSteps = currStep + 1;
-
-    //     size_t shapeIDLen = sizeof(int);
-    //     size_t typeLen = sizeof(variable.m_Type.c_str());
-
-    //     size_t shapeBuffer[shapeSize];
-    //     for (uint i = 0; i < shapeSize; i++)
-    //     {
-    //         shapeBuffer[i] = variable.m_Shape.data()[i];
-    //     }
-
-    //     size_t startBuffer[startSize];
-    //     for (uint i = 0; i < startSize; i++)
-    //     {
-    //         startBuffer[i] = variable.m_Start.data()[i];
-    //     }
-
-    //     size_t countBuffer[countSize];
-    //     for (uint i = 0; i < countSize; i++)
-    //     {
-    //         countBuffer[i] = variable.m_Count.data()[i];
-    //     }
-
-    //     size_t blocks[numberSteps];
-    //     for (uint i = 0; i < numberSteps; i++)
-    //     {
-    //         blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].size();
-    //         // std::cout << "i: " << i << "  blocks: " << blocks[i] <<
-    //         std::endl;
-    //     }
-    //     schema = j_db_schema_new("adios2", "variable-metadata", NULL);
-
-    //     j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
-    //     j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING,
-    //     NULL);
-
-    //     j_db_schema_add_field(schema, "isConstantDims", J_DB_TYPE_UINT32,
-    //     NULL); j_db_schema_add_field(schema, "isReadAsJoined",
-    //     J_DB_TYPE_UINT32, NULL); j_db_schema_add_field(schema,
-    //     "isReadAsLocalValue", J_DB_TYPE_UINT32, NULL);
-    //     j_db_schema_add_field(schema, "isRandomAccess", J_DB_TYPE_UINT32,
-    //     NULL);
-
-    //     j_db_schema_add_field(schema, "shapeID", J_DB_TYPE_UINT32, NULL);
-    //     j_db_schema_add_field(schema, "type", J_DB_TYPE_STRING, NULL);
-    //     j_db_schema_add_field(schema, "typeLen", J_DB_TYPE_UINT32, NULL);
-
-    //     /** all vectors need to store their size */
-    //     j_db_schema_add_field(schema, "shapeSize", J_DB_TYPE_UINT64, NULL);
-    //     j_db_schema_add_field(schema, "shape", J_DB_TYPE_UINT64, NULL);
-    //     j_db_schema_add_field(schema, "startSize", J_DB_TYPE_UINT64, NULL);
-    //     j_db_schema_add_field(schema, "start", J_DB_TYPE_UINT64, NULL);
-    //     j_db_schema_add_field(schema, "countSize", J_DB_TYPE_UINT64, NULL);
-    //     j_db_schema_add_field(schema, "count", J_DB_TYPE_UINT64, NULL);
-
-    //     /** number of blocks (steps are index starting at 0) */
-    //     j_db_schema_add_field(schema, "numberSteps", J_DB_TYPE_UINT64, NULL);
-    //     j_db_schema_add_field(schema, "blockArray", J_DB_TYPE_UINT64, NULL);
-
-    //     entry = j_db_entry_new(schema, NULL);
-    //     j_db_entry_set_field(entry, "file", nameSpace.c_str(),
-    //     strlen(nameSpace.c_str()) + 1, NULL); j_db_entry_set_field(entry,
-    //     "variableName", name, strlen(name) + 1, NULL);
-
-    // j_db_entry_set_field(entry, "isConstantDims", &isConstantDims,
-    // sizeof(constantDims), NULL); j_db_entry_set_field(entry,
-    // "isReadAsJoined", &isReadAsJoined, sizeof(isReadAsJoined), NULL);
-    // j_db_entry_set_field(entry, "isReadAsLocalValue", &isReadAsLocalValue,
-    // sizeof(isReadAsLocalValue), NULL); j_db_entry_set_field(entry,
-    // "isRandomAccess", &isRandomAccess, sizeof(isRandomAccess), NULL);
-
-    // j_db_entry_set_field(entry, "shapeID", &shapeID, sizeof(shapeID), NULL);
-    // j_db_entry_set_field(entry, "type", type, strlen(type) + 1, NULL);
-    // j_db_entry_set_field(entry, "typeLen", &typeLen, sizeof(typeLen), NULL);
-
-    // j_db_entry_set_field(entry, "shapeSize", &shapeSize, sizeof(shapeSize),
-    // NULL); j_db_entry_set_field(entry, "shape", shapeBuffer,
-    // sizeof(shapeBuffer), NULL); j_db_entry_set_field(entry, "startSize",
-    // &startSize, sizeof(startSize), NULL); j_db_entry_set_field(entry,
-    // "start", startBuffer, sizeof(startBuffer), NULL);
-    // j_db_entry_set_field(entry, "countSize", &countSize, sizeof(countSize),
-    // NULL); j_db_entry_set_field(entry, "count", countBuffer,
-    // sizeof(countBuffer), NULL);
-
-    // j_db_entry_set_field(entry, "numberSteps", &numberSteps,
-    // sizeof(numberSteps), NULL); j_db_entry_set_field(entry, "blockArray",
-    // blocks, sizeof(blocks), NULL);
-
-    //     j_db_schema_create(schema, batch, NULL);
-    //     j_db_entry_insert(entry, batch, NULL);
-
-    // if (valueLen == 0)
-    // {
-    //     bsonNames = bson_new();
-    // }
-    // else
-    // {
-    //     bsonNames = bson_new_from_data((const uint8_t *)namesBuf, valueLen);
-    // }
-    // free(namesBuf);
-
-    // /* Check if variable name is already in kv store */
-    // if (!bson_iter_init_find(&bIter, bsonNames, name))
-    // {
-    //     bson_append_int32(bsonNames, name, -1, 42);
-    // }
-    // else
-    // {
-    //     std::cout << "++ Julea Interaction Writer:  " << name
-    //               << " already in kv store. " << std::endl;
-    // }
-
-    // namesBuf = g_memdup(bson_get_data(bsonNames), bsonNames->len);
-    // j_kv_put(kvObjectNames, namesBuf, bsonNames->len, g_free, batch2);
-    // err = j_batch_execute(batch2);
-    // g_assert_true(j_batch_execute(batch2) == true);
-
-    // // free(namesBuf); //TODO: why does this lead to segfaults?
-    // free(name);
-    // bson_destroy(bsonNames);
-    // // j_kv_unref(kvObjectNames);
-    // j_batch_unref(batch);
-    // j_batch_unref(batch2);
-    // j_semantics_unref(semantics);
-}
 template <class T>
 void DBPutVariableMetadataToJulea(Variable<T> &variable,
                                   const std::string nameSpace,
@@ -230,6 +68,11 @@ void DBPutVariableMetadataToJulea(Variable<T> &variable,
     size_t shapeIDLen = sizeof(int);
     size_t typeLen = sizeof(variable.m_Type.c_str());
 
+    size_t shapeLen = shapeSize * sizeof(size_t);
+    size_t startLen = startSize * sizeof(size_t);
+    size_t countLen = countSize * sizeof(size_t);
+    size_t blocksLen = numberSteps * sizeof(size_t);
+
     size_t shapeBuffer[shapeSize];
     for (uint i = 0; i < shapeSize; i++)
     {
@@ -254,6 +97,8 @@ void DBPutVariableMetadataToJulea(Variable<T> &variable,
         blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].size();
         // std::cout << "i: " << i << "  blocks: " << blocks[i] << std::endl;
     }
+
+    /** define schema */
     schema = j_db_schema_new("adios2", "variable-metadata", NULL);
 
     j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
@@ -280,68 +125,183 @@ void DBPutVariableMetadataToJulea(Variable<T> &variable,
     j_db_schema_add_field(schema, "numberSteps", J_DB_TYPE_UINT64, NULL);
     j_db_schema_add_field(schema, "blockArray", J_DB_TYPE_UINT64, NULL);
 
+    /** define entry */
     entry = j_db_entry_new(schema, NULL);
     j_db_entry_set_field(entry, "file", nameSpace.c_str(),
                          strlen(nameSpace.c_str()) + 1, NULL);
     j_db_entry_set_field(entry, "variableName", name, strlen(name) + 1, NULL);
 
-    j_db_entry_set_field(entry, "isConstantDims", &isConstantDims,
-                         sizeof(isConstantDims), NULL);
-    j_db_entry_set_field(entry, "isReadAsJoined", &isReadAsJoined,
-                         sizeof(isReadAsJoined), NULL);
+    std::cout << "sizeof: " << isConstantDims << std::endl;
+    std::cout << "sizeof: " << &isConstantDims << std::endl;
+    std::cout << "sizeof: " << sizeof(isConstantDims) << std::endl;
+    std::cout << "sizeof: " << sizeof(&isConstantDims) << std::endl;
+
+    j_db_entry_set_field(entry, "isConstantDims", &isConstantDims, sizeof(bool),
+                         NULL);
+    j_db_entry_set_field(entry, "isReadAsJoined", &isReadAsJoined, sizeof(bool),
+                         NULL);
     j_db_entry_set_field(entry, "isReadAsLocalValue", &isReadAsLocalValue,
-                         sizeof(isReadAsLocalValue), NULL);
-    j_db_entry_set_field(entry, "isRandomAccess", &isRandomAccess,
-                         sizeof(isRandomAccess), NULL);
+                         sizeof(bool), NULL);
+    j_db_entry_set_field(entry, "isRandomAccess", &isRandomAccess, sizeof(bool),
+                         NULL);
 
     j_db_entry_set_field(entry, "shapeID", &shapeID, sizeof(shapeID), NULL);
     j_db_entry_set_field(entry, "type", type, strlen(type) + 1, NULL);
-    j_db_entry_set_field(entry, "typeLen", &typeLen, sizeof(typeLen), NULL);
+    j_db_entry_set_field(entry, "typeLen", &typeLen, typeLen, NULL);
 
     j_db_entry_set_field(entry, "shapeSize", &shapeSize, sizeof(shapeSize),
                          NULL);
-    j_db_entry_set_field(entry, "shape", shapeBuffer, sizeof(shapeBuffer),
-                         NULL);
+    j_db_entry_set_field(entry, "shape", shapeBuffer, shapeLen, NULL);
     j_db_entry_set_field(entry, "startSize", &startSize, sizeof(startSize),
                          NULL);
-    j_db_entry_set_field(entry, "start", startBuffer, sizeof(startBuffer),
-                         NULL);
+    j_db_entry_set_field(entry, "start", startBuffer, startLen, NULL);
     j_db_entry_set_field(entry, "countSize", &countSize, sizeof(countSize),
                          NULL);
-    j_db_entry_set_field(entry, "count", countBuffer, sizeof(countBuffer),
-                         NULL);
+    j_db_entry_set_field(entry, "count", countBuffer, countLen, NULL);
 
     j_db_entry_set_field(entry, "numberSteps", &numberSteps,
                          sizeof(numberSteps), NULL);
-    j_db_entry_set_field(entry, "blockArray", blocks, sizeof(blocks), NULL);
+    j_db_entry_set_field(entry, "blockArray", blocks, blocksLen, NULL);
 
     j_db_schema_create(schema, batch, NULL);
     j_db_entry_insert(entry, batch, NULL);
 }
 
-void DBPutBlockMetadataToJulea(const std::string nameSpace,
-                               const std::string varName, gpointer &buffer,
-                               guint32 bufferLen, const std::string stepBlockID)
+template <class T>
+void DBPutBlockMetadataToJulea(Variable<T> &variable,
+                               const std::string nameSpace,
+                               const std::string varName, size_t step,
+                               size_t block)
 {
-    void *metaDataBuf = NULL;
+    g_autoptr(JDBSchema) schema = NULL;
+    g_autoptr(JDBEntry) entry = NULL;
+
+    // void *namesBuf = NULL;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
+    auto batch2 = j_batch_new(semantics);
+    // auto name = strdup(varName.c_str());
 
-    auto stringMetadataKV = g_strdup_printf("%s_%s_%s", nameSpace.c_str(),
-                                            varName.c_str(), "variableblocks");
-    // std::cout << "PutBlockMetadataToJulea: " << stringMetadataKV <<
-    // std::endl;
+    size_t shapeSize = variable.m_Shape.size();
+    size_t startSize = variable.m_Start.size();
+    size_t countSize = variable.m_Count.size();
+    size_t memoryStartSize = blockInfo.MemoryStart.size();
+    size_t memoryCountSize = blockInfo.MemoryCount.size();
 
-    metaDataBuf = g_memdup(buffer, bufferLen);
-    auto kvObjectMetadata = j_kv_new(stringMetadataKV, stepBlockID.c_str());
+    size_t shapeLen = shapeSize * sizeof(size_t);
+    size_t startLen = startSize * sizeof(size_t);
+    size_t countLen = countSize * sizeof(size_t);
+    size_t memoryStartLen = memoryStartSize * sizeof(size_t);
+    size_t memoryCountLen = memoryCountSize * sizeof(size_t);
 
-    j_kv_put(kvObjectMetadata, metaDataBuf, bufferLen, g_free, batch);
-    g_assert_true(j_batch_execute(batch) == true);
+    size_t minLen = sizeof(variable.m_Min);
+    size_t maxLen = sizeof(variable.m_Max);
+    size_t valueLen = sizeof(variable.m_Value);
 
-    g_free(stringMetadataKV);
-    j_kv_unref(kvObjectMetadata);
-    j_batch_unref(batch);
-    j_semantics_unref(semantics);
+    size_t stepsStart = blockInfo.StepsStart;
+    size_t stepsCount = blockInfo.StepsCount;
+    size_t blockID = block;
+    size_t stepID = block;
+
+    bool isValue = blockInfo.IsValue;
+
+    size_t shapeBuffer[shapeSize];
+    for (uint i = 0; i < shapeSize; i++)
+    {
+        shapeBuffer[i] = variable.m_Shape.data()[i];
+    }
+
+    size_t startBuffer[startSize];
+    for (uint i = 0; i < startSize; i++)
+    {
+        startBuffer[i] = variable.m_Start.data()[i];
+    }
+
+    size_t countBuffer[countSize];
+    for (uint i = 0; i < countSize; i++)
+    {
+        countBuffer[i] = variable.m_Count.data()[i];
+    }
+
+    size_t memoryStartBuffer[memoryStartSize];
+    for (uint i = 0; i < memoryStartSize; i++)
+    {
+        memoryStartBuffer[i] = blockInfo.MemoryStart.data()[i];
+    }
+    size_t memoryCountBuffer[memoryCountSize];
+    for (uint i = 0; i < memoryCountSize; i++)
+    {
+        memoryCountBuffer[i] = blockInfo.MemoryCount.data()[i];
+    }
+
+    /** define schema */
+    schema = j_db_schema_new("adios2", "block-metadata", NULL);
+
+    j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "step", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "block", J_DB_TYPE_UINT64, NULL);
+
+    /** all vectors need to store their size */
+    j_db_schema_add_field(schema, "shapeSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "shape", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "startSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "start", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "countSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "count", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "memoryStartSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "memoryStart", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "memoryCountSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "memoryCount", J_DB_TYPE_UINT64, NULL);
+
+    j_db_schema_add_field(schema, "min", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "max", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "value", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "stepsStart", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "stepsCount", J_DB_TYPE_UINT64, NULL);
+
+    j_db_schema_add_field(schema, "isValue", J_DB_TYPE_UINT32, NULL);
+
+    /** define entry */
+    entry = j_db_entry_new(schema, NULL);
+    j_db_entry_set_field(entry, "file", nameSpace.c_str(),
+                         strlen(nameSpace.c_str()) + 1, NULL);
+    j_db_entry_set_field(entry, "variableName", varName.c_str(),
+                         strlen(varName.c_str()) + 1, NULL);
+
+    j_db_entry_set_field(entry, "step", &stepID, sizeof(stepID), NULL);
+    j_db_entry_set_field(entry, "block", &blockID, sizeof(blockID), NULL);
+
+    j_db_entry_set_field(entry, "shapeSize", &shapeSize, sizeof(shapeSize),
+                         NULL);
+    j_db_entry_set_field(entry, "shape", shapeBuffer, shapeLen, NULL);
+    j_db_entry_set_field(entry, "startSize", &startSize, sizeof(startSize),
+                         NULL);
+    j_db_entry_set_field(entry, "start", startBuffer, startLen, NULL);
+    j_db_entry_set_field(entry, "countSize", &countSize, sizeof(countSize),
+                         NULL);
+    j_db_entry_set_field(entry, "count", countBuffer, countLen, NULL);
+    j_db_entry_set_field(entry, "memoryStartSize", &memoryStartSize,
+                         sizeof(memoryStartSize), NULL);
+    j_db_entry_set_field(entry, "memoryStart", &memoryStartBuffer,
+                         memoryStartLen, NULL);
+    j_db_entry_set_field(entry, "memoryCountSize", &memoryCountSize,
+                         sizeof(memoryCountSize), NULL);
+    j_db_entry_set_field(entry, "memoryCount", &memoryCountBuffer,
+                         memoryCountLen, NULL);
+
+    j_db_entry_set_field(entry, "min", &variable.m_Min, minLen, NULL);
+    j_db_entry_set_field(entry, "max", &variable.m_Max, maxLen, NULL);
+    j_db_entry_set_field(entry, "value", &variable.m_Value, valueLen, NULL);
+
+    j_db_entry_set_field(entry, "stepsStart", &stepsStart, sizeof(stepsStart),
+                         NULL);
+    j_db_entry_set_field(entry, "stepsCount", &stepsCount, sizeof(stepsCount),
+                         NULL);
+    j_db_entry_set_field(entry, "isValue", &isValue, sizeof(isValue), NULL);
+
+    j_db_schema_create(schema, batch, NULL);
+    j_db_entry_insert(entry, batch, NULL);
 }
 
 template <class T>
@@ -672,9 +632,12 @@ void DBPutAttributeMetadataToJulea(Attribute<T> &attribute,
     template void DBPutVariableDataToJulea(                                    \
         Variable<T> &variable, const T *data, const std::string nameSpace,     \
         size_t currentStep, size_t blockID);                                   \
-    template void DBPutVariableMetadataToJulea(                         \
+    template void DBPutVariableMetadataToJulea(                                \
         Variable<T> &variable, const std::string nameSpace,                    \
-        const std::string varName, size_t currStep);                                            \
+        const std::string varName, size_t currStep);                           \
+    template void DBPutBlockMetadataToJulea(                                   \
+        Variable<T> &variable, const std::string nameSpace,                    \
+        const std::string varName, size_t step, size_t block);                 \
                                                                                \
     template void DBPutAttributeDataToJulea(Attribute<T> &attribute,           \
                                             const std::string nameSpace);      \
