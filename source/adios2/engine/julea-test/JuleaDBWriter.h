@@ -49,7 +49,6 @@ public:
 
     ~JuleaDBWriter(); // was =default -> meaning?
 
-    // TODO: why is there no set StepMode in the Write engine?
     StepStatus BeginStep(StepMode mode,
                          const float timeoutSeconds = -1.0) final;
     size_t CurrentStep() const final;
@@ -58,22 +57,23 @@ public:
     void Flush(const int transportIndex = -1) final;
 
 private:
-    // JuleaInfo *m_JuleaInfo;
+    JSemantics *m_JuleaSemantics;
+    StepMode m_StepMode = StepMode::Append;
 
-    int m_Verbosity = 5;       // changed for debugging info from 0 to 5
-    int m_WriterRank;          // my rank in the writers' comm
-    size_t m_CurrentStep = -1; // steps start from 0
+    int m_Verbosity = 5; // change for debugging info from 0 to 5
+    int m_WriterRank;    // my rank in the writers' comm
 
-    /** EndStep must call PerformPuts if necessary */
-    bool m_NeedPerformPuts = false; // DESIGN: suggested in SkeletonWriter
-
-    /** TODO: needed? */
-    bool m_Flushed = false; // DESIGN: used in HDF5Writer
-
-    /**  --- DESIGN: the following is similar to BP3Writer and BP3Base --- */
+    /** true: Close was called, Engine will call this many times for different
+     * transports */
+    bool m_IsClosed = false;
 
     /** Default: write collective metadata in Capsule metadata. */
     bool m_CollectiveMetadata = true;
+
+    /** Used for streaming a large number of steps */
+    size_t m_CurrentStep = 0; // starts at 0
+
+    size_t m_CurrentBlockID = 0; // starts at 0
 
     /** Parameter to flush transports at every number of steps, to be used at
      * EndStep */
@@ -85,57 +85,48 @@ private:
     /** tracks Put and Get variables in deferred mode */
     std::set<std::string> m_DeferredVariables;
 
+    /** tracks all variables written (not BP, new for JULEA)
+    This way the kv-store does not need to be asked every time if a variable
+    name is already in the BSON */
+    std::set<std::string> m_WrittenVariableNames;
+
     /** attributes are serialized only once, this set contains the names of ones
      * already serialized.
      */
     std::unordered_set<std::string> m_SerializedAttributes; // TODO: needed?
 
-    /** tracks the overall size of deferred variables */
-    size_t m_DeferredVariablesDataSize = 0;
-
     /** statistics verbosity, only 0 is supported */
     unsigned int m_StatsLevel = 0;
-
 
     void Init() final;
 
     /** Parses parameters from IO SetParameters */
     void InitParameters() final;
-    /** Parses transports and parameters from IO AddTransport */
-    void InitTransports() final;
 
     void InitVariables();
 
-// FIXME: const T* BlockInfo oder const T * values?
 #define declare_type(T)                                                        \
     void DoPutSync(Variable<T> &variable, const T *) final;                    \
     void DoPutDeferred(Variable<T> &variable, const T *) final;
-    // ADIOS2_FOREACH_TYPE_1ARG(declare_type)
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
 
-    /**
-     * TODO: why has skeleton engine Info struct as param when this is only used
-     * by inline engine? Common function for primitive PutSync, puts variables
-     * in buffer
-     * @param variable
-     * @param values
-     */
     template <class T>
     void PutSyncCommon(Variable<T> &variable,
                        const typename Variable<T>::Info &blockInfo);
 
-    /**
-     * Probably this is more useful than the version with the Info struct as
-     * param
-     */
     template <class T>
     void PutSyncCommon(Variable<T> &variable, const T *values);
+
+    template <class T>
+    void PutSyncToJulea(Variable<T> &variable, const T *values,
+                        const typename Variable<T>::Info &blockInfo);
 
     template <class T>
     void PutDeferredCommon(Variable<T> &variable, const T *values);
 
     void DoFlush(const bool isFinal = false, const int transportIndex = -1);
+
     /**
      * Closes a single transport or all transports
      * @param transportIndex, if -1 (default) closes all transports,
@@ -145,24 +136,15 @@ private:
     void DoClose(const int transportIndex = -1) final;
 
     /**
-     * DESIGN
-     * N-to-N data buffers writes, including metadata file
-     * @param transportIndex
-     */
-    void WriteData(const bool isFinal, const int transportIndex = -1);
-
-    /**
-     * DESIGN
-     * N-to-M (aggregation) data buffers writes, including metadata file
-     * @param transportIndex
-     */
-    void AggregateWriteData(const bool isFinal, const int transportIndex = -1);
-
-    /**
      * Put Attributes to file.
      * @param io [description]
      */
     void PutAttributes(core::IO &io);
+
+    template <class T>
+    void PerformPutCommon(Variable<T> &variable);
+
+    void InitParameterFlushStepsCount(const std::string value);
 };
 
 } // end namespace engine
