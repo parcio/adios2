@@ -29,28 +29,40 @@ namespace engine
 {
 
 template <class T>
+void SetMinMax(Variable<T> &variable, const T *data)
+{
+    T min;
+    T max;
+
+    auto number_elements = adios2::helper::GetTotalSize(variable.m_Count);
+    adios2::helper::GetMinMax(data, number_elements, min, max);
+    variable.m_Min = min;
+    variable.m_Max = max;
+}
+
+template <class T>
 void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
                                    const typename Variable<T>::Info &blockInfo)
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Writer " << m_WriterRank << "     PutSyncToJulea("
+        std::cout << "Julea DB Writer " << m_WriterRank << "     PutSyncToJulea("
                   << variable.m_Name << " ---- BlockID: " << m_CurrentBlockID
                   << std::endl;
     }
 
-    guint32 blockMD_len = 0;
-    guint32 varMD_len = 0;
-    gpointer md_buffer = NULL;
-    auto bsonMetadata = bson_new();
+    // guint32 blockMD_len = 0;
+    // guint32 varMD_len = 0;
+    // gpointer md_buffer = NULL;
+    // auto bsonMetadata = bson_new();
 
-    // SetMinMax(variable, data);
+    SetMinMax(variable, data);
 
     auto stepBlockID =
         g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
     std::cout << "    stepBlockID: " << stepBlockID << std::endl;
 
-    gpointer varMD;
+    // gpointer varMD;
     // gpointer varMD =
     //     SerializeVariableMetadata(variable, varMD_len, m_CurrentStep);
     // gpointer blockMD = SerializeBlockMetadata(
@@ -60,7 +72,8 @@ void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     auto itVariableWritten = m_WrittenVariableNames.find(variable.m_Name);
     if (itVariableWritten == m_WrittenVariableNames.end())
     {
-        std::cout << "--- Variable name not yet written " << std::endl;
+        std::cout << "--- Variable name not yet written with this writer "
+                  << std::endl;
 
         // PutNameToJulea(variable.m_Name, m_Name, "variable_names");
         m_WrittenVariableNames.insert(variable.m_Name);
@@ -78,11 +91,11 @@ void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
                                  m_CurrentStep);
 
     /** put block metadata to DB */
-    // PutBlockMetadataToJulea(m_Name, variable.m_Name, blockMD, blockMD_len,
-    // stepBlockID);
+    DBPutBlockMetadataToJulea(variable, m_Name, variable.m_Name, m_CurrentStep,
+                              m_CurrentBlockID, blockInfo);
     /** put data to object store */
-    // PutVariableDataToJulea(variable, data, m_Name, m_CurrentStep,
-    // m_CurrentBlockID);
+    DBPutVariableDataToJulea(variable, data, m_Name, m_CurrentStep,
+                             m_CurrentBlockID);
     // bson_destroy(bsonMetadata);
 }
 
@@ -92,7 +105,7 @@ void JuleaDBWriter::PutSyncCommon(Variable<T> &variable,
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Writer " << m_WriterRank << "     PutSync("
+        std::cout << "Julea DB Writer " << m_WriterRank << "     PutSync("
                   << variable.m_Name << ")\n";
         std::cout << "\n_________________________PutSyncCommon "
                      "BlockInfo_____________________________"
@@ -113,7 +126,7 @@ void JuleaDBWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Writer " << m_WriterRank << "     PutSync("
+        std::cout << "Julea DB Writer " << m_WriterRank << "     PutSync("
                   << variable.m_Name << ")\n";
         std::cout << "\n___________________________PutSyncCommon "
                      "T__________________________"
@@ -136,7 +149,7 @@ void JuleaDBWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Writer " << m_WriterRank << "     PutDeferred("
+        std::cout << "Julea DB Writer " << m_WriterRank << "     PutDeferred("
                   << variable.m_Name << ")\n";
         std::cout << "\n___________________________PutDeferred "
                      "T____________________________"

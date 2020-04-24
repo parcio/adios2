@@ -31,8 +31,8 @@ namespace engine
 
 void addFieldsForVariableMD(JDBSchema *schema)
 {
-    gchar const* fileIndex[] = {"file",NULL};
-    gchar const* varIndex[] = {"variableName",NULL};
+    gchar const *fileIndex[] = {"file", NULL};
+    gchar const *varIndex[] = {"variableName", NULL};
 
     j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
     j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
@@ -58,16 +58,54 @@ void addFieldsForVariableMD(JDBSchema *schema)
     j_db_schema_add_field(schema, "numberSteps", J_DB_TYPE_UINT64, NULL);
     j_db_schema_add_field(schema, "blockArray", J_DB_TYPE_BLOB, NULL);
 
-    j_db_schema_add_index(schema, fileIndex , NULL);
-    j_db_schema_add_index(schema, varIndex , NULL);
+    j_db_schema_add_index(schema, fileIndex, NULL);
+    j_db_schema_add_index(schema, varIndex, NULL);
+}
+
+void addFieldsForBlockMD(JDBSchema *schema)
+{
+    gchar const *fileIndex[] = {"file", NULL};
+    gchar const *varIndex[] = {"variableName", NULL};
+    gchar const *stepIndex[] = {"step", NULL};
+    gchar const *blockIndex[] = {"block", NULL};
+
+    j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "step", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "block", J_DB_TYPE_UINT64, NULL);
+
+    /** all vectors need to store their size */
+    j_db_schema_add_field(schema, "shapeSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "shape", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "startSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "start", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "countSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "count", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "memoryStartSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "memoryStart", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "memoryCountSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "memoryCount", J_DB_TYPE_BLOB, NULL);
+
+    j_db_schema_add_field(schema, "min", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "max", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "value", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "stepsStart", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "stepsCount", J_DB_TYPE_UINT64, NULL);
+
+    j_db_schema_add_field(schema, "isValue", J_DB_TYPE_UINT32, NULL);
+
+    j_db_schema_add_index(schema, fileIndex, NULL);
+    j_db_schema_add_index(schema, varIndex, NULL);
+    j_db_schema_add_index(schema, stepIndex, NULL);
+    j_db_schema_add_index(schema, blockIndex, NULL);
 }
 
 template <class T>
-void addEntriesForVariableMD(Variable<T> &variable,
-                                  const std::string nameSpace,
-                                  const std::string varName, size_t currStep, JDBSchema *schema, JDBEntry *entry)
+void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
+                             const std::string varName, size_t currStep,
+                             JDBSchema *schema, JDBEntry *entry)
 {
-     bool isConstantDims = variable.IsConstantDims();
+    bool isConstantDims = variable.IsConstantDims();
     int tmp = isConstantDims ? 1 : 0;
     bool isReadAsJoined = variable.m_ReadAsJoined;
     int tmp2 = isReadAsJoined ? 1 : 0;
@@ -115,7 +153,7 @@ void addEntriesForVariableMD(Variable<T> &variable,
         blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].size();
         // std::cout << "i: " << i << "  blocks: " << blocks[i] << std::endl;
     }
-if (false)
+    if (false)
     {
         std::cout << "typeLen: " << typeLen << std::endl;
         std::cout << "variable.m_ShapeID: " << variable.m_ShapeID << std::endl;
@@ -134,8 +172,7 @@ if (false)
         std::cout << "numberSteps: " << numberSteps << std::endl;
     }
 
-
- j_db_entry_set_field(entry, "file", nameSpace.c_str(),
+    j_db_entry_set_field(entry, "file", nameSpace.c_str(),
                          strlen(nameSpace.c_str()) + 1, NULL);
     j_db_entry_set_field(entry, "variableName", varName.c_str(),
                          strlen(nameSpace.c_str()) + 1, NULL);
@@ -169,69 +206,32 @@ if (false)
 }
 
 template <class T>
-void DBPutVariableMetadataToJulea(Variable<T> &variable,
-                                  const std::string nameSpace,
-                                  const std::string varName, size_t currStep)
+void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
+                          const std::string varName, size_t currStep,
+                          size_t block,
+                          const typename Variable<T>::Info &blockInfo,
+                          JDBSchema *schema, JDBEntry *entry)
 {
-    bool err = false;
-    g_autoptr(JDBSchema) schema = NULL;
-    g_autoptr(JDBEntry) entry = NULL;
-
-    // void *namesBuf = NULL;
-    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    auto batch = j_batch_new(semantics);
-    auto batch2 = j_batch_new(semantics);
-
-    /** define schema */
-    schema = j_db_schema_new("adios2", "variable-metadata", NULL);
-    addFieldsForVariableMD(schema);
-
-    /** define entry */
-    entry = j_db_entry_new(schema, NULL);
-    addEntriesForVariableMD(variable, nameSpace, varName, currStep, schema, entry);
-
-    j_db_schema_create(schema, batch, NULL);
-    j_db_entry_insert(entry, batch, NULL);
-}
-
-template <class T>
-void DBPutBlockMetadataToJulea(Variable<T> &variable,
-                               const std::string nameSpace,
-                               const std::string varName, size_t step,
-                               size_t block,
-                               const typename Variable<T>::Info &blockInfo)
-{
-    g_autoptr(JDBSchema) schema = NULL;
-    g_autoptr(JDBEntry) entry = NULL;
-
-    // void *namesBuf = NULL;
-    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    auto batch = j_batch_new(semantics);
-    auto batch2 = j_batch_new(semantics);
-    // auto name = strdup(varName.c_str());
-
     size_t shapeSize = variable.m_Shape.size();
     size_t startSize = variable.m_Start.size();
     size_t countSize = variable.m_Count.size();
     size_t memoryStartSize = blockInfo.MemoryStart.size();
     size_t memoryCountSize = blockInfo.MemoryCount.size();
 
-    size_t shapeLen = shapeSize * sizeof(size_t);
-    size_t startLen = startSize * sizeof(size_t);
-    size_t countLen = countSize * sizeof(size_t);
-    size_t memoryStartLen = memoryStartSize * sizeof(size_t);
-    size_t memoryCountLen = memoryCountSize * sizeof(size_t);
-
     size_t minLen = sizeof(variable.m_Min);
     size_t maxLen = sizeof(variable.m_Max);
     size_t valueLen = sizeof(variable.m_Value);
+    // size_t min = variable.m_Min;
+    // size_t min = variable.m_Max;
+    // size_t value = variable.m_Value;
 
     size_t stepsStart = blockInfo.StepsStart;
     size_t stepsCount = blockInfo.StepsCount;
     size_t blockID = block;
-    size_t stepID = block;
+    size_t stepID = currStep;
 
     bool isValue = blockInfo.IsValue;
+    int tmp = isValue ? 1 : 0;
 
     size_t shapeBuffer[shapeSize];
     for (uint i = 0; i < shapeSize; i++)
@@ -262,36 +262,22 @@ void DBPutBlockMetadataToJulea(Variable<T> &variable,
         memoryCountBuffer[i] = blockInfo.MemoryCount.data()[i];
     }
 
-    /** define schema */
-    schema = j_db_schema_new("adios2", "block-metadata", NULL);
+    if (false)
+    {
+        std::cout << "shapeSize: " << shapeSize << std::endl;
+        std::cout << "var: shape.data: " << variable.m_Shape.data()
+                  << std::endl;
+        std::cout << "blockInfo:shape.data: " << variable.m_Shape.data()
+                  << std::endl;
+        std::cout << "    variable minimum: " << variable.m_Min << std::endl;
+        std::cout << "    variable maximum: " << variable.m_Max << std::endl;
+        std::cout << "variable min size: " << minLen << std::endl;
+        std::cout << "size of T: " << sizeof(T) << std::endl;
+        std::cout << "stepsStart" << stepsStart << std::endl;
+        std::cout << "stepsCount" << stepsCount << std::endl;
+        std::cout << "blockID: " << blockID << std::endl;
+    }
 
-    j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
-    j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
-    j_db_schema_add_field(schema, "step", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "block", J_DB_TYPE_UINT64, NULL);
-
-    /** all vectors need to store their size */
-    j_db_schema_add_field(schema, "shapeSize", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "shape", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "startSize", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "start", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "countSize", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "count", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "memoryStartSize", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "memoryStart", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "memoryCountSize", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "memoryCount", J_DB_TYPE_UINT64, NULL);
-
-    j_db_schema_add_field(schema, "min", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "max", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "value", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "stepsStart", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "stepsCount", J_DB_TYPE_UINT64, NULL);
-
-    j_db_schema_add_field(schema, "isValue", J_DB_TYPE_UINT32, NULL);
-
-    /** define entry */
-    entry = j_db_entry_new(schema, NULL);
     j_db_entry_set_field(entry, "file", nameSpace.c_str(),
                          strlen(nameSpace.c_str()) + 1, NULL);
     j_db_entry_set_field(entry, "variableName", varName.c_str(),
@@ -302,34 +288,141 @@ void DBPutBlockMetadataToJulea(Variable<T> &variable,
 
     j_db_entry_set_field(entry, "shapeSize", &shapeSize, sizeof(shapeSize),
                          NULL);
-    j_db_entry_set_field(entry, "shape", shapeBuffer, shapeLen, NULL);
+    j_db_entry_set_field(entry, "shape", shapeBuffer, sizeof(shapeBuffer),
+                         NULL);
     j_db_entry_set_field(entry, "startSize", &startSize, sizeof(startSize),
                          NULL);
-    j_db_entry_set_field(entry, "start", startBuffer, startLen, NULL);
+    j_db_entry_set_field(entry, "start", startBuffer, sizeof(startBuffer),
+                         NULL);
     j_db_entry_set_field(entry, "countSize", &countSize, sizeof(countSize),
                          NULL);
-    j_db_entry_set_field(entry, "count", countBuffer, countLen, NULL);
+    j_db_entry_set_field(entry, "count", countBuffer, sizeof(countBuffer),
+                         NULL);
     j_db_entry_set_field(entry, "memoryStartSize", &memoryStartSize,
                          sizeof(memoryStartSize), NULL);
     j_db_entry_set_field(entry, "memoryStart", &memoryStartBuffer,
-                         memoryStartLen, NULL);
+                         sizeof(memoryStartBuffer), NULL);
     j_db_entry_set_field(entry, "memoryCountSize", &memoryCountSize,
                          sizeof(memoryCountSize), NULL);
     j_db_entry_set_field(entry, "memoryCount", &memoryCountBuffer,
-                         memoryCountLen, NULL);
+                         sizeof(memoryCountBuffer), NULL);
 
     j_db_entry_set_field(entry, "min", &variable.m_Min, minLen, NULL);
+    // j_db_entry_set_field(entry, "min", &min, sizeof(min), NULL);
     j_db_entry_set_field(entry, "max", &variable.m_Max, maxLen, NULL);
-    j_db_entry_set_field(entry, "value", &variable.m_Value, valueLen, NULL);
+    // j_db_entry_set_field(entry, "max", &max, sizeof(max), NULL);
+    //TODO: check whether is value otherwise set to 0?
+    if (isValue)
+    {
+        j_db_entry_set_field(entry, "value", &variable.m_Value, valueLen, NULL);
+    }
+    else
+    {
+        std::cout << "valueLen= " << valueLen << std::endl;
+        size_t value = 0;
+        valueLen = sizeof(value);
+        // j_db_entry_set_field(entry, "value", , valueLen, NULL);
+        // j_db_entry_set_field(entry, "value", NULL, 0, NULL);
+        j_db_entry_set_field(entry, "value", &value, valueLen, NULL);
+        // j_db_entry_set_field(entry, "value", &variable.m_Value, valueLen, NULL);
+
+    }
 
     j_db_entry_set_field(entry, "stepsStart", &stepsStart, sizeof(stepsStart),
                          NULL);
     j_db_entry_set_field(entry, "stepsCount", &stepsCount, sizeof(stepsCount),
                          NULL);
-    j_db_entry_set_field(entry, "isValue", &isValue, sizeof(isValue), NULL);
+    j_db_entry_set_field(entry, "isValue", &tmp, sizeof(tmp), NULL);
+}
+void InitDBSchemas()
+{
+    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
+    g_autoptr(JDBSchema) varSchema = NULL;
+    g_autoptr(JDBSchema) blockSchema = NULL;
 
-    j_db_schema_create(schema, batch, NULL);
-    j_db_entry_insert(entry, batch, NULL);
+    varSchema = j_db_schema_new("adios2", "variable-metadata", NULL);
+    addFieldsForVariableMD(varSchema);
+
+    blockSchema = j_db_schema_new("adios2", "block-metadata", NULL);
+    addFieldsForBlockMD(blockSchema);
+
+    j_db_schema_create(varSchema, batch, NULL);
+    j_db_schema_create(blockSchema, batch, NULL);
+    j_batch_execute(batch);
+
+    // j_db_schema_unref(varSchema);
+    // j_db_schema_unref(blockSchema);
+    j_batch_unref(batch);
+    j_semantics_unref(semantics);
+}
+
+template <class T>
+void DBPutVariableMetadataToJulea(Variable<T> &variable,
+                                  const std::string nameSpace,
+                                  const std::string varName, size_t currStep)
+{
+    bool err = false;
+    g_autoptr(JDBSchema) schema = NULL;
+    g_autoptr(JDBEntry) entry = NULL;
+
+    // void *namesBuf = NULL;
+    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
+    auto batch2 = j_batch_new(semantics);
+
+    schema = j_db_schema_new("adios2", "variable-metadata", NULL);
+    j_db_schema_get(schema, batch, NULL);
+    g_assert_true(j_batch_execute(batch) == true);
+
+    /** define entry */
+    entry = j_db_entry_new(schema, NULL);
+    addEntriesForVariableMD(variable, nameSpace, varName, currStep, schema,
+                            entry);
+
+    j_db_entry_insert(entry, batch2, NULL);
+    g_assert_true(j_batch_execute(batch2) == true);
+
+    // j_db_entry_unref(entry);
+    // j_db_schema_unref(schema);
+    j_batch_unref(batch);
+    j_batch_unref(batch2);
+    j_semantics_unref(semantics);
+}
+
+template <class T>
+void DBPutBlockMetadataToJulea(Variable<T> &variable,
+                               const std::string nameSpace,
+                               const std::string varName, size_t step,
+                               size_t block,
+                               const typename Variable<T>::Info &blockInfo)
+{
+    bool err = false;
+    g_autoptr(JDBSchema) schema = NULL;
+    g_autoptr(JDBEntry) entry = NULL;
+
+    // void *namesBuf = NULL;
+    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
+    auto batch2 = j_batch_new(semantics);
+
+    schema = j_db_schema_new("adios2", "block-metadata", NULL);
+    j_db_schema_get(schema, batch, NULL);
+    g_assert_true(j_batch_execute(batch) == true);
+
+    /** define entry */
+    entry = j_db_entry_new(schema, NULL);
+    addEntriesForBlockMD(variable, nameSpace, varName, step, block, blockInfo,
+                         schema, entry);
+
+    j_db_entry_insert(entry, batch2, NULL);
+    g_assert_true(j_batch_execute(batch2) == true);
+
+    // j_db_entry_unref(entry);
+    // j_db_schema_unref(schema);
+    j_batch_unref(batch);
+    j_batch_unref(batch2);
+    j_semantics_unref(semantics);
 }
 
 template <class T>

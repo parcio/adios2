@@ -104,6 +104,7 @@ private:
     void InitParameters() final;
 
     void InitVariables();
+    void InitDB();
 
 #define declare_type(T)                                                        \
     void DoPutSync(Variable<T> &variable, const T *) final;                    \

@@ -63,7 +63,7 @@ StepStatus JuleaDBWriter::BeginStep(StepMode mode, const float timeoutSeconds)
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Writer " << m_WriterRank
+        std::cout << "Julea DB Writer " << m_WriterRank
                   << "   BeginStep() new step " << m_CurrentStep << "\n";
         std::cout << "StepMode mode: " << mode << std::endl;
     }
@@ -85,7 +85,7 @@ size_t JuleaDBWriter::CurrentStep() const
     // std::cout << "JULEA ENGINE: CurrentStep" << std::endl;
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Writer " << m_WriterRank
+        std::cout << "Julea DB Writer " << m_WriterRank
                   << "   CurrentStep() returns " << m_CurrentStep << "\n";
     }
     return m_CurrentStep;
@@ -131,7 +131,7 @@ void JuleaDBWriter::PerformPuts()
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Writer " << m_WriterRank << "     PerformPuts()\n";
+        std::cout << "Julea DB Writer " << m_WriterRank << "     PerformPuts()\n";
     }
 
     /** if there are no deferred variables there is nothing to do */
@@ -147,7 +147,7 @@ void JuleaDBWriter::PerformPuts()
         if (type == "compound")
         {
             // not supported
-            std::cout << "Julea Writer " << m_WriterRank << "     PerformPuts()"
+            std::cout << "Julea DB Writer " << m_WriterRank << "     PerformPuts()"
                       << "compound variable type not supported \n";
         }
 #define declare_template_instantiation(T)                                      \
@@ -178,7 +178,7 @@ void JuleaDBWriter::Flush(const int transportIndex)
     {
         std::cout << "\n______________Flush  _____________________"
                   << std::endl;
-        std::cout << "Julea Writer " << m_WriterRank << "   Flush()\n";
+        std::cout << "Julea DB Writer " << m_WriterRank << "   Flush()\n";
     }
     DoFlush(false);
 
@@ -196,7 +196,7 @@ void JuleaDBWriter::Init()
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Writer " << m_WriterRank << "   Init() "
+        std::cout << "Julea DB Writer " << m_WriterRank << "   Init() "
                   << std::endl;
     }
 
@@ -208,7 +208,7 @@ void JuleaDBWriter::Init()
     std::cout << "\n*********************** JULEA ENGINE WRITER "
                  "*************************"
               << std::endl;
-    std::cout << "JULEA WRITER: Init" << std::endl;
+    std::cout << "JULEA DB WRITER: Init" << std::endl;
     std::cout
         << "      .___. \n     /     \\ \n    | O _ O | \n    /  \\_/  \\ \n  .' / \
     \\ `. \n / _|       |_ \\ \n(_/ |       | \\_) \n    \\       / \n   __\\_>-<_/__ \
@@ -219,9 +219,12 @@ void JuleaDBWriter::Init()
 
     m_JuleaSemantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
 
+    InitDBSchemas();
     InitParameters();
     InitVariables();
 }
+
+void JuleaDBWriter::InitDB() { InitDBSchemas(); }
 
 /**TODO needed?
  * see BP3Base InitParameters
@@ -260,7 +263,7 @@ void JuleaDBWriter::InitParameters()
     }
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Writer " << m_WriterRank << " InitParameters()\n";
+        std::cout << "Julea DB Writer " << m_WriterRank << " InitParameters()\n";
     }
 }
 
@@ -272,7 +275,7 @@ void JuleaDBWriter::InitVariables()
     // TODO: do something here with deferredVariables?
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea Writer " << m_WriterRank << " InitVariables()\n";
+        std::cout << "Julea DB Writer " << m_WriterRank << " InitVariables()\n";
     }
 }
 
@@ -309,7 +312,7 @@ void JuleaDBWriter::DoClose(const int transportIndex)
     {
         std::cout << "\n______________DoClose_____________________"
                   << std::endl;
-        std::cout << "Julea Writer " << m_WriterRank << " Close(" << m_Name
+        std::cout << "Julea DB Writer " << m_WriterRank << " Close(" << m_Name
                   << ")\n";
     }
     // TODO: free semantics
@@ -334,7 +337,7 @@ void JuleaDBWriter::DoFlush(const bool isFinal, const int transportIndex)
     {
         std::cout << "\n______________DoFlush_____________________"
                   << std::endl;
-        std::cout << "Julea Writer " << m_WriterRank << " DoFlush \n";
+        std::cout << "Julea DB Writer " << m_WriterRank << " DoFlush \n";
     }
     // if (m_Aggregator.m_IsActive)
     // {

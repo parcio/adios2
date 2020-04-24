@@ -22,6 +22,7 @@ namespace engine
 {
 
 /** --- Variables --- */
+void InitDBSchemas();
 
 /**
  * Put the variable metadata that does not change from block to block into the
