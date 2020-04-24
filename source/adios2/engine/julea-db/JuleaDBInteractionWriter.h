@@ -48,7 +48,8 @@ template <class T>
 void DBPutBlockMetadataToJulea(Variable<T> &variable,
                                const std::string nameSpace,
                                const std::string varName, size_t step,
-                               size_t block,const typename Variable<T>::Info &blockInfo);
+                               size_t block,
+                               const typename Variable<T>::Info &blockInfo);
 
 /**
  * Store variable data in JULEA object store. The key is:
@@ -91,7 +92,8 @@ void DBPutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
         const std::string varName, size_t currStep);                           \
     extern template void DBPutBlockMetadataToJulea(                            \
         Variable<T> &variable, const std::string nameSpace,                    \
-        const std::string varName, size_t step, size_t block,const typename Variable<T>::Info &blockInfo);                 \
+        const std::string varName, size_t step, size_t block,                  \
+        const typename Variable<T>::Info &blockInfo);                          \
                                                                                \
     extern template void DBPutAttributeDataToJulea(                            \
         Attribute<T> &attribute, const std::string nameSpace);                 \
