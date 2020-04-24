@@ -98,6 +98,23 @@ void DBPutVariableMetadataToJulea(Variable<T> &variable,
         // std::cout << "i: " << i << "  blocks: " << blocks[i] << std::endl;
     }
 
+
+    // std::cout << "typeLen: " << typeLen << std::endl;
+    // std::cout << "variable.m_ShapeID: " << variable.m_ShapeID << std::endl;
+    // std::cout << "shapeID: " << shapeID << std::endl;
+    std::cout << "constantDims: " << isConstantDims << std::endl;
+    std::cout << "isReadAsJoined: " << isReadAsJoined << std::endl;
+    std::cout << "isReadAsLocalValue: " << isReadAsLocalValue << std::endl;
+    std::cout << "isRandomAccess: " << isRandomAccess << std::endl;
+    // std::cout << "type: " << type << std::endl;
+    // std::cout << "shapeSize: " << shapeSize << std::endl;
+    // std::cout << "startSize: " << startSize << std::endl;
+    // std::cout << "countSize: " << countSize << std::endl;
+    // std::cout << "numberSteps: " << numberSteps << std::endl;
+    // std::cout << "shape.data = " << variable.m_Shape.data() << std::endl;
+    // std::cout << "count.data = " << variable.m_Count.data() << std::endl;
+    // std::cout << "numberSteps: " << numberSteps << std::endl;
+
     /** define schema */
     schema = j_db_schema_new("adios2", "variable-metadata", NULL);
 
@@ -130,12 +147,6 @@ void DBPutVariableMetadataToJulea(Variable<T> &variable,
     j_db_entry_set_field(entry, "file", nameSpace.c_str(),
                          strlen(nameSpace.c_str()) + 1, NULL);
     j_db_entry_set_field(entry, "variableName", name, strlen(name) + 1, NULL);
-
-    // std::cout << "sizeof: " << isConstantDims << std::endl;
-    // std::cout << "sizeof: " << &isConstantDims << std::endl;
-    // std::cout << "sizeof: " << sizeof(isConstantDims) << std::endl;
-    // std::cout << "sizeof: " << sizeof(bool) << std::endl;
-    // std::cout << "sizeof: " << sizeof(&isConstantDims) << std::endl;
 
     j_db_entry_set_field(entry, "isConstantDims", &isConstantDims, sizeof(isConstantDims),
                          NULL);
