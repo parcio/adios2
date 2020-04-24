@@ -174,10 +174,6 @@ void DBPutVariableMetadataToJulea(Variable<T> &variable,
                                   const std::string varName, size_t currStep)
 {
     bool err = false;
-
-    guint32 valueLen = 0;
-    // bson_t *bsonNames;
-    // bson_iter_t bIter;
     g_autoptr(JDBSchema) schema = NULL;
     g_autoptr(JDBEntry) entry = NULL;
 
@@ -185,75 +181,14 @@ void DBPutVariableMetadataToJulea(Variable<T> &variable,
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
     auto batch2 = j_batch_new(semantics);
-    // auto fileName = strdup(nameSpace.c_str());
-    // auto vName = strdup(varName.c_str());
-    // gchar const *hello_world = "Hello World!";
-
-    // std::cout << "kvName: " << kvName << std::endl;
-    // std::cout << "nameSpace: " << nameSpace << std::endl;
-    // std::cout << "paramName: " << paramName << std::endl;
-
-    // bool isConstantDims = variable.IsConstantDims();
-    // int tmp = isConstantDims ? 1 : 0;
-    // bool isReadAsJoined = variable.m_ReadAsJoined;
-    // int tmp2 = isReadAsJoined ? 1 : 0;
-    // bool isReadAsLocalValue = variable.m_ReadAsLocalValue;
-    // int tmp3 = isReadAsLocalValue ? 1 : 0;
-    // bool isRandomAccess = variable.m_RandomAccess;
-    // int tmp4 = isRandomAccess ? 1 : 0;
-    // int shapeID = (int)variable.m_ShapeID;
-
-    // const char *type = variable.m_Type.c_str();
-    // size_t shapeSize = variable.m_Shape.size();
-    // size_t startSize = variable.m_Start.size();
-    // size_t countSize = variable.m_Count.size();
-    // size_t numberSteps = currStep + 1;
-
-    // size_t shapeIDLen = sizeof(int);
-    // size_t typeLen = sizeof(variable.m_Type.c_str());
-
-    // // size_t shapeLen = shapeSize * sizeof(size_t);
-    // // size_t startLen = startSize * sizeof(size_t);
-    // // size_t countLen = countSize * sizeof(size_t);
-    // // size_t blocksLen = numberSteps * sizeof(size_t);
-
-    // size_t shapeBuffer[shapeSize];
-    // for (uint i = 0; i < shapeSize; i++)
-    // {
-    //     shapeBuffer[i] = variable.m_Shape.data()[i];
-    // }
-
-    // size_t startBuffer[startSize];
-    // for (uint i = 0; i < startSize; i++)
-    // {
-    //     startBuffer[i] = variable.m_Start.data()[i];
-    // }
-
-    // size_t countBuffer[countSize];
-    // for (uint i = 0; i < countSize; i++)
-    // {
-    //     countBuffer[i] = variable.m_Count.data()[i];
-    // }
-
-    // size_t blocks[numberSteps];
-    // for (uint i = 0; i < numberSteps; i++)
-    // {
-    //     blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].size();
-    //     // std::cout << "i: " << i << "  blocks: " << blocks[i] << std::endl;
-    // }
-
-
 
     /** define schema */
     schema = j_db_schema_new("adios2", "variable-metadata", NULL);
-
     addFieldsForVariableMD(schema);
 
     /** define entry */
     entry = j_db_entry_new(schema, NULL);
-
     addEntriesForVariableMD(variable, nameSpace, varName, currStep, schema, entry);
-
 
     j_db_schema_create(schema, batch, NULL);
     j_db_entry_insert(entry, batch, NULL);
