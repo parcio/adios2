@@ -131,18 +131,19 @@ void DBPutVariableMetadataToJulea(Variable<T> &variable,
                          strlen(nameSpace.c_str()) + 1, NULL);
     j_db_entry_set_field(entry, "variableName", name, strlen(name) + 1, NULL);
 
-    std::cout << "sizeof: " << isConstantDims << std::endl;
-    std::cout << "sizeof: " << &isConstantDims << std::endl;
-    std::cout << "sizeof: " << sizeof(isConstantDims) << std::endl;
-    std::cout << "sizeof: " << sizeof(&isConstantDims) << std::endl;
+    // std::cout << "sizeof: " << isConstantDims << std::endl;
+    // std::cout << "sizeof: " << &isConstantDims << std::endl;
+    // std::cout << "sizeof: " << sizeof(isConstantDims) << std::endl;
+    // std::cout << "sizeof: " << sizeof(bool) << std::endl;
+    // std::cout << "sizeof: " << sizeof(&isConstantDims) << std::endl;
 
-    j_db_entry_set_field(entry, "isConstantDims", &isConstantDims, sizeof(bool),
+    j_db_entry_set_field(entry, "isConstantDims", &isConstantDims, sizeof(isConstantDims),
                          NULL);
-    j_db_entry_set_field(entry, "isReadAsJoined", &isReadAsJoined, sizeof(bool),
+    j_db_entry_set_field(entry, "isReadAsJoined", &isReadAsJoined, sizeof(isReadAsJoined),
                          NULL);
     j_db_entry_set_field(entry, "isReadAsLocalValue", &isReadAsLocalValue,
-                         sizeof(bool), NULL);
-    j_db_entry_set_field(entry, "isRandomAccess", &isRandomAccess, sizeof(bool),
+                         sizeof(isReadAsLocalValue), NULL);
+    j_db_entry_set_field(entry, "isRandomAccess", &isRandomAccess, sizeof(isRandomAccess),
                          NULL);
 
     j_db_entry_set_field(entry, "shapeID", &shapeID, sizeof(shapeID), NULL);
@@ -171,7 +172,7 @@ template <class T>
 void DBPutBlockMetadataToJulea(Variable<T> &variable,
                                const std::string nameSpace,
                                const std::string varName, size_t step,
-                               size_t block)
+                               size_t block,const typename Variable<T>::Info &blockInfo)
 {
     g_autoptr(JDBSchema) schema = NULL;
     g_autoptr(JDBEntry) entry = NULL;
@@ -314,7 +315,7 @@ void DBPutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
     const char *kvMD = "attributes";
 
     // TODO: more leaks than old version below ?!
-    DBPutNameToJulea(attribute.m_Name, nameSpace.c_str(), kvNames);
+    // DBPutNameToJulea(attribute.m_Name, nameSpace.c_str(), kvNames);
     // WriteMetadataToJuleaKV(kvMD, attribute.m_Name, nameSpace.c_str(),
     // bsonMetaData);
 
@@ -637,7 +638,7 @@ void DBPutAttributeMetadataToJulea(Attribute<T> &attribute,
         const std::string varName, size_t currStep);                           \
     template void DBPutBlockMetadataToJulea(                                   \
         Variable<T> &variable, const std::string nameSpace,                    \
-        const std::string varName, size_t step, size_t block);                 \
+        const std::string varName, size_t step, size_t block,const typename Variable<T>::Info &blockInfo);                 \
                                                                                \
     template void DBPutAttributeDataToJulea(Attribute<T> &attribute,           \
                                             const std::string nameSpace);      \
