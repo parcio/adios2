@@ -157,6 +157,7 @@ if(ADIOS2_HAVE_JULEA)
       engine/julea-db/JuleaDBWriter.cpp
       engine/julea-db/JuleaDBWriter.tcc
       engine/julea-db/JuleaDBInteractionWriter.cpp
+      engine/julea-db/JuleaDBInteractionReader.cpp
 
       toolkit/interop/julea/JuleaSerializer.cpp
       toolkit/interop/julea/JuleaSerializer.tcc

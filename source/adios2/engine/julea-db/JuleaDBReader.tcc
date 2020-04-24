@@ -67,7 +67,7 @@ void JuleaDBReader::GetDeferredCommon(Variable<T> &variable, T *data)
         std::cout << "Julea DB Reader " << m_ReaderRank << "     GetDeferred("
                   << variable.m_Name << ")\n";
     }
-    m_NeedPerformGets = true;
+    // m_NeedPerformGets = true;
 }
 
 } // end namespace engine

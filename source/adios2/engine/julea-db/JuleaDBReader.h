@@ -57,25 +57,54 @@ public:
     void PerformGets() final;
 
 private:
-    // JuleaInfo *m_JuleaInfo;
-    int m_Verbosity = 5; // TODO: changed to 5 for debugging
+    JSemantics *m_JuleaSemantics;
+    StepMode m_StepMode = StepMode::Append;
+
+    /**
+     * This is not at all beautiful!
+     * Caution! This assumes that only bpls calls AllStepsBlocksInfo!
+     *
+     * However, I found no other way to ensure that the keys for the key-value
+     * store and the object store are correct for all of the following
+     * scenarios:
+     * - begin step, setblockselection, get, endstep
+     * - setstepselection, get
+     * - begin, multiple get, endstep (this should always return the same
+     * block!)
+     * - bpls: allstepsblocksinfo = return all blocks for all steps without
+     * actually increasing the step (no endStep called)
+     *
+     * Either stepsstart and co are working fine or m_CurrentBlockID and
+     * m_CurrentStep. Trying to implement a macro/function/... in bpls when
+     * adding Julea to the engine list was not working.
+     *
+     */
+    mutable bool m_UseKeysForBPLS = false;
+
+    int m_Verbosity = 0; // change to 5 for debugging
     int m_ReaderRank;    // my rank in the readers' comm
 
-    // step info should be received from the writer side in BeginStep()
-    size_t m_CurrentStep = -1;
-    bool m_FirstStep = true;
-
-    // EndStep must call PerformGets if necessary
-    bool m_NeedPerformGets = false;
-
     bool m_CollectiveMetadata = true;
+
+    // step info should be received from the writer side in BeginStep()
+    size_t m_CurrentStep = 0; // starts at 0
+
+    size_t m_CurrentBlockID = 0; // starts at 0
+
+    bool m_FirstStep = true;
 
     /** Parameter to flush transports at every number of steps, to be used at
      * EndStep */
     size_t m_FlushStepsCount = 1;
 
+    /** manages all communication tasks in aggregation */
+    // aggregator::MPIChain m_Aggregator;
+
     /** tracks Put and Get variables in deferred mode */
     std::set<std::string> m_DeferredVariables;
+
+    /** tracks all variables written (not BP, new for JULEA) */
+    std::set<std::string> m_WrittenVariableNames;
 
     /** tracks the overall size of deferred variables */
     size_t m_DeferredVariablesDataSize = 0;

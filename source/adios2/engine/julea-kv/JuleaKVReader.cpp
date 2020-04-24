@@ -187,13 +187,13 @@ void JuleaKVReader::Init()
     std::cout << "\n*********************** JULEA ENGINE READER "
                  "*************************"
               << std::endl;
-    std::cout << "JULEA READER: Init" << std::endl;
+    std::cout << "JULEA KV READER: Init" << std::endl;
     std::cout
         << "      .___. \n     /     \\ \n    | O _ O | \n    /  \\_/  \\ \n  .' / \
     \\ `. \n / _|       |_ \\ \n(_/ |       | \\_) \n    \\       / \n   __\\_>-<_/__ \
          \n   ~;/     \\;~"
         << std::endl;
-    std::cout << "JULEA READER: Namespace = " << m_Name << std::endl;
+    std::cout << "JULEA KV READER: Namespace = " << m_Name << std::endl;
 
     if (m_DebugMode)
     {

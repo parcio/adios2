@@ -80,6 +80,17 @@ StepStatus JuleaDBReader::BeginStep(const StepMode mode,
                 "PerformGets() or EndStep()?, in call to BeginStep\n");
         }
     }
+    m_IO.m_ReadStreaming = true;
+    m_IO.m_EngineStep = m_CurrentStep;
+
+    m_StepMode = mode;
+    m_DeferredVariables.clear();
+    m_DeferredVariablesDataSize = 0;
+
+    // first param is "zero-init" which initializes stepsStart to 0
+    m_IO.ResetVariablesStepSelection(true, "in call to JULEA Reader BeginStep");
+
+    return StepStatus::OK;
 }
 
 size_t JuleaDBReader::CurrentStep() const
@@ -95,21 +106,21 @@ size_t JuleaDBReader::CurrentStep() const
 
 void JuleaDBReader::EndStep()
 {
-    // EndStep should call PerformGets() if there are unserved GetDeferred()
-    // requests
-    if (m_NeedPerformGets)
-    {
-        PerformGets();
-    }
-
     if (m_Verbosity == 5)
     {
+        std::cout << "\n______________EndStep _____________________"
+                  << std::endl;
         std::cout << "Julea DB Reader " << m_ReaderRank << "   EndStep()\n";
     }
-    // TODO: Can reading happen in steps?
-    // if (m_CurrentStep % m_FlushStepsCount == 0){
-    //     Flush();
-    // }
+
+    if (m_DeferredVariables.size() > 0)
+    {
+        std::cout << "m_DeferredVariables.size() = "
+                  << m_DeferredVariables.size() << std::endl;
+        PerformGets();
+    }
+    ++m_CurrentStep;
+    m_CurrentBlockID = 0;
 }
 
 void JuleaDBReader::PerformGets()
@@ -134,8 +145,7 @@ void JuleaDBReader::PerformGets()
         if (type == "compound")
         {
             // not supported
-            std::cout << "Julea DB Reader " << m_ReaderRank
-                      << "     PerformGets()"
+            std::cout << "Julea Reader " << m_ReaderRank << "     PerformGets()"
                       << "compound variable type not supported \n";
         }
 #define declare_type(T)                                                        \
@@ -145,7 +155,6 @@ void JuleaDBReader::PerformGets()
             variableName, "in call to PerformGets, EndStep or Close");         \
         for (auto &blockInfo : variable.m_BlocksInfo)                          \
         {                                                                      \
-            GetSyncCommon(variable, variable.m_Data);                          \
         }                                                                      \
         variable.m_BlocksInfo.clear();                                         \
     }
@@ -155,10 +164,9 @@ void JuleaDBReader::PerformGets()
 #undef declare_type
     }
     m_DeferredVariables.clear();
-    m_NeedPerformGets = false; // TODO: needed?
+        // ReadVariableBlocks(variable);                                          \
+        //
 }
-
-// PRIVATE
 
 #define declare_type(T)                                                        \
     void JuleaDBReader::DoGetSync(Variable<T> &variable, T *data)              \
@@ -169,18 +177,42 @@ void JuleaDBReader::PerformGets()
     {                                                                          \
         GetDeferredCommon(variable, data);                                     \
     }
-// ADIOS2_FOREACH_TYPE_1ARG(declare_type)
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
 
 void JuleaDBReader::Init()
 {
-    std::cout << "\n*********************** JULEA DB ENGINE READER "
+    std::cout << "\n*********************** JULEA ENGINE READER "
                  "*************************"
               << std::endl;
-    InitParameters();
-    InitTransports();
+    std::cout << "JULEA DB READER: Init" << std::endl;
+    std::cout
+        << "      .___. \n     /     \\ \n    | O _ O | \n    /  \\_/  \\ \n  .' / \
+    \\ `. \n / _|       |_ \\ \n(_/ |       | \\_) \n    \\       / \n   __\\_>-<_/__ \
+         \n   ~;/     \\;~"
+        << std::endl;
+    std::cout << "JULEA DB READER: Namespace = " << m_Name << std::endl;
+
+    if (m_DebugMode)
+    {
+        if (m_OpenMode != Mode::Read)
+        {
+            throw std::invalid_argument(
+                "ERROR: JuleaReader only supports OpenMode::Read from" +
+                m_Name + " " + m_EndMessage);
+        }
+    }
+    if (m_Verbosity == 5)
+    {
+        std::cout << "Julea Reader " << m_ReaderRank << " Init()\n";
+    }
+
+    m_JuleaSemantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+
+    // InitParameters();
+    // InitTransports();
     InitVariables();
+    // InitAttributes(); //TODO
 }
 
 /**
@@ -191,88 +223,69 @@ void JuleaDBReader::Init()
 // template <class T>
 void JuleaDBReader::InitVariables()
 {
-    gchar **names;
-    int *types;
-    unsigned int variable_count = 0;
-    int size = 0;
+ bson_iter_t b_iter;
+    bson_t *bsonNames;
+    std::string varName;
+    std::string nameSpace = m_Name;
+    std::string kvName = "variable_names";
+    unsigned int varCount = 0;
 
-    /* Get variables from storage*/
+    // GetNamesFromJulea(nameSpace, &bsonNames, &varCount, true);
 
-    for (unsigned int i = 0; i < variable_count; i++)
+    if (varCount == 0)
     {
-        Dims shape;
-        Dims start;
-        Dims count;
-
-        switch (types[i])
+        if (m_Verbosity == 5)
         {
-            // case COMPOUND:
-            //     //TODO
-            //     break;
-            // case UNKNOWN:
-            //     //TODO
-            //     break;
-            // case STRING:
-            //     m_IO.DefineVariable<std::string>(names[i], shape, start,
-            //     count,
-            //                                      constantdims);
-            //     break;
-            // case INT8:
-            //     m_IO.DefineVariable<int8_t>(names[i], shape, start, count,
-            //                                 constantdims);
-            //     break;
-            // case UINT8:
-            //     m_IO.DefineVariable<uint8_t>(names[i], shape, start, count,
-            //                                  constantdims);
-            //     break;
-            // case INT16:
-            //     m_IO.DefineVariable<int16_t>(names[i], shape, start, count,
-            //                                  constantdims);
-            //     break;
-            // case UINT16:
-            //     m_IO.DefineVariable<uint16_t>(names[i], shape, start, count,
-            //                                   constantdims);
-            //     break;
-            // case INT32:
-            //     m_IO.DefineVariable<int32_t>(names[i], shape, start, count,
-            //                                  constantdims);
-            //     break;
-            // case UINT32:
-            //     m_IO.DefineVariable<uint32_t>(names[i], shape, start, count,
-            //                                   constantdims);
-            //     break;
-            // case INT64:
-            //     m_IO.DefineVariable<int64_t>(names[i], shape, start, count,
-            //                                  constantdims);
-            //     break;
-            // case UINT64:
-            //     m_IO.DefineVariable<uint64_t>(names[i], shape, start, count,
-            //                                   constantdims);
-            //     break;
-            // case FLOAT:
-            //     m_IO.DefineVariable<float>(names[i], shape, start, count,
-            //                                constantdims);
-            //     break;
-            // case DOUBLE:
-            //     m_IO.DefineVariable<double>(names[i], shape, start, count,
-            //                                 constantdims);
-            //     break;
-            // case LONG_DOUBLE:
-            //     m_IO.DefineVariable<long double>(names[i], shape, start,
-            //     count,
-            //                                      constantdims);
-            break;
-            // case FLOAT_COMPLEX:
-            //     //TODO
-            //     break;
-            // case DOUBLE_COMPLEX:
-            //     //TODO
-            //     break;
+            std::cout << "++ InitVariables: no variables stored in KV"
+                      << std::endl;
         }
     }
-    if (m_Verbosity == 5)
+    else
     {
-        std::cout << "Julea DB Reader " << m_ReaderRank << " InitVariables()\n";
+        bson_iter_init(&b_iter, bsonNames);
+
+        std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
+
+        while (bson_iter_next(&b_iter))
+        {
+            Dims shape;
+            Dims start;
+            Dims count;
+            ShapeID shapeID = ShapeID::Unknown;
+
+            bool constantDims;
+            bool isReadAsJoined;
+            bool isReadAsLocalValue;
+            bool isRandomAccess;
+
+            std::string type;
+            guint32 buffer_len;
+            gpointer md_buffer = nullptr;
+            size_t *blocks = nullptr;
+            size_t numberSteps = 0;
+
+            std::string varName(bson_iter_key(&b_iter));
+
+            // GetVariableMetadataFromJulea(nameSpace, varName, &md_buffer,
+                                         // &buffer_len);
+
+            // DeserializeVariableMetadata(md_buffer, &type, &shape, &start,
+            //                             &count, &constantDims, &blocks,
+            //                             &numberSteps, &shapeID, &isReadAsJoined,
+            //                             &isReadAsLocalValue, &isRandomAccess);
+
+            // DefineVariableInInit(&m_IO, varName, type, shape, start, count,
+            //                      constantDims);
+
+            /** there are several fields that need to be set in a variable that
+             * are not required when defining a variable in the IO. Therefore
+             * they need to be set now. */
+            // InitVariable(&m_IO, *this, varName, blocks, numberSteps, shapeID);
+            delete[] blocks;
+
+            const std::string testtype = m_IO.InquireVariableType(varName);
+        }
+        bson_destroy(bsonNames);
     }
 }
 
