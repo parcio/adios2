@@ -46,7 +46,8 @@ void DBPutVariableMetadataToJulea(Variable<T> &variable,
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
     auto batch2 = j_batch_new(semantics);
-    auto name = strdup(varName.c_str());
+    auto fileName = strdup(nameSpace.c_str());
+    auto vName = strdup(varName.c_str());
     gchar const *hello_world = "Hello World!";
 
     // std::cout << "kvName: " << kvName << std::endl;
@@ -121,14 +122,14 @@ void DBPutVariableMetadataToJulea(Variable<T> &variable,
     j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
     j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
 
-    j_db_schema_add_field(schema, "isConstantDims", J_DB_TYPE_UINT32, NULL);
-    j_db_schema_add_field(schema, "isReadAsJoined", J_DB_TYPE_UINT32, NULL);
-    j_db_schema_add_field(schema, "isReadAsLocalValue", J_DB_TYPE_UINT32, NULL);
-    j_db_schema_add_field(schema, "isRandomAccess", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "isConstantDims", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "isReadAsJoined", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "isReadAsLocalValue", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "isRandomAccess", J_DB_TYPE_UINT64, NULL);
 
-    j_db_schema_add_field(schema, "shapeID", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "shapeID", J_DB_TYPE_UINT64, NULL);
     j_db_schema_add_field(schema, "type", J_DB_TYPE_STRING, NULL);
-    j_db_schema_add_field(schema, "typeLen", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "typeLen", J_DB_TYPE_UINT64, NULL);
 
     /** all vectors need to store their size */
     j_db_schema_add_field(schema, "shapeSize", J_DB_TYPE_UINT64, NULL);
@@ -144,9 +145,10 @@ void DBPutVariableMetadataToJulea(Variable<T> &variable,
 
     /** define entry */
     entry = j_db_entry_new(schema, NULL);
-    j_db_entry_set_field(entry, "file", nameSpace.c_str(),
-                         strlen(nameSpace.c_str()) + 1, NULL);
-    j_db_entry_set_field(entry, "variableName", name, strlen(name) + 1, NULL);
+    j_db_entry_set_field(entry, "file", fileName,
+                         strlen(fileName) + 1, NULL);
+    // j_db_entry_set_field(entry, "variableName", varName.c_str(), strlen(nameSpace.c_str()) + 1, NULL);
+    j_db_entry_set_field(entry, "variableName", vName, strlen(vName) + 1, NULL);
 
     j_db_entry_set_field(entry, "isConstantDims", &isConstantDims, sizeof(isConstantDims),
                          NULL);
