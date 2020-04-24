@@ -131,7 +131,8 @@ void JuleaDBWriter::PerformPuts()
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea DB Writer " << m_WriterRank << "     PerformPuts()\n";
+        std::cout << "Julea DB Writer " << m_WriterRank
+                  << "     PerformPuts()\n";
     }
 
     /** if there are no deferred variables there is nothing to do */
@@ -147,7 +148,8 @@ void JuleaDBWriter::PerformPuts()
         if (type == "compound")
         {
             // not supported
-            std::cout << "Julea DB Writer " << m_WriterRank << "     PerformPuts()"
+            std::cout << "Julea DB Writer " << m_WriterRank
+                      << "     PerformPuts()"
                       << "compound variable type not supported \n";
         }
 #define declare_template_instantiation(T)                                      \
@@ -263,7 +265,8 @@ void JuleaDBWriter::InitParameters()
     }
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea DB Writer " << m_WriterRank << " InitParameters()\n";
+        std::cout << "Julea DB Writer " << m_WriterRank
+                  << " InitParameters()\n";
     }
 }
 

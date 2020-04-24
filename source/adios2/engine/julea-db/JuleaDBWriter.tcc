@@ -46,9 +46,9 @@ void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea DB Writer " << m_WriterRank << "     PutSyncToJulea("
-                  << variable.m_Name << " ---- BlockID: " << m_CurrentBlockID
-                  << std::endl;
+        std::cout << "Julea DB Writer " << m_WriterRank
+                  << "     PutSyncToJulea(" << variable.m_Name
+                  << " ---- BlockID: " << m_CurrentBlockID << std::endl;
     }
 
     // guint32 blockMD_len = 0;
@@ -88,7 +88,7 @@ void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
 
     /** updates the variable metadata as there is a new block now */
     DBPutVariableMetadataToJulea(variable, m_Name, variable.m_Name,
-                                 m_CurrentStep);
+                                 m_CurrentStep, m_CurrentBlockID);
 
     /** put block metadata to DB */
     DBPutBlockMetadataToJulea(variable, m_Name, variable.m_Name, m_CurrentStep,
@@ -110,9 +110,9 @@ void JuleaDBWriter::PutSyncCommon(Variable<T> &variable,
         std::cout << "\n_________________________PutSyncCommon "
                      "BlockInfo_____________________________"
                   << std::endl;
-        std::cout << "Julea Writer " << m_WriterRank << " Namespace: " << m_Name
-                  << std::endl;
-        std::cout << "Julea Writer " << m_WriterRank
+        std::cout << "Julea DB Writer " << m_WriterRank
+                  << " Namespace: " << m_Name << std::endl;
+        std::cout << "Julea DB Writer " << m_WriterRank
                   << " Variable name: " << variable.m_Name << std::endl;
 
         std::cout << "    CurrentStep: " << m_CurrentStep << std::endl;
@@ -131,9 +131,9 @@ void JuleaDBWriter::PutSyncCommon(Variable<T> &variable, const T *data)
         std::cout << "\n___________________________PutSyncCommon "
                      "T__________________________"
                   << std::endl;
-        std::cout << "Julea Writer " << m_WriterRank << " Namespace: " << m_Name
-                  << std::endl;
-        std::cout << "Julea Writer " << m_WriterRank
+        std::cout << "Julea DB Writer " << m_WriterRank
+                  << " Namespace: " << m_Name << std::endl;
+        std::cout << "Julea DB Writer " << m_WriterRank
                   << " Variable name: " << variable.m_Name << std::endl;
 
         std::cout << "    CurrentStep: " << m_CurrentStep << std::endl;

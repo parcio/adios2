@@ -35,7 +35,8 @@ void InitDBSchemas();
 template <class T>
 void DBPutVariableMetadataToJulea(Variable<T> &variable,
                                   const std::string nameSpace,
-                                  const std::string varName, size_t currStep);
+                                  const std::string varName, size_t currStep,
+                                  size_t block);
 /**
  * Put the metadata for a specific block in a specific step to JULEA key-value
  * store.
@@ -90,7 +91,7 @@ void DBPutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
         size_t currentStep, size_t blockID);                                   \
     extern template void DBPutVariableMetadataToJulea(                         \
         Variable<T> &variable, const std::string nameSpace,                    \
-        const std::string varName, size_t currStep);                           \
+        const std::string varName, size_t currStep, size_t block);             \
     extern template void DBPutBlockMetadataToJulea(                            \
         Variable<T> &variable, const std::string nameSpace,                    \
         const std::string varName, size_t step, size_t block,                  \

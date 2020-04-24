@@ -311,7 +311,7 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
     // j_db_entry_set_field(entry, "min", &min, sizeof(min), NULL);
     j_db_entry_set_field(entry, "max", &variable.m_Max, maxLen, NULL);
     // j_db_entry_set_field(entry, "max", &max, sizeof(max), NULL);
-    //TODO: check whether is value otherwise set to 0?
+    // TODO: check whether is value otherwise set to 0?
     if (isValue)
     {
         j_db_entry_set_field(entry, "value", &variable.m_Value, valueLen, NULL);
@@ -324,8 +324,8 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
         // j_db_entry_set_field(entry, "value", , valueLen, NULL);
         // j_db_entry_set_field(entry, "value", NULL, 0, NULL);
         j_db_entry_set_field(entry, "value", &value, valueLen, NULL);
-        // j_db_entry_set_field(entry, "value", &variable.m_Value, valueLen, NULL);
-
+        // j_db_entry_set_field(entry, "value", &variable.m_Value, valueLen,
+        // NULL);
     }
 
     j_db_entry_set_field(entry, "stepsStart", &stepsStart, sizeof(stepsStart),
@@ -336,35 +336,63 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
 }
 void InitDBSchemas()
 {
+    std::cout << "--- InitDBSchemas ---" << std::endl;
+    int err = 0;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
+    auto batch2 = j_batch_new(semantics);
     g_autoptr(JDBSchema) varSchema = NULL;
     g_autoptr(JDBSchema) blockSchema = NULL;
 
     varSchema = j_db_schema_new("adios2", "variable-metadata", NULL);
-    addFieldsForVariableMD(varSchema);
-
     blockSchema = j_db_schema_new("adios2", "block-metadata", NULL);
-    addFieldsForBlockMD(blockSchema);
 
-    j_db_schema_create(varSchema, batch, NULL);
-    j_db_schema_create(blockSchema, batch, NULL);
-    j_batch_execute(batch);
+    j_db_schema_get(varSchema, batch, NULL);
+    bool existsVar = j_batch_execute(batch);
+    j_db_schema_get(blockSchema, batch, NULL);
 
+    bool existsBlock = j_batch_execute(batch);
+    std::cout << "existsVar: " << existsVar << " existsBlock: " << existsBlock
+              << std::endl;
+
+    if (existsVar == 0)
+    {
+        std::cout << "variable schema does not exist" << std::endl;
+        varSchema = j_db_schema_new("adios2", "variable-metadata", NULL);
+        addFieldsForVariableMD(varSchema);
+        j_db_schema_create(varSchema, batch2, NULL);
+        g_assert_true(j_batch_execute(batch2) == true);
+    }
+
+    if (existsBlock == 0)
+    {
+
+        std::cout << "block schema does not exist" << std::endl;
+        blockSchema = j_db_schema_new("adios2", "block-metadata", NULL);
+        addFieldsForBlockMD(blockSchema);
+        j_db_schema_create(blockSchema, batch2, NULL);
+        g_assert_true(j_batch_execute(batch2) == true);
+    }
+
+    // g_assert_true(j_batch_execute(batch2) == true);
     // j_db_schema_unref(varSchema);
     // j_db_schema_unref(blockSchema);
     j_batch_unref(batch);
+    j_batch_unref(batch2);
     j_semantics_unref(semantics);
 }
 
 template <class T>
 void DBPutVariableMetadataToJulea(Variable<T> &variable,
                                   const std::string nameSpace,
-                                  const std::string varName, size_t currStep)
+                                  const std::string varName, size_t currStep,
+                                  size_t block)
 {
-    bool err = false;
+    int err = 0;
     g_autoptr(JDBSchema) schema = NULL;
     g_autoptr(JDBEntry) entry = NULL;
+    g_autoptr(JDBIterator) iterator = NULL;
+    g_autoptr(JDBSelector) selector = NULL;
 
     // void *namesBuf = NULL;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -373,15 +401,32 @@ void DBPutVariableMetadataToJulea(Variable<T> &variable,
 
     schema = j_db_schema_new("adios2", "variable-metadata", NULL);
     j_db_schema_get(schema, batch, NULL);
-    g_assert_true(j_batch_execute(batch) == true);
+    err = j_batch_execute(batch);
 
     /** define entry */
     entry = j_db_entry_new(schema, NULL);
+    // err = j_db_schema_get(schema, batch, NULL);
     addEntriesForVariableMD(variable, nameSpace, varName, currStep, schema,
                             entry);
 
-    j_db_entry_insert(entry, batch2, NULL);
-    g_assert_true(j_batch_execute(batch2) == true);
+    if (currStep == 0 && block == 0)
+    {
+        j_db_entry_insert(entry, batch2, NULL);
+    }
+    else
+    {
+        selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
+        j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
+                                nameSpace.c_str(),
+                                strlen(nameSpace.c_str()) + 1, NULL);
+        j_db_selector_add_field(selector, "variableName",
+                                J_DB_SELECTOR_OPERATOR_EQ, varName.c_str(),
+                                strlen(varName.c_str()) + 1, NULL);
+        j_db_entry_update(entry, selector, batch2, NULL);
+    }
+
+    err = j_batch_execute(batch2) == true;
+    // g_assert_true(j_batch_execute(batch2) == true);
 
     // j_db_entry_unref(entry);
     // j_db_schema_unref(schema);
@@ -397,7 +442,7 @@ void DBPutBlockMetadataToJulea(Variable<T> &variable,
                                size_t block,
                                const typename Variable<T>::Info &blockInfo)
 {
-    bool err = false;
+    int err = 0;
     g_autoptr(JDBSchema) schema = NULL;
     g_autoptr(JDBEntry) entry = NULL;
 
@@ -408,7 +453,8 @@ void DBPutBlockMetadataToJulea(Variable<T> &variable,
 
     schema = j_db_schema_new("adios2", "block-metadata", NULL);
     j_db_schema_get(schema, batch, NULL);
-    g_assert_true(j_batch_execute(batch) == true);
+    err = j_batch_execute(batch);
+    // g_assert_true(j_batch_execute(batch) == true);
 
     /** define entry */
     entry = j_db_entry_new(schema, NULL);
@@ -416,7 +462,8 @@ void DBPutBlockMetadataToJulea(Variable<T> &variable,
                          schema, entry);
 
     j_db_entry_insert(entry, batch2, NULL);
-    g_assert_true(j_batch_execute(batch2) == true);
+    err = j_batch_execute(batch2);
+    // g_assert_true(j_batch_execute(batch2) == true);
 
     // j_db_entry_unref(entry);
     // j_db_schema_unref(schema);
@@ -755,7 +802,7 @@ void DBPutAttributeMetadataToJulea(Attribute<T> &attribute,
         size_t currentStep, size_t blockID);                                   \
     template void DBPutVariableMetadataToJulea(                                \
         Variable<T> &variable, const std::string nameSpace,                    \
-        const std::string varName, size_t currStep);                           \
+        const std::string varName, size_t currStep, size_t block);             \
     template void DBPutBlockMetadataToJulea(                                   \
         Variable<T> &variable, const std::string nameSpace,                    \
         const std::string varName, size_t step, size_t block,                  \
