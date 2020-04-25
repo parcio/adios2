@@ -21,37 +21,40 @@ namespace core
 namespace engine
 {
 
+void CheckSchemas();
+
+void InitVariablesFromDB(const std::string nameSpace);
 /* --- Variables --- */
 
 /** Retrieves all variable names from key-value store. They are all stored in
  * one bson. */
 void DBGetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
-                       unsigned int *varCount, bool isVariable);
+                         unsigned int *varCount, bool isVariable);
 
 /** Retrieves the metadata buffer for the variable metadata that do not vary
  * from block to block. The key is the variable name. */
 void DBGetVariableMetadataFromJulea(const std::string nameSpace,
-                                  const std::string varName, gpointer *buffer,
-                                  guint32 *buffer_len);
+                                    const std::string varName, gpointer *buffer,
+                                    guint32 *buffer_len);
 
 /** Retrieves the block metadata buffer from the key-value store. The key is:
  * currentStep_currentBlock. The variable name and the nameSpace from the
  * key-value namespace. */
 void DBGetBlockMetadataFromJulea(const std::string nameSpace,
-                               const std::string varName, gpointer *buffer,
-                               guint32 *buffer_len,
-                               const std::string stepBlockID);
+                                 const std::string varName, gpointer *buffer,
+                                 guint32 *buffer_len,
+                                 const std::string stepBlockID);
 
 /** Passing the data pointer from application to the key-value store. Space for
  * the data is allocated in the application. */
 template <class T>
 void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
-                              const std::string nameSpace,
-                              long unsigned int dataSize, size_t step,
-                              size_t block);
+                                const std::string nameSpace,
+                                long unsigned int dataSize, size_t step,
+                                size_t block);
 
 #define variable_template_instantiation(T)                                     \
-    extern template void DBGetVariableDataFromJulea(                             \
+    extern template void DBGetVariableDataFromJulea(                           \
         Variable<T> &variable, T *data, const std::string nameSpace,           \
         long unsigned int dataSize, size_t step, size_t block);
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
@@ -61,32 +64,34 @@ ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 /** Attributes are still implemented using BSON. It was not urgent enough to
  * change anything. */
 void DBGetAttributeMetadataFromJulea(const std::string attrName,
-                                   const std::string nameSpace,
-                                   long unsigned int *dataSize,
-                                   size_t *numberElements, bool *IsSingleValue,
-                                   int *type);
+                                     const std::string nameSpace,
+                                     long unsigned int *dataSize,
+                                     size_t *numberElements,
+                                     bool *IsSingleValue, int *type);
 
 void DBGetAttributeMetadataFromJulea(const std::string attrName,
-                                   const std::string nameSpace,
-                                   long unsigned int *completeSize,
-                                   size_t *numberElements, bool *IsSingleValue,
-                                   int *type, unsigned long **dataSizes);
+                                     const std::string nameSpace,
+                                     long unsigned int *completeSize,
+                                     size_t *numberElements,
+                                     bool *IsSingleValue, int *type,
+                                     unsigned long **dataSizes);
 
 void DBGetAttributeBSONFromJulea(const std::string nameSpace,
-                               const std::string varName, bson_t **bsonMetadata,
-                               guint32 *valueLen);
+                                 const std::string varName,
+                                 bson_t **bsonMetadata, guint32 *valueLen);
 template <class T>
 void DBGetAttributeDataFromJulea(const std::string attrName, T *data,
-                               const std::string nameSpace,
-                               long unsigned int dataSize);
+                                 const std::string nameSpace,
+                                 long unsigned int dataSize);
 
 void DBGetAttributeStringDataFromJulea(const std::string attrName, char *data,
-                                     const std::string nameSpace,
-                                     long unsigned int completeSize,
-                                     bool IsSingleValue, size_t numberElements);
+                                       const std::string nameSpace,
+                                       long unsigned int completeSize,
+                                       bool IsSingleValue,
+                                       size_t numberElements);
 
 #define attribute_template_instantiation(T)                                    \
-    extern template void DBGetAttributeDataFromJulea(                            \
+    extern template void DBGetAttributeDataFromJulea(                          \
         const std::string attrName, T *data, const std::string nameSpace,      \
         long unsigned int dataSize);
 

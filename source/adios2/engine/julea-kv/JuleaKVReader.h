@@ -117,7 +117,7 @@ private:
                        /// transport method from settings
 
     // template <class T>
-    void InitVariables(); // needs to be final? HELP
+    void InitVariables();
     void InitAttributes();
 
 #define declare_type(T)                                                        \

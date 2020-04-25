@@ -408,24 +408,52 @@ void DBPutVariableMetadataToJulea(Variable<T> &variable,
     // err = j_db_schema_get(schema, batch, NULL);
     addEntriesForVariableMD(variable, nameSpace, varName, currStep, schema,
                             entry);
+    // if (currStep == 0 && block == 0)
+    // {
+    //     j_db_entry_insert(entry, batch2, NULL);
+    // }
+        // j_db_entry_insert(entry, batch2, NULL);
+    selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
+    j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
+                                nameSpace.c_str(),
+                                strlen(nameSpace.c_str()) + 1, NULL);
+    j_db_selector_add_field(selector, "variableName",
+                                J_DB_SELECTOR_OPERATOR_EQ, varName.c_str(),
+                                strlen(varName.c_str()) + 1, NULL);
+    iterator = j_db_iterator_new(schema, selector, NULL);
+        // j_db_entry_update(entry, selector, batch2, NULL);
+    // bool existsVar = j_batch_execute(batch2);
 
-    if (currStep == 0 && block == 0)
+    if (j_db_iterator_next(iterator, NULL))
     {
-        j_db_entry_insert(entry, batch2, NULL);
+        j_db_entry_update(entry, selector, batch2, NULL); j_db_entry_update(entry, selector, batch2, NULL);
+
     }
     else
     {
-        selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
-        j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
-                                nameSpace.c_str(),
-                                strlen(nameSpace.c_str()) + 1, NULL);
-        j_db_selector_add_field(selector, "variableName",
-                                J_DB_SELECTOR_OPERATOR_EQ, varName.c_str(),
-                                strlen(varName.c_str()) + 1, NULL);
-        j_db_entry_update(entry, selector, batch2, NULL);
+        std::cout << "Variable metadata does not exist yet." << std::endl;
+        j_db_entry_insert(entry, batch2, NULL);
+
     }
 
-    err = j_batch_execute(batch2) == true;
+    // if (existsVar == 0)
+    // {
+    //     std::cout << "Variable metadata does not exist yet." << std::endl;
+    //     j_db_entry_insert(entry, batch2, NULL);
+    // }
+    // else
+    // {
+
+    //     selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
+    //     j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
+    //                             nameSpace.c_str(),
+    //                             strlen(nameSpace.c_str()) + 1, NULL);
+    //     j_db_selector_add_field(selector, "variableName",
+    //                             J_DB_SELECTOR_OPERATOR_EQ, varName.c_str(),
+    //                             strlen(varName.c_str()) + 1, NULL);
+    // }
+
+    err = j_batch_execute(batch2);
     // g_assert_true(j_batch_execute(batch2) == true);
 
     // j_db_entry_unref(entry);
@@ -445,6 +473,7 @@ void DBPutBlockMetadataToJulea(Variable<T> &variable,
     int err = 0;
     g_autoptr(JDBSchema) schema = NULL;
     g_autoptr(JDBEntry) entry = NULL;
+    g_autoptr(JDBSelector) selector = NULL;
 
     // void *namesBuf = NULL;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -453,15 +482,34 @@ void DBPutBlockMetadataToJulea(Variable<T> &variable,
 
     schema = j_db_schema_new("adios2", "block-metadata", NULL);
     j_db_schema_get(schema, batch, NULL);
-    err = j_batch_execute(batch);
+    bool existsBlock = j_batch_execute(batch);
     // g_assert_true(j_batch_execute(batch) == true);
 
-    /** define entry */
     entry = j_db_entry_new(schema, NULL);
     addEntriesForBlockMD(variable, nameSpace, varName, step, block, blockInfo,
                          schema, entry);
-
-    j_db_entry_insert(entry, batch2, NULL);
+    if (existsBlock == 0)
+    {
+        j_db_entry_insert(entry, batch2, NULL);
+    }
+    else
+    {
+        //FIXME: probably not yet working
+        //
+        selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
+        j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
+                                nameSpace.c_str(),
+                                strlen(nameSpace.c_str()) + 1, NULL);
+        j_db_selector_add_field(selector, "variableName",
+                                J_DB_SELECTOR_OPERATOR_EQ, varName.c_str(),
+                                strlen(varName.c_str()) + 1, NULL);
+        j_db_selector_add_field(selector, "step", J_DB_SELECTOR_OPERATOR_EQ,
+                                &step, sizeof(step), NULL);
+        j_db_selector_add_field(selector, "block", J_DB_SELECTOR_OPERATOR_EQ,
+                                &block, sizeof(block), NULL);
+        j_db_entry_update(entry, selector, batch2, NULL);
+    }
+    // j_db_entry_insert(entry, batch2, NULL);
     err = j_batch_execute(batch2);
     // g_assert_true(j_batch_execute(batch2) == true);
 

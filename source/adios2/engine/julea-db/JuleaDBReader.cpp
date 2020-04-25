@@ -9,11 +9,16 @@
  */
 
 #include "JuleaDBReader.h"
+#include "JuleaDBInteractionReader.h"
 #include "JuleaDBReader.tcc"
 
 #include "adios2/helper/adiosFunctions.h" // CSVToVector
 
 #include <iostream>
+
+#include <glib.h>
+#include <julea-object.h>
+#include <julea.h>
 
 namespace adios2
 {
@@ -164,7 +169,7 @@ void JuleaDBReader::PerformGets()
 #undef declare_type
     }
     m_DeferredVariables.clear();
-        // ReadVariableBlocks(variable);                                          \
+    // ReadVariableBlocks(variable);                                          \
         //
 }
 
@@ -212,6 +217,7 @@ void JuleaDBReader::Init()
     // InitParameters();
     // InitTransports();
     InitVariables();
+    CheckSchemas();
     // InitAttributes(); //TODO
 }
 
@@ -223,70 +229,96 @@ void JuleaDBReader::Init()
 // template <class T>
 void JuleaDBReader::InitVariables()
 {
- bson_iter_t b_iter;
-    bson_t *bsonNames;
-    std::string varName;
-    std::string nameSpace = m_Name;
-    std::string kvName = "variable_names";
-    unsigned int varCount = 0;
+    // bson_iter_t b_iter;
+    //    bson_t *bsonNames;
+    //    std::string varName;
+    //    std::string nameSpace = m_Name;
+    //    std::string kvName = "variable_names";
+    //    unsigned int varCount = 0;
 
     // GetNamesFromJulea(nameSpace, &bsonNames, &varCount, true);
+    InitVariablesFromDB(m_Name);
+    // int err = 0;
+    // g_autoptr(JDBSchema) schema = NULL;
+    // g_autoptr(JDBEntry) entry = NULL;
+    // g_autoptr(JDBIterator) iterator = NULL;
+    // g_autoptr(JDBSelector) selector = NULL;
+    // JDBType type;
+    // g_autofree gchar *db_field = NULL;
+    // guint64 db_length = 0;
 
-    if (varCount == 0)
-    {
-        if (m_Verbosity == 5)
-        {
-            std::cout << "++ InitVariables: no variables stored in KV"
-                      << std::endl;
-        }
-    }
-    else
-    {
-        bson_iter_init(&b_iter, bsonNames);
+    // auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    // auto batch = j_batch_new(semantics);
 
-        std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
+    // schema = j_db_schema_new("adios2", "variable-metadata", NULL);
+    // // j_db_schema_get(schema, batch, NULL);
+    // // err = j_batch_execute(batch);
 
-        while (bson_iter_next(&b_iter))
-        {
-            Dims shape;
-            Dims start;
-            Dims count;
-            ShapeID shapeID = ShapeID::Unknown;
+    // // selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
+    // // j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
+    // //                         nameSpace.c_str(), strlen(nameSpace.c_str()) +
+    // 1,
+    // //                         NULL);
+    // // j_db_selector_add_field(selector, "variableName",
+    // //                         J_DB_SELECTOR_OPERATOR_EQ, varName.c_str(),
+    // //                         strlen(varName.c_str()) + 1, NULL);
+    // iterator = j_db_iterator_new(schema, selector, NULL);
 
-            bool constantDims;
-            bool isReadAsJoined;
-            bool isReadAsLocalValue;
-            bool isRandomAccess;
+    // while (j_db_iterator_next(iterator, NULL))
+    // {
 
-            std::string type;
-            guint32 buffer_len;
-            gpointer md_buffer = nullptr;
-            size_t *blocks = nullptr;
-            size_t numberSteps = 0;
+    //     // j_db_iterator_get_field(iterator, "hello", &type, (gpointer
+    //     *)&db_field,
+    //     //                         &db_length, NULL);
+    //     // j_db_iterator_get_field(iterator, "variableName", &type,
+    //     //                         (gpointer *)&db_field, &db_length, NULL);
+    //     printf("DB contains: %s (%" G_GUINT64_FORMAT " bytes)\n", db_field,
+    //            db_length);
+    // }
 
-            std::string varName(bson_iter_key(&b_iter));
+    // std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
+    // loop over all variabless
+    // while (bson_iter_next(&b_iter))
+    // {
+    //     Dims shape;
+    //     Dims start;
+    //     Dims count;
+    //     ShapeID shapeID = ShapeID::Unknown;
 
-            // GetVariableMetadataFromJulea(nameSpace, varName, &md_buffer,
-                                         // &buffer_len);
+    //     bool constantDims;
+    //     bool isReadAsJoined;
+    //     bool isReadAsLocalValue;
+    //     bool isRandomAccess;
 
-            // DeserializeVariableMetadata(md_buffer, &type, &shape, &start,
-            //                             &count, &constantDims, &blocks,
-            //                             &numberSteps, &shapeID, &isReadAsJoined,
-            //                             &isReadAsLocalValue, &isRandomAccess);
+    //     std::string type;
+    //     // guint32 buffer_len;
+    //     // gpointer md_buffer = nullptr;
+    //     size_t *blocks = nullptr;
+    //     size_t numberSteps = 0;
+    //     //
+    //     // std::string varName(bson_iter_key(&b_iter));
 
-            // DefineVariableInInit(&m_IO, varName, type, shape, start, count,
-            //                      constantDims);
+    //     // GetVariableMetadataFromJulea(nameSpace, varName, &md_buffer,
+    //     // &buffer_len);
 
-            /** there are several fields that need to be set in a variable that
-             * are not required when defining a variable in the IO. Therefore
-             * they need to be set now. */
-            // InitVariable(&m_IO, *this, varName, blocks, numberSteps, shapeID);
-            delete[] blocks;
+    //     // DeserializeVariableMetadata(md_buffer, &type, &shape, &start,
+    //     //                             &count, &constantDims, &blocks,
+    //     //                             &numberSteps, &shapeID,
+    //     &isReadAsJoined,
+    //     //                             &isReadAsLocalValue, &isRandomAccess);
 
-            const std::string testtype = m_IO.InquireVariableType(varName);
-        }
-        bson_destroy(bsonNames);
-    }
+    //     // DefineVariableInInit(&m_IO, varName, type, shape, start, count,
+    //     //                      constantDims);
+
+    //     /** there are several fields that need to be set in a variable that
+    //      * are not required when defining a variable in the IO. Therefore
+    //      * they need to be set now. */
+    //     // InitVariable(&m_IO, *this, varName, blocks, numberSteps, shapeID);
+    //     delete[] blocks;
+
+    //     const std::string testtype = m_IO.InquireVariableType(varName);
+    // }
+    // bson_destroy(bsonNames);
 }
 
 void JuleaDBReader::InitParameters()

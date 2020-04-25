@@ -20,8 +20,8 @@
 #include <string>
 #include <utility>
 
-#include <julea-kv.h>
 #include <julea-db.h>
+#include <julea-kv.h>
 #include <julea-object.h>
 #include <julea.h>
 
@@ -32,9 +32,74 @@ namespace core
 namespace engine
 {
 
+void CheckSchemas()
+{
+    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
+    auto batch2 = j_batch_new(semantics);
+    g_autoptr(JDBSchema) varSchema = NULL;
+    g_autoptr(JDBSchema) blockSchema = NULL;
+
+    varSchema = j_db_schema_new("adios2", "variable-metadata", NULL);
+    blockSchema = j_db_schema_new("adios2", "block-metadata", NULL);
+
+    j_db_schema_get(varSchema, batch, NULL);
+    bool existsVar = j_batch_execute(batch);
+    j_db_schema_get(blockSchema, batch, NULL);
+
+    bool existsBlock = j_batch_execute(batch);
+    std::cout << "existsVar: " << existsVar << " existsBlock: " << existsBlock
+              << std::endl;
+    if ((existsVar == 0) || (existsBlock == 0))
+    {
+        std::cout << "ERROR: database adios2 schemas do not exist" << std::endl;
+    }
+}
+
+void InitVariablesFromDB(const std::string nameSpace)
+{
+    std::cout << "--- InitVariablesFromDB ---" << std::endl;
+    int err = 0;
+    g_autoptr(JDBSchema) schema = NULL;
+    g_autoptr(JDBEntry) entry = NULL;
+    g_autoptr(JDBIterator) iterator = NULL;
+    g_autoptr(JDBSelector) selector = NULL;
+    JDBType type;
+    g_autofree gchar *db_field = NULL;
+    guint64 db_length = 0;
+
+    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
+
+    schema = j_db_schema_new("adios2", "variable-metadata", NULL);
+    j_db_schema_get(schema, batch, NULL);
+    err = j_batch_execute(batch);
+
+    selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
+    j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
+                            nameSpace.c_str(), strlen(nameSpace.c_str()) + 1,
+                            NULL);
+    // j_db_selector_add_field(selector, "variableName",
+    //                         J_DB_SELECTOR_OPERATOR_EQ, varName.c_str(),
+    //                         strlen(varName.c_str()) + 1, NULL);
+    iterator = j_db_iterator_new(schema, selector, NULL);
+
+    while (j_db_iterator_next(iterator, NULL))
+    {
+        std::cout << "---- while --- " << std::endl;
+        // j_db_iterator_get_field(iterator, "hello", &type, (gpointer
+        // *)&db_field,
+        //                         &db_length, NULL);
+        j_db_iterator_get_field(iterator, "variableName", &type,
+                                (gpointer *)&db_field, &db_length, NULL);
+        printf("DB contains: %s (%" G_GUINT64_FORMAT " bytes)\n", db_field,
+               db_length);
+    }
+}
+
 void DBGetVariableMetadataFromJulea(const std::string nameSpace,
-                                  const std::string varName, gpointer *md,
-                                  guint32 *buffer_len)
+                                    const std::string varName, gpointer *md,
+                                    guint32 *buffer_len)
 {
     void *metaDataBuf = NULL;
 
@@ -52,9 +117,9 @@ void DBGetVariableMetadataFromJulea(const std::string nameSpace,
 }
 
 void DBGetBlockMetadataFromJulea(const std::string nameSpace,
-                               const std::string varName, gpointer *md,
-                               guint32 *buffer_len,
-                               const std::string stepBlockID)
+                                 const std::string varName, gpointer *md,
+                                 guint32 *buffer_len,
+                                 const std::string stepBlockID)
 {
     // std::cout << "-- GetBlockMetadataFromJulea -----" << std::endl;
     void *metaDataBuf = NULL;
@@ -78,8 +143,8 @@ void DBGetBlockMetadataFromJulea(const std::string nameSpace,
 
 template <class T>
 void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
-                              const std::string nameSpace, size_t dataSize,
-                              size_t step, size_t block)
+                                const std::string nameSpace, size_t dataSize,
+                                size_t step, size_t block)
 {
     // std::cout << "-- GetVariableDataFromJulea ----- " << std::endl;
 
@@ -123,7 +188,7 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
 /** Retrieves all variable names from key-value store. They are all stored in
  * one bson. */
 void DBGetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
-                       unsigned int *varCount, bool isVariable)
+                         unsigned int *varCount, bool isVariable)
 {
     std::cout << "-- GetNamesFromJulea ------" << std::endl;
     guint32 valueLen = 0;
@@ -181,7 +246,7 @@ void DBGetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
 }
 
 #define variable_template_instantiation(T)                                     \
-    template void DBGetVariableDataFromJulea(                                    \
+    template void DBGetVariableDataFromJulea(                                  \
         Variable<T> &variable, T *data, const std::string nameSpace,           \
         long unsigned int dataSize, size_t step, size_t block);
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
@@ -190,8 +255,8 @@ ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 /** ------------------------- Attributes -----------------------------------**/
 
 void DBGetAttributeBSONFromJulea(const std::string nameSpace,
-                               const std::string attrName,
-                               bson_t **bsonMetadata, guint32 *valueLen)
+                                 const std::string attrName,
+                                 bson_t **bsonMetadata, guint32 *valueLen)
 {
     // guint32 valueLen = 0;
     void *metaDataBuf = NULL;
@@ -229,10 +294,10 @@ void DBGetAttributeBSONFromJulea(const std::string nameSpace,
 }
 
 void DBGetAttributeMetadataFromJulea(const std::string attrName,
-                                   const std::string nameSpace,
-                                   long unsigned int *dataSize,
-                                   size_t *numberElements, bool *IsSingleValue,
-                                   int *type)
+                                     const std::string nameSpace,
+                                     long unsigned int *dataSize,
+                                     size_t *numberElements,
+                                     bool *IsSingleValue, int *type)
 {
     bson_t *bsonMetadata;
     std::cout << "-- GetAttributeMetadataFromJulea ------" << std::endl;
@@ -242,16 +307,17 @@ void DBGetAttributeMetadataFromJulea(const std::string attrName,
     if (valueLen > 0)
     {
         // ParseAttributeFromBSON(nameSpace, attrName, bsonMetadata, dataSize,
-                               // numberElements, IsSingleValue, type);
+        // numberElements, IsSingleValue, type);
     }
     bson_destroy(bsonMetadata);
 }
 
 void DBGetAttributeMetadataFromJulea(const std::string attrName,
-                                   const std::string nameSpace,
-                                   long unsigned int *completeSize,
-                                   size_t *numberElements, bool *IsSingleValue,
-                                   int *type, unsigned long **dataSizes)
+                                     const std::string nameSpace,
+                                     long unsigned int *completeSize,
+                                     size_t *numberElements,
+                                     bool *IsSingleValue, int *type,
+                                     unsigned long **dataSizes)
 {
     bson_t *bsonMetadata;
     std::cout << "-- GetAttributeMetadataFromJulea ------" << std::endl;
@@ -260,16 +326,16 @@ void DBGetAttributeMetadataFromJulea(const std::string attrName,
 
     if (valueLen > 0)
     {
-        // ParseAttributeFromBSON(nameSpace, attrName, bsonMetadata, completeSize,
-                               // numberElements, IsSingleValue, type, dataSizes);
+        // ParseAttributeFromBSON(nameSpace, attrName, bsonMetadata,
+        // completeSize, numberElements, IsSingleValue, type, dataSizes);
     }
     bson_destroy(bsonMetadata);
 }
 
 template <class T>
 void DBGetAttributeDataFromJulea(const std::string attrName, T *data,
-                               const std::string nameSpace,
-                               long unsigned int dataSize)
+                                 const std::string nameSpace,
+                                 long unsigned int dataSize)
 {
     std::cout << "-- GetAttributeDataFromJulea -----" << std::endl;
 
@@ -307,9 +373,10 @@ void DBGetAttributeDataFromJulea(const std::string attrName, T *data,
 }
 
 void DBGetAttributeStringDataFromJulea(const std::string attrName, char *data,
-                                     const std::string nameSpace,
-                                     long unsigned int completeSize,
-                                     bool IsSingleValue, size_t numberElements)
+                                       const std::string nameSpace,
+                                       long unsigned int completeSize,
+                                       bool IsSingleValue,
+                                       size_t numberElements)
 {
     std::cout << "-- GetAttributeDataFromJulea -- String version -----"
               << std::endl;
@@ -364,7 +431,7 @@ void DBGetAttributeStringDataFromJulea(const std::string attrName, char *data,
 }
 
 #define attribute_template_instantiation(T)                                    \
-    template void DBGetAttributeDataFromJulea(                                   \
+    template void DBGetAttributeDataFromJulea(                                 \
         const std::string attrName, T *data, const std::string nameSpace,      \
         long unsigned int dataSize);
 ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(attribute_template_instantiation)
