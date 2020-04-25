@@ -405,14 +405,9 @@ void DBPutVariableMetadataToJulea(Variable<T> &variable,
 
     /** define entry */
     entry = j_db_entry_new(schema, NULL);
-    // err = j_db_schema_get(schema, batch, NULL);
     addEntriesForVariableMD(variable, nameSpace, varName, currStep, schema,
                             entry);
-    // if (currStep == 0 && block == 0)
-    // {
-    //     j_db_entry_insert(entry, batch2, NULL);
-    // }
-        // j_db_entry_insert(entry, batch2, NULL);
+
     selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
     j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
                                 nameSpace.c_str(),
@@ -421,8 +416,6 @@ void DBPutVariableMetadataToJulea(Variable<T> &variable,
                                 J_DB_SELECTOR_OPERATOR_EQ, varName.c_str(),
                                 strlen(varName.c_str()) + 1, NULL);
     iterator = j_db_iterator_new(schema, selector, NULL);
-        // j_db_entry_update(entry, selector, batch2, NULL);
-    // bool existsVar = j_batch_execute(batch2);
 
     if (j_db_iterator_next(iterator, NULL))
     {
@@ -435,23 +428,6 @@ void DBPutVariableMetadataToJulea(Variable<T> &variable,
         j_db_entry_insert(entry, batch2, NULL);
 
     }
-
-    // if (existsVar == 0)
-    // {
-    //     std::cout << "Variable metadata does not exist yet." << std::endl;
-    //     j_db_entry_insert(entry, batch2, NULL);
-    // }
-    // else
-    // {
-
-    //     selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
-    //     j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
-    //                             nameSpace.c_str(),
-    //                             strlen(nameSpace.c_str()) + 1, NULL);
-    //     j_db_selector_add_field(selector, "variableName",
-    //                             J_DB_SELECTOR_OPERATOR_EQ, varName.c_str(),
-    //                             strlen(varName.c_str()) + 1, NULL);
-    // }
 
     err = j_batch_execute(batch2);
     // g_assert_true(j_batch_execute(batch2) == true);
