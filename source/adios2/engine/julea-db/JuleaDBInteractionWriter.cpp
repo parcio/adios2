@@ -400,33 +400,32 @@ void DBPutVariableMetadataToJulea(Variable<T> &variable,
     auto batch2 = j_batch_new(semantics);
 
     schema = j_db_schema_new("adios2", "variable-metadata", NULL);
+
+    // TODO: necessary to get schema every time?
     j_db_schema_get(schema, batch, NULL);
     err = j_batch_execute(batch);
 
-    /** define entry */
     entry = j_db_entry_new(schema, NULL);
     addEntriesForVariableMD(variable, nameSpace, varName, currStep, schema,
                             entry);
 
+    /** check whether variable needs to be updated or inserted */
     selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
     j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
-                                nameSpace.c_str(),
-                                strlen(nameSpace.c_str()) + 1, NULL);
-    j_db_selector_add_field(selector, "variableName",
-                                J_DB_SELECTOR_OPERATOR_EQ, varName.c_str(),
-                                strlen(varName.c_str()) + 1, NULL);
+                            nameSpace.c_str(), strlen(nameSpace.c_str()) + 1,
+                            NULL);
+    j_db_selector_add_field(selector, "variableName", J_DB_SELECTOR_OPERATOR_EQ,
+                            varName.c_str(), strlen(varName.c_str()) + 1, NULL);
     iterator = j_db_iterator_new(schema, selector, NULL);
 
     if (j_db_iterator_next(iterator, NULL))
     {
-        j_db_entry_update(entry, selector, batch2, NULL); j_db_entry_update(entry, selector, batch2, NULL);
-
+        j_db_entry_update(entry, selector, batch2, NULL);
     }
     else
     {
         std::cout << "Variable metadata does not exist yet." << std::endl;
         j_db_entry_insert(entry, batch2, NULL);
-
     }
 
     err = j_batch_execute(batch2);
@@ -450,6 +449,7 @@ void DBPutBlockMetadataToJulea(Variable<T> &variable,
     g_autoptr(JDBSchema) schema = NULL;
     g_autoptr(JDBEntry) entry = NULL;
     g_autoptr(JDBSelector) selector = NULL;
+    g_autoptr(JDBIterator) iterator = NULL;
 
     // void *namesBuf = NULL;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -458,34 +458,35 @@ void DBPutBlockMetadataToJulea(Variable<T> &variable,
 
     schema = j_db_schema_new("adios2", "block-metadata", NULL);
     j_db_schema_get(schema, batch, NULL);
-    bool existsBlock = j_batch_execute(batch);
+    err = j_batch_execute(batch);
     // g_assert_true(j_batch_execute(batch) == true);
 
     entry = j_db_entry_new(schema, NULL);
     addEntriesForBlockMD(variable, nameSpace, varName, step, block, blockInfo,
                          schema, entry);
-    if (existsBlock == 0)
+
+    /** check whether blcock needs to be updated or inserted */
+    selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
+    j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
+                            nameSpace.c_str(), strlen(nameSpace.c_str()) + 1,
+                            NULL);
+    j_db_selector_add_field(selector, "variableName", J_DB_SELECTOR_OPERATOR_EQ,
+                            varName.c_str(), strlen(varName.c_str()) + 1, NULL);
+    j_db_selector_add_field(selector, "step", J_DB_SELECTOR_OPERATOR_EQ, &step,
+                            sizeof(step), NULL);
+    j_db_selector_add_field(selector, "block", J_DB_SELECTOR_OPERATOR_EQ,
+                            &block, sizeof(block), NULL);
+    iterator = j_db_iterator_new(schema, selector, NULL);
+    if (j_db_iterator_next(iterator, NULL))
     {
-        j_db_entry_insert(entry, batch2, NULL);
+        j_db_entry_update(entry, selector, batch2, NULL);
     }
     else
     {
-        //FIXME: probably not yet working
-        //
-        selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
-        j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
-                                nameSpace.c_str(),
-                                strlen(nameSpace.c_str()) + 1, NULL);
-        j_db_selector_add_field(selector, "variableName",
-                                J_DB_SELECTOR_OPERATOR_EQ, varName.c_str(),
-                                strlen(varName.c_str()) + 1, NULL);
-        j_db_selector_add_field(selector, "step", J_DB_SELECTOR_OPERATOR_EQ,
-                                &step, sizeof(step), NULL);
-        j_db_selector_add_field(selector, "block", J_DB_SELECTOR_OPERATOR_EQ,
-                                &block, sizeof(block), NULL);
-        j_db_entry_update(entry, selector, batch2, NULL);
+        std::cout << "Variable metadata does not exist yet." << std::endl;
+        j_db_entry_insert(entry, batch2, NULL);
     }
-    // j_db_entry_insert(entry, batch2, NULL);
+
     err = j_batch_execute(batch2);
     // g_assert_true(j_batch_execute(batch2) == true);
 
@@ -494,51 +495,6 @@ void DBPutBlockMetadataToJulea(Variable<T> &variable,
     j_batch_unref(batch);
     j_batch_unref(batch2);
     j_semantics_unref(semantics);
-}
-
-template <class T>
-void DBPutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
-                                        bson_t *bsonMetaData,
-                                        const std::string nameSpace)
-{
-
-    const char *kvNames = "attribute_names";
-    const char *kvMD = "attributes";
-
-    // TODO: more leaks than old version below ?!
-    // DBPutNameToJulea(attribute.m_Name, nameSpace.c_str(), kvNames);
-    // WriteMetadataToJuleaKV(kvMD, attribute.m_Name, nameSpace.c_str(),
-    // bsonMetaData);
-
-    //  // TODO: check if update version is necessary!
-    // bool IsAlreadyInKV = false;
-    //  bson_t *bsonNames;
-
-    // //  /* names_kv = kv holding all variable names */
-    //  auto kvObjectNames = j_kv_new(kvNames, nameSpace.c_str());
-
-    //  CheckIfAlreadyInKV(kvMD, attribute.m_Name, nameSpace.c_str(),
-    //  &bsonNames,
-    //                     kvObjectNames, &IsAlreadyInKV);
-
-    //  if (!IsAlreadyInKV)
-    //  {
-    //      WriteNameToJuleaKVOld(kvMD, attribute.m_Name, nameSpace.c_str(),
-    //      bsonNames,
-    //                         kvObjectNames);
-    //      std::cout << "Test IsAlreadyInKV " << IsAlreadyInKV << std::endl;
-    //  }
-    //  else
-    //  {
-    //      // UpdateMetadataInKV(kvMD, variable.m_Name, nameSpace.c_str(),
-    //      //                    bsonNames, bsonMetaData, kvObjectNames);
-    //      std::cout << "___ NEEDS UPDATE ___ " << std::endl;
-    //  }
-    // WriteMetadataToJuleaKV(kvMD, attribute.m_Name, nameSpace.c_str(),
-    // bsonMetaData);
-
-    // j_kv_unref(kvObjectNames);
-    // bson_destroy(bsonNames);
 }
 
 template <class T>
@@ -586,6 +542,54 @@ void DBPutVariableDataToJulea(Variable<T> &variable, const T *data,
 
     // std::cout << "++ Julea Interaction: PutVariableDataToJulea" << std::endl;
 }
+
+
+template <class T>
+void DBPutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
+                                        bson_t *bsonMetaData,
+                                        const std::string nameSpace)
+{
+
+    const char *kvNames = "attribute_names";
+    const char *kvMD = "attributes";
+
+    // TODO: more leaks than old version below ?!
+    // DBPutNameToJulea(attribute.m_Name, nameSpace.c_str(), kvNames);
+    // WriteMetadataToJuleaKV(kvMD, attribute.m_Name, nameSpace.c_str(),
+    // bsonMetaData);
+
+    //  // TODO: check if update version is necessary!
+    // bool IsAlreadyInKV = false;
+    //  bson_t *bsonNames;
+
+    // //  /* names_kv = kv holding all variable names */
+    //  auto kvObjectNames = j_kv_new(kvNames, nameSpace.c_str());
+
+    //  CheckIfAlreadyInKV(kvMD, attribute.m_Name, nameSpace.c_str(),
+    //  &bsonNames,
+    //                     kvObjectNames, &IsAlreadyInKV);
+
+    //  if (!IsAlreadyInKV)
+    //  {
+    //      WriteNameToJuleaKVOld(kvMD, attribute.m_Name, nameSpace.c_str(),
+    //      bsonNames,
+    //                         kvObjectNames);
+    //      std::cout << "Test IsAlreadyInKV " << IsAlreadyInKV << std::endl;
+    //  }
+    //  else
+    //  {
+    //      // UpdateMetadataInKV(kvMD, variable.m_Name, nameSpace.c_str(),
+    //      //                    bsonNames, bsonMetaData, kvObjectNames);
+    //      std::cout << "___ NEEDS UPDATE ___ " << std::endl;
+    //  }
+    // WriteMetadataToJuleaKV(kvMD, attribute.m_Name, nameSpace.c_str(),
+    // bsonMetaData);
+
+    // j_kv_unref(kvObjectNames);
+    // bson_destroy(bsonNames);
+}
+
+
 
 // FIXME: not yet implemented correctly! need to differentiate between strings
 // and other types
