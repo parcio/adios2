@@ -261,7 +261,6 @@ void JuleaDBReader::DoClose(const int transportIndex)
     }
 }
 
-
 #define declare_type(T)                                                        \
     std::map<size_t, std::vector<typename Variable<T>::Info>>                  \
     JuleaDBReader::DoAllStepsBlocksInfo(const Variable<T> &variable) const     \

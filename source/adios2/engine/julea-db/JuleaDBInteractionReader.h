@@ -29,10 +29,15 @@ void CheckSchemas();
 
 void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
                          core::Engine &engine);
+
+template <class T>
+void DBGetBlockMetadata(Variable<T> &variable, const std::string nameSpace,
+                        size_t step, size_t block,
+                        typename core::Variable<T>::Info &info);
 /* --- Variables --- */
 
-/** Retrieves all variable names from key-value store. They are all stored in
- * one bson. */
+/** Retrieves all variable names from key-value store. They are all stored
+ * in one bson. */
 void DBGetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
                          unsigned int *varCount, bool isVariable);
 
@@ -59,6 +64,10 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
                                 size_t block);
 
 #define variable_template_instantiation(T)                                     \
+    extern template void DBGetBlockMetadata(                                   \
+        Variable<T> &variable, const std::string nameSpace, size_t step,       \
+        size_t block, typename core::Variable<T>::Info &info);                 \
+                                                                               \
     extern template void DBGetVariableDataFromJulea(                           \
         Variable<T> &variable, T *data, const std::string nameSpace,           \
         long unsigned int dataSize, size_t step, size_t block);

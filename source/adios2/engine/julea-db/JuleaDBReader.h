@@ -81,7 +81,7 @@ private:
      */
     mutable bool m_UseKeysForBPLS = false;
 
-    int m_Verbosity = 0; // change to 5 for debugging
+    int m_Verbosity = 5; // change to 5 for debugging
     int m_ReaderRank;    // my rank in the readers' comm
 
     bool m_CollectiveMetadata = true;
@@ -141,7 +141,7 @@ private:
 
     // void AggregateReadData();
 
-   /**
+    /**
      * Initializes a block inside variable.m_BlocksInfo
      * @param variable input
      * @param data user data pointer

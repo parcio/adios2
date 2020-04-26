@@ -89,11 +89,11 @@ void addFieldsForBlockMD(JDBSchema *schema)
 
     j_db_schema_add_field(schema, "min", J_DB_TYPE_BLOB, NULL);
     j_db_schema_add_field(schema, "max", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "isValue", J_DB_TYPE_UINT32, NULL);
     j_db_schema_add_field(schema, "value", J_DB_TYPE_BLOB, NULL);
     j_db_schema_add_field(schema, "stepsStart", J_DB_TYPE_UINT64, NULL);
     j_db_schema_add_field(schema, "stepsCount", J_DB_TYPE_UINT64, NULL);
-
-    j_db_schema_add_field(schema, "isValue", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "blockID", J_DB_TYPE_UINT64, NULL);
 
     j_db_schema_add_index(schema, fileIndex, NULL);
     j_db_schema_add_index(schema, varIndex, NULL);
@@ -311,6 +311,8 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
     j_db_entry_set_field(entry, "min", &variable.m_Min, minLen, NULL);
     // j_db_entry_set_field(entry, "min", &min, sizeof(min), NULL);
     j_db_entry_set_field(entry, "max", &variable.m_Max, maxLen, NULL);
+
+    j_db_entry_set_field(entry, "isValue", &tmp, sizeof(tmp), NULL);
     // j_db_entry_set_field(entry, "max", &max, sizeof(max), NULL);
     // TODO: check whether is value otherwise set to 0?
     if (isValue)
@@ -333,7 +335,8 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
                          NULL);
     j_db_entry_set_field(entry, "stepsCount", &stepsCount, sizeof(stepsCount),
                          NULL);
-    j_db_entry_set_field(entry, "isValue", &tmp, sizeof(tmp), NULL);
+    j_db_entry_set_field(entry, "blockID", &blockID, sizeof(blockID),
+                         NULL);
 }
 void InitDBSchemas()
 {

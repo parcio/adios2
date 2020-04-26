@@ -353,6 +353,163 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
 }
 
 template <class T>
+void DBGetBlockMetadata(Variable<T> &variable, const std::string nameSpace,
+                        size_t step, size_t block,
+                        typename core::Variable<T>::Info &info)
+{
+    int err = 0;
+    JDBType type;
+    guint64 db_length = 0;
+    g_autofree gchar *db_field = NULL;
+    g_autoptr(JDBSchema) schema = NULL;
+    g_autoptr(JDBEntry) entry = NULL;
+    g_autoptr(JDBIterator) iterator = NULL;
+    g_autoptr(JDBSelector) selector = NULL;
+
+    const char *varName = variable.m_Name.c_str();
+    // char *varTypePtr;
+    // std::string varType;
+    bool *isValue;
+    T *min;
+    T *max;
+    T *value;
+    // size_t typeLen;
+    size_t *blockID;
+    size_t *shapeSize;
+    size_t *startSize;
+    size_t *countSize;
+    size_t *memoryStartSize;
+    size_t *memoryCountSize;
+    size_t *stepsStart;
+    size_t *stepsCount;
+
+    Dims shape;
+    Dims start;
+    Dims count;
+    Dims memoryStart;
+    Dims memoryCount;
+    ShapeID *shapeID;
+
+    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
+
+    schema = j_db_schema_new("adios2", "block-metadata", NULL);
+    j_db_schema_get(schema, batch, NULL);
+    err = j_batch_execute(batch);
+
+    selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
+    j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
+                            nameSpace.c_str(), strlen(nameSpace.c_str()) + 1,
+                            NULL);
+    j_db_selector_add_field(selector, "variableName", J_DB_SELECTOR_OPERATOR_EQ,
+                            varName, strlen(varName) + 1, NULL);
+    j_db_selector_add_field(selector, "step", J_DB_SELECTOR_OPERATOR_EQ, &step,
+                            sizeof(step), NULL);
+    j_db_selector_add_field(selector, "block", J_DB_SELECTOR_OPERATOR_EQ,
+                            &block, sizeof(block), NULL);
+    iterator = j_db_iterator_new(schema, selector, NULL);
+    if (j_db_iterator_next(iterator, NULL))
+    {
+
+        j_db_iterator_get_field(iterator, "shapeSize", &type,
+                                (gpointer *)&shapeSize, &db_length, NULL);
+        if (*shapeSize > 0)
+        {
+            size_t tmpShapeBuffer[*shapeSize];
+            j_db_iterator_get_field(iterator, "shape", &type,
+                                    (gpointer *)&tmpShapeBuffer, &db_length,
+                                    NULL);
+            Dims tmpShape(tmpShapeBuffer, tmpShapeBuffer + *shapeSize);
+            info.Shape = tmpShape;
+        }
+
+        j_db_iterator_get_field(iterator, "startSize", &type,
+                                (gpointer *)&startSize, &db_length, NULL);
+        if (*startSize > 0)
+        {
+            size_t tmpStartBuffer[*startSize];
+            j_db_iterator_get_field(iterator, "start", &type,
+                                    (gpointer *)&tmpStartBuffer, &db_length,
+                                    NULL);
+            Dims tmpStart(tmpStartBuffer, tmpStartBuffer + *startSize);
+            info.Start = tmpStart;
+        }
+        j_db_iterator_get_field(iterator, "countSize", &type,
+                                (gpointer *)&countSize, &db_length, NULL);
+        if (*countSize > 0)
+        {
+            size_t tmpCountBuffer[*countSize];
+            j_db_iterator_get_field(iterator, "count", &type,
+                                    (gpointer *)&tmpCountBuffer, &db_length,
+                                    NULL);
+            Dims tmpCount(tmpCountBuffer, tmpCountBuffer + *shapeSize);
+            info.Count = tmpCount;
+        }
+        j_db_iterator_get_field(iterator, "memoryStartSize", &type,
+                                (gpointer *)&memoryStartSize, &db_length, NULL);
+        if (*memoryStartSize > 0)
+        {
+            size_t tmpMemoryStartBuffer[*memoryStartSize];
+            j_db_iterator_get_field(iterator, "memoryStart", &type,
+                                    (gpointer *)&tmpMemoryStartBuffer, &db_length,
+                                    NULL);
+            Dims tmpMemoryStart(tmpMemoryStartBuffer, tmpMemoryStartBuffer + *memoryStartSize);
+            info.MemoryStart = tmpMemoryStart;
+        }
+         j_db_iterator_get_field(iterator, "memoryCountSize", &type,
+                                (gpointer *)&memoryCountSize, &db_length, NULL);
+        if (*memoryCountSize > 0)
+        {
+            size_t tmpMemoryCountBuffer[*memoryCountSize];
+            j_db_iterator_get_field(iterator, "memoryStart", &type,
+                                    (gpointer *)&tmpMemoryCountBuffer, &db_length,
+                                    NULL);
+            Dims tmpMemoryCount(tmpMemoryCountBuffer, tmpMemoryCountBuffer + *memoryCountSize);
+            info.MemoryCount = tmpMemoryCount;
+        }
+        j_db_iterator_get_field(iterator, "min", &type, (gpointer *)&min,
+                                &db_length, NULL);
+        info.Min = *min;
+        j_db_iterator_get_field(iterator, "max", &type, (gpointer *)&max,
+                                &db_length, NULL);
+        info.Max = *max;
+        j_db_iterator_get_field(iterator, "isValue", &type,
+                                (gpointer *)&isValue, &db_length, NULL);
+        info.IsValue = *isValue;
+        if (isValue)
+        {
+            j_db_iterator_get_field(iterator, "value", &type,
+                                    (gpointer *)&value, &db_length, NULL);
+            info.Value = *value;
+        }
+            j_db_iterator_get_field(iterator, "stepsStart", &type,
+                                (gpointer *)&stepsStart, &db_length, NULL);
+            info.StepsStart = *stepsStart;
+         j_db_iterator_get_field(iterator, "stepsCount", &type,
+                                (gpointer *)&stepsCount, &db_length, NULL);
+            info.StepsCount = *stepsCount;
+         j_db_iterator_get_field(iterator, "blockID", &type,
+                                (gpointer *)&blockID, &db_length, NULL);
+         // info.BlockID = *blockID;
+          std::cout << "shapeSize: " << *shapeSize << std::endl;
+    std::cout << "startSize: " << *startSize << std::endl;
+    std::cout << "countSize: " << *countSize << std::endl;
+    std::cout << "memoryStartSize: " << *memoryStartSize << std::endl;
+    std::cout << "memoryCountSize: " << *memoryCountSize << std::endl;
+    std::cout << "info.Min: " << info.Min << std::endl;
+    std::cout << "info.Max: " << info.Max << std::endl;
+    std::cout << "info.Value: " << info.Value << std::endl;
+    std::cout << "info.StepsStart: " << info.StepsStart << std::endl;
+    std::cout << "info.StepsCount: " << info.StepsCount << std::endl;
+    // std::cout << "info.BlockID: " << info.BlockID << std::endl;
+    std::cout << "info.IsValue: " << info.IsValue << std::endl;
+    // std::cout << "size: m_BlocksInfo " << variable.m_BlocksInfo.size()
+              // << std::endl;
+
+    }
+}
+
+template <class T>
 void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
                                 const std::string nameSpace, size_t dataSize,
                                 size_t step, size_t block)
@@ -397,6 +554,10 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
 }
 
 #define variable_template_instantiation(T)                                     \
+    template void DBGetBlockMetadata(                                          \
+        Variable<T> &variable, const std::string nameSpace, size_t step,       \
+        size_t block, typename core::Variable<T>::Info &info);                 \
+                                                                               \
     template void DBGetVariableDataFromJulea(                                  \
         Variable<T> &variable, T *data, const std::string nameSpace,           \
         long unsigned int dataSize, size_t step, size_t block);
