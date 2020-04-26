@@ -32,7 +32,7 @@ namespace core
 namespace engine
 {
 void DBInitVariable(core::IO *io, core::Engine &engine, std::string varName,
-                  size_t *blocks, size_t numberSteps, ShapeID shapeID)
+                    size_t *blocks, size_t numberSteps, ShapeID shapeID)
 {
     // std::cout << "----- InitVariable ---" << std::endl;
     const std::string type(io->InquireVariableType(varName));
@@ -78,7 +78,6 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string varName,
     //     }
     // }
 }
-
 
 void DBDefineVariableInInit(core::IO *io, const std::string varName,
                             std::string stringType, Dims shape, Dims start,
@@ -209,7 +208,8 @@ void CheckSchemas()
     }
 }
 
-void InitVariablesFromDB(const std::string nameSpace, core::IO *io, core::Engine &engine)
+void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
+                         core::Engine &engine)
 {
     std::cout << "--- InitVariablesFromDB ---" << std::endl;
     int err = 0;
@@ -220,30 +220,27 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io, core::Engine
     g_autoptr(JDBEntry) entry = NULL;
     g_autoptr(JDBIterator) iterator = NULL;
     g_autoptr(JDBSelector) selector = NULL;
-    // JDBType type2;
-    // guint64 db_length2 = 0;
 
-    // std::string varName;
     char *varName;
-    Dims shape;
-    Dims start;
-    Dims count;
-    ShapeID *shapeID;
+    char *varTypePtr;
+    std::string varType;
 
     bool *isConstantDims;
-    // uint32_t *constantDims;
     bool *isReadAsJoined;
     bool *isReadAsLocalValue;
     bool *isRandomAccess;
 
-    std::string varType;
-    char *varTypePtr;
-    size_t typeLen;
+    // size_t typeLen;
     size_t *blocks;
     size_t *shapeSize;
     size_t *startSize;
     size_t *countSize;
     size_t *numberSteps;
+
+    Dims shape;
+    Dims start;
+    Dims count;
+    ShapeID *shapeID;
 
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
@@ -256,9 +253,6 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io, core::Engine
     j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
                             nameSpace.c_str(), strlen(nameSpace.c_str()) + 1,
                             NULL);
-    // j_db_selector_add_field(selector, "variableName",
-    //                         J_DB_SELECTOR_OPERATOR_EQ, varName.c_str(),
-    //                         strlen(varName.c_str()) + 1, NULL);
     iterator = j_db_iterator_new(schema, selector, NULL);
 
     while (j_db_iterator_next(iterator, NULL))
@@ -268,9 +262,6 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io, core::Engine
         j_db_iterator_get_field(iterator, "variableName", &type,
                                 (gpointer *)&varName, &db_length, NULL);
 
-        // db_length = 0;
-        // j_db_iterator_get_field(iterator, "isConstantDims", &type2, (gpointer
-        // *)&constantDims, &db_length2, NULL);
         j_db_iterator_get_field(iterator, "isConstantDims", &type,
                                 (gpointer *)&isConstantDims, &db_length, NULL);
         j_db_iterator_get_field(iterator, "isReadAsJoined", &type,
@@ -336,29 +327,25 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io, core::Engine
             std::cout << "numberSteps: " << blocks[1] << std::endl;
         }
 
-        std::cout << "varName = " << varName << std::endl;
-        std::cout << "length: " << db_length << std::endl;
-        std::cout << "constantDims: " << *isConstantDims << std::endl;
-        std::cout << "isReadAsJoined: " << *isReadAsJoined << std::endl;
-        std::cout << "isReadAsLocalValue: " << *isReadAsLocalValue << std::endl;
-        std::cout << "isRandomAccess: " << *isRandomAccess << std::endl;
-        std::cout << "shapeID: " << *shapeID << std::endl;
-        std::cout << "varType2: " << varTypePtr << std::endl;
-        std::cout << "shapeSize: " << *shapeSize << std::endl;
-        std::cout << "startSize: " << *startSize << std::endl;
-        std::cout << "startSize: " << *countSize << std::endl;
-        std::cout << "numberSteps: " << *numberSteps << std::endl;
+        // std::cout << "varName = " << varName << std::endl;
+        // std::cout << "length: " << db_length << std::endl;
+        // std::cout << "constantDims: " << *isConstantDims << std::endl;
+        // std::cout << "isReadAsJoined: " << *isReadAsJoined << std::endl;
+        // std::cout << "isReadAsLocalValue: " << *isReadAsLocalValue <<
+        // std::endl; std::cout << "isRandomAccess: " << *isRandomAccess <<
+        // std::endl; std::cout << "shapeID: " << *shapeID << std::endl;
+        // std::cout << "varType2: " << varTypePtr << std::endl;
+        // std::cout << "shapeSize: " << *shapeSize << std::endl;
+        // std::cout << "startSize: " << *startSize << std::endl;
+        // std::cout << "startSize: " << *countSize << std::endl;
+        // std::cout << "numberSteps: " << *numberSteps << std::endl;
 
-        // j_db_iterator_get_field(iterator, "blockArray", &type, (gpointer
-        // *)&varName, &db_length, NULL); printf("DB contains: %s (%"
-        // G_GUINT64_FORMAT " bytes)\n", db_field, db_length);
         DBDefineVariableInInit(io, varName, varType, shape, start, count,
                                isConstantDims);
 
         DBInitVariable(io, engine, varName, blocks, *numberSteps, *shapeID);
-        // DBInitVariable(&m_IO, *this, varName, blocks, numberSteps, shapeID);
     }
-            // free blocks;
+    // free blocks;
 }
 
 void DBGetVariableMetadataFromJulea(const std::string nameSpace,

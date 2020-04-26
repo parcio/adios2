@@ -27,7 +27,8 @@ void DBDefineVariableInInit(core::IO *io, const std::string varName,
 
 void CheckSchemas();
 
-void InitVariablesFromDB(const std::string nameSpace, core::IO *io, core::Engine &engine);
+void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
+                         core::Engine &engine);
 /* --- Variables --- */
 
 /** Retrieves all variable names from key-value store. They are all stored in
