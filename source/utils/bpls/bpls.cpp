@@ -1169,6 +1169,12 @@ std::vector<std::string> getEnginesList(const std::string path)
         list.push_back("BPFile");
         list.push_back("HDF5");
     }
+    else if (slen >= 3 && path.compare(slen - 3, 3, ".jb") == 0)
+    {
+        list.push_back("julea-db");
+        list.push_back("BPFile");
+        list.push_back("HDF5");
+    }
     else
     {
         list.push_back("BPFile");
