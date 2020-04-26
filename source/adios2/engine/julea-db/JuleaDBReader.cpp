@@ -237,7 +237,7 @@ void JuleaDBReader::InitVariables()
     //    unsigned int varCount = 0;
 
     // GetNamesFromJulea(nameSpace, &bsonNames, &varCount, true);
-    InitVariablesFromDB(m_Name, &m_IO);
+    InitVariablesFromDB(m_Name, &m_IO, *this);
     // int err = 0;
     // g_autoptr(JDBSchema) schema = NULL;
     // g_autoptr(JDBEntry) entry = NULL;

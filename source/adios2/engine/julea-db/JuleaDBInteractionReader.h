@@ -22,12 +22,12 @@ namespace engine
 {
 
 void DBDefineVariableInInit(core::IO *io, const std::string varName,
-                          std::string type, Dims shape, Dims start, Dims count,
-                          bool constantDims);
+                            std::string type, Dims shape, Dims start,
+                            Dims count, bool constantDims);
 
 void CheckSchemas();
 
-void InitVariablesFromDB(const std::string nameSpace, core::IO *io);
+void InitVariablesFromDB(const std::string nameSpace, core::IO *io, core::Engine &engine);
 /* --- Variables --- */
 
 /** Retrieves all variable names from key-value store. They are all stored in
