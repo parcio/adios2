@@ -463,7 +463,7 @@ int main(int argc, char *argv[])
         // write();
         // read_simple("bp3", "SimpleSteps.bp");
         // read_simple("julea-kv", "SimpleSteps.jv");
-        // read_simple("julea-db", "SimpleSteps.jb");
+        read_simple("julea-db", "SimpleSteps.jb");
         // read_selection("bp3", "SimpleSteps.bp");
         // read_selection("julea-kv", "SimpleSteps.jv");
     }

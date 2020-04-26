@@ -44,6 +44,7 @@ void addFieldsForVariableMD(JDBSchema *schema)
 
     j_db_schema_add_field(schema, "shapeID", J_DB_TYPE_UINT32, NULL);
     j_db_schema_add_field(schema, "type", J_DB_TYPE_STRING, NULL);
+    //TODO: needed?
     j_db_schema_add_field(schema, "typeLen", J_DB_TYPE_UINT64, NULL);
 
     /** all vectors need to store their size */
@@ -543,7 +544,6 @@ void DBPutVariableDataToJulea(Variable<T> &variable, const T *data,
     // std::cout << "++ Julea Interaction: PutVariableDataToJulea" << std::endl;
 }
 
-
 template <class T>
 void DBPutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
                                         bson_t *bsonMetaData,
@@ -588,8 +588,6 @@ void DBPutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
     // j_kv_unref(kvObjectNames);
     // bson_destroy(bsonNames);
 }
-
-
 
 // FIXME: not yet implemented correctly! need to differentiate between strings
 // and other types

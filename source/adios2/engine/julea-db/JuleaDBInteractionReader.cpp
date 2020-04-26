@@ -31,6 +31,112 @@ namespace core
 {
 namespace engine
 {
+void DBDefineVariableInInit(core::IO *io, const std::string varName,
+                          std::string stringType, Dims shape, Dims start,
+                          Dims count, bool constantDims)
+{
+    const char *type = stringType.c_str();
+    std::cout << "------ DefineVariableInInit ----------" << std::endl;
+    std::cout << "------ type  ---------- " << type << std::endl;
+
+    if (strcmp(type, "unknown") == 0)
+    {
+        // TODO
+    }
+    else if (strcmp(type, "compound") == 0)
+    {
+    }
+    else if (strcmp(type, "string") == 0)
+    {
+        auto &var = io->DefineVariable<std::string>(varName, shape, start,
+                                                    count, constantDims);
+        std::cout << "Defined variable of type: " << type << std::endl;
+    }
+    else if (strcmp(type, "int8_t") == 0)
+    {
+        auto &var = io->DefineVariable<int8_t>(varName, shape, start, count,
+                                               constantDims);
+        std::cout << "Defined variable of type: " << type << std::endl;
+    }
+    else if (strcmp(type, "uint8_t") == 0)
+    {
+        auto &var = io->DefineVariable<uint8_t>(varName, shape, start, count,
+                                                constantDims);
+    }
+    else if (strcmp(type, "int16_t") == 0)
+    {
+        auto &var = io->DefineVariable<int16_t>(varName, shape, start, count,
+                                                constantDims);
+    }
+    else if (strcmp(type, "uint16_t") == 0)
+    {
+        auto &var = io->DefineVariable<uint16_t>(varName, shape, start, count,
+                                                 constantDims);
+    }
+    else if (strcmp(type, "int32_t") == 0)
+    {
+        auto &var = io->DefineVariable<int32_t>(varName, shape, start, count,
+                                                constantDims);
+    }
+    else if (strcmp(type, "uint32_t") == 0)
+    {
+        auto &var = io->DefineVariable<uint32_t>(varName, shape, start, count,
+                                                 constantDims);
+    }
+    else if (strcmp(type, "int64_t") == 0)
+    {
+        auto &var = io->DefineVariable<int64_t>(varName, shape, start, count,
+                                                constantDims);
+    }
+    else if (strcmp(type, "uint64_t") == 0)
+    {
+        auto &var = io->DefineVariable<uint64_t>(varName, shape, start, count,
+                                                 constantDims);
+    }
+    else if (strcmp(type, "float") == 0)
+    {
+        auto &var = io->DefineVariable<float>(varName, shape, start, count,
+                                              constantDims);
+        std::cout << "Defined variable of type: " << type << std::endl;
+    }
+    else if (strcmp(type, "double") == 0)
+    {
+        auto &var = io->DefineVariable<double>(varName, shape, start, count,
+                                               constantDims);
+        std::cout << "Defined variable of type: " << type << std::endl;
+    }
+    else if (strcmp(type, "long double") == 0)
+    {
+        auto &var = io->DefineVariable<long double>(varName, shape, start,
+                                                    count, constantDims);
+        std::cout << "Defined variable of type: " << type << std::endl;
+    }
+    else if (strcmp(type, "complex float") == 0)
+    {
+        auto &var = io->DefineVariable<std::complex<float>>(
+            varName, shape, start, count, constantDims);
+        std::cout << "Defined variable of type: " << type << std::endl;
+    }
+    else if (strcmp(type, "complex double") == 0)
+    {
+        auto &var = io->DefineVariable<std::complex<double>>(
+            varName, shape, start, count, constantDims);
+        std::cout << "Defined variable of type: " << type << std::endl;
+    }
+
+    std::map<std::string, Params> varMap = io->GetAvailableVariables();
+
+    for (std::map<std::string, Params>::iterator it = varMap.begin();
+         it != varMap.end(); ++it)
+    {
+
+        // std::cout << "first: " << it->first << " => " << it->second.begin()
+        // << '\n';
+        std::cout << "first: " << it->first << '\n';
+    }
+}
+
+
 
 void CheckSchemas()
 {
@@ -56,7 +162,7 @@ void CheckSchemas()
     }
 }
 
-void InitVariablesFromDB(const std::string nameSpace)
+void InitVariablesFromDB(const std::string nameSpace, core::IO *io)
 {
     std::cout << "--- InitVariablesFromDB ---" << std::endl;
     int err = 0;
@@ -65,8 +171,37 @@ void InitVariablesFromDB(const std::string nameSpace)
     g_autoptr(JDBIterator) iterator = NULL;
     g_autoptr(JDBSelector) selector = NULL;
     JDBType type;
+    JDBType type2;
     g_autofree gchar *db_field = NULL;
     guint64 db_length = 0;
+    guint64 db_length2 = 0;
+
+    // std::string varName;
+    char *varName;
+    Dims shape;
+    Dims start;
+    Dims count;
+    ShapeID *shapeID;
+
+    bool *isConstantDims;
+    uint32_t *constantDims;
+    bool *isReadAsJoined;
+    bool *isReadAsLocalValue;
+    bool *isRandomAccess;
+
+    std::string varType;
+    char *varTypePtr;
+    size_t typeLen;
+    size_t *b;
+    size_t *shapeSize;
+    size_t *startSize;
+    size_t *countSize;
+    size_t *steps;
+    // std::string varType;
+    guint32 buffer_len;
+    gpointer md_buffer = nullptr;
+    // size_t *blocks = nullptr;
+    size_t *numberSteps;
 
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
@@ -87,13 +222,82 @@ void InitVariablesFromDB(const std::string nameSpace)
     while (j_db_iterator_next(iterator, NULL))
     {
         std::cout << "---- while --- " << std::endl;
-        // j_db_iterator_get_field(iterator, "hello", &type, (gpointer
-        // *)&db_field,
-        //                         &db_length, NULL);
-        j_db_iterator_get_field(iterator, "variableName", &type,
-                                (gpointer *)&db_field, &db_length, NULL);
-        printf("DB contains: %s (%" G_GUINT64_FORMAT " bytes)\n", db_field,
-               db_length);
+
+        j_db_iterator_get_field(iterator, "variableName", &type, (gpointer *)&varName, &db_length, NULL);
+        std::cout << "varName = " << varName << std::endl;
+        std::cout << "length: " << db_length << std::endl;
+        // db_length = 0;
+        // j_db_iterator_get_field(iterator, "isConstantDims", &type2, (gpointer *)&constantDims, &db_length2, NULL);
+        j_db_iterator_get_field(iterator, "isConstantDims", &type, (gpointer *)&isConstantDims, &db_length2, NULL);
+        std::cout << "constantDims: " << *constantDims << std::endl;
+        j_db_iterator_get_field(iterator, "isReadAsJoined", &type, (gpointer *)&isReadAsJoined, &db_length, NULL);
+        std::cout << "isReadAsJoined: " << *isReadAsJoined << std::endl;
+        j_db_iterator_get_field(iterator, "isReadAsLocalValue", &type, (gpointer *)&isReadAsLocalValue, &db_length, NULL);
+        std::cout << "isReadAsLocalValue: " << *isReadAsLocalValue << std::endl;
+        j_db_iterator_get_field(iterator, "isRandomAccess", &type, (gpointer *)&isRandomAccess, &db_length, NULL);
+        std::cout << "isRandomAccess: " << *isRandomAccess << std::endl;
+
+        j_db_iterator_get_field(iterator, "shapeID", &type, (gpointer *)&shapeID, &db_length, NULL);
+        std::cout << "shapeID: " << *shapeID << std::endl;
+        j_db_iterator_get_field(iterator, "type", &type, (gpointer *)&varTypePtr, &db_length, NULL);
+        std::cout << "varType2: " << varTypePtr << std::endl;
+        std::string varType(varTypePtr);
+        // //TODO needed?
+        // j_db_iterator_get_field(iterator, "typeLen", &type, (gpointer *)&typeLen, &db_length, NULL);
+
+        j_db_iterator_get_field(iterator, "shapeSize", &type, (gpointer *)&shapeSize, &db_length, NULL);
+        std::cout << "shapeSize: " << *shapeSize << std::endl;
+        if(*shapeSize > 0)
+        {
+            size_t tmpShapeBuffer[*shapeSize];
+            j_db_iterator_get_field(iterator, "shape", &type, (gpointer *)&tmpShapeBuffer, &db_length, NULL);
+            Dims tmpShape(tmpShapeBuffer, tmpShapeBuffer + *shapeSize);
+            shape = tmpShape;
+        }
+
+        j_db_iterator_get_field(iterator, "startSize", &type, (gpointer *)&startSize, &db_length, NULL);
+        std::cout << "startSize: " << *startSize << std::endl;
+        if(*startSize > 0)
+        {
+            size_t tmpStartBuffer[*startSize];
+            j_db_iterator_get_field(iterator, "start", &type, (gpointer *)&tmpStartBuffer, &db_length, NULL);
+            Dims tmpStart(tmpStartBuffer, tmpStartBuffer + *startSize);
+            start = tmpStart;
+        }
+        // j_db_iterator_get_field(iterator, "start", &type, (gpointer *)&varName, &db_length, NULL);
+        j_db_iterator_get_field(iterator, "countSize", &type, (gpointer *)&countSize, &db_length, NULL);
+          std::cout << "startSize: " << *countSize << std::endl;
+        if(*countSize > 0)
+        {
+            size_t tmpCountBuffer[*countSize];
+            j_db_iterator_get_field(iterator, "count", &type, (gpointer *)&tmpCountBuffer, &db_length, NULL);
+            Dims tmpCount(tmpCountBuffer, tmpCountBuffer + *shapeSize);
+            count = tmpCount;
+        }
+        // j_db_iterator_get_field(iterator, "count", &type, (gpointer *)&varName, &db_length, NULL);
+        j_db_iterator_get_field(iterator, "numberSteps", &type, (gpointer *)&numberSteps, &db_length, NULL);
+            std::cout << "numberSteps: " << *numberSteps << std::endl;
+        if(*numberSteps > 0)
+        {
+            size_t *blocks[*numberSteps];
+            j_db_iterator_get_field(iterator, "blockArray", &type, (gpointer *)blocks, &db_length, NULL);
+            // j_db_iterator_get_field(iterator, "blockArray", &type, (gpointer *)&b, &db_length, NULL);
+            b = *blocks;
+            std::cout << "numberSteps: " << db_length << std::endl;
+            std::cout << "numberSteps: " << *blocks << std::endl;
+            std::cout << "numberSteps: " << **blocks << std::endl;
+            std::cout << "numberSteps: " << blocks << std::endl;
+            std::cout << "numberSteps: " << b[0] << std::endl;
+            std::cout << "numberSteps: " << b[1] << std::endl;
+            // std::cout << "numberSteps: " << &b << std::endl;
+            // std::cout << "numberSteps: " << b << std::endl;
+            // Dims tmpShape(tmpShapeBuffer, tmpShapeBuffer + *shapeSize);
+        }
+        // j_db_iterator_get_field(iterator, "blockArray", &type, (gpointer *)&varName, &db_length, NULL);
+        // printf("DB contains: %s (%" G_GUINT64_FORMAT " bytes)\n", db_field,
+        // db_length);
+       DBDefineVariableInInit(io, varName, varType, shape, start, count,
+                                 isConstantDims);
     }
 }
 
