@@ -327,18 +327,22 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
             std::cout << "numberSteps: " << blocks[1] << std::endl;
         }
 
-        // std::cout << "varName = " << varName << std::endl;
-        // std::cout << "length: " << db_length << std::endl;
-        // std::cout << "constantDims: " << *isConstantDims << std::endl;
-        // std::cout << "isReadAsJoined: " << *isReadAsJoined << std::endl;
-        // std::cout << "isReadAsLocalValue: " << *isReadAsLocalValue <<
-        // std::endl; std::cout << "isRandomAccess: " << *isRandomAccess <<
-        // std::endl; std::cout << "shapeID: " << *shapeID << std::endl;
-        // std::cout << "varType2: " << varTypePtr << std::endl;
-        // std::cout << "shapeSize: " << *shapeSize << std::endl;
-        // std::cout << "startSize: " << *startSize << std::endl;
-        // std::cout << "startSize: " << *countSize << std::endl;
-        // std::cout << "numberSteps: " << *numberSteps << std::endl;
+        if (false)
+        {
+            std::cout << "varName = " << varName << std::endl;
+            std::cout << "length: " << db_length << std::endl;
+            std::cout << "constantDims: " << *isConstantDims << std::endl;
+            std::cout << "isReadAsJoined: " << *isReadAsJoined << std::endl;
+            std::cout << "isReadAsLocalValue: " << *isReadAsLocalValue
+                      << std::endl;
+            std::cout << "isRandomAccess: " << *isRandomAccess << std::endl;
+            std::cout << "shapeID: " << *shapeID << std::endl;
+            std::cout << "varType2: " << varTypePtr << std::endl;
+            std::cout << "shapeSize: " << *shapeSize << std::endl;
+            std::cout << "startSize: " << *startSize << std::endl;
+            std::cout << "startSize: " << *countSize << std::endl;
+            std::cout << "numberSteps: " << *numberSteps << std::endl;
+        }
 
         DBDefineVariableInInit(io, varName, varType, shape, start, count,
                                isConstantDims);
@@ -346,50 +350,6 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
         DBInitVariable(io, engine, varName, blocks, *numberSteps, *shapeID);
     }
     // free blocks;
-}
-
-void DBGetVariableMetadataFromJulea(const std::string nameSpace,
-                                    const std::string varName, gpointer *md,
-                                    guint32 *buffer_len)
-{
-    void *metaDataBuf = NULL;
-
-    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    auto batch = j_batch_new(semantics);
-
-    auto stringMetadataKV =
-        g_strdup_printf("%s_%s", nameSpace.c_str(), "variables");
-    std::cout << "stringMetadataKV: " << stringMetadataKV << std::endl;
-    std::cout << "varName: " << varName << std::endl;
-    auto kvVarMetadata = j_kv_new(stringMetadataKV, varName.c_str());
-
-    j_kv_get(kvVarMetadata, md, buffer_len, batch);
-    g_assert_true(j_batch_execute(batch) == true);
-}
-
-void DBGetBlockMetadataFromJulea(const std::string nameSpace,
-                                 const std::string varName, gpointer *md,
-                                 guint32 *buffer_len,
-                                 const std::string stepBlockID)
-{
-    // std::cout << "-- GetBlockMetadataFromJulea -----" << std::endl;
-    void *metaDataBuf = NULL;
-    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    auto batch = j_batch_new(semantics);
-
-    auto stringMetadataKV = g_strdup_printf("%s_%s_%s", nameSpace.c_str(),
-                                            varName.c_str(), "variableblocks");
-    // std::cout << "stringMetadataKV " << stringMetadataKV << std::endl;
-
-    auto kvBlockMetadata = j_kv_new(stringMetadataKV, stepBlockID.c_str());
-
-    j_kv_get(kvBlockMetadata, md, buffer_len, batch);
-    g_assert_true(j_batch_execute(batch) == true);
-
-    g_free(stringMetadataKV);
-    j_kv_unref(kvBlockMetadata);
-    j_batch_unref(batch);
-    j_semantics_unref(semantics);
 }
 
 template <class T>
@@ -435,6 +395,15 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
     g_free(stringDataObject);
     j_object_unref(dataObject);
 }
+
+#define variable_template_instantiation(T)                                     \
+    template void DBGetVariableDataFromJulea(                                  \
+        Variable<T> &variable, T *data, const std::string nameSpace,           \
+        long unsigned int dataSize, size_t step, size_t block);
+ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
+#undef variable_template_instantiation
+
+/** ------------------------- Attributes -----------------------------------**/
 
 /** Retrieves all variable names from key-value store. They are all stored in
  * one bson. */
@@ -495,15 +464,6 @@ void DBGetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
     j_batch_unref(batch);
     free(namesBuf);
 }
-
-#define variable_template_instantiation(T)                                     \
-    template void DBGetVariableDataFromJulea(                                  \
-        Variable<T> &variable, T *data, const std::string nameSpace,           \
-        long unsigned int dataSize, size_t step, size_t block);
-ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
-#undef variable_template_instantiation
-
-/** ------------------------- Attributes -----------------------------------**/
 
 void DBGetAttributeBSONFromJulea(const std::string nameSpace,
                                  const std::string attrName,

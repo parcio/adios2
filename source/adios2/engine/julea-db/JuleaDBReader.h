@@ -141,17 +141,63 @@ private:
 
     // void AggregateReadData();
 
-    /**
-     * DESIGN: is this function needed here? is there something one would want
-     * to do different with a variable coming from JULEA?
-     *
-     * Sets read block information from the available metadata information
-     * @param variable
-     * @param blockInfo
+   /**
+     * Initializes a block inside variable.m_BlocksInfo
+     * @param variable input
+     * @param data user data pointer
+     * @return a reference inside variable.m_BlocksInfo (invalidated if called
+     * twice)
      */
     template <class T>
-    void SetVariableBlockInfo(core::Variable<T> &variable,
-                              typename core::Variable<T>::Info &blockInfo);
+    typename core::Variable<T>::Info &
+    InitVariableBlockInfo(core::Variable<T> &variable, T *data);
+
+    template <class T>
+    void ReadVariableBlocks(Variable<T> &variable);
+
+    template <class T>
+    std::vector<typename core::Variable<T>::Info>
+    BlocksInfoCommon(const core::Variable<T> &variable,
+                     const std::vector<size_t> &blocksIndexOffsets,
+                     size_t step) const;
+
+    /** ---------- the following functions are mainly used for bpls */
+    template <class T>
+    std::map<size_t, std::vector<typename core::Variable<T>::Info>>
+    AllStepsBlocksInfo(const core::Variable<T> &variable) const;
+
+    template <class T>
+    std::map<size_t, std::vector<typename core::Variable<T>::Info>>
+    DoAllStepsBlocksInfo(const core::Variable<T> &variable) const;
+
+    template <class T>
+    std::vector<std::vector<typename core::Variable<T>::Info>>
+    AllRelativeStepsBlocksInfo(const core::Variable<T> &variable) const;
+
+    template <class T>
+    std::vector<std::vector<typename core::Variable<T>::Info>>
+    DoAllRelativeStepsBlocksInfo(const core::Variable<T> &variable) const;
+
+    template <class T>
+    std::vector<typename core::Variable<T>::Info>
+    BlocksInfo(const core::Variable<T> &variable, const size_t step) const;
+
+    template <class T>
+    std::vector<typename core::Variable<T>::Info>
+    DoBlocksInfo(const core::Variable<T> &variable, const size_t step) const;
+
+#define declare_type(T)                                                        \
+    std::map<size_t, std::vector<typename Variable<T>::Info>>                  \
+    DoAllStepsBlocksInfo(const Variable<T> &variable) const final;             \
+                                                                               \
+    std::vector<std::vector<typename Variable<T>::Info>>                       \
+    DoAllRelativeStepsBlocksInfo(const Variable<T> &) const final;             \
+                                                                               \
+    std::vector<typename Variable<T>::Info> DoBlocksInfo(                      \
+        const Variable<T> &variable, const size_t step) const final;
+
+    ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
+#undef declare_type
 };
 
 } // end namespace engine

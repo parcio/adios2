@@ -229,96 +229,8 @@ void JuleaDBReader::Init()
 // template <class T>
 void JuleaDBReader::InitVariables()
 {
-    // bson_iter_t b_iter;
-    //    bson_t *bsonNames;
-    //    std::string varName;
-    //    std::string nameSpace = m_Name;
-    //    std::string kvName = "variable_names";
-    //    unsigned int varCount = 0;
 
-    // GetNamesFromJulea(nameSpace, &bsonNames, &varCount, true);
     InitVariablesFromDB(m_Name, &m_IO, *this);
-    // int err = 0;
-    // g_autoptr(JDBSchema) schema = NULL;
-    // g_autoptr(JDBEntry) entry = NULL;
-    // g_autoptr(JDBIterator) iterator = NULL;
-    // g_autoptr(JDBSelector) selector = NULL;
-    // JDBType type;
-    // g_autofree gchar *db_field = NULL;
-    // guint64 db_length = 0;
-
-    // auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    // auto batch = j_batch_new(semantics);
-
-    // schema = j_db_schema_new("adios2", "variable-metadata", NULL);
-    // // j_db_schema_get(schema, batch, NULL);
-    // // err = j_batch_execute(batch);
-
-    // // selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
-    // // j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
-    // //                         nameSpace.c_str(), strlen(nameSpace.c_str()) +
-    // 1,
-    // //                         NULL);
-    // // j_db_selector_add_field(selector, "variableName",
-    // //                         J_DB_SELECTOR_OPERATOR_EQ, varName.c_str(),
-    // //                         strlen(varName.c_str()) + 1, NULL);
-    // iterator = j_db_iterator_new(schema, selector, NULL);
-
-    // while (j_db_iterator_next(iterator, NULL))
-    // {
-
-    //     // j_db_iterator_get_field(iterator, "hello", &type, (gpointer
-    //     *)&db_field,
-    //     //                         &db_length, NULL);
-    //     // j_db_iterator_get_field(iterator, "variableName", &type,
-    //     //                         (gpointer *)&db_field, &db_length, NULL);
-    //     printf("DB contains: %s (%" G_GUINT64_FORMAT " bytes)\n", db_field,
-    //            db_length);
-    // }
-
-    // std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
-    // loop over all variabless
-    // while (bson_iter_next(&b_iter))
-    // {
-    //     Dims shape;
-    //     Dims start;
-    //     Dims count;
-    //     ShapeID shapeID = ShapeID::Unknown;
-
-    //     bool constantDims;
-    //     bool isReadAsJoined;
-    //     bool isReadAsLocalValue;
-    //     bool isRandomAccess;
-
-    //     std::string type;
-    //     // guint32 buffer_len;
-    //     // gpointer md_buffer = nullptr;
-    //     size_t *blocks = nullptr;
-    //     size_t numberSteps = 0;
-    //     //
-    //     // std::string varName(bson_iter_key(&b_iter));
-
-    //     // GetVariableMetadataFromJulea(nameSpace, varName, &md_buffer,
-    //     // &buffer_len);
-
-    //     // DeserializeVariableMetadata(md_buffer, &type, &shape, &start,
-    //     //                             &count, &constantDims, &blocks,
-    //     //                             &numberSteps, &shapeID,
-    //     &isReadAsJoined,
-    //     //                             &isReadAsLocalValue, &isRandomAccess);
-
-    //     // DefineVariableInInit(&m_IO, varName, type, shape, start, count,
-    //     //                      constantDims);
-
-    //     /** there are several fields that need to be set in a variable that
-    //      * are not required when defining a variable in the IO. Therefore
-    //      * they need to be set now. */
-    //     // InitVariable(&m_IO, *this, varName, blocks, numberSteps, shapeID);
-    //     delete[] blocks;
-
-    //     const std::string testtype = m_IO.InquireVariableType(varName);
-    // }
-    // bson_destroy(bsonNames);
 }
 
 void JuleaDBReader::InitParameters()
@@ -348,6 +260,29 @@ void JuleaDBReader::DoClose(const int transportIndex)
                   << ")\n";
     }
 }
+
+
+#define declare_type(T)                                                        \
+    std::map<size_t, std::vector<typename Variable<T>::Info>>                  \
+    JuleaDBReader::DoAllStepsBlocksInfo(const Variable<T> &variable) const     \
+    {                                                                          \
+        return AllStepsBlocksInfo(variable);                                   \
+    }                                                                          \
+    std::vector<std::vector<typename Variable<T>::Info>>                       \
+    JuleaDBReader::DoAllRelativeStepsBlocksInfo(const Variable<T> &variable)   \
+        const                                                                  \
+    {                                                                          \
+        return AllRelativeStepsBlocksInfo(variable);                           \
+    }                                                                          \
+                                                                               \
+    std::vector<typename Variable<T>::Info> JuleaDBReader::DoBlocksInfo(       \
+        const Variable<T> &variable, const size_t step) const                  \
+    {                                                                          \
+        return BlocksInfo(variable, step);                                     \
+    }
+
+ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
+#undef declare_type
 } // end namespace engine
 } // end namespace core
 } // end namespace adios2
