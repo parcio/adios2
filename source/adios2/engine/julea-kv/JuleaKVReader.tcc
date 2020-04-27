@@ -99,9 +99,36 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
         // m_BP3Deserializer.GetValueFromMetadata(variable, data);
         // return;
     }
-
     InitVariableBlockInfo(variable, data);
-    ReadVariableBlocks(variable);
+
+    std::string stepBlockID;
+    Dims count;
+    std::string nameSpace = m_Name;
+
+    long unsigned int dataSize = 0;
+    guint32 buffer_len = 0;
+    gpointer md_buffer = nullptr;
+
+    stepBlockID = g_strdup_printf("%lu_%lu", m_CurrentStep, variable.m_BlockID);
+    std::cout << "variable.m... stepBlockID: " << stepBlockID << std::endl;
+
+    typename Variable<T>::Info &blockInfo = variable.m_BlocksInfo[variable.m_BlockID];
+
+    GetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
+                              &buffer_len, stepBlockID);
+    GetCountFromBlockMetadata(md_buffer, &count);
+    if (variable.m_SingleValue)
+    {
+        std::cout << "Single value" << std::endl;
+        return;
+    }
+
+    size_t numberElements = helper::GetTotalSize(count);
+    dataSize = numberElements * variable.m_ElementSize;
+
+    GetVariableDataFromJulea(variable, data, nameSpace, dataSize, m_CurrentStep,
+                             variable.m_BlockID);
+
     variable.m_BlocksInfo.pop_back();
 }
 
@@ -141,16 +168,16 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
         {
             stepBlockID = g_strdup_printf("%lu_%lu", variable.m_StepsStart,
                                           variable.m_BlockID);
-            // std::cout << "variable.m... stepBlockID: " << stepBlockID <<
-            // std::endl;
+            std::cout << "variable.m... stepBlockID: " << stepBlockID
+                      << std::endl;
         }
-        else
-        {
-            stepBlockID =
-                g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
-            // std::cout << "m_Current... stepBlockID: " << stepBlockID <<
-            // std::endl;
-        }
+            else
+            {
+                stepBlockID =
+                    g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
+                std::cout << "m_Current... stepBlockID: " << stepBlockID
+                          << std::endl;
+            }
         // std::cout << "blocksInfos.size: " << variable.m_BlocksInfo.size()
         // << std::endl;
 

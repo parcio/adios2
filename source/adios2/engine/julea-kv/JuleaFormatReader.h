@@ -84,6 +84,8 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
                               size_t blockID,
                               typename core::Variable<T>::Info &info);
 
+void GetCountFromBlockMetadata(gpointer buffer, Dims *count);
+
 /**
  * Deserializes the passed buffer and returns the created info struct.
  *
