@@ -82,7 +82,7 @@ private:
      */
     mutable bool m_UseKeysForBPLS = false;
 
-    int m_Verbosity = 5; // change to 5 for debugging
+    int m_Verbosity = 0; // change to 5 for debugging
     int m_ReaderRank;    // my rank in the readers' comm
 
     bool m_CollectiveMetadata = true;
@@ -148,11 +148,11 @@ private:
     typename core::Variable<T>::Info &
     InitVariableBlockInfo(core::Variable<T> &variable, T *data);
 
-    template <class T>
-    void ReadVariableBlocks(Variable<T> &variable);
+    // template <class T>
+    // void ReadVariableBlocks(Variable<T> &variable);
 
     template <class T>
-void ReadBlock(Variable<T> &variable, T *data, size_t blockID);
+    void ReadBlock(Variable<T> &variable, T *data, size_t blockID);
 
     template <class T>
     std::vector<typename core::Variable<T>::Info>
