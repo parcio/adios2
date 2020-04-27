@@ -171,13 +171,13 @@ void JuleaDBReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
     }
 
     size_t numberElements = helper::GetTotalSize(count);
-    std::cout << "count: " << count.front() << std::endl;
-    std::cout << "count: " << count.size() << std::endl;
-    std::cout << "numberElements: " << numberElements << std::endl;
+    // std::cout << "count: " << count.front() << std::endl;
+    // std::cout << "count: " << count.size() << std::endl;
+    // std::cout << "numberElements: " << numberElements << std::endl;
     dataSize = numberElements * variable.m_ElementSize;
-    std::cout << "dataSize: " << dataSize << std::endl;
-    // DBGetVariableDataFromJulea(variable, data, nameSpace, dataSize,
-    // stepBlockID);
+    // std::cout << "dataSize: " << dataSize << std::endl;
+    DBGetVariableDataFromJulea(variable, data, nameSpace, dataSize,
+    stepBlockID);
 }
 
 // template <class T>

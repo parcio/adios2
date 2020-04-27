@@ -294,7 +294,8 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
                                 (gpointer *)&shapeSize, &db_length, NULL);
         if (*shapeSize > 0)
         {
-            size_t tmpShapeBuffer[*shapeSize];
+            // size_t tmpShapeBuffer[*shapeSize];
+            size_t *tmpShapeBuffer;
             j_db_iterator_get_field(iterator, "shape", &type,
                                     (gpointer *)&tmpShapeBuffer, &db_length,
                                     NULL);
@@ -306,7 +307,8 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
                                 (gpointer *)&startSize, &db_length, NULL);
         if (*startSize > 0)
         {
-            size_t tmpStartBuffer[*startSize];
+            // size_t tmpStartBuffer[*startSize];
+            size_t *tmpStartBuffer;
             j_db_iterator_get_field(iterator, "start", &type,
                                     (gpointer *)&tmpStartBuffer, &db_length,
                                     NULL);
@@ -315,14 +317,19 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
         }
         j_db_iterator_get_field(iterator, "countSize", &type,
                                 (gpointer *)&countSize, &db_length, NULL);
+        std::cout << "countSize: " << *countSize << std::endl;
         if (*countSize > 0)
         {
-            size_t tmpCountBuffer[*countSize];
+            // size_t tmpCountBuffer[*countSize];
+            size_t *tmpCountBuffer;
             j_db_iterator_get_field(iterator, "count", &type,
                                     (gpointer *)&tmpCountBuffer, &db_length,
                                     NULL);
             std::cout << "db_length: " << db_length << std::endl;
             std::cout << "tmpCountBuffer[0]: " << tmpCountBuffer[0] << std::endl;
+            // std::cout << "tmpCountBuffer[0]: " << *tmpCountBuffer << std::endl;
+            // std::cout << "tmpCountBuffer[0]: " << &tmpCountBuffer << std::endl;
+            // std::cout << "tmpCountBuffer[0]: " << tmpCountBuffer << std::endl;
             Dims tmpCount(tmpCountBuffer, tmpCountBuffer + *countSize);
             count = tmpCount;
             std::cout << "count: " << tmpCount.front() << std::endl;
@@ -339,7 +346,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
             std::cout << "numberSteps: " << blocks[1] << std::endl;
         }
 
-        if (true)
+        if (false)
         {
             std::cout << "varName = " << varName << std::endl;
             std::cout << "length: " << db_length << std::endl;
@@ -411,7 +418,8 @@ void GetCountFromBlockMetadata(const std::string nameSpace,
                                 (gpointer *)&countSize, &db_length, NULL);
         if (*countSize > 0)
         {
-            size_t tmpCountBuffer[*countSize];
+            // size_t tmpCountBuffer[*countSize];
+            size_t *tmpCountBuffer;
             j_db_iterator_get_field(iterator, "count", &type,
                                     (gpointer *)&tmpCountBuffer, &db_length,
                                     NULL);
@@ -491,7 +499,8 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
                                 (gpointer *)&shapeSize, &db_length, NULL);
         if (*shapeSize > 0)
         {
-            size_t tmpShapeBuffer[*shapeSize];
+            // size_t tmpShapeBuffer[*shapeSize];
+            size_t *tmpShapeBuffer;
             j_db_iterator_get_field(iterator, "shape", &type,
                                     (gpointer *)&tmpShapeBuffer, &db_length,
                                     NULL);
@@ -503,7 +512,8 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
                                 (gpointer *)&startSize, &db_length, NULL);
         if (*startSize > 0)
         {
-            size_t tmpStartBuffer[*startSize];
+            // size_t tmpStartBuffer[*startSize];
+            size_t *tmpStartBuffer;
             j_db_iterator_get_field(iterator, "start", &type,
                                     (gpointer *)&tmpStartBuffer, &db_length,
                                     NULL);
@@ -514,7 +524,8 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
                                 (gpointer *)&countSize, &db_length, NULL);
         if (*countSize > 0)
         {
-            size_t tmpCountBuffer[*countSize];
+            // size_t tmpCountBuffer[*countSize];
+            size_t *tmpCountBuffer;
             j_db_iterator_get_field(iterator, "count", &type,
                                     (gpointer *)&tmpCountBuffer, &db_length,
                                     NULL);
@@ -525,7 +536,8 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
                                 (gpointer *)&memoryStartSize, &db_length, NULL);
         if (*memoryStartSize > 0)
         {
-            size_t tmpMemoryStartBuffer[*memoryStartSize];
+            // size_t tmpMemoryStartBuffer[*memoryStartSize];
+            size_t *tmpMemoryStartBuffer;
             j_db_iterator_get_field(iterator, "memoryStart", &type,
                                     (gpointer *)&tmpMemoryStartBuffer,
                                     &db_length, NULL);
@@ -537,7 +549,8 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
                                 (gpointer *)&memoryCountSize, &db_length, NULL);
         if (*memoryCountSize > 0)
         {
-            size_t tmpMemoryCountBuffer[*memoryCountSize];
+            // size_t tmpMemoryCountBuffer[*memoryCountSize];
+            size_t *tmpMemoryCountBuffer;
             j_db_iterator_get_field(iterator, "memoryStart", &type,
                                     (gpointer *)&tmpMemoryCountBuffer,
                                     &db_length, NULL);
