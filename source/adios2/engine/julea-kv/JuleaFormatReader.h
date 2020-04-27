@@ -79,10 +79,10 @@ void DeserializeVariableMetadata(gpointer buffer, std::string *type,
  * @param blockID          blockID (0 index)
  * @param info             info struct to store block infos in
  */
-template <class T>
-void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
-                              size_t blockID,
-                              typename core::Variable<T>::Info &info);
+// template <class T>
+// void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
+//                               size_t blockID,
+//                               typename core::Variable<T>::Info &info);
 
 void GetCountFromBlockMetadata(gpointer buffer, Dims *count);
 
@@ -131,11 +131,11 @@ void ParseAttributeFromBSON(const std::string nameSpace,
                             int *type, unsigned long **dataSizes);
 
 void GetAdiosTypeString(int type, std::string *typeString);
+// extern template void DeserializeBlockMetadata(                             \
+    //     Variable<T> &variable, gpointer buffer, size_t block,                  \
+    //     typename core::Variable<T>::Info &info);                               \
 
 #define variable_template_instantiation(T)                                     \
-    extern template void DeserializeBlockMetadata(                             \
-        Variable<T> &variable, gpointer buffer, size_t block,                  \
-        typename core::Variable<T>::Info &info);                               \
     extern template std::unique_ptr<typename core::Variable<T>::Info>          \
     GetDeserializedMetadata(const core::Variable<T> &variable,                 \
                             gpointer buffer);                                  \

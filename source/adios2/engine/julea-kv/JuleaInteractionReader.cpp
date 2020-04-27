@@ -91,9 +91,6 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
                         objName.c_str());
     // std::cout << "stringDataObject: " << stringDataObject << std::endl;
 
-    // auto stepBlockID = g_strdup_printf("%lu_%lu", step, block);
-    // std::cout << "stepBlockID: " << stepBlockID << std::endl;
-
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
