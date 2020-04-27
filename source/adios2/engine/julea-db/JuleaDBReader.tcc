@@ -94,8 +94,6 @@ void JuleaDBReader::GetSyncCommon(Variable<T> &variable, T *data)
                   << " Variable name: " << variable.m_Name << std::endl;
     }
 
-    std::cout << "variable.m_SingleValue = " << variable.m_SingleValue
-              << std::endl;
     if (variable.m_SingleValue)
     {
         // FIXME: just read metadata from DB. value is stored in there.
@@ -151,13 +149,13 @@ void JuleaDBReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
         stepBlockID =
             g_strdup_printf("%lu_%lu", variable.m_StepsStart, blockID);
         step = variable.m_StepsStart;
-        std::cout << "variable.m... stepBlockID: " << stepBlockID << std::endl;
+        // std::cout << "variable.m... stepBlockID: " << stepBlockID << std::endl;
     }
     else
     {
         stepBlockID = g_strdup_printf("%lu_%lu", m_CurrentStep, blockID);
         step = m_CurrentStep;
-        std::cout << "variable.m... stepBlockID: " << stepBlockID << std::endl;
+        // std::cout << "variable.m... stepBlockID: " << stepBlockID << std::endl;
     }
 
     // DBGetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
@@ -171,11 +169,7 @@ void JuleaDBReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
     }
 
     size_t numberElements = helper::GetTotalSize(count);
-    // std::cout << "count: " << count.front() << std::endl;
-    // std::cout << "count: " << count.size() << std::endl;
-    // std::cout << "numberElements: " << numberElements << std::endl;
     dataSize = numberElements * variable.m_ElementSize;
-    // std::cout << "dataSize: " << dataSize << std::endl;
     DBGetVariableDataFromJulea(variable, data, nameSpace, dataSize,
     stepBlockID);
 }
@@ -329,7 +323,7 @@ JuleaDBReader::BlocksInfoCommon(const core::Variable<T> &variable,
             *DBGetBlockMetadata(variable, nameSpace, step, i);
         info.IsReverseDims = false;
         info.Step = step;
-        std::cout << "blockID: " << info.BlockID << std::endl;
+        // std::cout << "blockID: " << info.BlockID << std::endl;
 
         blocksInfo.push_back(info);
     }
@@ -457,9 +451,9 @@ JuleaDBReader::InitVariableBlockInfo(core::Variable<T> &variable, T *data)
         // switch to bounding box for global array
         if (variable.m_ShapeID == ShapeID::GlobalArray)
         {
-            std::cout
-                << "----------- DEBUG: switch to bounding box for global array "
-                << std::endl;
+            // std::cout
+                // << "----------- DEBUG: switch to bounding box for global array "
+                // << std::endl;
             const Dims &start = blocksInfo[variable.m_BlockID].Start;
             const Dims &count = blocksInfo[variable.m_BlockID].Count;
 
@@ -467,9 +461,9 @@ JuleaDBReader::InitVariableBlockInfo(core::Variable<T> &variable, T *data)
         }
         else if (variable.m_ShapeID == ShapeID::LocalArray)
         {
-            std::cout
-                << "----------- DEBUG: switch to bounding box for local array "
-                << std::endl;
+            // std::cout
+                // << "----------- DEBUG: switch to bounding box for local array "
+                // << std::endl;
 
             // TODO from Adios people! "keep Count for block updated"
             variable.m_Count = blocksInfo[variable.m_BlockID].Count;

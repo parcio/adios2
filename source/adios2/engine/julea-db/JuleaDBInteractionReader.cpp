@@ -39,6 +39,10 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string varName,
     // std::cout << "----- InitVariable ---" << std::endl;
     const std::string type(io->InquireVariableType(varName));
 
+                // std::cout << "AvailableStepBlockIndexOffsets.size"             \
+                          << var->m_AvailableStepBlockIndexOffsets.size()      \
+                          << std::endl;                                        \
+
     /** no sensible information yet to store in AvailableStepBlockIndexOffsets.
      * So it is filled with dummy values. (42 + BlockID) */
     if (type == "compound")
@@ -56,9 +60,6 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string varName,
             {                                                                  \
                 var->m_AvailableStepBlockIndexOffsets[i + 1].push_back(42 +    \
                                                                        i);     \
-                std::cout << "AvailableStepBlockIndexOffsets.size"             \
-                          << var->m_AvailableStepBlockIndexOffsets.size()      \
-                          << std::endl;                                        \
             }                                                                  \
             var->m_AvailableStepsCount++;                                      \
         }                                                                      \
@@ -90,8 +91,9 @@ void DBDefineVariableInInit(core::IO *io, const std::string varName,
                             Dims count, bool constantDims)
 {
     const char *type = stringType.c_str();
-    std::cout << "------ DefineVariableInInit ----------" << std::endl;
-    std::cout << "------ type  ---------- " << type << std::endl;
+    // std::cout << "------ DefineVariableInInit ----------" << std::endl;
+    // std::cout << "------ type  ---------- " << type << std::endl;
+    // std::cout << "------ constantDims  ---------- " << constantDims << std::endl;
 
     if (strcmp(type, "unknown") == 0)
     {
@@ -186,7 +188,7 @@ void DBDefineVariableInInit(core::IO *io, const std::string varName,
 
         // std::cout << "first: " << it->first << " => " << it->second.begin()
         // << '\n';
-        std::cout << "first: " << it->first << '\n';
+        // std::cout << "first: " << it->first << '\n';
     }
 }
 
@@ -206,8 +208,8 @@ void CheckSchemas()
     j_db_schema_get(blockSchema, batch, NULL);
 
     bool existsBlock = j_batch_execute(batch);
-    std::cout << "existsVar: " << existsVar << " existsBlock: " << existsBlock
-              << std::endl;
+    // std::cout << "existsVar: " << existsVar << " existsBlock: " << existsBlock
+              // << std::endl;
     if ((existsVar == 0) || (existsBlock == 0))
     {
         std::cout << "ERROR: database adios2 schemas do not exist" << std::endl;
@@ -217,7 +219,7 @@ void CheckSchemas()
 void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
                          core::Engine &engine)
 {
-    std::cout << "--- InitVariablesFromDB ---" << std::endl;
+    // std::cout << "--- InitVariablesFromDB ---" << std::endl;
     int err = 0;
     JDBType type;
     guint64 db_length = 0;
@@ -264,7 +266,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
 
     while (j_db_iterator_next(iterator, NULL))
     {
-        std::cout << "---- while --- " << std::endl;
+        // std::cout << "---- while --- " << std::endl;
 
         j_db_iterator_get_field(iterator, "variableName", &type,
                                 (gpointer *)&varName, &db_length, NULL);
@@ -317,7 +319,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
         }
         j_db_iterator_get_field(iterator, "countSize", &type,
                                 (gpointer *)&countSize, &db_length, NULL);
-        std::cout << "countSize: " << *countSize << std::endl;
+        // std::cout << "countSize: " << *countSize << std::endl;
         if (*countSize > 0)
         {
             // size_t tmpCountBuffer[*countSize];
@@ -325,14 +327,11 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
             j_db_iterator_get_field(iterator, "count", &type,
                                     (gpointer *)&tmpCountBuffer, &db_length,
                                     NULL);
-            std::cout << "db_length: " << db_length << std::endl;
-            std::cout << "tmpCountBuffer[0]: " << tmpCountBuffer[0] << std::endl;
-            // std::cout << "tmpCountBuffer[0]: " << *tmpCountBuffer << std::endl;
-            // std::cout << "tmpCountBuffer[0]: " << &tmpCountBuffer << std::endl;
-            // std::cout << "tmpCountBuffer[0]: " << tmpCountBuffer << std::endl;
+            // std::cout << "db_length: " << db_length << std::endl;
+            // std::cout << "tmpCountBuffer[0]: " << tmpCountBuffer[0] << std::endl;
             Dims tmpCount(tmpCountBuffer, tmpCountBuffer + *countSize);
             count = tmpCount;
-            std::cout << "count: " << tmpCount.front() << std::endl;
+            // std::cout << "count: " << tmpCount.front() << std::endl;
         }
         j_db_iterator_get_field(iterator, "numberSteps", &type,
                                 (gpointer *)&numberSteps, &db_length, NULL);
@@ -342,8 +341,8 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
             j_db_iterator_get_field(iterator, "blockArray", &type,
                                     (gpointer *)tmpblocks, &db_length, NULL);
             blocks = *tmpblocks;
-            std::cout << "numberSteps: " << blocks[0] << std::endl;
-            std::cout << "numberSteps: " << blocks[1] << std::endl;
+            // std::cout << "numberSteps: " << blocks[0] << std::endl;
+            // std::cout << "numberSteps: " << blocks[1] << std::endl;
         }
 
         if (false)
@@ -366,7 +365,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
         }
 
         DBDefineVariableInInit(io, varName, varType, shape, start, count,
-                               isConstantDims);
+                               *isConstantDims);
 
         DBInitVariable(io, engine, varName, blocks, *numberSteps, *shapeID,
                        *isReadAsJoined, *isReadAsLocalValue, *isRandomAccess,
@@ -379,7 +378,7 @@ void GetCountFromBlockMetadata(const std::string nameSpace,
                                const std::string varName, size_t step,
                                size_t block, Dims *count)
 {
-    std::cout << "------ GetCountFromBlockMetadata ----------" << std::endl;
+    // std::cout << "------ GetCountFromBlockMetadata ----------" << std::endl;
     int err = 0;
     JDBType type;
     guint64 db_length = 0;
@@ -408,8 +407,8 @@ void GetCountFromBlockMetadata(const std::string nameSpace,
     j_db_selector_add_field(selector, "block", J_DB_SELECTOR_OPERATOR_EQ,
                             &block, sizeof(block), NULL);
 
-    std::cout << "varname: " << varName << "step: " << step
-              << "block: " << block << std::endl;
+    // std::cout << "varname: " << varName << "step: " << step
+              // << "block: " << block << std::endl;
 
     iterator = j_db_iterator_new(schema, selector, NULL);
     if (j_db_iterator_next(iterator, NULL))
@@ -424,8 +423,8 @@ void GetCountFromBlockMetadata(const std::string nameSpace,
                                     (gpointer *)&tmpCountBuffer, &db_length,
                                     NULL);
             Dims tmpCount(tmpCountBuffer, tmpCountBuffer + *countSize);
-            std::cout << "tmpCount: " << tmpCount.front() << std::endl;
-            std::cout << "tmpCount: " << tmpCount.size() << std::endl;
+            // std::cout << "tmpCount: " << tmpCount.front() << std::endl;
+            // std::cout << "tmpCount: " << tmpCount.size() << std::endl;
             *count = tmpCount;
         }
     }
@@ -436,7 +435,7 @@ std::unique_ptr<typename core::Variable<T>::Info>
 DBGetBlockMetadata(const core::Variable<T> &variable,
                    const std::string nameSpace, size_t step, size_t block)
 {
-    std::cout << "--- DBGetBlockMetadata ---" << std::endl;
+    // std::cout << "--- DBGetBlockMetadata ---" << std::endl;
     std::unique_ptr<typename Variable<T>::Info> info(
         new (typename Variable<T>::Info));
     int err = 0;
@@ -478,8 +477,8 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
     schema = j_db_schema_new("adios2", "block-metadata", NULL);
     j_db_schema_get(schema, batch, NULL);
     err = j_batch_execute(batch);
-    std::cout << "step: " << step << std::endl;
-    std::cout << "block: " << block << std::endl;
+    // std::cout << "step: " << step << std::endl;
+    // std::cout << "block: " << block << std::endl;
     selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
     j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
                             nameSpace.c_str(), strlen(nameSpace.c_str()) + 1,
@@ -493,7 +492,7 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
     iterator = j_db_iterator_new(schema, selector, NULL);
     if (j_db_iterator_next(iterator, NULL))
     {
-        std::cout << "-------------- DEBUG ------------ " << std::endl;
+        // std::cout << "-------------- DEBUG ------------ " << std::endl;
 
         j_db_iterator_get_field(iterator, "shapeSize", &type,
                                 (gpointer *)&shapeSize, &db_length, NULL);
@@ -582,20 +581,18 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
         j_db_iterator_get_field(iterator, "blockID", &type,
                                 (gpointer *)&blockID, &db_length, NULL);
         info->BlockID = *blockID;
-        std::cout << "shapeSize: " << *shapeSize << std::endl;
-        std::cout << "startSize: " << *startSize << std::endl;
-        std::cout << "countSize: " << *countSize << std::endl;
-        std::cout << "memoryStartSize: " << *memoryStartSize << std::endl;
-        std::cout << "memoryCountSize: " << *memoryCountSize << std::endl;
-        std::cout << "info->Min: " << info->Min << std::endl;
-        std::cout << "info->Max: " << info->Max << std::endl;
-        std::cout << "info->Value: " << info->Value << std::endl;
-        std::cout << "info->StepsStart: " << info->StepsStart << std::endl;
-        std::cout << "info->StepsCount: " << info->StepsCount << std::endl;
-        std::cout << "info->BlockID: " << info->BlockID << std::endl;
-        std::cout << "info->IsValue: " << info->IsValue << std::endl;
-        // std::cout << "size: m_BlocksInfo " << variable.m_BlocksInfo->size()
-        // << std::endl;
+        // std::cout << "shapeSize: " << *shapeSize << std::endl;
+        // std::cout << "startSize: " << *startSize << std::endl;
+        // std::cout << "countSize: " << *countSize << std::endl;
+        // std::cout << "memoryStartSize: " << *memoryStartSize << std::endl;
+        // std::cout << "memoryCountSize: " << *memoryCountSize << std::endl;
+        // std::cout << "info->Min: " << info->Min << std::endl;
+        // std::cout << "info->Max: " << info->Max << std::endl;
+        // std::cout << "info->Value: " << info->Value << std::endl;
+        // std::cout << "info->StepsStart: " << info->StepsStart << std::endl;
+        // std::cout << "info->StepsCount: " << info->StepsCount << std::endl;
+        // std::cout << "info->BlockID: " << info->BlockID << std::endl;
+        // std::cout << "info->IsValue: " << info->IsValue << std::endl;
     }
     return info;
 }
@@ -605,7 +602,7 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
                                 const std::string nameSpace, size_t dataSize,
                                 const std::string stepBlockID)
 {
-    std::cout << "-- GetVariableDataFromJulea ----- " << std::endl;
+    // std::cout << "-- GetVariableDataFromJulea ----- " << std::endl;
 
     guint64 bytesRead = 0;
     const char *varName = variable.m_Name.c_str();
@@ -614,7 +611,7 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
     auto stringDataObject =
         g_strdup_printf("%s_%s_%s", nameSpace.c_str(), variable.m_Name.c_str(),
                         objName.c_str());
-    std::cout << "stringDataObject: " << stringDataObject << std::endl;
+    // std::cout << "stringDataObject: " << stringDataObject << std::endl;
 
     // auto stepBlockID = g_strdup_printf("%lu_%lu", step, block);
     // std::cout << "stepBlockID: " << stepBlockID << std::endl;
@@ -623,15 +620,14 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
     auto batch = j_batch_new(semantics);
 
     auto dataObject = j_object_new(stringDataObject, stepBlockID.c_str());
-    std::cout << "REACHED " << std::endl;
 
     j_object_read(dataObject, data, dataSize, 0, &bytesRead, batch);
     g_assert_true(j_batch_execute(batch) == true);
 
     if (bytesRead == dataSize)
     {
-        std::cout << "++ Julea Interaction Reader: Read data for variable "
-                  << varName << std::endl;
+        // std::cout << "++ Julea Interaction Reader: Read data for variable "
+                  // << varName << std::endl;
     }
     else
     {
