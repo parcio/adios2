@@ -335,8 +335,7 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
                          NULL);
     j_db_entry_set_field(entry, "stepsCount", &stepsCount, sizeof(stepsCount),
                          NULL);
-    j_db_entry_set_field(entry, "blockID", &blockID, sizeof(blockID),
-                         NULL);
+    j_db_entry_set_field(entry, "blockID", &blockID, sizeof(blockID), NULL);
 }
 void InitDBSchemas()
 {

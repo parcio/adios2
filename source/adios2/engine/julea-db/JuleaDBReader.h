@@ -152,8 +152,11 @@ private:
     typename core::Variable<T>::Info &
     InitVariableBlockInfo(core::Variable<T> &variable, T *data);
 
+    // template <class T>
+    // void ReadVariableBlocks(Variable<T> &variable);
+
     template <class T>
-    void ReadVariableBlocks(Variable<T> &variable);
+    void ReadBlock(Variable<T> &variable, T *data, size_t blockID);
 
     template <class T>
     std::vector<typename core::Variable<T>::Info>

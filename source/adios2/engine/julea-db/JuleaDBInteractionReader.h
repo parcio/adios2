@@ -30,10 +30,26 @@ void CheckSchemas();
 void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
                          core::Engine &engine);
 
+/**
+ * Deserialize the metadata of a single block of a step of a variable.
+ * @param variable         variable
+ * @param buffer           metadata buffer from JULEA key-value store
+ * @param blockID          blockID (0 index)
+ * @param info             info struct to store block infos in
+ */
+// template <class T>
+// void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
+//                               size_t blockID,
+//                               typename core::Variable<T>::Info &info);
+
+void GetCountFromBlockMetadata(const std::string nameSpace,
+                               const std::string varName, size_t step,
+                               size_t block, Dims *count);
+
 template <class T>
-void DBGetBlockMetadata(const core::Variable<T> &variable, const std::string nameSpace,
-                        size_t step, size_t block,
-                        typename core::Variable<T>::Info &info);
+std::unique_ptr<typename core::Variable<T>::Info>
+DBGetBlockMetadata(const core::Variable<T> &variable,
+                   const std::string nameSpace, size_t step, size_t block);
 /* --- Variables --- */
 
 /** Retrieves all variable names from key-value store. They are all stored
@@ -60,17 +76,18 @@ void DBGetBlockMetadataFromJulea(const std::string nameSpace,
 template <class T>
 void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
                                 const std::string nameSpace,
-                                long unsigned int dataSize, size_t step,
-                                size_t block);
+                                long unsigned int dataSize,
+                                const std::string stepBlockID);
 
 #define variable_template_instantiation(T)                                     \
-    extern template void DBGetBlockMetadata( const                                  \
-        core::Variable<T> &variable, const std::string nameSpace, size_t step,       \
-        size_t block, typename core::Variable<T>::Info &info);                 \
+    extern template std::unique_ptr<typename core::Variable<T>::Info>          \
+    DBGetBlockMetadata(const core::Variable<T> &variable,                      \
+                       const std::string nameSpace, size_t step,               \
+                       size_t block);                                          \
                                                                                \
     extern template void DBGetVariableDataFromJulea(                           \
         Variable<T> &variable, T *data, const std::string nameSpace,           \
-        long unsigned int dataSize, size_t step, size_t block);
+        long unsigned int dataSize, const std::string stepBlockID);
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 

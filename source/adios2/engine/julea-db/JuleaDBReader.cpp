@@ -141,7 +141,7 @@ void JuleaDBReader::PerformGets()
     {
         return;
     }
-
+    size_t i = 0;
     /** Call GetSyncCommon for every variable that has been deferred */
     for (const std::string &variableName : m_DeferredVariables)
     {
@@ -160,6 +160,9 @@ void JuleaDBReader::PerformGets()
             variableName, "in call to PerformGets, EndStep or Close");         \
         for (auto &blockInfo : variable.m_BlocksInfo)                          \
         {                                                                      \
+            T *data = variable.m_BlocksInfo[i].Data;                           \
+            ReadBlock(variable, data, i);                                      \
+            i++;                                                               \
         }                                                                      \
         variable.m_BlocksInfo.clear();                                         \
     }

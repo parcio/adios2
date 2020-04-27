@@ -102,7 +102,9 @@ void JuleaDBReader::GetSyncCommon(Variable<T> &variable, T *data)
     }
 
     InitVariableBlockInfo(variable, data);
-    ReadVariableBlocks(variable);
+
+    ReadBlock(variable, data, variable.m_BlockID);
+
     variable.m_BlocksInfo.pop_back();
 }
 
@@ -115,85 +117,139 @@ void JuleaDBReader::GetDeferredCommon(Variable<T> &variable, T *data)
                   << variable.m_Name << ")\n";
     }
 
-    // returns immediately without populating data
-    InitVariableBlockInfo(variable, data); // TODO: needed?
+    // store data pointer in related blockinfo to be called in perform gets
+    InitVariableBlockInfo(variable, data);
+
+    size_t size = variable.m_BlocksInfo.size();
+    variable.m_BlocksInfo[size - 1].BlockID = variable.m_BlockID;
+
     m_DeferredVariables.insert(variable.m_Name);
 }
 
 template <class T>
-void JuleaDBReader::ReadVariableBlocks(Variable<T> &variable)
+void JuleaDBReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "\n__________ReadVariableBlocks_____________" << std::endl;
-        std::cout << "Julea DB Reader " << m_ReaderRank
-                  << " Namespace: " << m_Name
+        std::cout << "\n ReadBlock" << std::endl;
+        std::cout << "Julea Reader " << m_ReaderRank << " Namespace: " << m_Name
                   << " Variable name: " << variable.m_Name << std::endl;
     }
+    size_t step = 0;
+    std::string stepBlockID;
+    Dims count;
+    std::string nameSpace = m_Name;
 
-    for (typename Variable<T>::Info &blockInfo : variable.m_BlocksInfo)
+    long unsigned int dataSize = 0;
+    guint32 buffer_len = 0;
+    gpointer md_buffer = nullptr;
+
+    if (m_UseKeysForBPLS)
     {
-        std::cout << "blocksInfos.size: " << variable.m_BlocksInfo.size()
-        << std::endl;
-        long unsigned int dataSize = 0;
-        guint32 buffer_len = 0;
-        std::string nameSpace = m_Name;
-        std::string stepBlockID;
-        gpointer md_buffer = nullptr;
-        size_t block = 0;
-        size_t step = 0;
-
-        if (m_UseKeysForBPLS)
-        {
-            stepBlockID = g_strdup_printf("%lu_%lu", variable.m_StepsStart,
-                                          variable.m_BlockID);
-            step = variable.m_StepsStart;
-            block = variable.m_BlockID;
-            std::cout << "variable.m... stepBlockID: " << stepBlockID <<
-            std::endl;
-        }
-        else
-        {
-            stepBlockID =
-                g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
-                step = m_CurrentStep;
-                block = m_CurrentBlockID;
-            std::cout << "m_Current... stepBlockID: " << stepBlockID <<
-            std::endl;
-        }
-
-        // GetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
-        // &buffer_len, stepBlockID);
-        // DeserializeBlockMetadata(variable, md_buffer, variable.m_BlockID,
-        // blockInfo);
-        DBGetBlockMetadata(variable,nameSpace,step, block, blockInfo);
-        // variable.m_BlocksInfo.push_back(blockInfo);
-        variable.m_BlocksInfo[block] = blockInfo;
-        // variable.m_BlocksInfo[0] = blockInfo;
-
-        if (variable.m_SingleValue)
-        {
-            std::cout << "Single value" << std::endl;
-            return;
-        }
-
-        size_t numberElements = helper::GetTotalSize(blockInfo.Count);
-        dataSize = numberElements * variable.m_ElementSize;
-
-        T *data = blockInfo.Data;
-        if (m_UseKeysForBPLS)
-        {
-            DBGetVariableDataFromJulea(variable, data, nameSpace, dataSize,
-            variable.m_StepsStart, variable.m_BlockID);
-        }
-        else
-        {
-            DBGetVariableDataFromJulea(variable, data, nameSpace, dataSize,
-            m_CurrentStep, m_CurrentBlockID);
-        }
-        m_CurrentBlockID++;
+        stepBlockID =
+            g_strdup_printf("%lu_%lu", variable.m_StepsStart, blockID);
+        step = variable.m_StepsStart;
+        // std::cout << "variable.m... stepBlockID: " << stepBlockID <<
+        // std::endl;
     }
+    else
+    {
+        stepBlockID = g_strdup_printf("%lu_%lu", m_CurrentStep, blockID);
+        step = m_CurrentStep;
+        // std::cout << "variable.m... stepBlockID: " << stepBlockID <<
+        // std::endl;
+    }
+
+    // DBGetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
+    //                           &buffer_len, stepBlockID);
+    GetCountFromBlockMetadata(nameSpace, variable.m_Name, step, blockID,
+                              &count);
+    if (variable.m_SingleValue)
+    {
+        std::cout << "Single value" << std::endl;
+        return;
+    }
+
+    size_t numberElements = helper::GetTotalSize(count);
+    dataSize = numberElements * variable.m_ElementSize;
+    DBGetVariableDataFromJulea(variable, data, nameSpace, dataSize,
+                               stepBlockID);
 }
+
+// template <class T>
+// void JuleaDBReader::ReadVariableBlocks(Variable<T> &variable)
+// {
+//     if (m_Verbosity == 5)
+//     {
+//         std::cout << "\n__________ReadVariableBlocks_____________" <<
+//         std::endl; std::cout << "Julea DB Reader " << m_ReaderRank
+//                   << " Namespace: " << m_Name
+//                   << " Variable name: " << variable.m_Name << std::endl;
+//     }
+
+//     for (typename Variable<T>::Info &blockInfo : variable.m_BlocksInfo)
+//     {
+//         std::cout << "blocksInfos.size: " << variable.m_BlocksInfo.size()
+//         << std::endl;
+//         long unsigned int dataSize = 0;
+//         guint32 buffer_len = 0;
+//         std::string nameSpace = m_Name;
+//         std::string stepBlockID;
+//         gpointer md_buffer = nullptr;
+//         size_t block = 0;
+//         size_t step = 0;
+
+//         if (m_UseKeysForBPLS)
+//         {
+//             stepBlockID = g_strdup_printf("%lu_%lu", variable.m_StepsStart,
+//                                           variable.m_BlockID);
+//             step = variable.m_StepsStart;
+//             block = variable.m_BlockID;
+//             std::cout << "variable.m... stepBlockID: " << stepBlockID <<
+//             std::endl;
+//         }
+//         else
+//         {
+//             stepBlockID =
+//                 g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
+//                 step = m_CurrentStep;
+//                 block = m_CurrentBlockID;
+//             std::cout << "m_Current... stepBlockID: " << stepBlockID <<
+//             std::endl;
+//         }
+
+//         // GetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
+//         // &buffer_len, stepBlockID);
+//         // DeserializeBlockMetadata(variable, md_buffer, variable.m_BlockID,
+//         // blockInfo);
+//         DBGetBlockMetadata(variable,nameSpace,step, block, blockInfo);
+//         // variable.m_BlocksInfo.push_back(blockInfo);
+//         variable.m_BlocksInfo[block] = blockInfo;
+//         // variable.m_BlocksInfo[0] = blockInfo;
+
+//         if (variable.m_SingleValue)
+//         {
+//             std::cout << "Single value" << std::endl;
+//             return;
+//         }
+
+//         size_t numberElements = helper::GetTotalSize(blockInfo.Count);
+//         dataSize = numberElements * variable.m_ElementSize;
+
+//         T *data = blockInfo.Data;
+//         if (m_UseKeysForBPLS)
+//         {
+//             DBGetVariableDataFromJulea(variable, data, nameSpace, dataSize,
+//             variable.m_StepsStart, variable.m_BlockID);
+//         }
+//         else
+//         {
+//             DBGetVariableDataFromJulea(variable, data, nameSpace, dataSize,
+//             m_CurrentStep, m_CurrentBlockID);
+//         }
+//         m_CurrentBlockID++;
+//     }
+// }
 
 template <class T>
 std::map<size_t, std::vector<typename core::Variable<T>::Info>>
@@ -244,6 +300,7 @@ JuleaDBReader::BlocksInfoCommon(const core::Variable<T> &variable,
                   << " Namespace: " << m_Name
                   << " Variable name: " << variable.m_Name << std::endl;
         std::cout << "--- step: " << step << std::endl;
+        std::cout << "blocksIndexOffsets.size(): " << blocksIndexOffsets.size() <<std::endl;
     }
     std::vector<typename core::Variable<T>::Info> blocksInfo;
     blocksInfo.reserve(blocksIndexOffsets.size());
@@ -261,13 +318,13 @@ JuleaDBReader::BlocksInfoCommon(const core::Variable<T> &variable,
         // GetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
         // &buffer_len, stepBlockID);
 
-        typename core::Variable<T>::Info info;
-        // typename core::Variable<T>::Info info =
+        // typename core::Variable<T>::Info info;
         // *GetDeserializedMetadata(variable, md_buffer);
-         DBGetBlockMetadata(variable,nameSpace,step, i, info);
+        typename core::Variable<T>::Info info =
+        *DBGetBlockMetadata(variable, nameSpace, step, i);
         info.IsReverseDims = false;
         info.Step = step;
-        std::cout << "blockID: " << info.BlockID <<std::endl;
+        std::cout << "blockID: " << info.BlockID << std::endl;
 
         blocksInfo.push_back(info);
     }
@@ -396,8 +453,8 @@ JuleaDBReader::InitVariableBlockInfo(core::Variable<T> &variable, T *data)
         if (variable.m_ShapeID == ShapeID::GlobalArray)
         {
             std::cout
-            << "----------- DEBUG: switch to bounding box for global array "
-            << std::endl;
+                << "----------- DEBUG: switch to bounding box for global array "
+                << std::endl;
             const Dims &start = blocksInfo[variable.m_BlockID].Start;
             const Dims &count = blocksInfo[variable.m_BlockID].Count;
 
@@ -406,8 +463,8 @@ JuleaDBReader::InitVariableBlockInfo(core::Variable<T> &variable, T *data)
         else if (variable.m_ShapeID == ShapeID::LocalArray)
         {
             std::cout
-            << "----------- DEBUG: switch to bounding box for local array "
-            << std::endl;
+                << "----------- DEBUG: switch to bounding box for local array "
+                << std::endl;
 
             // TODO from Adios people! "keep Count for block updated"
             variable.m_Count = blocksInfo[variable.m_BlockID].Count;
