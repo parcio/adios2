@@ -152,6 +152,9 @@ private:
     void ReadVariableBlocks(Variable<T> &variable);
 
     template <class T>
+void ReadBlock(Variable<T> &variable, T *data, size_t blockID);
+
+    template <class T>
     std::vector<typename core::Variable<T>::Info>
     BlocksInfoCommon(const core::Variable<T> &variable,
                      const std::vector<size_t> &blocksIndexOffsets,

@@ -47,13 +47,12 @@ void GetBlockMetadataFromJulea(const std::string nameSpace,
 template <class T>
 void GetVariableDataFromJulea(Variable<T> &variable, T *data,
                               const std::string nameSpace,
-                              long unsigned int dataSize, size_t step,
-                              size_t block);
+                              long unsigned int dataSize, const std::string stepBlockID);
 
 #define variable_template_instantiation(T)                                     \
     extern template void GetVariableDataFromJulea(                             \
         Variable<T> &variable, T *data, const std::string nameSpace,           \
-        long unsigned int dataSize, size_t step, size_t block);
+        long unsigned int dataSize,const std::string stepBlockID);
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 

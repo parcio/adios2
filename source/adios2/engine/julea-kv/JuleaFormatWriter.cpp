@@ -208,6 +208,18 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
 
     char *buffer = (char *)g_slice_alloc(len);
 
+    /** --- count --- */
+    memcpy(buffer, &countSize, sizeof(size_t));
+    buffer += sizeof(size_t);
+
+    size_t countBuffer[countSize];
+    for (uint i = 0; i < countSize; i++)
+    {
+        countBuffer[i] = blockInfo.Count.data()[i];
+    }
+    memcpy(buffer, countBuffer, countLen);
+    buffer += countLen;
+
     /** --- shape ---*/
     memcpy(buffer, &shapeSize, sizeof(size_t));
     buffer += sizeof(size_t);
@@ -232,18 +244,6 @@ gpointer SerializeBlockMetadata(Variable<T> &variable, guint32 &len,
 
     memcpy(buffer, startBuffer, startLen);
     buffer += startLen;
-
-    /** --- count --- */
-    memcpy(buffer, &countSize, sizeof(size_t));
-    buffer += sizeof(size_t);
-
-    size_t countBuffer[countSize];
-    for (uint i = 0; i < countSize; i++)
-    {
-        countBuffer[i] = blockInfo.Count.data()[i];
-    }
-    memcpy(buffer, countBuffer, countLen);
-    buffer += countLen;
 
     /** ---memorystart --- */
     memcpy(buffer, &memoryStartSize, sizeof(size_t));

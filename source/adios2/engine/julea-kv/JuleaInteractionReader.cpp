@@ -78,7 +78,7 @@ void GetBlockMetadataFromJulea(const std::string nameSpace,
 template <class T>
 void GetVariableDataFromJulea(Variable<T> &variable, T *data,
                               const std::string nameSpace, size_t dataSize,
-                              size_t step, size_t block)
+                              const std::string stepBlockID)
 {
     // std::cout << "-- GetVariableDataFromJulea ----- " << std::endl;
 
@@ -91,13 +91,13 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
                         objName.c_str());
     // std::cout << "stringDataObject: " << stringDataObject << std::endl;
 
-    auto stepBlockID = g_strdup_printf("%lu_%lu", step, block);
+    // auto stepBlockID = g_strdup_printf("%lu_%lu", step, block);
     // std::cout << "stepBlockID: " << stepBlockID << std::endl;
 
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
-    auto dataObject = j_object_new(stringDataObject, stepBlockID);
+    auto dataObject = j_object_new(stringDataObject, stepBlockID.c_str());
 
     j_object_read(dataObject, data, dataSize, 0, &bytesRead, batch);
     g_assert_true(j_batch_execute(batch) == true);
@@ -182,7 +182,7 @@ void GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
 #define variable_template_instantiation(T)                                     \
     template void GetVariableDataFromJulea(                                    \
         Variable<T> &variable, T *data, const std::string nameSpace,           \
-        long unsigned int dataSize, size_t step, size_t block);
+        long unsigned int dataSize, const std::string stepBlockID);
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 

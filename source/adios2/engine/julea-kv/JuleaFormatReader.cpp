@@ -344,61 +344,10 @@ void GetCountFromBlockMetadata(gpointer buffer, Dims *count)
 {
     // std::cout << "------ DeserializeBlockMetadata ----------" << std::endl;
 
-    // typename Variable<T>::Info info = infoParam;
-    // typename Variable<T>::Info info;
     char *tmpBuffer = (char *)buffer;
 
-    size_t shapeSize = 0;
-    size_t startSize = 0;
     size_t countSize = 0;
-    size_t memoryStartSize = 0;
-    size_t memoryCountSize = 0;
-
-    size_t shapeLen = 0;
-    size_t startLen = 0;
     size_t countLen = 0;
-    size_t memoryStartLen = 0;
-    size_t memoryCountLen = 0;
-
-    // size_t minLen = sizeof(T);
-    // size_t maxLen = sizeof(T);
-    // size_t valueLen = sizeof(T);
-
-    size_t stepsStart = 0;
-    size_t stepsCount = 0;
-    size_t blockID = 0;
-
-    bool isValue = false;
-
-    /** shape */
-    memcpy(&shapeSize, tmpBuffer, sizeof(size_t));
-    tmpBuffer += sizeof(size_t);
-
-    shapeLen = sizeof(size_t) * shapeSize;
-    size_t tmpShapeBuffer[shapeSize];
-
-    memcpy(&tmpShapeBuffer, tmpBuffer, shapeLen);
-    tmpBuffer += shapeLen;
-    if (shapeSize > 0)
-    {
-        Dims tmpShape(tmpShapeBuffer, tmpShapeBuffer + shapeSize);
-        // info.Shape = tmpShape;
-    }
-
-    /** start */
-    memcpy(&startSize, tmpBuffer, sizeof(size_t));
-    tmpBuffer += sizeof(size_t);
-
-    startLen = sizeof(size_t) * startSize;
-    size_t tmpStartBuffer[startSize];
-
-    memcpy(&tmpStartBuffer, tmpBuffer, startLen);
-    tmpBuffer += startLen;
-    if (startSize > 0)
-    {
-        Dims tmpStart(tmpStartBuffer, tmpStartBuffer + startSize);
-        // info.Start = tmpStart;
-    }
 
     /** count */
     memcpy(&countSize, tmpBuffer, sizeof(size_t));
@@ -412,85 +361,11 @@ void GetCountFromBlockMetadata(gpointer buffer, Dims *count)
     if (countSize > 0)
     {
         Dims tmpCount(tmpCountBuffer, tmpCountBuffer + countSize);
-        // info.Count = tmpCount;
         *count = tmpCount;
-        // std::cout << "count: " << info.Count.front() << std::endl;
+        std::cout << "count: " << tmpCount.front() << std::endl;
+        std::cout << "count size: " << tmpCount.size() << std::endl;
     }
-
-    // /** ---memorystart --- */
-    // memcpy(&memoryStartSize, tmpBuffer, sizeof(size_t));
-    // tmpBuffer += sizeof(size_t);
-
-    // size_t tmpMemoryStartBuffer[memoryStartSize];
-    // memoryStartLen = sizeof(size_t) * memoryStartSize;
-
-    // memcpy(&tmpMemoryStartBuffer, tmpBuffer, memoryStartLen);
-    // tmpBuffer += memoryStartLen;
-
-    // if (countSize > 0)
-    // {
-    //     Dims tmpMemoryStart(tmpMemoryStartBuffer,
-    //                         tmpMemoryStartBuffer + memoryStartLen);
-    //     // info.MemoryStart = tmpMemoryStart;
-    // }
-
-    // /** ---memorycount --- */
-    // memcpy(&memoryCountSize, tmpBuffer, sizeof(size_t));
-    // tmpBuffer += sizeof(size_t);
-
-    // size_t tmpMemoryCountBuffer[memoryCountSize];
-    // memoryCountLen = sizeof(size_t) * memoryCountSize;
-
-    // memcpy(&tmpMemoryCountBuffer, tmpBuffer, memoryCountLen);
-    // tmpBuffer += memoryCountLen;
-
-    // if (countSize > 0)
-    // {
-    //     Dims tmpMemoryCount(tmpMemoryCountBuffer,
-    //                         tmpMemoryCountBuffer + memoryCountLen);
-    //     // info.MemoryCount = tmpMemoryCount;
-    // }
-
-    // /** --- no more vectors from here on --- */
-    // memcpy(&info.Min, tmpBuffer, minLen); // Min
-    // tmpBuffer += sizeof(minLen);
-
-    // memcpy(&info.Max, tmpBuffer, maxLen); // Max
-    // tmpBuffer += sizeof(maxLen);
-
-    // memcpy(&info.Value, tmpBuffer, valueLen); // Value
-    // tmpBuffer += sizeof(maxLen);
-
-    // memcpy(&info.StepsStart, tmpBuffer, sizeof(size_t)); // StepsStart
-    // tmpBuffer += sizeof(size_t);
-
-    // memcpy(&info.StepsCount, tmpBuffer, sizeof(size_t)); // StepsCount
-    // tmpBuffer += sizeof(size_t);
-
-    // memcpy(&info.BlockID, tmpBuffer, sizeof(size_t)); // BlockID
-    // tmpBuffer += sizeof(size_t);
-
-    // memcpy(&info.IsValue, tmpBuffer, sizeof(bool)); // isValue
-    // tmpBuffer += sizeof(bool);
-
-    // std::cout << "shapeSize: " << shapeSize << std::endl;
-    // std::cout << "startSize: " << startSize << std::endl;
-    // std::cout << "countSize: " << countSize << std::endl;
-    // std::cout << "memoryStartSize: " << memoryStartSize << std::endl;
-    // std::cout << "memoryCountSize: " << memoryCountSize << std::endl;
-    // std::cout << "info.Min: " << info.Min << std::endl;
-    // std::cout << "info.Max: " << info.Max << std::endl;
-    // std::cout << "info.Value: " << info.Value << std::endl;
-    // std::cout << "info.StepsStart: " << info.StepsStart << std::endl;
-    // std::cout << "info.StepsCount: " << info.StepsCount << std::endl;
-    // std::cout << "info.BlockID: " << info.BlockID << std::endl;
-    // std::cout << "info.IsValue: " << info.IsValue << std::endl;
-    // std::cout << "size: m_BlocksInfo " << variable.m_BlocksInfo.size()
-    //           << std::endl;
-
-    // variable.m_BlocksInfo[0] = info;
 }
-
 
 /**
  * Deserializes the passed buffer and adds the created blockinfo to the variable
@@ -527,6 +402,22 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
 
     bool isValue = false;
 
+    /** count */
+    memcpy(&countSize, tmpBuffer, sizeof(size_t));
+    tmpBuffer += sizeof(size_t);
+
+    size_t tmpCountBuffer[countSize];
+    countLen = sizeof(size_t) * countSize;
+
+    memcpy(&tmpCountBuffer, tmpBuffer, countLen);
+    tmpBuffer += countLen;
+    if (countSize > 0)
+    {
+        Dims tmpCount(tmpCountBuffer, tmpCountBuffer + countSize);
+        info.Count = tmpCount;
+        // std::cout << "count: " << info.Count.front() << std::endl;
+    }
+
     /** shape */
     memcpy(&shapeSize, tmpBuffer, sizeof(size_t));
     tmpBuffer += sizeof(size_t);
@@ -555,22 +446,6 @@ void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
     {
         Dims tmpStart(tmpStartBuffer, tmpStartBuffer + startSize);
         info.Start = tmpStart;
-    }
-
-    /** count */
-    memcpy(&countSize, tmpBuffer, sizeof(size_t));
-    tmpBuffer += sizeof(size_t);
-
-    size_t tmpCountBuffer[countSize];
-    countLen = sizeof(size_t) * countSize;
-
-    memcpy(&tmpCountBuffer, tmpBuffer, countLen);
-    tmpBuffer += countLen;
-    if (countSize > 0)
-    {
-        Dims tmpCount(tmpCountBuffer, tmpCountBuffer + countSize);
-        info.Count = tmpCount;
-        // std::cout << "count: " << info.Count.front() << std::endl;
     }
 
     /** ---memorystart --- */
@@ -686,6 +561,23 @@ GetDeserializedMetadata(const core::Variable<T> &variable, gpointer buffer)
 
     bool isValue = false;
 
+    /** --- count --- */
+    memcpy(&countSize, tmpBuffer, sizeof(size_t)); // count
+    tmpBuffer += sizeof(size_t);
+
+    size_t tmpCountBuffer[countSize];
+    countLen = sizeof(size_t) * countSize;
+
+    memcpy(&tmpCountBuffer, tmpBuffer, countLen);
+    tmpBuffer += countLen;
+    if (countSize > 0)
+    {
+        Dims tmpCount(tmpCountBuffer, tmpCountBuffer + countSize);
+        info->Count = tmpCount;
+        // std::cout << "count: " << info.Count.front() << std::endl;
+        // delete tmpCount;
+    }
+
     /** --- shape --- */
     memcpy(&shapeSize, tmpBuffer, sizeof(size_t));
     tmpBuffer += sizeof(size_t);
@@ -714,23 +606,6 @@ GetDeserializedMetadata(const core::Variable<T> &variable, gpointer buffer)
     {
         Dims tmpStart(tmpStartBuffer, tmpStartBuffer + startSize);
         info->Start = tmpStart;
-    }
-
-    /** --- count --- */
-    memcpy(&countSize, tmpBuffer, sizeof(size_t)); // count
-    tmpBuffer += sizeof(size_t);
-
-    size_t tmpCountBuffer[countSize];
-    countLen = sizeof(size_t) * countSize;
-
-    memcpy(&tmpCountBuffer, tmpBuffer, countLen);
-    tmpBuffer += countLen;
-    if (countSize > 0)
-    {
-        Dims tmpCount(tmpCountBuffer, tmpCountBuffer + countSize);
-        info->Count = tmpCount;
-        // std::cout << "count: " << info.Count.front() << std::endl;
-        // delete tmpCount;
     }
 
     /** --- memorystart --- */

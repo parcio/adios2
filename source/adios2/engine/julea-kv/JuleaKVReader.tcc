@@ -101,6 +101,68 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
     }
     InitVariableBlockInfo(variable, data);
 
+    // std::string stepBlockID;
+    // Dims count;
+    // std::string nameSpace = m_Name;
+
+    // long unsigned int dataSize = 0;
+    // guint32 buffer_len = 0;
+    // gpointer md_buffer = nullptr;
+
+    // stepBlockID = g_strdup_printf("%lu_%lu", m_CurrentStep, variable.m_BlockID);
+    // std::cout << "variable.m... stepBlockID: " << stepBlockID << std::endl;
+
+    // // typename Variable<T>::Info &blockInfo =
+    // // variable.m_BlocksInfo[variable.m_BlockID];
+
+    // GetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
+    //                           &buffer_len, stepBlockID);
+    // GetCountFromBlockMetadata(md_buffer, &count);
+    // if (variable.m_SingleValue)
+    // {
+    //     std::cout << "Single value" << std::endl;
+    //     return;
+    // }
+
+    // size_t numberElements = helper::GetTotalSize(count);
+    // dataSize = numberElements * variable.m_ElementSize;
+
+    // GetVariableDataFromJulea(variable, data, nameSpace, dataSize, m_CurrentStep,
+    //                          variable.m_BlockID);
+    ReadBlock(variable,data, variable.m_BlockID);
+    std::cout << "data = " << data[0] << std::endl;
+    std::cout << "data = " << data[1] << std::endl;
+    variable.m_BlocksInfo.pop_back();
+}
+
+template <class T>
+void JuleaKVReader::GetDeferredCommon(Variable<T> &variable, T *data)
+{
+    if (m_Verbosity == 5)
+    {
+        std::cout << "Julea Reader " << m_ReaderRank << "     GetDeferred("
+                  << variable.m_Name << ")\n";
+    }
+    size_t size = variable.m_BlocksInfo.size();
+    std::cout << "size = " << size << std::endl;
+    // returns immediately without populating data
+    InitVariableBlockInfo(variable, data); // TODO: needed?
+   size = variable.m_BlocksInfo.size();
+    std::cout << "size = " << size << std::endl;
+    variable.m_BlocksInfo[size-1].BlockID = variable.m_BlockID;
+    std::cout << "variable.m_BlockID = " << variable.m_BlockID << std::endl;
+    m_DeferredVariables.insert(variable.m_Name);
+}
+
+template <class T>
+void JuleaKVReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
+{
+    if (m_Verbosity == 5)
+    {
+        std::cout << "\n ReadBlock" << std::endl;
+        std::cout << "Julea Reader " << m_ReaderRank << " Namespace: " << m_Name
+                  << " Variable name: " << variable.m_Name << std::endl;
+    }
     std::string stepBlockID;
     Dims count;
     std::string nameSpace = m_Name;
@@ -109,10 +171,12 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
     guint32 buffer_len = 0;
     gpointer md_buffer = nullptr;
 
-    stepBlockID = g_strdup_printf("%lu_%lu", m_CurrentStep, variable.m_BlockID);
+    stepBlockID = g_strdup_printf("%lu_%lu", m_CurrentStep, blockID);
+    // stepBlockID = g_strdup_printf("%lu_%lu", m_CurrentStep, variable.m_BlockID);
     std::cout << "variable.m... stepBlockID: " << stepBlockID << std::endl;
 
-    typename Variable<T>::Info &blockInfo = variable.m_BlocksInfo[variable.m_BlockID];
+    // typename Variable<T>::Info &blockInfo =
+    // variable.m_BlocksInfo[variable.m_BlockID];
 
     GetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
                               &buffer_len, stepBlockID);
@@ -125,25 +189,8 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
 
     size_t numberElements = helper::GetTotalSize(count);
     dataSize = numberElements * variable.m_ElementSize;
-
-    GetVariableDataFromJulea(variable, data, nameSpace, dataSize, m_CurrentStep,
-                             variable.m_BlockID);
-
-    variable.m_BlocksInfo.pop_back();
-}
-
-template <class T>
-void JuleaKVReader::GetDeferredCommon(Variable<T> &variable, T *data)
-{
-    if (m_Verbosity == 5)
-    {
-        std::cout << "Julea Reader " << m_ReaderRank << "     GetDeferred("
-                  << variable.m_Name << ")\n";
-    }
-
-    // returns immediately without populating data
-    InitVariableBlockInfo(variable, data); // TODO: needed?
-    m_DeferredVariables.insert(variable.m_Name);
+    // T *data = variable.m_BlocksInfo[variable.m_BlockID].Data;
+    GetVariableDataFromJulea(variable, data, nameSpace, dataSize, stepBlockID);
 }
 
 template <class T>
@@ -171,13 +218,13 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
             std::cout << "variable.m... stepBlockID: " << stepBlockID
                       << std::endl;
         }
-            else
-            {
-                stepBlockID =
-                    g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
-                std::cout << "m_Current... stepBlockID: " << stepBlockID
-                          << std::endl;
-            }
+        else
+        {
+            stepBlockID =
+                g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
+            std::cout << "m_Current... stepBlockID: " << stepBlockID
+                      << std::endl;
+        }
         // std::cout << "blocksInfos.size: " << variable.m_BlocksInfo.size()
         // << std::endl;
 

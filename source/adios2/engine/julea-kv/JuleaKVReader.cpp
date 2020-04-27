@@ -135,12 +135,12 @@ void JuleaKVReader::PerformGets()
     {
         return;
     }
+        size_t i = 0;
 
     /** Call GetSyncCommon for every variable that has been deferred */
     for (const std::string &variableName : m_DeferredVariables)
     {
         const std::string type = m_IO.InquireVariableType(variableName);
-
         if (type == "compound")
         {
             // not supported
@@ -154,8 +154,10 @@ void JuleaKVReader::PerformGets()
             variableName, "in call to PerformGets, EndStep or Close");         \
         for (auto &blockInfo : variable.m_BlocksInfo)                          \
         {                                                                      \
+        T *data = variable.m_BlocksInfo[i].Data;\
+        ReadBlock(variable,data,i );\
+        i++;\
         }                                                                      \
-        ReadVariableBlocks(variable);                                          \
         variable.m_BlocksInfo.clear();                                         \
     }
         // ADIOS2_FOREACH_TYPE_1ARG(declare_type) //TODO:Why is this different
@@ -165,6 +167,7 @@ void JuleaKVReader::PerformGets()
     }
     m_DeferredVariables.clear();
 }
+        // ReadVariableBlocks(variable);                                          \
 
 #define declare_type(T)                                                        \
     void JuleaKVReader::DoGetSync(Variable<T> &variable, T *data)              \
