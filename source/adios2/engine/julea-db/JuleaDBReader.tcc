@@ -167,7 +167,9 @@ void JuleaDBReader::ReadVariableBlocks(Variable<T> &variable)
         // DeserializeBlockMetadata(variable, md_buffer, variable.m_BlockID,
         // blockInfo);
         DBGetBlockMetadata(variable,nameSpace,step, block, blockInfo);
-        variable.m_BlocksInfo[0] = blockInfo;
+        // variable.m_BlocksInfo.push_back(blockInfo);
+        variable.m_BlocksInfo[block] = blockInfo;
+        // variable.m_BlocksInfo[0] = blockInfo;
 
         if (variable.m_SingleValue)
         {
@@ -181,13 +183,13 @@ void JuleaDBReader::ReadVariableBlocks(Variable<T> &variable)
         T *data = blockInfo.Data;
         if (m_UseKeysForBPLS)
         {
-            // GetVariableDataFromJulea(variable, data, nameSpace, dataSize,
-            // variable.m_StepsStart, variable.m_BlockID);
+            DBGetVariableDataFromJulea(variable, data, nameSpace, dataSize,
+            variable.m_StepsStart, variable.m_BlockID);
         }
         else
         {
-            // GetVariableDataFromJulea(variable, data, nameSpace, dataSize,
-            // m_CurrentStep, m_CurrentBlockID);
+            DBGetVariableDataFromJulea(variable, data, nameSpace, dataSize,
+            m_CurrentStep, m_CurrentBlockID);
         }
         m_CurrentBlockID++;
     }
@@ -262,10 +264,10 @@ JuleaDBReader::BlocksInfoCommon(const core::Variable<T> &variable,
         typename core::Variable<T>::Info info;
         // typename core::Variable<T>::Info info =
         // *GetDeserializedMetadata(variable, md_buffer);
-        //FIXME: cannot pass const variable
-         // DBGetBlockMetadata(variable,nameSpace,step, i, &info);
+         DBGetBlockMetadata(variable,nameSpace,step, i, info);
         info.IsReverseDims = false;
         info.Step = step;
+        std::cout << "blockID: " << info.BlockID <<std::endl;
 
         blocksInfo.push_back(info);
     }

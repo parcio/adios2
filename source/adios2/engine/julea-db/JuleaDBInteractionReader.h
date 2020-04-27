@@ -31,7 +31,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
                          core::Engine &engine);
 
 template <class T>
-void DBGetBlockMetadata(Variable<T> &variable, const std::string nameSpace,
+void DBGetBlockMetadata(const core::Variable<T> &variable, const std::string nameSpace,
                         size_t step, size_t block,
                         typename core::Variable<T>::Info &info);
 /* --- Variables --- */
@@ -64,8 +64,8 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
                                 size_t block);
 
 #define variable_template_instantiation(T)                                     \
-    extern template void DBGetBlockMetadata(                                   \
-        Variable<T> &variable, const std::string nameSpace, size_t step,       \
+    extern template void DBGetBlockMetadata( const                                  \
+        core::Variable<T> &variable, const std::string nameSpace, size_t step,       \
         size_t block, typename core::Variable<T>::Info &info);                 \
                                                                                \
     extern template void DBGetVariableDataFromJulea(                           \

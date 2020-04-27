@@ -216,8 +216,8 @@ void JuleaDBReader::Init()
 
     // InitParameters();
     // InitTransports();
-    InitVariables();
     CheckSchemas();
+    InitVariables();
     // InitAttributes(); //TODO
 }
 

@@ -353,7 +353,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
 }
 
 template <class T>
-void DBGetBlockMetadata(Variable<T> &variable, const std::string nameSpace,
+void DBGetBlockMetadata(const core::Variable<T> &variable, const std::string nameSpace,
                         size_t step, size_t block,
                         typename core::Variable<T>::Info &info)
 {
@@ -490,19 +490,19 @@ void DBGetBlockMetadata(Variable<T> &variable, const std::string nameSpace,
             info.StepsCount = *stepsCount;
          j_db_iterator_get_field(iterator, "blockID", &type,
                                 (gpointer *)&blockID, &db_length, NULL);
-         // info.BlockID = *blockID;
-          std::cout << "shapeSize: " << *shapeSize << std::endl;
-    std::cout << "startSize: " << *startSize << std::endl;
-    std::cout << "countSize: " << *countSize << std::endl;
-    std::cout << "memoryStartSize: " << *memoryStartSize << std::endl;
-    std::cout << "memoryCountSize: " << *memoryCountSize << std::endl;
-    std::cout << "info.Min: " << info.Min << std::endl;
-    std::cout << "info.Max: " << info.Max << std::endl;
-    std::cout << "info.Value: " << info.Value << std::endl;
-    std::cout << "info.StepsStart: " << info.StepsStart << std::endl;
-    std::cout << "info.StepsCount: " << info.StepsCount << std::endl;
+         info.BlockID = *blockID;
+    //       std::cout << "shapeSize: " << *shapeSize << std::endl;
+    // std::cout << "startSize: " << *startSize << std::endl;
+    // std::cout << "countSize: " << *countSize << std::endl;
+    // std::cout << "memoryStartSize: " << *memoryStartSize << std::endl;
+    // std::cout << "memoryCountSize: " << *memoryCountSize << std::endl;
+    // std::cout << "info.Min: " << info.Min << std::endl;
+    // std::cout << "info.Max: " << info.Max << std::endl;
+    // std::cout << "info.Value: " << info.Value << std::endl;
+    // std::cout << "info.StepsStart: " << info.StepsStart << std::endl;
+    // std::cout << "info.StepsCount: " << info.StepsCount << std::endl;
     // std::cout << "info.BlockID: " << info.BlockID << std::endl;
-    std::cout << "info.IsValue: " << info.IsValue << std::endl;
+    // std::cout << "info.IsValue: " << info.IsValue << std::endl;
     // std::cout << "size: m_BlocksInfo " << variable.m_BlocksInfo.size()
               // << std::endl;
 
@@ -555,7 +555,7 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
 
 #define variable_template_instantiation(T)                                     \
     template void DBGetBlockMetadata(                                          \
-        Variable<T> &variable, const std::string nameSpace, size_t step,       \
+        const core::Variable<T> &variable, const std::string nameSpace, size_t step,       \
         size_t block, typename core::Variable<T>::Info &info);                 \
                                                                                \
     template void DBGetVariableDataFromJulea(                                  \
