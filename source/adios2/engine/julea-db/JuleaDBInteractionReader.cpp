@@ -303,6 +303,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
                                     NULL);
             Dims tmpShape(tmpShapeBuffer, tmpShapeBuffer + *shapeSize);
             shape = tmpShape;
+            g_free(tmpShapeBuffer);
         }
 
         j_db_iterator_get_field(iterator, "startSize", &type,
@@ -316,6 +317,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
                                     NULL);
             Dims tmpStart(tmpStartBuffer, tmpStartBuffer + *startSize);
             start = tmpStart;
+            g_free(tmpStartBuffer);
         }
         j_db_iterator_get_field(iterator, "countSize", &type,
                                 (gpointer *)&countSize, &db_length, NULL);
@@ -331,6 +333,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
             // std::cout << "tmpCountBuffer[0]: " << tmpCountBuffer[0] << std::endl;
             Dims tmpCount(tmpCountBuffer, tmpCountBuffer + *countSize);
             count = tmpCount;
+            g_free(tmpCountBuffer);
             // std::cout << "count: " << tmpCount.front() << std::endl;
         }
         j_db_iterator_get_field(iterator, "numberSteps", &type,
@@ -341,6 +344,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
             j_db_iterator_get_field(iterator, "blockArray", &type,
                                     (gpointer *)tmpblocks, &db_length, NULL);
             blocks = *tmpblocks;
+            g_free(*tmpblocks);
             // std::cout << "numberSteps: " << blocks[0] << std::endl;
             // std::cout << "numberSteps: " << blocks[1] << std::endl;
         }
@@ -372,6 +376,23 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
                        *isSingleValue);
     }
     // free blocks;
+    g_free(isConstantDims);
+    g_free(isReadAsJoined);
+    g_free(isReadAsLocalValue);
+    g_free(isRandomAccess);
+    g_free(isSingleValue);
+    g_free(varName);
+    g_free(shapeID);
+    g_free(varTypePtr);
+    g_free(shapeSize);
+    g_free(startSize);
+    g_free(countSize);
+    // j_db_iterator_unref(iterator);
+    // j_db_entry_unref(entry);
+    // j_db_schema_unref(schema);
+    // j_db_selector_unref(selector);
+    j_batch_unref(batch);
+    j_semantics_unref(semantics);
 }
 
 void GetCountFromBlockMetadata(const std::string nameSpace,
@@ -426,8 +447,12 @@ void GetCountFromBlockMetadata(const std::string nameSpace,
             // std::cout << "tmpCount: " << tmpCount.front() << std::endl;
             // std::cout << "tmpCount: " << tmpCount.size() << std::endl;
             *count = tmpCount;
+            g_free(tmpCountBuffer);
         }
     }
+    g_free(countSize);
+     j_batch_unref(batch);
+    j_semantics_unref(semantics);
 }
 
 template <class T>
@@ -505,6 +530,7 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
                                     NULL);
             Dims tmpShape(tmpShapeBuffer, tmpShapeBuffer + *shapeSize);
             info->Shape = tmpShape;
+            g_free(tmpShapeBuffer);
         }
 
         j_db_iterator_get_field(iterator, "startSize", &type,
@@ -518,6 +544,7 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
                                     NULL);
             Dims tmpStart(tmpStartBuffer, tmpStartBuffer + *startSize);
             info->Start = tmpStart;
+            g_free(tmpStartBuffer);
         }
         j_db_iterator_get_field(iterator, "countSize", &type,
                                 (gpointer *)&countSize, &db_length, NULL);
@@ -530,6 +557,7 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
                                     NULL);
             Dims tmpCount(tmpCountBuffer, tmpCountBuffer + *countSize);
             info->Count = tmpCount;
+            g_free(tmpCountBuffer);
         }
         j_db_iterator_get_field(iterator, "memoryStartSize", &type,
                                 (gpointer *)&memoryStartSize, &db_length, NULL);
@@ -543,6 +571,7 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
             Dims tmpMemoryStart(tmpMemoryStartBuffer,
                                 tmpMemoryStartBuffer + *memoryStartSize);
             info->MemoryStart = tmpMemoryStart;
+            g_free(tmpMemoryStartBuffer);
         }
         j_db_iterator_get_field(iterator, "memoryCountSize", &type,
                                 (gpointer *)&memoryCountSize, &db_length, NULL);
@@ -556,6 +585,7 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
             Dims tmpMemoryCount(tmpMemoryCountBuffer,
                                 tmpMemoryCountBuffer + *memoryCountSize);
             info->MemoryCount = tmpMemoryCount;
+            g_free(tmpMemoryCountBuffer);
         }
         j_db_iterator_get_field(iterator, "min", &type, (gpointer *)&min,
                                 &db_length, NULL);
@@ -571,6 +601,7 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
             j_db_iterator_get_field(iterator, "value", &type,
                                     (gpointer *)&value, &db_length, NULL);
             info->Value = *value;
+            // g_free(value);
         }
         j_db_iterator_get_field(iterator, "stepsStart", &type,
                                 (gpointer *)&stepsStart, &db_length, NULL);
@@ -594,6 +625,19 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
         // std::cout << "info->BlockID: " << info->BlockID << std::endl;
         // std::cout << "info->IsValue: " << info->IsValue << std::endl;
     }
+    g_free(isValue);
+    g_free(min);
+    g_free(max);
+    g_free(shapeSize);
+    g_free(startSize);
+    g_free(countSize);
+    g_free(memoryStartSize);
+    g_free(memoryCountSize);
+    g_free(stepsStart);
+    g_free(stepsCount);
+    g_free(blockID);
+     j_batch_unref(batch);
+    j_semantics_unref(semantics);
     return info;
 }
 
