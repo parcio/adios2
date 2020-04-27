@@ -41,11 +41,12 @@ void addFieldsForVariableMD(JDBSchema *schema)
     j_db_schema_add_field(schema, "isReadAsJoined", J_DB_TYPE_UINT32, NULL);
     j_db_schema_add_field(schema, "isReadAsLocalValue", J_DB_TYPE_UINT32, NULL);
     j_db_schema_add_field(schema, "isRandomAccess", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "isSingleValue", J_DB_TYPE_UINT32, NULL);
 
     j_db_schema_add_field(schema, "shapeID", J_DB_TYPE_UINT32, NULL);
     j_db_schema_add_field(schema, "type", J_DB_TYPE_STRING, NULL);
     // TODO: needed?
-    j_db_schema_add_field(schema, "typeLen", J_DB_TYPE_UINT64, NULL);
+    // j_db_schema_add_field(schema, "typeLen", J_DB_TYPE_UINT64, NULL);
 
     /** all vectors need to store their size */
     j_db_schema_add_field(schema, "shapeSize", J_DB_TYPE_UINT64, NULL);
@@ -114,6 +115,9 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
     int tmp3 = isReadAsLocalValue ? 1 : 0;
     bool isRandomAccess = variable.m_RandomAccess;
     int tmp4 = isRandomAccess ? 1 : 0;
+    bool isSingleValue = variable.m_SingleValue;
+    int tmp5 = isSingleValue ? 1 : 0;
+
     int shapeID = (int)variable.m_ShapeID;
 
     const char *type = variable.m_Type.c_str();
@@ -143,9 +147,12 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
     }
 
     size_t countBuffer[countSize];
+    std::cout << "countSize: " << countSize << std::endl;
     for (uint i = 0; i < countSize; i++)
     {
         countBuffer[i] = variable.m_Count.data()[i];
+        std::cout << "countBuffer[i]:" << countBuffer[i] << std::endl;
+        std::cout << "sizeof(countBuffer): " << sizeof(countBuffer) << std::endl;
     }
 
     size_t blocks[numberSteps];
@@ -183,6 +190,7 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
     j_db_entry_set_field(entry, "isReadAsLocalValue", &tmp3, sizeof(tmp3),
                          NULL);
     j_db_entry_set_field(entry, "isRandomAccess", &tmp4, sizeof(tmp4), NULL);
+    j_db_entry_set_field(entry, "isSingleValue", &tmp5, sizeof(tmp5), NULL);
 
     j_db_entry_set_field(entry, "shapeID", &shapeID, sizeof(shapeID), NULL);
     j_db_entry_set_field(entry, "type", type, strlen(type) + 1, NULL);

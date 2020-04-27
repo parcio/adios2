@@ -94,6 +94,8 @@ void JuleaDBReader::GetSyncCommon(Variable<T> &variable, T *data)
                   << " Variable name: " << variable.m_Name << std::endl;
     }
 
+    std::cout << "variable.m_SingleValue = " << variable.m_SingleValue
+              << std::endl;
     if (variable.m_SingleValue)
     {
         // FIXME: just read metadata from DB. value is stored in there.
@@ -149,15 +151,13 @@ void JuleaDBReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
         stepBlockID =
             g_strdup_printf("%lu_%lu", variable.m_StepsStart, blockID);
         step = variable.m_StepsStart;
-        // std::cout << "variable.m... stepBlockID: " << stepBlockID <<
-        // std::endl;
+        std::cout << "variable.m... stepBlockID: " << stepBlockID << std::endl;
     }
     else
     {
         stepBlockID = g_strdup_printf("%lu_%lu", m_CurrentStep, blockID);
         step = m_CurrentStep;
-        // std::cout << "variable.m... stepBlockID: " << stepBlockID <<
-        // std::endl;
+        std::cout << "variable.m... stepBlockID: " << stepBlockID << std::endl;
     }
 
     // DBGetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
@@ -171,9 +171,13 @@ void JuleaDBReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
     }
 
     size_t numberElements = helper::GetTotalSize(count);
+    std::cout << "count: " << count.front() << std::endl;
+    std::cout << "count: " << count.size() << std::endl;
+    std::cout << "numberElements: " << numberElements << std::endl;
     dataSize = numberElements * variable.m_ElementSize;
-    DBGetVariableDataFromJulea(variable, data, nameSpace, dataSize,
-                               stepBlockID);
+    std::cout << "dataSize: " << dataSize << std::endl;
+    // DBGetVariableDataFromJulea(variable, data, nameSpace, dataSize,
+    // stepBlockID);
 }
 
 // template <class T>
@@ -300,7 +304,8 @@ JuleaDBReader::BlocksInfoCommon(const core::Variable<T> &variable,
                   << " Namespace: " << m_Name
                   << " Variable name: " << variable.m_Name << std::endl;
         std::cout << "--- step: " << step << std::endl;
-        std::cout << "blocksIndexOffsets.size(): " << blocksIndexOffsets.size() <<std::endl;
+        std::cout << "blocksIndexOffsets.size(): " << blocksIndexOffsets.size()
+                  << std::endl;
     }
     std::vector<typename core::Variable<T>::Info> blocksInfo;
     blocksInfo.reserve(blocksIndexOffsets.size());
@@ -321,7 +326,7 @@ JuleaDBReader::BlocksInfoCommon(const core::Variable<T> &variable,
         // typename core::Variable<T>::Info info;
         // *GetDeserializedMetadata(variable, md_buffer);
         typename core::Variable<T>::Info info =
-        *DBGetBlockMetadata(variable, nameSpace, step, i);
+            *DBGetBlockMetadata(variable, nameSpace, step, i);
         info.IsReverseDims = false;
         info.Step = step;
         std::cout << "blockID: " << info.BlockID << std::endl;

@@ -32,7 +32,9 @@ namespace core
 namespace engine
 {
 void DBInitVariable(core::IO *io, core::Engine &engine, std::string varName,
-                    size_t *blocks, size_t numberSteps, ShapeID shapeID)
+                    size_t *blocks, size_t numberSteps, ShapeID shapeID,
+                    bool isReadAsJoined, bool isReadAsLocalValue,
+                    bool isRandomAccess, bool isSingleValue)
 {
     // std::cout << "----- InitVariable ---" << std::endl;
     const std::string type(io->InquireVariableType(varName));
@@ -64,6 +66,10 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string varName,
         var->m_StepsStart = 0;                                                 \
         var->m_Engine = &engine;                                               \
         var->m_FirstStreamingStep = true;                                      \
+        var->m_ReadAsJoined = isReadAsJoined;                                  \
+        var->m_ReadAsLocalValue = isReadAsLocalValue;                          \
+        var->m_RandomAccess = isRandomAccess;                                  \
+        var->m_SingleValue = isSingleValue;                                    \
     }
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
@@ -229,6 +235,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
     bool *isReadAsJoined;
     bool *isReadAsLocalValue;
     bool *isRandomAccess;
+    bool *isSingleValue;
 
     // size_t typeLen;
     size_t *blocks;
@@ -271,6 +278,8 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
                                 NULL);
         j_db_iterator_get_field(iterator, "isRandomAccess", &type,
                                 (gpointer *)&isRandomAccess, &db_length, NULL);
+        j_db_iterator_get_field(iterator, "isSingleValue", &type,
+                                (gpointer *)&isSingleValue, &db_length, NULL);
 
         j_db_iterator_get_field(iterator, "shapeID", &type,
                                 (gpointer *)&shapeID, &db_length, NULL);
@@ -312,8 +321,11 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
             j_db_iterator_get_field(iterator, "count", &type,
                                     (gpointer *)&tmpCountBuffer, &db_length,
                                     NULL);
-            Dims tmpCount(tmpCountBuffer, tmpCountBuffer + *shapeSize);
+            std::cout << "db_length: " << db_length << std::endl;
+            std::cout << "tmpCountBuffer[0]: " << tmpCountBuffer[0] << std::endl;
+            Dims tmpCount(tmpCountBuffer, tmpCountBuffer + *countSize);
             count = tmpCount;
+            std::cout << "count: " << tmpCount.front() << std::endl;
         }
         j_db_iterator_get_field(iterator, "numberSteps", &type,
                                 (gpointer *)&numberSteps, &db_length, NULL);
@@ -327,7 +339,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
             std::cout << "numberSteps: " << blocks[1] << std::endl;
         }
 
-        if (false)
+        if (true)
         {
             std::cout << "varName = " << varName << std::endl;
             std::cout << "length: " << db_length << std::endl;
@@ -336,18 +348,22 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
             std::cout << "isReadAsLocalValue: " << *isReadAsLocalValue
                       << std::endl;
             std::cout << "isRandomAccess: " << *isRandomAccess << std::endl;
+            std::cout << "isSingleValue: " << *isSingleValue << std::endl;
             std::cout << "shapeID: " << *shapeID << std::endl;
             std::cout << "varType2: " << varTypePtr << std::endl;
             std::cout << "shapeSize: " << *shapeSize << std::endl;
             std::cout << "startSize: " << *startSize << std::endl;
-            std::cout << "startSize: " << *countSize << std::endl;
+            std::cout << "countSize: " << *countSize << std::endl;
+            std::cout << "count: " << count.front() << std::endl;
             std::cout << "numberSteps: " << *numberSteps << std::endl;
         }
 
         DBDefineVariableInInit(io, varName, varType, shape, start, count,
                                isConstantDims);
 
-        DBInitVariable(io, engine, varName, blocks, *numberSteps, *shapeID);
+        DBInitVariable(io, engine, varName, blocks, *numberSteps, *shapeID,
+                       *isReadAsJoined, *isReadAsLocalValue, *isRandomAccess,
+                       *isSingleValue);
     }
     // free blocks;
 }
@@ -356,7 +372,7 @@ void GetCountFromBlockMetadata(const std::string nameSpace,
                                const std::string varName, size_t step,
                                size_t block, Dims *count)
 {
-    // std::cout << "------ DeserializeBlockMetadata ----------" << std::endl;
+    std::cout << "------ GetCountFromBlockMetadata ----------" << std::endl;
     int err = 0;
     JDBType type;
     guint64 db_length = 0;
@@ -384,6 +400,10 @@ void GetCountFromBlockMetadata(const std::string nameSpace,
                             sizeof(step), NULL);
     j_db_selector_add_field(selector, "block", J_DB_SELECTOR_OPERATOR_EQ,
                             &block, sizeof(block), NULL);
+
+    std::cout << "varname: " << varName << "step: " << step
+              << "block: " << block << std::endl;
+
     iterator = j_db_iterator_new(schema, selector, NULL);
     if (j_db_iterator_next(iterator, NULL))
     {
@@ -396,6 +416,8 @@ void GetCountFromBlockMetadata(const std::string nameSpace,
                                     (gpointer *)&tmpCountBuffer, &db_length,
                                     NULL);
             Dims tmpCount(tmpCountBuffer, tmpCountBuffer + *countSize);
+            std::cout << "tmpCount: " << tmpCount.front() << std::endl;
+            std::cout << "tmpCount: " << tmpCount.size() << std::endl;
             *count = tmpCount;
         }
     }
@@ -547,7 +569,7 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
         j_db_iterator_get_field(iterator, "blockID", &type,
                                 (gpointer *)&blockID, &db_length, NULL);
         info->BlockID = *blockID;
-              std::cout << "shapeSize: " << *shapeSize << std::endl;
+        std::cout << "shapeSize: " << *shapeSize << std::endl;
         std::cout << "startSize: " << *startSize << std::endl;
         std::cout << "countSize: " << *countSize << std::endl;
         std::cout << "memoryStartSize: " << *memoryStartSize << std::endl;
@@ -570,7 +592,7 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
                                 const std::string nameSpace, size_t dataSize,
                                 const std::string stepBlockID)
 {
-    // std::cout << "-- GetVariableDataFromJulea ----- " << std::endl;
+    std::cout << "-- GetVariableDataFromJulea ----- " << std::endl;
 
     guint64 bytesRead = 0;
     const char *varName = variable.m_Name.c_str();
@@ -579,7 +601,7 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
     auto stringDataObject =
         g_strdup_printf("%s_%s_%s", nameSpace.c_str(), variable.m_Name.c_str(),
                         objName.c_str());
-    // std::cout << "stringDataObject: " << stringDataObject << std::endl;
+    std::cout << "stringDataObject: " << stringDataObject << std::endl;
 
     // auto stepBlockID = g_strdup_printf("%lu_%lu", step, block);
     // std::cout << "stepBlockID: " << stepBlockID << std::endl;
@@ -588,14 +610,15 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
     auto batch = j_batch_new(semantics);
 
     auto dataObject = j_object_new(stringDataObject, stepBlockID.c_str());
+    std::cout << "REACHED " << std::endl;
 
     j_object_read(dataObject, data, dataSize, 0, &bytesRead, batch);
     g_assert_true(j_batch_execute(batch) == true);
 
     if (bytesRead == dataSize)
     {
-        // std::cout << "++ Julea Interaction Reader: Read data for variable "
-        // << varName << std::endl;
+        std::cout << "++ Julea Interaction Reader: Read data for variable "
+                  << varName << std::endl;
     }
     else
     {
