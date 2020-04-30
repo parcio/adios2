@@ -14,6 +14,10 @@ add_executable(BITTE_BITTE JuleaEngineTest.cpp)
                     add_executable(WRITE_STEPS localArray_write.cpp)
                         target_link_libraries(WRITE_STEPS adios2)
 
+
+                        add_executable(SHOWBP_FORMAT ShowBPFormat.cpp)
+                        target_link_libraries(SHOWBP_FORMAT adios2)
+
                             if (ADIOS2_HAVE_MPI)
                                 target_link_libraries(WRITE_STEPS MPI::MPI_C)
                                     endif()
