@@ -160,10 +160,11 @@ void JuleaDBReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
         // std::endl;
     }
 
-    /** only retrieve Count. Everything is only needed for bp3 and bp4 to determine block position in buffer and for AllStepsBlockInfo for bpls */
-    auto entryID = variable.m_AvailableStepBlockIndexOffsets[step+1][blockID];
-    GetCountFromBlockMetadata(nameSpace, variable.m_Name, step, blockID,
-                              &count, entryID);
+    /** only retrieve Count. Everything is only needed for bp3 and bp4 to
+     * determine block position in buffer and for AllStepsBlockInfo for bpls */
+    auto entryID = variable.m_AvailableStepBlockIndexOffsets[step + 1][blockID];
+    GetCountFromBlockMetadata(nameSpace, variable.m_Name, step, blockID, &count,
+                              entryID);
     if (variable.m_SingleValue)
     {
         std::cout << "Single value" << std::endl;
@@ -448,9 +449,6 @@ JuleaDBReader::InitVariableBlockInfo(core::Variable<T> &variable, T *data)
         // switch to bounding box for global array
         if (variable.m_ShapeID == ShapeID::GlobalArray)
         {
-            // std::cout
-            // << "----------- DEBUG: switch to bounding box for global array "
-            // << std::endl;
             const Dims &start = blocksInfo[variable.m_BlockID].Start;
             const Dims &count = blocksInfo[variable.m_BlockID].Count;
 
@@ -458,10 +456,6 @@ JuleaDBReader::InitVariableBlockInfo(core::Variable<T> &variable, T *data)
         }
         else if (variable.m_ShapeID == ShapeID::LocalArray)
         {
-            // std::cout
-            // << "----------- DEBUG: switch to bounding box for local array "
-            // << std::endl;
-
             // TODO from Adios people! "keep Count for block updated"
             variable.m_Count = blocksInfo[variable.m_BlockID].Count;
         }
