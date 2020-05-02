@@ -44,12 +44,13 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
 
 void GetCountFromBlockMetadata(const std::string nameSpace,
                                const std::string varName, size_t step,
-                               size_t block, Dims *count);
+                               size_t block, Dims *count, size_t entryID);
 
 template <class T>
 std::unique_ptr<typename core::Variable<T>::Info>
 DBGetBlockMetadata(const core::Variable<T> &variable,
-                   const std::string nameSpace, size_t step, size_t block);
+                   const std::string nameSpace, size_t step, size_t block,
+                   size_t entryID);
 /* --- Variables --- */
 
 /** Retrieves all variable names from key-value store. They are all stored
@@ -82,8 +83,8 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
 #define variable_template_instantiation(T)                                     \
     extern template std::unique_ptr<typename core::Variable<T>::Info>          \
     DBGetBlockMetadata(const core::Variable<T> &variable,                      \
-                       const std::string nameSpace, size_t step,               \
-                       size_t block);                                          \
+                       const std::string nameSpace, size_t step, size_t block, \
+                       size_t entryID);                                        \
                                                                                \
     extern template void DBGetVariableDataFromJulea(                           \
         Variable<T> &variable, T *data, const std::string nameSpace,           \

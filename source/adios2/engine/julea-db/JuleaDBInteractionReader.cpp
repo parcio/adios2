@@ -45,16 +45,15 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
                           << std::endl;                                        \
 
     int err = 0;
-    uint32_t *tmpID;
     uint32_t id = 0;
-    size_t *tmpBlockID;
-    // size_t blockID = 0;
-    size_t blockID = 0;
+    uint32_t *tmpID;
     size_t step;
     size_t block;
+
     JDBType jdbType;
     guint64 db_length = 0;
     g_autofree gchar *db_field = NULL;
+
     g_autoptr(JDBSchema) schema = NULL;
     g_autoptr(JDBEntry) entry = NULL;
     g_autoptr(JDBIterator) iterator = NULL;
@@ -67,7 +66,8 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
     j_db_schema_get(schema, batch, NULL);
     err = j_batch_execute(batch);
 
-    /** AvailableStepBlockIndexOffsets stores the entries (= blocks) _id (= line in the sql table) */
+    /** AvailableStepBlockIndexOffsets stores the entries (= blocks) _id (= line
+     * in the sql table) */
     if (type == "compound")
     {
     }
@@ -81,11 +81,8 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
             std::cout << "i: " << i << std::endl;                              \
             for (size_t j = 0; j < blocks[i]; j++)                             \
             {                                                                  \
-                std::cout << "---debug ---" << std::endl;                      \
                 step = i;                                                      \
-                std::cout << "step: " << step << std::endl;                    \
                 block = j;                                                     \
-                std::cout << "block: " << block << std::endl;                  \
                 selector =                                                     \
                     j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);   \
                 j_db_selector_add_field(                                       \
@@ -103,21 +100,10 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
                 iterator = j_db_iterator_new(schema, selector, NULL);          \
                 while (j_db_iterator_next(iterator, NULL))                     \
                 {                                                              \
-                    std::cout << "--- While iterator next " << std::endl;      \
-                    j_db_iterator_get_field(iterator, "blockID", &jdbType,     \
-                                            (gpointer *)&tmpBlockID,           \
-                                            &db_length, NULL);                 \
-                    std::cout << "db_length: " << db_length << std::endl;      \
-                    std::cout << "tmpBlockID: " << *tmpBlockID << std::endl;   \
-                    blockID = *tmpBlockID;                                     \
-                    std::cout << "blockID: " << blockID << std::endl;          \
                     j_db_iterator_get_field(iterator, "_id", &jdbType,         \
                                             (gpointer *)&tmpID, &db_length,    \
                                             NULL);                             \
-                    std::cout << "db_length: " << db_length << std::endl;      \
-                    std::cout << "id: " << *tmpID << std::endl;                \
                     id = *tmpID;                                               \
-                    std::cout << "id: " << id << std::endl;                    \
                 }                                                              \
                 var->m_AvailableStepBlockIndexOffsets[i + 1].push_back(id);    \
             }                                                                  \
@@ -135,17 +121,6 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
 
-    // blockID = *tmpBlockID;                                    \
-                    std::cout << "blockID: " << blockID << std::endl;          \
-    //                    std::cout << "blockID: " << &blockID << std::endl;         \
- //                    j_db_iterator_get_field(iterator, "_id", &jdbType,         \
- //                                            (gpointer *)&id, &db_length,       \
- //                                            NULL);                             \
- //                    std::cout << "--- While end " << std::endl;                \
- //                    std::cout << "db_length: " << db_length << std::endl;      \
- //                    std::cout << "id: " << id << std::endl;                    \
- //                    std::cout << "id: " << *id << std::endl;                   \
-
     // var.m_IsFirstStreamingStep = true; //TODO: necessary?
     // for(int i = 0; i < 2; i++ )
     // var->m_ShapeID = shapeID;                                           \
@@ -155,6 +130,9 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
     //         std::cout << "i: " << i << "j: " << j << std::endl;
     //     }
     // }
+    g_free(tmpID);
+    j_batch_unref(batch);
+    j_semantics_unref(semantics);
 }
 
 void DBDefineVariableInInit(core::IO *io, const std::string varName,
@@ -472,7 +450,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
 
 void GetCountFromBlockMetadata(const std::string nameSpace,
                                const std::string varName, size_t step,
-                               size_t block, Dims *count)
+                               size_t block, Dims *count, size_t entryID)
 {
     // std::cout << "------ GetCountFromBlockMetadata ----------" << std::endl;
     int err = 0;
@@ -483,6 +461,7 @@ void GetCountFromBlockMetadata(const std::string nameSpace,
     g_autoptr(JDBEntry) entry = NULL;
     g_autoptr(JDBIterator) iterator = NULL;
     g_autoptr(JDBSelector) selector = NULL;
+    g_autoptr(JDBSelector) selectorShort = NULL;
 
     size_t *countSize;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -492,21 +471,26 @@ void GetCountFromBlockMetadata(const std::string nameSpace,
     j_db_schema_get(schema, batch, NULL);
     err = j_batch_execute(batch);
 
-    selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
-    j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
-                            nameSpace.c_str(), strlen(nameSpace.c_str()) + 1,
-                            NULL);
-    j_db_selector_add_field(selector, "variableName", J_DB_SELECTOR_OPERATOR_EQ,
-                            varName.c_str(), strlen(varName.c_str()) + 1, NULL);
-    j_db_selector_add_field(selector, "step", J_DB_SELECTOR_OPERATOR_EQ, &step,
-                            sizeof(step), NULL);
-    j_db_selector_add_field(selector, "block", J_DB_SELECTOR_OPERATOR_EQ,
-                            &block, sizeof(block), NULL);
+    // selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
+    // j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
+    //                         nameSpace.c_str(), strlen(nameSpace.c_str()) + 1,
+    //                         NULL);
+    // j_db_selector_add_field(selector, "variableName",
+    // J_DB_SELECTOR_OPERATOR_EQ,
+    //                         varName.c_str(), strlen(varName.c_str()) + 1,
+    //                         NULL);
+    // j_db_selector_add_field(selector, "step", J_DB_SELECTOR_OPERATOR_EQ,
+    // &step,
+    //                         sizeof(step), NULL);
+    // j_db_selector_add_field(selector, "block", J_DB_SELECTOR_OPERATOR_EQ,
+    //                         &block, sizeof(block), NULL);
+    // iterator = j_db_iterator_new(schema, selector, NULL);
 
-    // std::cout << "varname: " << varName << "step: " << step
-    // << "block: " << block << std::endl;
+    selectorShort = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
+    j_db_selector_add_field(selectorShort, "_id", J_DB_SELECTOR_OPERATOR_EQ,
+                            &entryID, sizeof(entryID), NULL);
 
-    iterator = j_db_iterator_new(schema, selector, NULL);
+    iterator = j_db_iterator_new(schema, selectorShort, NULL);
     if (j_db_iterator_next(iterator, NULL))
     {
         j_db_iterator_get_field(iterator, "countSize", &type,
@@ -533,7 +517,8 @@ void GetCountFromBlockMetadata(const std::string nameSpace,
 template <class T>
 std::unique_ptr<typename core::Variable<T>::Info>
 DBGetBlockMetadata(const core::Variable<T> &variable,
-                   const std::string nameSpace, size_t step, size_t block)
+                   const std::string nameSpace, size_t step, size_t block,
+                   size_t entryID)
 {
     // std::cout << "--- DBGetBlockMetadata ---" << std::endl;
     std::unique_ptr<typename Variable<T>::Info> info(
@@ -546,6 +531,7 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
     g_autoptr(JDBEntry) entry = NULL;
     g_autoptr(JDBIterator) iterator = NULL;
     g_autoptr(JDBSelector) selector = NULL;
+    g_autoptr(JDBSelector) selectorShort = NULL;
 
     const char *varName = variable.m_Name.c_str();
     // char *varTypePtr;
@@ -579,17 +565,25 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
     err = j_batch_execute(batch);
     // std::cout << "step: " << step << std::endl;
     // std::cout << "block: " << block << std::endl;
-    selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
-    j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
-                            nameSpace.c_str(), strlen(nameSpace.c_str()) + 1,
-                            NULL);
-    j_db_selector_add_field(selector, "variableName", J_DB_SELECTOR_OPERATOR_EQ,
-                            varName, strlen(varName) + 1, NULL);
-    j_db_selector_add_field(selector, "step", J_DB_SELECTOR_OPERATOR_EQ, &step,
-                            sizeof(step), NULL);
-    j_db_selector_add_field(selector, "block", J_DB_SELECTOR_OPERATOR_EQ,
-                            &block, sizeof(block), NULL);
-    iterator = j_db_iterator_new(schema, selector, NULL);
+    // selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
+    // j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
+    //                         nameSpace.c_str(), strlen(nameSpace.c_str()) + 1,
+    //                         NULL);
+    // j_db_selector_add_field(selector, "variableName",
+    // J_DB_SELECTOR_OPERATOR_EQ,
+    //                         varName, strlen(varName) + 1, NULL);
+    // j_db_selector_add_field(selector, "step", J_DB_SELECTOR_OPERATOR_EQ,
+    // &step,
+    //                         sizeof(step), NULL);
+    // j_db_selector_add_field(selector, "block", J_DB_SELECTOR_OPERATOR_EQ,
+    //                         &block, sizeof(block), NULL);
+    // iterator = j_db_iterator_new(schema, selector, NULL);
+
+    selectorShort = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
+    j_db_selector_add_field(selectorShort, "_id", J_DB_SELECTOR_OPERATOR_EQ,
+                            &entryID, sizeof(entryID), NULL);
+
+    iterator = j_db_iterator_new(schema, selectorShort, NULL);
     if (j_db_iterator_next(iterator, NULL))
     {
         // std::cout << "-------------- DEBUG ------------ " << std::endl;
@@ -763,8 +757,8 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
 #define variable_template_instantiation(T)                                     \
     template std::unique_ptr<typename core::Variable<T>::Info>                 \
     DBGetBlockMetadata(const core::Variable<T> &variable,                      \
-                       const std::string nameSpace, size_t step,               \
-                       size_t block);                                          \
+                       const std::string nameSpace, size_t step, size_t block, \
+                       size_t entryID);                                        \
                                                                                \
     template void DBGetVariableDataFromJulea(                                  \
         Variable<T> &variable, T *data, const std::string nameSpace,           \
