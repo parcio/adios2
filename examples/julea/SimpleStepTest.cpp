@@ -395,11 +395,12 @@ void read_selection(std::string engine, std::string fileName)
         int i = 0;
         for (auto &info : blocksInfo)
         {
-            // std::cout << "---- Application: SetBlockSelection --- " << std::endl;
+            std::cout << "---- Application: SetBlockSelection --- " << std::endl;
+            std::cout << "--- i : " << i << std::endl;
             varV0.SetBlockSelection(info.BlockID);
-            // std::cout << "---- Application: Get --- " << std::endl;
-            // reader.Get<double>(varV0, dataSet[i], adios2::Mode::Sync);
-            reader.Get<double>(varV0, dataSet[i], adios2::Mode::Deferred);
+            std::cout << "---- Application: Get --- " << std::endl;
+            reader.Get<double>(varV0, dataSet[i], adios2::Mode::Sync);
+            // reader.Get<double>(varV0, dataSet[i], adios2::Mode::Deferred);
             ++i;
         }
 
@@ -463,9 +464,10 @@ int main(int argc, char *argv[])
         // write();
         // read_simple("bp3", "SimpleSteps.bp");
         // read_simple("julea-kv", "SimpleSteps.jv");
-        read_simple("julea-db", "SimpleSteps.jb");
+        // read_simple("julea-db", "SimpleSteps.jb");
         // read_selection("bp3", "SimpleSteps.bp");
         // read_selection("julea-kv", "SimpleSteps.jv");
+        read_selection("julea-db", "SimpleSteps.jb");
     }
     catch (std::invalid_argument &e)
     {

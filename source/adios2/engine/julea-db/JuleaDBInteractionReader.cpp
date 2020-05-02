@@ -45,7 +45,7 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
                           << std::endl;                                        \
 
     int err = 0;
-    uint32_t id = 0;
+    uint32_t entryID = 0;
     uint32_t *tmpID;
     size_t step;
     size_t block;
@@ -103,9 +103,9 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
                     j_db_iterator_get_field(iterator, "_id", &jdbType,         \
                                             (gpointer *)&tmpID, &db_length,    \
                                             NULL);                             \
-                    id = *tmpID;                                               \
+                    entryID = *tmpID;                                               \
                 }                                                              \
-                var->m_AvailableStepBlockIndexOffsets[i + 1].push_back(id);    \
+                var->m_AvailableStepBlockIndexOffsets[i + 1].push_back(entryID);    \
             }                                                                  \
             var->m_AvailableStepsCount++;                                      \
         }                                                                      \
@@ -419,8 +419,6 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
             std::cout << "count: " << count.front() << std::endl;
             std::cout << "numberSteps: " << *numberSteps << std::endl;
         }
-        // DBGetBlockIDs(nameSpace, varName, )
-
         DBDefineVariableInInit(io, varName, varType, shape, start, count,
                                *isConstantDims);
 

@@ -160,8 +160,6 @@ void JuleaDBReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
         // std::endl;
     }
 
-    // DBGetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
-    //                           &buffer_len, stepBlockID);
     /** only retrieve Count. Everything is only needed for bp3 and bp4 to determine block position in buffer and for AllStepsBlockInfo for bpls */
     auto entryID = variable.m_AvailableStepBlockIndexOffsets[step+1][blockID];
     GetCountFromBlockMetadata(nameSpace, variable.m_Name, step, blockID,
@@ -317,19 +315,12 @@ JuleaDBReader::BlocksInfoCommon(const core::Variable<T> &variable,
         auto nameSpace = m_Name;
         long unsigned int dataSize = 0;
         auto stepBlockID = g_strdup_printf("%lu_%lu", step, i);
-
-        // GetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
-        // &buffer_len, stepBlockID);
-
-        // typename core::Variable<T>::Info info;
-        // *GetDeserializedMetadata(variable, md_buffer);
         auto entryID = blocksIndexOffsets[i];
-        // std::cout << "--entryID: " << entryID << std::endl;
+
         typename core::Variable<T>::Info info =
             *DBGetBlockMetadata(variable, nameSpace, step, i, entryID);
         info.IsReverseDims = false;
         info.Step = step;
-        // std::cout << "blockID: " << info.BlockID << std::endl;
 
         blocksInfo.push_back(info);
     }
