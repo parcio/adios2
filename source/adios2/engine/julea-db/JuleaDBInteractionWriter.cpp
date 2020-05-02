@@ -152,7 +152,8 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
     {
         countBuffer[i] = variable.m_Count.data()[i];
         std::cout << "countBuffer[i]:" << countBuffer[i] << std::endl;
-        std::cout << "sizeof(countBuffer): " << sizeof(countBuffer) << std::endl;
+        std::cout << "sizeof(countBuffer): " << sizeof(countBuffer)
+                  << std::endl;
     }
 
     size_t blocks[numberSteps];

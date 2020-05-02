@@ -31,20 +31,43 @@ namespace core
 {
 namespace engine
 {
-void DBInitVariable(core::IO *io, core::Engine &engine, std::string varName,
-                    size_t *blocks, size_t numberSteps, ShapeID shapeID,
-                    bool isReadAsJoined, bool isReadAsLocalValue,
-                    bool isRandomAccess, bool isSingleValue)
+void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
+                    std::string varName, size_t *blocks, size_t numberSteps,
+                    ShapeID shapeID, bool isReadAsJoined,
+                    bool isReadAsLocalValue, bool isRandomAccess,
+                    bool isSingleValue)
 {
-    // std::cout << "----- InitVariable ---" << std::endl;
+    std::cout << "----- InitVariable ---" << std::endl;
     const std::string type(io->InquireVariableType(varName));
 
-                // std::cout << "AvailableStepBlockIndexOffsets.size"             \
+    // std::cout << "AvailableStepBlockIndexOffsets.size"             \
                           << var->m_AvailableStepBlockIndexOffsets.size()      \
                           << std::endl;                                        \
 
-    /** no sensible information yet to store in AvailableStepBlockIndexOffsets.
-     * So it is filled with dummy values. (42 + BlockID) */
+    int err = 0;
+    uint32_t *tmpID;
+    uint32_t id = 0;
+    size_t *tmpBlockID;
+    // size_t blockID = 0;
+    size_t blockID = 0;
+    size_t step;
+    size_t block;
+    JDBType jdbType;
+    guint64 db_length = 0;
+    g_autofree gchar *db_field = NULL;
+    g_autoptr(JDBSchema) schema = NULL;
+    g_autoptr(JDBEntry) entry = NULL;
+    g_autoptr(JDBIterator) iterator = NULL;
+    g_autoptr(JDBSelector) selector = NULL;
+
+    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
+
+    schema = j_db_schema_new("adios2", "block-metadata", NULL);
+    j_db_schema_get(schema, batch, NULL);
+    err = j_batch_execute(batch);
+
+    /** AvailableStepBlockIndexOffsets stores the entries (= blocks) _id (= line in the sql table) */
     if (type == "compound")
     {
     }
@@ -53,13 +76,50 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string varName,
     {                                                                          \
         auto var = io->InquireVariable<T>(varName);                            \
         var->m_ShapeID = shapeID;                                              \
-        for (uint i = 0; i < numberSteps; i++)                                 \
+        for (size_t i = 0; i < numberSteps; i++)                               \
         {                                                                      \
             std::cout << "i: " << i << std::endl;                              \
-            for (uint j = 0; j < blocks[i]; j++)                               \
+            for (size_t j = 0; j < blocks[i]; j++)                             \
             {                                                                  \
-                var->m_AvailableStepBlockIndexOffsets[i + 1].push_back(42 +    \
-                                                                       i);     \
+                std::cout << "---debug ---" << std::endl;                      \
+                step = i;                                                      \
+                std::cout << "step: " << step << std::endl;                    \
+                block = j;                                                     \
+                std::cout << "block: " << block << std::endl;                  \
+                selector =                                                     \
+                    j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);   \
+                j_db_selector_add_field(                                       \
+                    selector, "file", J_DB_SELECTOR_OPERATOR_EQ,               \
+                    nameSpace.c_str(), strlen(nameSpace.c_str()) + 1, NULL);   \
+                j_db_selector_add_field(                                       \
+                    selector, "variableName", J_DB_SELECTOR_OPERATOR_EQ,       \
+                    varName.c_str(), strlen(varName.c_str()) + 1, NULL);       \
+                j_db_selector_add_field(selector, "step",                      \
+                                        J_DB_SELECTOR_OPERATOR_EQ, &step,      \
+                                        sizeof(step), NULL);                   \
+                j_db_selector_add_field(selector, "block",                     \
+                                        J_DB_SELECTOR_OPERATOR_EQ, &block,     \
+                                        sizeof(block), NULL);                  \
+                iterator = j_db_iterator_new(schema, selector, NULL);          \
+                while (j_db_iterator_next(iterator, NULL))                     \
+                {                                                              \
+                    std::cout << "--- While iterator next " << std::endl;      \
+                    j_db_iterator_get_field(iterator, "blockID", &jdbType,     \
+                                            (gpointer *)&tmpBlockID,           \
+                                            &db_length, NULL);                 \
+                    std::cout << "db_length: " << db_length << std::endl;      \
+                    std::cout << "tmpBlockID: " << *tmpBlockID << std::endl;   \
+                    blockID = *tmpBlockID;                                     \
+                    std::cout << "blockID: " << blockID << std::endl;          \
+                    j_db_iterator_get_field(iterator, "_id", &jdbType,         \
+                                            (gpointer *)&tmpID, &db_length,    \
+                                            NULL);                             \
+                    std::cout << "db_length: " << db_length << std::endl;      \
+                    std::cout << "id: " << *tmpID << std::endl;                \
+                    id = *tmpID;                                               \
+                    std::cout << "id: " << id << std::endl;                    \
+                }                                                              \
+                var->m_AvailableStepBlockIndexOffsets[i + 1].push_back(id);    \
             }                                                                  \
             var->m_AvailableStepsCount++;                                      \
         }                                                                      \
@@ -74,6 +134,17 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string varName,
     }
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
+
+    // blockID = *tmpBlockID;                                    \
+                    std::cout << "blockID: " << blockID << std::endl;          \
+    //                    std::cout << "blockID: " << &blockID << std::endl;         \
+ //                    j_db_iterator_get_field(iterator, "_id", &jdbType,         \
+ //                                            (gpointer *)&id, &db_length,       \
+ //                                            NULL);                             \
+ //                    std::cout << "--- While end " << std::endl;                \
+ //                    std::cout << "db_length: " << db_length << std::endl;      \
+ //                    std::cout << "id: " << id << std::endl;                    \
+ //                    std::cout << "id: " << *id << std::endl;                   \
 
     // var.m_IsFirstStreamingStep = true; //TODO: necessary?
     // for(int i = 0; i < 2; i++ )
@@ -93,7 +164,8 @@ void DBDefineVariableInInit(core::IO *io, const std::string varName,
     const char *type = stringType.c_str();
     // std::cout << "------ DefineVariableInInit ----------" << std::endl;
     // std::cout << "------ type  ---------- " << type << std::endl;
-    // std::cout << "------ constantDims  ---------- " << constantDims << std::endl;
+    // std::cout << "------ constantDims  ---------- " << constantDims <<
+    // std::endl;
 
     if (strcmp(type, "unknown") == 0)
     {
@@ -208,8 +280,9 @@ void CheckSchemas()
     j_db_schema_get(blockSchema, batch, NULL);
 
     bool existsBlock = j_batch_execute(batch);
-    // std::cout << "existsVar: " << existsVar << " existsBlock: " << existsBlock
-              // << std::endl;
+    // std::cout << "existsVar: " << existsVar << " existsBlock: " <<
+    // existsBlock
+    // << std::endl;
     if ((existsVar == 0) || (existsBlock == 0))
     {
         std::cout << "ERROR: database adios2 schemas do not exist" << std::endl;
@@ -330,7 +403,8 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
                                     (gpointer *)&tmpCountBuffer, &db_length,
                                     NULL);
             // std::cout << "db_length: " << db_length << std::endl;
-            // std::cout << "tmpCountBuffer[0]: " << tmpCountBuffer[0] << std::endl;
+            // std::cout << "tmpCountBuffer[0]: " << tmpCountBuffer[0] <<
+            // std::endl;
             Dims tmpCount(tmpCountBuffer, tmpCountBuffer + *countSize);
             count = tmpCount;
             g_free(tmpCountBuffer);
@@ -344,9 +418,9 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
             j_db_iterator_get_field(iterator, "blockArray", &type,
                                     (gpointer *)tmpblocks, &db_length, NULL);
             blocks = *tmpblocks;
-            g_free(*tmpblocks);
-            // std::cout << "numberSteps: " << blocks[0] << std::endl;
-            // std::cout << "numberSteps: " << blocks[1] << std::endl;
+            // g_free(*tmpblocks);
+            std::cout << "numberSteps: " << blocks[0] << std::endl;
+            std::cout << "numberSteps: " << blocks[1] << std::endl;
         }
 
         if (false)
@@ -367,13 +441,14 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
             std::cout << "count: " << count.front() << std::endl;
             std::cout << "numberSteps: " << *numberSteps << std::endl;
         }
+        // DBGetBlockIDs(nameSpace, varName, )
 
         DBDefineVariableInInit(io, varName, varType, shape, start, count,
                                *isConstantDims);
 
-        DBInitVariable(io, engine, varName, blocks, *numberSteps, *shapeID,
-                       *isReadAsJoined, *isReadAsLocalValue, *isRandomAccess,
-                       *isSingleValue);
+        DBInitVariable(io, engine, nameSpace, varName, blocks, *numberSteps,
+                       *shapeID, *isReadAsJoined, *isReadAsLocalValue,
+                       *isRandomAccess, *isSingleValue);
     }
     // free blocks;
     g_free(isConstantDims);
@@ -429,7 +504,7 @@ void GetCountFromBlockMetadata(const std::string nameSpace,
                             &block, sizeof(block), NULL);
 
     // std::cout << "varname: " << varName << "step: " << step
-              // << "block: " << block << std::endl;
+    // << "block: " << block << std::endl;
 
     iterator = j_db_iterator_new(schema, selector, NULL);
     if (j_db_iterator_next(iterator, NULL))
@@ -451,7 +526,7 @@ void GetCountFromBlockMetadata(const std::string nameSpace,
         }
     }
     g_free(countSize);
-     j_batch_unref(batch);
+    j_batch_unref(batch);
     j_semantics_unref(semantics);
 }
 
@@ -636,7 +711,7 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
     g_free(stepsStart);
     g_free(stepsCount);
     g_free(blockID);
-     j_batch_unref(batch);
+    j_batch_unref(batch);
     j_semantics_unref(semantics);
     return info;
 }
@@ -671,7 +746,7 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
     if (bytesRead == dataSize)
     {
         // std::cout << "++ Julea Interaction Reader: Read data for variable "
-                  // << varName << std::endl;
+        // << varName << std::endl;
     }
     else
     {

@@ -149,13 +149,15 @@ void JuleaDBReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
         stepBlockID =
             g_strdup_printf("%lu_%lu", variable.m_StepsStart, blockID);
         step = variable.m_StepsStart;
-        // std::cout << "variable.m... stepBlockID: " << stepBlockID << std::endl;
+        // std::cout << "variable.m... stepBlockID: " << stepBlockID <<
+        // std::endl;
     }
     else
     {
         stepBlockID = g_strdup_printf("%lu_%lu", m_CurrentStep, blockID);
         step = m_CurrentStep;
-        // std::cout << "variable.m... stepBlockID: " << stepBlockID << std::endl;
+        // std::cout << "variable.m... stepBlockID: " << stepBlockID <<
+        // std::endl;
     }
 
     // DBGetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
@@ -171,7 +173,7 @@ void JuleaDBReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
     size_t numberElements = helper::GetTotalSize(count);
     dataSize = numberElements * variable.m_ElementSize;
     DBGetVariableDataFromJulea(variable, data, nameSpace, dataSize,
-    stepBlockID);
+                               stepBlockID);
 }
 
 // template <class T>
@@ -452,8 +454,8 @@ JuleaDBReader::InitVariableBlockInfo(core::Variable<T> &variable, T *data)
         if (variable.m_ShapeID == ShapeID::GlobalArray)
         {
             // std::cout
-                // << "----------- DEBUG: switch to bounding box for global array "
-                // << std::endl;
+            // << "----------- DEBUG: switch to bounding box for global array "
+            // << std::endl;
             const Dims &start = blocksInfo[variable.m_BlockID].Start;
             const Dims &count = blocksInfo[variable.m_BlockID].Count;
 
@@ -462,8 +464,8 @@ JuleaDBReader::InitVariableBlockInfo(core::Variable<T> &variable, T *data)
         else if (variable.m_ShapeID == ShapeID::LocalArray)
         {
             // std::cout
-                // << "----------- DEBUG: switch to bounding box for local array "
-                // << std::endl;
+            // << "----------- DEBUG: switch to bounding box for local array "
+            // << std::endl;
 
             // TODO from Adios people! "keep Count for block updated"
             variable.m_Count = blocksInfo[variable.m_BlockID].Count;
