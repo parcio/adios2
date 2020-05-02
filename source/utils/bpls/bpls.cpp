@@ -1013,7 +1013,6 @@ void printMeshes(core::Engine *fp)
                 meshfp.Close();
             }
             fprintf(outf, "    type:         ");
-
             switch (mi->type)
             {
             case ADIOS_MESH_UNIFORM:
@@ -1040,7 +1039,6 @@ void printMeshes(core::Engine *fp)
                                 mi->uniform->maximums, j, g)
                 }
                 break;
-
             case ADIOS_MESH_RECTILINEAR:
                 fprintf(outf, "rectilinear\n");
                 PRINT_ARRAY64("    dimensions:   ",
@@ -1063,7 +1061,6 @@ void printMeshes(core::Engine *fp)
                     fprintf(outf, "\n");
                 }
                 break;
-
             case ADIOS_MESH_STRUCTURED:
                 fprintf(outf, "structured\n");
                 PRINT_ARRAY64("    dimensions:   ",
@@ -1088,7 +1085,6 @@ void printMeshes(core::Engine *fp)
                 fprintf(outf, "    nspaces:      %d\n",
                         mi->structured->nspaces);
                 break;
-
             case ADIOS_MESH_UNSTRUCTURED:
                 fprintf(outf, "unstructured\n");
                 if (mi->unstructured->nvar_points <= 1)
@@ -1124,7 +1120,6 @@ void printMeshes(core::Engine *fp)
                 fprintf(outf, "    nspaces:      %d\n",
                         mi->unstructured->nspaces);
                 break;
-
             default:
                 fprintf(outf, "undefined\n");
             }
@@ -1153,10 +1148,15 @@ std::vector<std::string> getEnginesList(const std::string path)
         list.push_back("HDF5");
     }
 #elif defined ADIOS2_HAVE_JULEA
-    std::cout << "bpls -- DEBUG: ADIOS2_HAVE_JULEA " << std::endl;
-    //FIXME: make possible to still read .bp and .h5 files without "pseudo file formats"
-    //jv for julea-kv
-    //jb for julea-db
+    /** --- IMPORTANT! ---
+     * It is necessary to create a dummy file in your file system with the
+     * according ending. BPLS checks whether the file exists and the
+     * application using Julea Engines did write only to Julea. So there is no
+     * file for bpls to find.
+     * be read e.g. "touch yourFile.jv" */
+
+    // FIXME: make possible to still read .bp and .h5 files without "pseudo file
+    // formats" jv for julea-kv jb for julea-db
     size_t slen = path.length();
     if (slen >= 3 && path.compare(slen - 3, 3, ".h5") == 0)
     {
@@ -1294,10 +1294,8 @@ int print_data_hist(ADIOS_VARINFO *vi, char *varname)
     char xtics[512], str[512];
     FILE *out_hist, *out_plot;
     struct ADIOS_HIST *h = vi->statistics->histogram;
-
     memcpy(hist_file, varname, strlen(varname) + 1);
     strcat(hist_file, ".hist");
-
     if ((out_hist = fopen(hist_file, "w")) == NULL)
     {
         fprintf(stderr, "Error at opening for writing file %s: %s\n",
@@ -1305,17 +1303,14 @@ hist_file,
                 strerror(errno));
         return 30;
     }
-
     memcpy(gnuplot_file, varname, strlen(varname) + 1);
     strcat(gnuplot_file, ".gpl");
-
     if ((out_plot = fopen(gnuplot_file, "w")) == NULL)
     {
         fprintf(stderr, "Error at opening for writing file %s: %s\n",
                 gnuplot_file, strerror(errno));
         return 30;
     }
-
     xtics[0] = '\0';
     strcat(xtics, "set xtics offset start axis (");
     for (i = 0; i <= h->num_breaks; i++)
@@ -1341,7 +1336,6 @@ hist_file,
         strcat(xtics, str);
     }
     strcat(xtics, ")\n");
-
     fprintf(out_plot, "start = -0.5\npos(x) = start + x * 1\nset boxwidth "
                       "1\nset style fill solid border 5#5lt6#6\n");
     fputs(xtics, out_plot);
@@ -2443,7 +2437,6 @@ int print_data_characteristics(void *min, void *max, double *avg,
        fprintf(outf,(f ? format : "(%g,i%g) "), ((float *) data)[2*item],
        ((float *) data)[2*item+1]);
        break;
-
        case adios_double_complex:
        fprintf(outf,(f ? format : "(%g,i%g)" ), ((double *) data)[2*item],
        ((double *) data)[2*item+1]);
