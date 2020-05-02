@@ -48,6 +48,11 @@ void GetVariableMetadataFromJulea(const std::string nameSpace,
 
     j_kv_get(kvVarMetadata, md, buffer_len, batch);
     g_assert_true(j_batch_execute(batch) == true);
+
+    g_free(stringMetadataKV);
+    j_kv_unref(kvVarMetadata);
+    j_batch_unref(batch);
+    j_semantics_unref(semantics);
 }
 
 void GetBlockMetadataFromJulea(const std::string nameSpace,
