@@ -88,10 +88,15 @@ void addFieldsForBlockMD(JDBSchema *schema)
     j_db_schema_add_field(schema, "memoryCountSize", J_DB_TYPE_UINT64, NULL);
     j_db_schema_add_field(schema, "memoryCount", J_DB_TYPE_BLOB, NULL);
 
-    j_db_schema_add_field(schema, "min", J_DB_TYPE_BLOB, NULL);
-    j_db_schema_add_field(schema, "max", J_DB_TYPE_BLOB, NULL);
+    // j_db_schema_add_field(schema, "min", J_DB_TYPE_BLOB, NULL);
+    // j_db_schema_add_field(schema, "max", J_DB_TYPE_BLOB, NULL);
+    // j_db_schema_add_field(schema, "value", J_DB_TYPE_BLOB, NULL);
+
+    j_db_schema_add_field(schema, "min", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "max", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "value", J_DB_TYPE_FLOAT64, NULL);
+
     j_db_schema_add_field(schema, "isValue", J_DB_TYPE_UINT32, NULL);
-    j_db_schema_add_field(schema, "value", J_DB_TYPE_BLOB, NULL);
     j_db_schema_add_field(schema, "stepsStart", J_DB_TYPE_UINT64, NULL);
     j_db_schema_add_field(schema, "stepsCount", J_DB_TYPE_UINT64, NULL);
     j_db_schema_add_field(schema, "blockID", J_DB_TYPE_UINT64, NULL);
