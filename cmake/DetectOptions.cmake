@@ -60,6 +60,20 @@ if(ADIOS2_USE_JULEA)
   endif()
 endif()
 
+# NetCDF
+find_package(PkgConfig REQUIRED)
+  if(PKGCONFIG_FOUND)
+    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET
+      netcdf-cxx4
+    )
+  endif()
+
+  if(NETCDF_FOUND)
+    message(NOTICE "NetCDF found :-)")
+  else()
+    message(FATAL_ERROR "netcdf not found")
+  endif()
+
 # SZ
 if(ADIOS2_USE_SZ STREQUAL AUTO)
   find_package(SZ)
