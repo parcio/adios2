@@ -6,18 +6,21 @@
 
 std::string mapNCTypeToAdiosType(size_t typeID)
 {
-    char *type;
+    const char *type;
     if (typeID == NC_BYTE)
     {
     }
     else if (typeID == NC_CHAR)
     {
+        type = "int8_t";
     }
     else if (typeID == NC_SHORT)
     {
+        type = "int16_t";
     }
     else if (typeID == NC_INT)
     {
+        type = "int32_t";
     }
     else if (typeID == NC_FLOAT)
     {
@@ -25,30 +28,32 @@ std::string mapNCTypeToAdiosType(size_t typeID)
     }
     else if (typeID == NC_DOUBLE)
     {
+        type = "double";
     }
     else if (typeID == NC_UBYTE)
     {
-        // io->DefineVariable<double>(adiosVarName, {}, {}, {Nglobal});
     }
     else if (typeID == NC_USHORT)
     {
-        // io->DefineVariable<double>(adiosVarName, {}, {}, {Nglobal});
+        type = "uint16_t";
     }
     else if (typeID == NC_UINT)
     {
-        // io->DefineVariable<double>(varName, {}, {}, {Nglobal});
+        type = "uint32_t";
     }
     else if (typeID == NC_INT64)
     {
-        // io->DefineVariable<int64_t>(varName, {}, {}, {Nglobal});
+        type = "int64_t";
     }
     else if (typeID == NC_UINT64)
     {
-        // io->DefineVariable<uint64_t>(varName, {}, {}, {Nglobal});
+        type = "uint64_t";
     }
     else if (typeID == NC_STRING)
     {
-        // io->DefineVariable<std::string>(varName, {}, {}, {Nglobal});
+        //"std::string (only used for global and local values, not arrays)"
+        // adios2 docu
+        // https://adios2.readthedocs.io/en/latest/components/components.html#variable
     }
     else if (typeID == NC_VLEN)
     {
@@ -65,111 +70,45 @@ std::string mapNCTypeToAdiosType(size_t typeID)
     return std::string(type);
 }
 
-void defineVariable(adios2::IO *io, std::string varName, size_t typeID,
-                    adios2::Dims shape, adios2::Dims start, adios2::Dims count)
+void read(std::string engine, std::string ncFileName, std::string adiosFileName)
 {
-    const size_t Nglobal = 2;
-
-    if (typeID == NC_BYTE)
-    {
-    }
-    else if (typeID == NC_CHAR)
-    {
-    }
-    else if (typeID == NC_SHORT)
-    {
-    }
-    else if (typeID == NC_INT)
-    {
-    }
-    else if (typeID == NC_FLOAT)
-    {
-        std::cout << "--- REACHED FLOAT CASE " << std::endl;
-        // auto var = io->DefineVariable<float>(varName, shape, start, count);
-        auto var =
-            io->DefineVariable<float>(varName, {128, 256}, {0, 0}, {128, 256});
-    }
-    else if (typeID == NC_DOUBLE)
-    {
-        auto var = io->DefineVariable<double>(varName, {}, {}, {Nglobal});
-    }
-    else if (typeID == NC_UBYTE)
-    {
-        // io->DefineVariable<double>(adiosVarName, {}, {}, {Nglobal});
-    }
-    else if (typeID == NC_USHORT)
-    {
-        // io->DefineVariable<double>(adiosVarName, {}, {}, {Nglobal});
-    }
-    else if (typeID == NC_UINT)
-    {
-        io->DefineVariable<double>(varName, {}, {}, {Nglobal});
-    }
-    else if (typeID == NC_INT64)
-    {
-        io->DefineVariable<int64_t>(varName, {}, {}, {Nglobal});
-    }
-    else if (typeID == NC_UINT64)
-    {
-        io->DefineVariable<uint64_t>(varName, {}, {}, {Nglobal});
-    }
-    else if (typeID == NC_STRING)
-    {
-        io->DefineVariable<std::string>(varName, {}, {}, {Nglobal});
-    }
-    else if (typeID == NC_VLEN)
-    {
-    }
-    else if (typeID == NC_OPAQUE)
-    {
-    }
-    else if (typeID == NC_ENUM)
-    {
-    }
-    else if (typeID == NC_COMPOUND)
-    {
-    }
-}
-
-void read(std::string engine, std::string fileName, std::string adiosFileName)
-{
-    std::cout << "\nfileName: " << fileName << std::endl;
+    std::cout << "\ncFileName: " << ncFileName << std::endl;
+    std::cout << "\nadiosFileName: " << adiosFileName << std::endl;
     std::cout << "engine: " << engine << std::endl;
-    bool hasSteps;
+
+    bool hasSteps = false;
     size_t varCount = 0;
     size_t dimCount = 0;
+    size_t dimsID = 0;
     size_t dimsSize = 0;
     size_t numberSteps = 0;
-    size_t dimsID = 0;
+    size_t dataSize = 1;
     // std::string dimsName;
 
-    size_t dataSize;
+    /** ADIOS2 open file ... etc. */
     adios2::ADIOS adios(adios2::DebugON);
     adios2::IO io = adios.DeclareIO("Output");
     io.SetEngine(engine);
 
     adios2::Engine writer = io.Open(adiosFileName, adios2::Mode::Write);
 
+    /** netCDF4 open file ... etc. */
     netCDF::NcFile dataFile;
-    dataFile.open(fileName, netCDF::NcFile::read);
+    dataFile.open(ncFileName, netCDF::NcFile::read);
+
     auto fileDims = dataFile.getDims();
     std::cout << "number of dimensions: " << fileDims.size() << std::endl;
+
+    /** all dimensions declared for the file */
     for (const auto &dim : fileDims)
     {
         std::string name = dim.first;
         netCDF::NcDim dimension = dim.second;
         std::cout << "dim name: " << name << std::endl;
-        // std::cout << "-- Dim: " << dimCount << std::endl;
-        //     std::cout << "Name: " << dim.getName() << std::endl;
-        //     std::cout << "getID: " << dim.getId() << std::endl;
-        //     std::cout << "size: " << dim.getSize() << std::endl;
-
-        // dimsName = dim.getName();
-        // dimsID =  dim.getId();
-        // dimsSize =  dim.getSize();
     }
 
     auto varMap = dataFile.getVars();
+    /** all variables declared in the file */
     for (const auto &var : varMap)
     {
         std::cout << "\n---------------------- variable: " << varCount
@@ -177,9 +116,7 @@ void read(std::string engine, std::string fileName, std::string adiosFileName)
         std::string name = var.first;
         netCDF::NcVar variable = var.second;
 
-        netCDF::NcType type =
-            variable
-                .getType(); // dataFile.getType(name,netCDF::NcGroup::Location::All);
+        netCDF::NcType type = variable.getType();
         auto typeID = type.getId();
         auto typeName = type.getName();
         std::vector<netCDF::NcDim> varDims = variable.getDims();
@@ -198,6 +135,8 @@ void read(std::string engine, std::string fileName, std::string adiosFileName)
 
         dimCount = 0;
         dataSize = 1;
+
+        /** all dimensions for the current variable */
         for (const auto &dims : varDims)
         {
             std::cout << "-- Dim: " << dimCount << std::endl;
@@ -206,60 +145,32 @@ void read(std::string engine, std::string fileName, std::string adiosFileName)
             std::cout << "size: " << dims.getSize() << std::endl;
 
             std::string dimsName = dims.getName();
-            dimsID = dims.getId();
+            // dimsID = dims.getId();
             dimsSize = dims.getSize();
 
             if (strcmp(dimsName.c_str(), "time") == 0)
             {
                 hasSteps = true;
-                numberSteps = dims.getSize();
+                numberSteps = dimsSize;
                 std::cout << "---- HAS STEPS --- " << std::endl;
                 break;
             }
             std::cout << "dataSize: " << dataSize << std::endl;
-            /** e.g. add lat and lon */
-            shape.push_back(dims.getSize());
-            dataSize = dataSize * dims.getSize();
-            count.push_back(dims.getSize());
+            dataSize = dataSize * dimsSize;
+
+            shape.push_back(dimsSize);
+            start.push_back(0);
+            count.push_back(dimsSize);
 
             ++dimCount;
         }
 
-        if (dimCount == 1)
-        {
-        }
-        std::cout << "dataSize: " << dataSize << std::endl;
-        std::cout << "shapeSize: " << shape.size() << std::endl;
-        std::cout << "shape: " << shape[0] << std::endl;
-        std::cout << "count: " << count[0] << std::endl;
-        // std::cout << "shape: " << shape[1] << std::endl;
-        // shape.size() should be = dimCount (resp. time)
-        // defineVariable(&io, adiosVarName, typeID, start, shape, count);
+        // std::cout << "dataSize: " << dataSize << std::endl;
+        // std::cout << "shapeSize: " << shape.size() << std::endl;
+        // std::cout << "shape: " << shape[0] << std::endl;
+        // std::cout << "count: " << count[0] << std::endl;
 
-        // if (varCount == 0)
-        // {
-        // float data[dataSize];
-        // variable.getVar(data);
-
-        // for (int i = 0; i < dataSize; i++)
-        // {
-        //     // std::cout << "i:" << i << " data:" << std::fixed
-        //     // << std::setprecision(6) << data[i] << std::endl;
-        // }
-        // defineVariable(&io, adiosVarName, typeID, shape, {}, {128, 256});
-        // mapNCTypeToAdiosType(typeID, &adiosType);
         std::string adiosType = mapNCTypeToAdiosType(typeID);
-        // defineVariable(&io, adiosVarName, typeID, shape, {}, shape);
-
-        // auto var2 = io.InquireVariable<float>(adiosVarName);
-
-        // writer.Put<float>(var2, data, adios2::Mode::Sync);
-        // const std::string
-        // adiosType(io.InquireVariableType(adiosVarName));
-
-        // const std::string adiosType = "float";
-
-        // DefineVariable<float>(varName, {128, 256}, {0, 0}, {128, 256});
 
         if (adiosType == "compound")
         {
@@ -269,8 +180,9 @@ void read(std::string engine, std::string fileName, std::string adiosFileName)
     {                                                                          \
         if (dimCount == 1)                                                     \
         {                                                                      \
-            std::cout << "only one dimension " << std::endl;\
-            auto varTest = io.DefineVariable<T>(adiosVarName, {128}, {}, {128});  \
+            std::cout << "only one dimension " << std::endl;                   \
+            auto varTest =                                                     \
+                io.DefineVariable<T>(adiosVarName, {128}, {0}, {128});         \
         }                                                                      \
         else                                                                   \
         {                                                                      \
@@ -279,8 +191,7 @@ void read(std::string engine, std::string fileName, std::string adiosFileName)
         }                                                                      \
         T data[dataSize];                                                      \
         variable.getVar(data);                                                 \
-        std::cout << "GetType: " << adios2::GetType<T>();                      \
-        std::cout << "type: " << adiosType << std::endl;                       \
+        std::cout << "GetType: " << adios2::GetType<T>() << std::endl;         \
         auto var = io.InquireVariable<T>(adiosVarName);                        \
         if (var)                                                               \
         {                                                                      \
@@ -290,16 +201,10 @@ void read(std::string engine, std::string fileName, std::string adiosFileName)
         ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
 
-        writer.Close();
-        // }
-        // inquire variable
-        // get data
-        // first dimension = time -> begin step .. end step
-        // put variable
         ++varCount;
-        // break;
     }
 }
+
 int main(int argc, char *argv[])
 {
     int rank = 0;
