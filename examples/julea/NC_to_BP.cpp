@@ -133,6 +133,10 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
         adios2::Dims start;
         adios2::Dims count;
 
+        //FIXME: check when to set them how; currently index exceeds dimension bound
+        std::vector<size_t> ncStart;
+        std::vector<size_t> ncCount;
+
         dimCount = 0;
         dataSize = 1;
 
@@ -153,10 +157,19 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
                 hasSteps = true;
                 numberSteps = dimsSize;
                 std::cout << "---- HAS STEPS --- " << std::endl;
+                ncCount.push_back(1);
                 continue;
             }
 
+            if (hasSteps)
+            {
+                // TODO: check whether these are correct for the getVar with
+                // start, count, dataValues
+                ncStart.push_back(0);
+                ncCount.push_back(dimsSize);
+            }
             std::cout << "dataSize: " << dataSize << std::endl;
+            // TODO: check if this is correct
             dataSize = dataSize * dimsSize;
 
             shape.push_back(dimsSize);
@@ -187,13 +200,27 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
         {                                                                      \
             auto varTest = io.DefineVariable<T>(name, shape, start, shape);    \
         }                                                                      \
-        T data[dataSize];                                                      \
-        variable.getVar(data);                                                 \
-        std::cout << "GetType: " << adios2::GetType<T>() << std::endl;         \
         auto var = io.InquireVariable<T>(name);                                \
-        if (var)                                                               \
+        T data[dataSize];                                                      \
+        if (hasSteps)                                                          \
         {                                                                      \
-            writer.Put<T>(var, (T *)data, adios2::Mode::Sync);                 \
+            writer.BeginStep();                                                \
+            for (uint i = 0; i < numberSteps; i++)                             \
+            {                                                                  \
+                ncStart[0] = i;                                                \
+                variable.getVar(ncStart, ncCount, data);                       \
+                writer.Put<T>(var, (T *)data, adios2::Mode::Sync);             \
+            }                                                                  \
+            writer.EndStep();                                                  \
+        }                                                                      \
+        else                                                                   \
+        {                                                                      \
+            variable.getVar(data);                                             \
+            std::cout << "GetType: " << adios2::GetType<T>() << std::endl;     \
+            if (var)                                                           \
+            {                                                                  \
+                writer.Put<T>(var, (T *)data, adios2::Mode::Sync);             \
+            }                                                                  \
         }                                                                      \
     }
         ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
