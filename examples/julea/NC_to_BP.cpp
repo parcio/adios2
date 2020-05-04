@@ -72,8 +72,8 @@ std::string mapNCTypeToAdiosType(size_t typeID)
 
 void read(std::string engine, std::string ncFileName, std::string adiosFileName)
 {
-    std::cout << "\ncFileName: " << ncFileName << std::endl;
-    std::cout << "\nadiosFileName: " << adiosFileName << std::endl;
+    std::cout << "\n ncFileName: " << ncFileName << std::endl;
+    std::cout << "\n adiosFileName: " << adiosFileName << std::endl;
     std::cout << "engine: " << engine << std::endl;
 
     bool hasSteps = false;
@@ -153,15 +153,15 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
                 hasSteps = true;
                 numberSteps = dimsSize;
                 std::cout << "---- HAS STEPS --- " << std::endl;
-                break;
+                continue;
             }
+
             std::cout << "dataSize: " << dataSize << std::endl;
             dataSize = dataSize * dimsSize;
 
             shape.push_back(dimsSize);
             start.push_back(0);
             count.push_back(dimsSize);
-
             ++dimCount;
         }
 
@@ -181,18 +181,16 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
         if (dimCount == 1)                                                     \
         {                                                                      \
             std::cout << "only one dimension " << std::endl;                   \
-            auto varTest =                                                     \
-                io.DefineVariable<T>(adiosVarName, {128}, {0}, {128});         \
+            auto varTest = io.DefineVariable<T>(name, shape, start, count);    \
         }                                                                      \
         else                                                                   \
         {                                                                      \
-            auto varTest =                                                     \
-                io.DefineVariable<T>(adiosVarName, shape, {0, 0}, shape);      \
+            auto varTest = io.DefineVariable<T>(name, shape, start, shape);    \
         }                                                                      \
         T data[dataSize];                                                      \
         variable.getVar(data);                                                 \
         std::cout << "GetType: " << adios2::GetType<T>() << std::endl;         \
-        auto var = io.InquireVariable<T>(adiosVarName);                        \
+        auto var = io.InquireVariable<T>(name);                                \
         if (var)                                                               \
         {                                                                      \
             writer.Put<T>(var, (T *)data, adios2::Mode::Sync);                 \
@@ -203,6 +201,7 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
 
         ++varCount;
     }
+    writer.Close();
 }
 
 int main(int argc, char *argv[])
