@@ -9,6 +9,7 @@ std::string mapNCTypeToAdiosType(size_t typeID)
     const char *type;
     if (typeID == NC_BYTE)
     {
+        type = "int8_t";
     }
     else if (typeID == NC_CHAR)
     {
@@ -83,7 +84,6 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
     size_t dimsSize = 0;
     size_t numberSteps = 0;
     size_t dataSize = 1;
-    // std::string dimsName;
 
     /** ADIOS2 open file ... etc. */
     adios2::ADIOS adios(adios2::DebugON);
@@ -123,10 +123,6 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
 
         std::cout << "" << name << " - " << type.getName() << ":" << std::endl;
 
-        // auto adiosVarName = g_strdup_printf("Variable_%lu", varCount);
-        // auto adiosVarName = "variable_" + std::to_string(varCount);
-        // std::cout << " " << adiosVarName << std::endl;
-
         auto varAttrMap = variable.getAtts();
 
         adios2::Dims shape;
@@ -150,14 +146,12 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
             std::cout << "isUnlimited: " << dims.isUnlimited() << std::endl;
 
             std::string dimsName = dims.getName();
-            // dimsID = dims.getId();
             dimsSize = dims.getSize();
 
             if (strcmp(dimsName.c_str(), "time") == 0)
             {
                 hasSteps = true;
                 numberSteps = dimsSize;
-                // std::cout << "---- HAS STEPS --- " << std::endl;
                 ncStart.push_back(0);
                 ncCount.push_back(1);
             }
@@ -242,10 +236,10 @@ int main(int argc, char *argv[])
         // read("bp3", "sresa1b_ncar_ccsm3-example.nc",
         // "sresa1b_ncar_ccsm3-example.bp");
         // read("bp3",
-        //      "_grib2netcdf-webmars-public-svc-blue-004-"
-        //      "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.nc",
-        //      "_grib2netcdf-webmars-public-svc-blue-004-"
-        //      "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.bp");
+             // "_grib2netcdf-webmars-public-svc-blue-004-"
+             // "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.nc",
+             // "_grib2netcdf-webmars-public-svc-blue-004-"
+             // "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.bp");
     }
     catch (std::invalid_argument &e)
     {
