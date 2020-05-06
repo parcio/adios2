@@ -133,8 +133,6 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
         adios2::Dims start;
         adios2::Dims count;
 
-        // FIXME: check when to set them how; currently index exceeds dimension
-        // bound
         std::vector<size_t> ncStart;
         std::vector<size_t> ncCount;
 
@@ -162,13 +160,9 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
                 std::cout << "---- HAS STEPS --- " << std::endl;
                 ncStart.push_back(0);
                 ncCount.push_back(1);
-                // break;
-                std::cout << "dimsSize: " << dimsSize << std::endl;
             }
             else
             {
-                std::cout << "dataSize: " << dataSize << std::endl;
-                // TODO: check if this is correct
                 dataSize = dataSize * dimsSize;
 
                 shape.push_back(dimsSize);
@@ -177,8 +171,6 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
 
                 if (hasSteps)
                 {
-                    // TODO: check whether these are correct for the getVar with
-                    // start, count, dataValues
                     ncStart.push_back(0);
                     ncCount.push_back(dimsSize);
                 }
@@ -187,17 +179,10 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
             ++dimCount;
         }
 
-        // std::cout << "dataSize: " << dataSize << std::endl;
-        // std::cout << "shapeSize: " << shape.size() << std::endl;
-        // std::cout << "shape: " << shape[0] << std::endl;
-        // std::cout << "count: " << count[0] << std::endl;
-        std::cout << "numberDimensions: " << dimCount
-                  << " size ncCount: " << ncCount.size() << std::endl;
-        std::cout << "numberDimensions: " << dimCount
-                  << " size ncStart: " << ncStart.size() << std::endl;
         std::cout << "numberSteps: " << numberSteps << std::endl;
 
         std::string adiosType = mapNCTypeToAdiosType(typeID);
+                // writer.BeginStep();                                            \
 
         if (adiosType == "compound")
         {
@@ -205,30 +190,16 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
 #define declare_type(T)                                                        \
     else if (adiosType == adios2::GetType<T>())                                \
     {                                                                          \
-        if (dimCount == 1)                                                     \
-        {                                                                      \
-            std::cout << "only one dimension " << std::endl;                   \
-            auto varTest = io.DefineVariable<T>(name, shape, start, count);    \
-        }                                                                      \
-        else                                                                   \
-        {                                                                      \
-            auto varTest = io.DefineVariable<T>(name, shape, start, shape);    \
-        }                                                                      \
-        auto var = io.InquireVariable<T>(name);                                \
+            auto var = io.DefineVariable<T>(name, shape, start, count);    \
         T data[dataSize];                                                      \
         if (hasSteps)                                                          \
         {                                                                      \
             for (uint i = 0; i < numberSteps; i++)                             \
             {                                                                  \
-                std::cout << "reached begin step: i = " << i << std::endl;     \
-                writer.BeginStep();                                            \
-                std::cout << "ncStart: " << ncStart[0] << std::endl;           \
                 ncStart[0] = i;                                                \
-                std::cout << "ncStart: " << ncStart[0] << std::endl;           \
-                std::cout << "ncCount: " << ncCount[0] << std::endl;           \
                 variable.getVar(ncStart, ncCount, data);                       \
-                writer.Put<T>(var, (T *)data, adios2::Mode::Sync);             \
-                writer.EndStep();                                              \
+                writer.Put<T>(var, (T *)data, adios2::Mode::Deferred);             \
+                writer.PerformPuts();\
             }                                                                  \
         }                                                                      \
         else                                                                   \
@@ -243,6 +214,7 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
     }
         ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
+                // writer.EndStep();                                              \
 
         ++varCount;
     }
