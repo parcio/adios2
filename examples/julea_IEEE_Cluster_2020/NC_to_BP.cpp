@@ -1,3 +1,15 @@
+/*
+ * Distributed under the OSI-approved Apache License, Version 2.0.  See
+ * accompanying file Copyright.txt for details.
+ *
+ * An application to convert a NetCDF4 file of unknown dimensions into a ADIOS2
+ * file. All variables are read and then translated into their according ADIOS2
+ * equivalent. Note: entries along the time dimensions are treated as individual
+ * blocks.
+ *
+ * Created on: May 3, 2020
+ *      Author: Kira Duwe
+ */
 #include <adios2.h>
 #include <iomanip>
 #include <iostream>
@@ -58,23 +70,33 @@ std::string mapNCTypeToAdiosType(size_t typeID)
     }
     else if (typeID == NC_VLEN)
     {
+        std::cout << "typeID: " << NC_VLEN << " currently not supported!"
+                  << std::endl;
     }
     else if (typeID == NC_OPAQUE)
     {
+        std::cout << "typeID: " << NC_OPAQUE << " currently not supported!"
+                  << std::endl;
     }
     else if (typeID == NC_ENUM)
     {
+        std::cout << "typeID: " << NC_ENUM << " currently not supported!"
+                  << std::endl;
     }
     else if (typeID == NC_COMPOUND)
     {
+        std::cout << "typeID: " << NC_COMPOUND << " currently not supported!"
+                  << std::endl;
     }
     return std::string(type);
 }
 
-void read(std::string engine, std::string ncFileName, std::string adiosFileName)
+void read(std::string engine, std::string ncFileName, std::string adiosFileName,
+          bool printDimensions, bool printVariable)
 {
-    std::cout << "\n ncFileName: " << ncFileName << std::endl;
-    std::cout << "\n adiosFileName: " << adiosFileName << std::endl;
+    std::cout << "\n____ Read file ____" << std::endl;
+    std::cout << "NetCDF4 file: " << ncFileName << std::endl;
+    std::cout << "ADIOS2 file: " << adiosFileName << "\n" << std::endl;
     std::cout << "engine: " << engine << std::endl;
 
     bool hasSteps = false;
@@ -97,22 +119,32 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
     dataFile.open(ncFileName, netCDF::NcFile::read);
 
     auto fileDims = dataFile.getDims();
-    std::cout << "number of file dimensions: " << fileDims.size() << std::endl;
 
-    /** all dimensions declared for the file */
+    if (printDimensions)
+    {
+
+        std::cout << "number of file dimensions: " << fileDims.size()
+                  << std::endl;
+    }
+
+    /** all dimensions declared for the nc file */
     for (const auto &dim : fileDims)
     {
         std::string name = dim.first;
         netCDF::NcDim dimension = dim.second;
-        std::cout << "dimension name: " << name << std::endl;
+
+        if (printDimensions)
+        {
+            std::cout << "dimension name: " << name << std::endl;
+        }
     }
 
     auto varMap = dataFile.getVars();
-    /** all variables declared in the file */
+
+    /** all variables declared in the nc file */
     for (const auto &var : varMap)
     {
-        std::cout << "\n---------------------- variable: " << varCount
-                  << "----------------------" << std::endl;
+
         std::string name = var.first;
         netCDF::NcVar variable = var.second;
 
@@ -120,8 +152,6 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
         auto typeID = type.getId();
         auto typeName = type.getName();
         std::vector<netCDF::NcDim> varDims = variable.getDims();
-
-        std::cout << "" << name << " - " << type.getName() << ":" << std::endl;
 
         auto varAttrMap = variable.getAtts();
 
@@ -136,14 +166,17 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
         dataSize = 1;
         hasSteps = 0;
 
+        if (printVariable)
+        {
+            std::cout << "\n---------------------- variable: " << varCount
+                      << "----------------------" << std::endl;
+            std::cout << "" << name << " - " << type.getName() << ":"
+                      << std::endl;
+        }
+
         /** all dimensions for the current variable */
         for (const auto &dims : varDims)
         {
-            std::cout << "\n-- Dim: " << dimCount << std::endl;
-            std::cout << "Name: " << dims.getName() << std::endl;
-            std::cout << "getID: " << dims.getId() << std::endl;
-            std::cout << "size: " << dims.getSize() << std::endl;
-            std::cout << "isUnlimited: " << dims.isUnlimited() << std::endl;
 
             std::string dimsName = dims.getName();
             dimsSize = dims.getSize();
@@ -170,14 +203,23 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
                 }
             }
 
-        std::cout << "hasSteps: " << hasSteps << std::endl;
+            if (printVariable)
+            {
+                std::cout << "\n-- Dim: " << dimCount << std::endl;
+                std::cout << "Name: " << dims.getName() << std::endl;
+                std::cout << "getID: " << dims.getId() << std::endl;
+                std::cout << "size: " << dims.getSize() << std::endl;
+                std::cout << "isUnlimited: " << dims.isUnlimited() << std::endl;
+
+                std::cout << "hasSteps: " << hasSteps << std::endl;
+                std::cout << "numberSteps: " << numberSteps << std::endl;
+            }
             ++dimCount;
         }
 
-        std::cout << "numberSteps: " << numberSteps << std::endl;
-
         std::string adiosType = mapNCTypeToAdiosType(typeID);
 
+        /** Define and write ADIOS 2 variable */
         if (adiosType == "compound")
         {
         }
@@ -199,7 +241,8 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
         else                                                                   \
         {                                                                      \
             variable.getVar(data);                                             \
-            std::cout << "GetType: " << adios2::GetType<T>() << std::endl;     \
+            if (printVariable)                                                 \
+                std::cout << "GetType: " << adios2::GetType<T>() << std::endl; \
             if (var)                                                           \
             {                                                                  \
                 writer.Put<T>(var, (T *)data, adios2::Mode::Sync);             \
@@ -217,29 +260,47 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
 int main(int argc, char *argv[])
 {
     int rank = 0;
-    std::cout << "... Convert nc file to bp/jv/jb ... " << std::endl;
+    std::cout << "_____ Convert an NetCDF file to one of the formats supported "
+                 "by the following ADIOS2 engines _____"
+              << std::endl;
+    std::cout << "use 'bp3' for BP3 format" << std::endl;
+    std::cout << "use 'bp4' for BP4 format" << std::endl;
+    std::cout << "\nIf compiled accordingly the following formats are also "
+                 "available."
+              << std::endl;
+    std::cout << "use 'hdf5' for HDF5 format" << std::endl;
+    std::cout
+        << "use 'julea-db' for BP format stored in JULEA database backenend"
+        << std::endl;
+
+    std::cout << "--- bpls usage ---" << std::endl;
+    std::cout << "\n... 'bpls -D file.bp' to show variable decomposition"
+              << std::endl;
+    std::cout << "... 'bpls -d file.bp' to dump content of file" << std::endl;
+    std::cout << "... 'bpls -d -l file.bp' to dump content of file "
+                 "with min/max values"
+              << std::endl;
+    std::cout << "... 'bpls -d -l file.bp variableName' to dump variable "
+                 "with min/max values\n"
+              << std::endl;
 
     try
     {
-        // example file from
+        // sresa1b_ncar_ccsm3-example.nc = example file from
         // "https://www.unidata.ucar.edu/software/netcdf/examples/files.html"
 
+        // grib2netcdf-webmars-public-svc-blue-004-6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.nc
+        // = dataset from
+        // https://apps.ecmwf.int/datasets/data/cera20c/levtype=sfc/type=an/
 
-        read("julea-db", "sresa1b_ncar_ccsm3-example.nc",
-        "sresa1b_ncar_ccsm3-example.jb");
-        read("julea-db",
+        read("bp3", "sresa1b_ncar_ccsm3-example.nc",
+             "sresa1b_ncar_ccsm3-example.bp", true, false);
+        read("bp3",
              "_grib2netcdf-webmars-public-svc-blue-004-"
              "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.nc",
              "_grib2netcdf-webmars-public-svc-blue-004-"
-             "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.jb");
-
-        // read("bp3", "sresa1b_ncar_ccsm3-example.nc",
-        // "sresa1b_ncar_ccsm3-example.bp");
-        // read("bp3",
-             // "_grib2netcdf-webmars-public-svc-blue-004-"
-             // "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.nc",
-             // "_grib2netcdf-webmars-public-svc-blue-004-"
-             // "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.bp");
+             "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.bp",
+             true, false);
     }
     catch (std::invalid_argument &e)
     {
