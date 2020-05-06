@@ -6,7 +6,7 @@
  * be inspected using bpls.
  *
  * Created on: April 30, 2020
- *      Author: Kira Duwe
+ *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 #include <iostream>
 #include <vector>

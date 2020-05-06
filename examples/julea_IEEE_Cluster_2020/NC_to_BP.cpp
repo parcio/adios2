@@ -8,7 +8,7 @@
  * blocks.
  *
  * Created on: May 3, 2020
- *      Author: Kira Duwe
+ *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 #include <adios2.h>
 #include <iomanip>
@@ -293,9 +293,18 @@ int main(int argc, char *argv[])
         // = dataset from
         // https://apps.ecmwf.int/datasets/data/cera20c/levtype=sfc/type=an/
 
-        read("bp3", "sresa1b_ncar_ccsm3-example.nc",
+        // read("bp3", "sresa1b_ncar_ccsm3-example.nc",
+             // "sresa1b_ncar_ccsm3-example.bp", true, false);
+        // read("bp3",
+             // "_grib2netcdf-webmars-public-svc-blue-004-"
+             // "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.nc",
+             // "_grib2netcdf-webmars-public-svc-blue-004-"
+             // "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.bp",
+             // true, false);
+
+        read("julea-db", "sresa1b_ncar_ccsm3-example.nc",
              "sresa1b_ncar_ccsm3-example.bp", true, false);
-        read("bp3",
+        read("julea-db",
              "_grib2netcdf-webmars-public-svc-blue-004-"
              "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.nc",
              "_grib2netcdf-webmars-public-svc-blue-004-"
