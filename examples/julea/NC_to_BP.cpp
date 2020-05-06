@@ -97,14 +97,14 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
     dataFile.open(ncFileName, netCDF::NcFile::read);
 
     auto fileDims = dataFile.getDims();
-    std::cout << "number of dimensions: " << fileDims.size() << std::endl;
+    std::cout << "number of file dimensions: " << fileDims.size() << std::endl;
 
     /** all dimensions declared for the file */
     for (const auto &dim : fileDims)
     {
         std::string name = dim.first;
         netCDF::NcDim dimension = dim.second;
-        std::cout << "dim name: " << name << std::endl;
+        std::cout << "dimension name: " << name << std::endl;
     }
 
     auto varMap = dataFile.getVars();
@@ -124,8 +124,8 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
         std::cout << "" << name << " - " << type.getName() << ":" << std::endl;
 
         // auto adiosVarName = g_strdup_printf("Variable_%lu", varCount);
-        auto adiosVarName = "variable_" + std::to_string(varCount);
-        std::cout << " " << adiosVarName << std::endl;
+        // auto adiosVarName = "variable_" + std::to_string(varCount);
+        // std::cout << " " << adiosVarName << std::endl;
 
         auto varAttrMap = variable.getAtts();
 
@@ -143,7 +143,7 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
         /** all dimensions for the current variable */
         for (const auto &dims : varDims)
         {
-            std::cout << "-- Dim: " << dimCount << std::endl;
+            std::cout << "\n-- Dim: " << dimCount << std::endl;
             std::cout << "Name: " << dims.getName() << std::endl;
             std::cout << "getID: " << dims.getId() << std::endl;
             std::cout << "size: " << dims.getSize() << std::endl;
@@ -157,7 +157,7 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
             {
                 hasSteps = true;
                 numberSteps = dimsSize;
-                std::cout << "---- HAS STEPS --- " << std::endl;
+                // std::cout << "---- HAS STEPS --- " << std::endl;
                 ncStart.push_back(0);
                 ncCount.push_back(1);
             }
@@ -176,13 +176,13 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
                 }
             }
 
+        std::cout << "hasSteps: " << hasSteps << std::endl;
             ++dimCount;
         }
 
         std::cout << "numberSteps: " << numberSteps << std::endl;
 
         std::string adiosType = mapNCTypeToAdiosType(typeID);
-                // writer.BeginStep();                                            \
 
         if (adiosType == "compound")
         {
@@ -190,7 +190,7 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
 #define declare_type(T)                                                        \
     else if (adiosType == adios2::GetType<T>())                                \
     {                                                                          \
-            auto var = io.DefineVariable<T>(name, shape, start, count);    \
+        auto var = io.DefineVariable<T>(name, shape, start, count);            \
         T data[dataSize];                                                      \
         if (hasSteps)                                                          \
         {                                                                      \
@@ -198,8 +198,8 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
             {                                                                  \
                 ncStart[0] = i;                                                \
                 variable.getVar(ncStart, ncCount, data);                       \
-                writer.Put<T>(var, (T *)data, adios2::Mode::Deferred);             \
-                writer.PerformPuts();\
+                writer.Put<T>(var, (T *)data, adios2::Mode::Deferred);         \
+                writer.PerformPuts();                                          \
             }                                                                  \
         }                                                                      \
         else                                                                   \
@@ -214,7 +214,6 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
     }
         ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
-                // writer.EndStep();                                              \
 
         ++varCount;
     }
@@ -230,16 +229,23 @@ int main(int argc, char *argv[])
     {
         // example file from
         // "https://www.unidata.ucar.edu/software/netcdf/examples/files.html"
-        // read("julea-db", "sresa1b_ncar_ccsm3-example.nc");
-        // read("julea-db",
-        // "_grib2netcdf-webmars-public-svc-blue-004-6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.nc");
-        // read("bp3", "sresa1b_ncar_ccsm3-example.nc",
-        // "sresa1b_ncar_ccsm3-example.bp");
-        read("bp3",
+
+
+        read("julea-db", "sresa1b_ncar_ccsm3-example.nc",
+        "sresa1b_ncar_ccsm3-example.jb");
+        read("julea-db",
              "_grib2netcdf-webmars-public-svc-blue-004-"
              "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.nc",
              "_grib2netcdf-webmars-public-svc-blue-004-"
-             "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.bp");
+             "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.jb");
+
+        // read("bp3", "sresa1b_ncar_ccsm3-example.nc",
+        // "sresa1b_ncar_ccsm3-example.bp");
+        // read("bp3",
+        //      "_grib2netcdf-webmars-public-svc-blue-004-"
+        //      "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.nc",
+        //      "_grib2netcdf-webmars-public-svc-blue-004-"
+        //      "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.bp");
     }
     catch (std::invalid_argument &e)
     {
