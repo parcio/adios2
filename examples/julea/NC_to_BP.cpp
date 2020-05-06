@@ -133,12 +133,14 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
         adios2::Dims start;
         adios2::Dims count;
 
-        //FIXME: check when to set them how; currently index exceeds dimension bound
+        // FIXME: check when to set them how; currently index exceeds dimension
+        // bound
         std::vector<size_t> ncStart;
         std::vector<size_t> ncCount;
 
         dimCount = 0;
         dataSize = 1;
+        hasSteps = 0;
 
         /** all dimensions for the current variable */
         for (const auto &dims : varDims)
@@ -147,6 +149,7 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
             std::cout << "Name: " << dims.getName() << std::endl;
             std::cout << "getID: " << dims.getId() << std::endl;
             std::cout << "size: " << dims.getSize() << std::endl;
+            std::cout << "isUnlimited: " << dims.isUnlimited() << std::endl;
 
             std::string dimsName = dims.getName();
             // dimsID = dims.getId();
@@ -157,24 +160,30 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
                 hasSteps = true;
                 numberSteps = dimsSize;
                 std::cout << "---- HAS STEPS --- " << std::endl;
-                ncCount.push_back(1);
-                continue;
-            }
-
-            if (hasSteps)
-            {
-                // TODO: check whether these are correct for the getVar with
-                // start, count, dataValues
                 ncStart.push_back(0);
-                ncCount.push_back(dimsSize);
+                ncCount.push_back(1);
+                // break;
+                std::cout << "dimsSize: " << dimsSize << std::endl;
             }
-            std::cout << "dataSize: " << dataSize << std::endl;
-            // TODO: check if this is correct
-            dataSize = dataSize * dimsSize;
+            else
+            {
+                std::cout << "dataSize: " << dataSize << std::endl;
+                // TODO: check if this is correct
+                dataSize = dataSize * dimsSize;
 
-            shape.push_back(dimsSize);
-            start.push_back(0);
-            count.push_back(dimsSize);
+                shape.push_back(dimsSize);
+                start.push_back(0);
+                count.push_back(dimsSize);
+
+                if (hasSteps)
+                {
+                    // TODO: check whether these are correct for the getVar with
+                    // start, count, dataValues
+                    ncStart.push_back(0);
+                    ncCount.push_back(dimsSize);
+                }
+            }
+
             ++dimCount;
         }
 
@@ -182,6 +191,11 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
         // std::cout << "shapeSize: " << shape.size() << std::endl;
         // std::cout << "shape: " << shape[0] << std::endl;
         // std::cout << "count: " << count[0] << std::endl;
+        std::cout << "numberDimensions: " << dimCount
+                  << " size ncCount: " << ncCount.size() << std::endl;
+        std::cout << "numberDimensions: " << dimCount
+                  << " size ncStart: " << ncStart.size() << std::endl;
+        std::cout << "numberSteps: " << numberSteps << std::endl;
 
         std::string adiosType = mapNCTypeToAdiosType(typeID);
 
@@ -204,14 +218,18 @@ void read(std::string engine, std::string ncFileName, std::string adiosFileName)
         T data[dataSize];                                                      \
         if (hasSteps)                                                          \
         {                                                                      \
-            writer.BeginStep();                                                \
             for (uint i = 0; i < numberSteps; i++)                             \
             {                                                                  \
+                std::cout << "reached begin step: i = " << i << std::endl;     \
+                writer.BeginStep();                                            \
+                std::cout << "ncStart: " << ncStart[0] << std::endl;           \
                 ncStart[0] = i;                                                \
+                std::cout << "ncStart: " << ncStart[0] << std::endl;           \
+                std::cout << "ncCount: " << ncCount[0] << std::endl;           \
                 variable.getVar(ncStart, ncCount, data);                       \
                 writer.Put<T>(var, (T *)data, adios2::Mode::Sync);             \
+                writer.EndStep();                                              \
             }                                                                  \
-            writer.EndStep();                                                  \
         }                                                                      \
         else                                                                   \
         {                                                                      \
@@ -243,10 +261,13 @@ int main(int argc, char *argv[])
         // read("julea-db", "sresa1b_ncar_ccsm3-example.nc");
         // read("julea-db",
         // "_grib2netcdf-webmars-public-svc-blue-004-6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.nc");
-        read("bp3", "sresa1b_ncar_ccsm3-example.nc",
-             "sresa1b_ncar_ccsm3-example.bp");
-        // read("bp3", "_grib2netcdf-webmars-public-svc-blue-004-"
-        // "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.nc");
+        // read("bp3", "sresa1b_ncar_ccsm3-example.nc",
+        // "sresa1b_ncar_ccsm3-example.bp");
+        read("bp3",
+             "_grib2netcdf-webmars-public-svc-blue-004-"
+             "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.nc",
+             "_grib2netcdf-webmars-public-svc-blue-004-"
+             "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.bp");
     }
     catch (std::invalid_argument &e)
     {
