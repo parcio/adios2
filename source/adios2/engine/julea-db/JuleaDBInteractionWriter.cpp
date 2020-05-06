@@ -70,6 +70,8 @@ void addFieldsForBlockMD(JDBSchema *schema)
     gchar const *varIndex[] = {"variableName", NULL};
     gchar const *stepIndex[] = {"step", NULL};
     gchar const *blockIndex[] = {"block", NULL};
+    gchar const *minIndex[] = {"min", NULL};
+    gchar const *maxIndex[] = {"max", NULL};
 
     j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
     j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
@@ -131,6 +133,8 @@ void addFieldsForBlockMD(JDBSchema *schema)
     j_db_schema_add_index(schema, varIndex, NULL);
     j_db_schema_add_index(schema, stepIndex, NULL);
     j_db_schema_add_index(schema, blockIndex, NULL);
+    j_db_schema_add_index(schema, minIndex, NULL);
+    j_db_schema_add_index(schema, maxIndex, NULL);
 }
 
 template <class T>
@@ -348,10 +352,22 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
     j_db_entry_set_field(entry, "memoryCount", &memoryCountBuffer,
                          sizeof(memoryCountBuffer), NULL);
 
-    j_db_entry_set_field(entry, "min", &variable.m_Min, minLen, NULL);
-    // j_db_entry_set_field(entry, "min", &min, sizeof(min), NULL);
-    j_db_entry_set_field(entry, "max", &variable.m_Max, maxLen, NULL);
+    //FIXME: for all types
+    const char *varType = variable.m_Type.c_str();
 
+    if (strcmp(varType, "float") == 0)
+    {
+    j_db_entry_set_field(entry, "min_float32", &variable.m_Min, minLen, NULL);
+    j_db_entry_set_field(entry, "max_float32", &variable.m_Max, maxLen, NULL);
+
+    }
+    else if(strcmp(varType, "double") == 0)
+    {
+    j_db_entry_set_field(entry, "min_float64", &variable.m_Min, minLen, NULL);
+    j_db_entry_set_field(entry, "max_float64", &variable.m_Max, maxLen, NULL);
+    }
+
+    // j_db_entry_set_field(entry, "min", &min, sizeof(min), NULL);
     j_db_entry_set_field(entry, "isValue", &tmp, sizeof(tmp), NULL);
     // j_db_entry_set_field(entry, "max", &max, sizeof(max), NULL);
     // TODO: check whether is value otherwise set to 0?
