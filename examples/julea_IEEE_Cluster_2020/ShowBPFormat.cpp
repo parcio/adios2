@@ -1,13 +1,22 @@
-#include <iostream> //std::cout
+#include <iostream>
 #include <vector>
 
 #include <adios2.h>
 
-
-void write_simple(std::string engine, std::string fileName)
+void printVector(std::string name, std::vector<double> variable, size_t nglobal)
 {
-    const size_t Nglobal = 2;
-    // std::vector<double> v0(Nglobal);
+    std::cout << "-- variable: " << name << std::endl;
+    for (size_t i = 0; i < nglobal; i++)
+    {
+        std::cout << "v[" << i << "] = " << variable[i] << std::endl;
+    }
+}
+
+void writeSimple(std::string engine, std::string fileName,
+                 bool printVectorContent, size_t vectorSize, size_t numberSteps)
+{
+    const size_t Nglobal = vectorSize;
+
     std::vector<double> v1(Nglobal);
     std::vector<double> v2(Nglobal);
     std::vector<double> v3(Nglobal);
@@ -26,17 +35,8 @@ void write_simple(std::string engine, std::string fileName)
 
     adios2::Engine writer = io.Open(fileName, adios2::Mode::Write);
 
-
     for (size_t i = 0; i < Nglobal; i++)
     {
-        // v1[i] = 11 * (step + 1) + step * 0.1 + i * 100;
-        // v2[i] = 22 * (step + 1) + step * 0.1 + i * 100;
-        // v3[i] = 33 * (step + 1) + step * 0.1 + i * 100;
-        // v4[i] = 44 * (step + 1) + step * 0.1 + i * 100;
-        // v5[i] = 55 * (step + 1) + step * 0.1 + i * 100;
-        // v6[i] = 66 * (step + 1) + step * 0.1 + i * 100;
-        // v7[i] = 77 * (step + 1) + step * 0.1 + i * 100;
-        // v8[i] = 88 * (step + 1) + step * 0.1 + i * 100;
         v1[i] = 11 + 1 * 0.1 + i * 100;
         v2[i] = 22 + 2 * 0.1 + i * 100;
         v3[i] = 33 + 3 * 0.1 + i * 100;
@@ -45,65 +45,64 @@ void write_simple(std::string engine, std::string fileName)
         v6[i] = 66 + 6 * 0.1 + i * 100;
         v7[i] = 77 + 7 * 0.1 + i * 100;
         v8[i] = 88 + 8 * 0.1 + i * 100;
-
-
-        std::cout << "v1[" << i << "]: " << v1[i] << std::endl;
-        std::cout << "v2[" << i << "]: " << v2[i] << std::endl;
-        std::cout << "v3[" << i << "]: " << v3[i] << std::endl;
-        std::cout << "v4[" << i << "]: " << v4[i] << std::endl;
-        std::cout << "v5[" << i << "]: " << v5[i] << std::endl;
-        std::cout << "v6[" << i << "]: " << v6[i] << std::endl;
-        std::cout << "v7[" << i << "]: " << v7[i] << std::endl;
-        std::cout << "v8[" << i << "]: " << v8[i] << std::endl;
     }
 
+    if (printVectorContent)
+    {
+        printVector("vector_1", v1, Nglobal);
+        printVector("vector_2", v2, Nglobal);
+        printVector("vector_3", v3, Nglobal);
+        printVector("vector_4", v4, Nglobal);
+        printVector("vector_5", v5, Nglobal);
+        printVector("vector_6", v6, Nglobal);
+        printVector("vector_7", v7, Nglobal);
+        printVector("vector_8", v8, Nglobal);
+    }
 
     writer.Put<double>(varV0, v1.data(), adios2::Mode::Deferred);
     writer.Put<double>(varV0, v2.data(), adios2::Mode::Sync);
     writer.Put<double>(varV0, v3.data(), adios2::Mode::Deferred);
 
-    for (int step = 0; step < 3; step++)
+    for (int i = 0; i < numberSteps; i++)
     {
-
         writer.BeginStep();
 
         writer.Put<double>(varV0, v4.data(), adios2::Mode::Sync);
-    	writer.Put<double>(varV0, v5.data(), adios2::Mode::Deferred);
+        writer.Put<double>(varV0, v5.data(), adios2::Mode::Deferred);
         writer.Put<double>(varV0, v6.data(), adios2::Mode::Sync);
-    	writer.Put<double>(varV0, v7.data(), adios2::Mode::Deferred);
+        writer.Put<double>(varV0, v7.data(), adios2::Mode::Deferred);
 
-        if (step == 2)
+        if (i == 2)
         {
-        	writer.Put<double>(varV0, v8.data(), adios2::Mode::Sync);
+            writer.Put<double>(varV0, v8.data(), adios2::Mode::Sync);
         }
 
-        std::cout << "\n---------- Application: EndStep "
-                     "-------------------------------------\n"
-                  << std::endl;
         writer.EndStep();
     }
-
-    std::cout << "\n---------- Application: left for loop "
-                 "-------------------------------------\n"
-              << std::endl;
-    // io.FlushAll();
     writer.Close();
 }
 
 int main(int argc, char *argv[])
 {
     int rank = 0;
-    std::cout << "... SimpleStepTest ... " << std::endl;
-    std::cout << "... Only one process ... " << std::endl;
+    std::cout << "\n____ A programm to write a simple bp file with steps and "
+                 "blocks ____ "
+              << std::endl;
+    std::cout << "... execute one of the following commands in your shell to "
+                 "inspect the file with bpls "
+              << std::endl;
+    std::cout << "\n... 'bpls -D SimpleSteps.bp' to show variable decomposition"
+              << std::endl;
+    std::cout << "... 'bpls -d SimpleSteps.bp' to dump variable content"
+              << std::endl;
+    std::cout << "... 'bpls -d -l SimpleSteps.bp' to dump variable content "
+                 "with min/max values\n"
+              << std::endl;
 
     try
     {
-
-        write_simple("bp3", "SimpleSteps.bp");
-        // write_simple("bp4", "SimpleSteps.bp");
-        // write_simple("julea-kv", "SimpleSteps.jv");
-        // write_simple("julea-db", "SimpleSteps.jb");
-
+        // engine, fileName, printOutput, vectorSize, numberSteps
+        writeSimple("bp3", "SimpleSteps.bp", true, 4, 3);
     }
     catch (std::invalid_argument &e)
     {
@@ -129,10 +128,5 @@ int main(int argc, char *argv[])
             std::cout << e.what() << "\n";
         }
     }
-
-    // #ifdef ADIOS2_HAVE_MPI
-    //     MPI_Finalize();
-    // #endif
-
     return 0;
 }
