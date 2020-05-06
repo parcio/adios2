@@ -1,3 +1,13 @@
+/*
+ * Distributed under the OSI-approved Apache License, Version 2.0.  See
+ * accompanying file Copyright.txt for details.
+ *
+ * An application to write a simple bp file with steps and blocks which can then
+ * be inspected using bpls.
+ *
+ * Created on: April 30, 2020
+ *      Author: Kira Duwe
+ */
 #include <iostream>
 #include <vector>
 
@@ -93,9 +103,9 @@ int main(int argc, char *argv[])
               << std::endl;
     std::cout << "\n... 'bpls -D SimpleSteps.bp' to show variable decomposition"
               << std::endl;
-    std::cout << "... 'bpls -d SimpleSteps.bp' to dump variable content"
+    std::cout << "... 'bpls -d SimpleSteps.bp' to dump file content"
               << std::endl;
-    std::cout << "... 'bpls -d -l SimpleSteps.bp' to dump variable content "
+    std::cout << "... 'bpls -d -l SimpleSteps.bp' to dump file content "
                  "with min/max values\n"
               << std::endl;
 
