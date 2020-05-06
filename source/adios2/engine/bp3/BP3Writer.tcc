@@ -129,17 +129,6 @@ void BP3Writer::PerformPutCommon(Variable<T> &variable)
 {
     for (size_t b = 0; b < variable.m_BlocksInfo.size(); ++b)
     {
-        std::cout << "------- BP3 ----------------" << std::endl;
-        std::cout << "------- TEST for different info block sizes ----------------" << std::endl;
-        std::cout << "variable:" << variable.m_Name << std::endl;
-        std::cout << "b = " << b << std::endl;
-        std::cout << "variable.m_BlocksInfo.Step: " << variable.m_BlocksInfo[b].Step << std::endl;
-        std::cout << "variable.m_BlocksInfo.StepsStart " << b << "= " << variable.m_BlocksInfo[b].StepsStart << std::endl;
-        std::cout << "variable.m_BlocksInfo.StepsCount " << b << "= " << variable.m_BlocksInfo[b].StepsCount << std::endl;
-        std::cout << "variable.m_AvailableStepsStart: " << b << "= " << variable.m_AvailableStepsStart << std::endl;
-        std::cout << "variable.m_AvailableStepsCount: " << variable.m_AvailableStepsCount << std::endl;
-        std::cout << "variable.m_StepsStart: " << variable.m_StepsStart << std::endl;
-        std::cout << "variable.m_StepsCount: " << variable.m_StepsCount << std::endl;
         auto itSpanBlock = variable.m_BlocksSpan.find(b);
         if (itSpanBlock == variable.m_BlocksSpan.end())
         {
@@ -149,16 +138,6 @@ void BP3Writer::PerformPutCommon(Variable<T> &variable)
         {
             m_BP3Serializer.PutSpanMetadata(variable, itSpanBlock->second);
         }
-        std::cout << "---------------- " << std::endl;
-        std::cout << "variable.m_BlocksInfo.Step: " << variable.m_BlocksInfo[b].Step << std::endl;
-        std::cout << "variable.m_BlocksInfo.StepsStart " << b << "= " << variable.m_BlocksInfo[b].StepsStart << std::endl;
-        std::cout << "variable.m_BlocksInfo.StepsCount " << b << "= " << variable.m_BlocksInfo[b].StepsCount << std::endl;
-        std::cout << "variable.m_AvailableStepsStart: " << b << "= " << variable.m_AvailableStepsStart << std::endl;
-        std::cout << "variable.m_AvailableStepsCount: " << variable.m_AvailableStepsCount << std::endl;
-        std::cout << "variable.m_StepsStart: " << variable.m_StepsStart << std::endl;
-        std::cout << "variable.m_StepsCount: " << variable.m_StepsCount << std::endl;
-        std::cout << "Mode: " << m_OpenMode << std::endl;
-        std::cout << "================== " << std::endl;
     }
 
     variable.m_BlocksInfo.clear();

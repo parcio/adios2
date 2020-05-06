@@ -337,10 +337,6 @@ void BP3Serializer::PutVariableMetadataInData(
     auto &position = m_Data.m_Position;
     auto &absolutePosition = m_Data.m_AbsolutePosition;
 
-    std::cout << "--- PutVariableMetadataInData ----" << std::endl;
-    std::cout << "position: " << position << std::endl;
-    std::cout << "absolutePosition: " << absolutePosition << std::endl;
-
     // for writing length at the end
     const size_t varLengthPosition = position;
     position += 8; // skip var length (8)

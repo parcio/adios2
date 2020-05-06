@@ -282,24 +282,20 @@ void VariableBase::CheckRandomAccessConflict(const std::string hint) const
 void VariableBase::ResetStepsSelection(const bool zeroStart) noexcept
 {
     m_StepsCount = 1;
-        std::cout << " ___________ ResetStepsSelection ___" << std::endl;
 
     if (zeroStart)
     {
-        std::cout << " ___________ zeroStart ___" << std::endl;
         m_StepsStart = 0;
         return;
     }
 
     if (m_FirstStreamingStep)
     {
-        std::cout << " ___________ isFirstStreamingStep ___" << std::endl;
         m_StepsStart = 0;
         m_FirstStreamingStep = false;
     }
     else
     {
-        std::cout << " ___________ Else ___" << std::endl;
         ++m_StepsStart;
     }
 }
