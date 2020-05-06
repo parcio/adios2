@@ -155,7 +155,7 @@ void JuleaDBWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
                      "T____________________________"
                   << std::endl;
         std::cout << "data[0]: " << data[0] << std::endl;
-        std::cout << "data[1]: " << data[1] << std::endl;
+        // std::cout << "data[1]: " << data[1] << std::endl;
     }
 
     const typename Variable<T>::Info blockInfo =

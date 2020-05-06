@@ -138,6 +138,8 @@ void JuleaDBWriter::PerformPuts()
     /** if there are no deferred variables there is nothing to do */
     if (m_DeferredVariables.empty())
     {
+        //FIXME: blockID not set correctly when using put sync without begin/end step and without bpls just with perform puts
+        // m_CurrentBlockID = 0;
         return;
     }
 
@@ -165,6 +167,7 @@ void JuleaDBWriter::PerformPuts()
 #undef declare_template_instantiation
     }
     m_DeferredVariables.clear();
+    m_CurrentBlockID = 0;
 }
 // ADIOS2_FOREACH_TYPE_1ARG(declare_template_instantiation)
 

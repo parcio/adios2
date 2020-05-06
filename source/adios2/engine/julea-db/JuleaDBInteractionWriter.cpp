@@ -88,15 +88,41 @@ void addFieldsForBlockMD(JDBSchema *schema)
     j_db_schema_add_field(schema, "memoryCountSize", J_DB_TYPE_UINT64, NULL);
     j_db_schema_add_field(schema, "memoryCount", J_DB_TYPE_BLOB, NULL);
 
-    // j_db_schema_add_field(schema, "min", J_DB_TYPE_BLOB, NULL);
-    // j_db_schema_add_field(schema, "max", J_DB_TYPE_BLOB, NULL);
-    // j_db_schema_add_field(schema, "value", J_DB_TYPE_BLOB, NULL);
-
-    j_db_schema_add_field(schema, "min", J_DB_TYPE_FLOAT64, NULL);
-    j_db_schema_add_field(schema, "max", J_DB_TYPE_FLOAT64, NULL);
-    j_db_schema_add_field(schema, "value", J_DB_TYPE_FLOAT64, NULL);
-
     j_db_schema_add_field(schema, "isValue", J_DB_TYPE_UINT32, NULL);
+
+    j_db_schema_add_field(schema, "min_blob", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "max_blob", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "value_blob", J_DB_TYPE_BLOB, NULL);
+
+    // add min/max/value for every type for performance improvement of querying
+    j_db_schema_add_field(schema, "min_sint32", J_DB_TYPE_SINT32, NULL);
+    j_db_schema_add_field(schema, "max_sint32", J_DB_TYPE_SINT32, NULL);
+    j_db_schema_add_field(schema, "value_sint32", J_DB_TYPE_SINT32, NULL);
+
+    j_db_schema_add_field(schema, "min_uint32", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "max_uint32", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "value_uint32", J_DB_TYPE_UINT32, NULL);
+
+    j_db_schema_add_field(schema, "min_sint64", J_DB_TYPE_SINT64, NULL);
+    j_db_schema_add_field(schema, "max_sint64", J_DB_TYPE_SINT64, NULL);
+    j_db_schema_add_field(schema, "value_sint64", J_DB_TYPE_SINT64, NULL);
+
+    j_db_schema_add_field(schema, "min_uint64", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "max_uint64", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "value_uint64", J_DB_TYPE_UINT64, NULL);
+
+    j_db_schema_add_field(schema, "min_float32", J_DB_TYPE_FLOAT32, NULL);
+    j_db_schema_add_field(schema, "max_float32", J_DB_TYPE_FLOAT32, NULL);
+    j_db_schema_add_field(schema, "value_float32", J_DB_TYPE_FLOAT32, NULL);
+
+    j_db_schema_add_field(schema, "min_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "max_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "value_float64", J_DB_TYPE_FLOAT64, NULL);
+
+    // j_db_schema_add_field(schema, "min_string", J_DB_TYPE_STRING, NULL);
+    // j_db_schema_add_field(schema, "max_string", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "value_string", J_DB_TYPE_STRING, NULL);
+
     j_db_schema_add_field(schema, "stepsStart", J_DB_TYPE_UINT64, NULL);
     j_db_schema_add_field(schema, "stepsCount", J_DB_TYPE_UINT64, NULL);
     j_db_schema_add_field(schema, "blockID", J_DB_TYPE_UINT64, NULL);

@@ -50,7 +50,8 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
     guint64 db_length = 0;
     g_autofree gchar *db_field = NULL;
 
-    g_autoptr(JDBSchema) schema = NULL;
+    // g_autoptr(JDBSchema) schema = NULL;
+    JDBSchema *schema = NULL;
     g_autoptr(JDBEntry) entry = NULL;
     g_autoptr(JDBIterator) iterator = NULL;
     g_autoptr(JDBSelector) selector = NULL;
@@ -118,8 +119,9 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
 
-    g_free(tmpID);
+    // g_free(tmpID);
     j_batch_unref(batch);
+    j_db_schema_unref(schema);
     j_semantics_unref(semantics);
 }
 
@@ -614,10 +616,73 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
             info->MemoryCount = tmpMemoryCount;
             g_free(tmpMemoryCountBuffer);
         }
-        j_db_iterator_get_field(iterator, "min", &type, (gpointer *)&min,
-                                &db_length, NULL);
+
+        // std::string variableType = variable.m_Type;
+        const char *varType = variable.m_Type.c_str();
+        std::string minField;
+        std::string maxField;
+        std::string valueField;
+
+        if ((strcmp(varType, "char") == 0) ||
+            (strcmp(varType, "int8_t") == 0) ||
+            (strcmp(varType, "uint8_t") == 0) ||
+            (strcmp(varType, "int16_t") == 0) ||
+            (strcmp(varType, "uint16_t") == 0) ||
+            (strcmp(varType, "int32_t") == 0))
+        {
+            minField =  "min-sint32";
+            maxField =  "max-sint32";
+            valueField =  "value-sint32";
+        }
+        else if (strcmp(varType, "uint32_t") == 0)
+        {
+           minField =  "min-uint32";
+            maxField =  "max-uint32";
+            valueField =  "value-uint32";
+
+        }
+        else if (strcmp(varType, "int64_t") == 0)
+        {
+           minField =  "min-sint64";
+            maxField =  "max-sint64";
+            valueField =  "value-sint64";
+        }
+        else if (strcmp(varType, "uint64_t") == 0)
+        {
+            minField =  "min-uint64";
+            maxField =  "max-uint64";
+            valueField =  "value-uint64";
+        }
+        else if (strcmp(varType, "float") == 0)
+        {
+            minField =  "min-float32";
+            maxField =  "max-float32";
+            valueField =  "value-float32";
+        }
+        else if (strcmp(varType, "double") == 0)
+        {
+            minField =  "min-float64";
+            maxField =  "max-float64";
+            valueField =  "value-float64";
+        }
+        else if (strcmp(varType, "string") == 0)
+        {
+            valueField =  "value-sint32";
+        }
+
+        else if ((strcmp(varType, "long double") == 0) ||
+                 (strcmp(varType, "float complex") == 0) ||
+                 (strcmp(varType, "double complex") == 0))
+        {
+          minField =  "min-blob";
+            maxField =  "max-blob";
+            valueField =  "value-blob";
+        }
+
+        j_db_iterator_get_field(iterator, minField.c_str(), &type,
+                                        (gpointer *)&min, &db_length, NULL);
         info->Min = *min;
-        j_db_iterator_get_field(iterator, "max", &type, (gpointer *)&max,
+        j_db_iterator_get_field(iterator, maxField.c_str(), &type, (gpointer *)&max,
                                 &db_length, NULL);
         info->Max = *max;
         j_db_iterator_get_field(iterator, "isValue", &type,
@@ -625,7 +690,7 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
         info->IsValue = *isValue;
         if (isValue)
         {
-            j_db_iterator_get_field(iterator, "value", &type,
+            j_db_iterator_get_field(iterator, valueField.c_str(), &type,
                                     (gpointer *)&value, &db_length, NULL);
             info->Value = *value;
         }
@@ -652,17 +717,17 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
         // std::cout << "info->BlockID: " << info->BlockID << std::endl;
         // std::cout << "info->IsValue: " << info->IsValue << std::endl;
     }
-    g_free(isValue);
-    g_free(min);
-    g_free(max);
-    g_free(shapeSize);
-    g_free(startSize);
-    g_free(countSize);
-    g_free(memoryStartSize);
-    g_free(memoryCountSize);
-    g_free(stepsStart);
-    g_free(stepsCount);
-    g_free(blockID);
+    // g_free(isValue);
+    // g_free(min);
+    // g_free(max);
+    // g_free(shapeSize);
+    // g_free(startSize);
+    // g_free(countSize);
+    // g_free(memoryStartSize);
+    // g_free(memoryCountSize);
+    // g_free(stepsStart);
+    // g_free(stepsCount);
+    // g_free(blockID);
     j_batch_unref(batch);
     j_semantics_unref(semantics);
     return info;
