@@ -21,3 +21,7 @@ void AdiosReadMinMax(std::string fileName, std::string variableName)
     std::cout << "AdiosReadMinMax" << std::endl;
 }
 
+void AdiosRead(std::string engineName, std::string directory, size_t fileCount, uint32_t percentageVarsToRead)
+{
+    std::cout << "AdiosRead" << std::endl;
+}

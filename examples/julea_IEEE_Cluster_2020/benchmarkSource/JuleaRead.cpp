@@ -73,6 +73,11 @@ void setMinMaxString(const char *varType, std::string &minField,
     }
 }
 
+void JuleaRead(std::string engineName, std::string directory, size_t fileCount, uint32_t percentageVarsToRead)
+{
+    std::cout << "JuleaRead" << std::endl;
+}
+
 void JuleaReadMinMax(std::string fileName, std::string variableName)
 {
     size_t err = 0;

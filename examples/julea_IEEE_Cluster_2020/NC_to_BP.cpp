@@ -85,6 +85,7 @@ int main(int argc, char *argv[])
     int rank = 0;
     bool printVariable = 0;
     bool printDimensions = 0;
+    bool verbose = 0;
 
     size_t opt;
     size_t output; // print output option
@@ -107,11 +108,7 @@ int main(int argc, char *argv[])
                 showFileInfo();
                 break;
             case 'v':
-                std::cout << "passed parameters:\n"
-                << "d: NetCDF4 file = " << NetCDFFile
-                << "\nf: ADIOS2 file = " << ADIOSFile
-                << "\nn: engine name = " << engineName
-                << "\no: print output = " << output << std::endl;
+                verbose = 1;
                 break;
             case 'o':
                 output = atoi(optarg);
@@ -151,6 +148,14 @@ int main(int argc, char *argv[])
                 std::cerr << "Expected argument after options" << std::endl;
                 exit(EXIT_FAILURE);
             }
+        }
+        if(verbose)
+        {
+             std::cout << "passed parameters:\n"
+                << "d: NetCDF4 file = " << NetCDFFile
+                << "\nf: ADIOS2 file = " << ADIOSFile
+                << "\nn: engine name = " << engineName
+                << "\no: print output = " << output << std::endl;
         }
         NCReadFile(engineName, NetCDFFile, ADIOSFile, printDimensions,
                    printVariable);

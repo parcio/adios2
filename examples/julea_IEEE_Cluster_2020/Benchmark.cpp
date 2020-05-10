@@ -9,6 +9,7 @@
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 #include <adios2.h>
+#include <cstring>
 #include <iomanip>
 #include <iostream>
 // #include <getopt.h>
@@ -35,13 +36,14 @@ void showUsage()
         << "-s: scenario that will be run: \n"
         << "    0: all (NetCDF4 to ADIOS 2, Read contiguous, Query)\n"
         << "    1: NetCDF4 to ADIOS 2\n"
-        << "    2: Read contiguous -> read everything up to specified percentage "
+        << "    2: Read contiguous -> read everything up to specified "
+           "percentage "
            "of variables \n"
-        << "    3: Read random -> read certain variables/steps/blocks in a random "
+        << "    3: Read random -> read certain variables/steps/blocks in a "
+           "random "
            "order \n"
         << "    4: Query -> directly works on JULEA interfaces not on ADIOS2 \n"
         << std::endl;
-    // TODO: print usage infos
 }
 
 void showInformation()
@@ -52,60 +54,92 @@ void showInformation()
 int main(int argc, char *argv[])
 {
     int rank = 0;
-    size_t opt;
+
+    bool verbose = 0;
+    bool adios = 0;
+    bool julea = 0;
+    uint8_t opt;
+    uint8_t percentVarsToRead;
+    uint8_t scenario; // 0 = both, 1 Adios, 2 Julea
+    size_t numberFilesToRead;
+    const char *name;
+
+    std::string path;       // can be file or directory
+    std::string engineName; // valid engines: bp3, bp4, julea-db, julea-kv
 
     std::string fileName = "sresa1b_ncar_ccsm3-example.nc";
     std::string fileName2 = "_grib2netcdf-webmars-public-svc-blue-004-"
                             "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.nc";
 
-    std::string path;       // can be file or directory
-    std::string engineName; // valid engines: bp3, bp4, julea-db, julea-kv
-    size_t numberFilesToRead;
-    size_t percentageVariablesToRead;
-    size_t scenario; // 0 = both, 1 Adios, 2 Julea
-
-    // std::cout << "argc: " << argc << std::endl;
-
-    while ((opt = getopt(argc, argv, "hd:c:p:n:s:")) != -1)
-    {
-        switch (opt)
-        {
-        case 'h':
-            showUsage();
-            break;
-        case 'd':
-            path = optarg;
-            std::cout << "d: " << path << std::endl;
-            break;
-        case 'c':
-            numberFilesToRead = atoi(optarg);
-            std::cout << "c: " << numberFilesToRead << std::endl;
-            break;
-        case 'p':
-            percentageVariablesToRead = atoi(optarg);
-            std::cout << "p: " << percentageVariablesToRead << std::endl;
-            break;
-        case 'n':
-            engineName = optarg;
-            std::cout << "n: " << engineName << std::endl;
-            break;
-        case 's':
-            scenario = atoi(optarg);
-            std::cout << "s: " << scenario << std::endl;
-            break;
-        default: /* '?' */
-            exit(EXIT_FAILURE);
-        }
-        if (optind > argc)
-        {
-            std::cout << "optind: " << optind << std::endl;
-            std::cerr << "Expected argument after options" << std::endl;
-            exit(EXIT_FAILURE);
-        }
-    }
-
     try
     {
+        while ((opt = getopt(argc, argv, "hivd:c:p:n:s:")) != -1)
+        {
+            switch (opt)
+            {
+            case 'h':
+                showUsage();
+                break;
+            case 'i':
+                showInformation();
+                break;
+            case 'v':
+                verbose = 1;
+                break;
+            case 'd':
+                path = optarg;
+                break;
+            case 'c':
+                numberFilesToRead = atoi(optarg);
+                break;
+            case 'p':
+                percentVarsToRead = atoi(optarg);
+                break;
+            case 'n':
+                name = engineName.c_str();
+                engineName = optarg;
+                if ((strcmp(name, "bp3") == 0) || (strcmp(name, "bp4") == 0) ||
+                    (strcmp(name, "hdf5") == 0))
+                {
+                    adios = 1;
+                }
+                else if ((strcmp(name, "julea-db") == 0) ||
+                         (strcmp(name, "julea-kv") == 0))
+                {
+                    julea = 1;
+                }
+                else
+                {
+                    std::cout << "Engine type is not supported by benchmark!"
+                              << std::endl;
+                    exit(EXIT_FAILURE);
+                }
+                break;
+            case 's':
+                scenario = atoi(optarg);
+                break;
+            default: /* '?' */
+                exit(EXIT_FAILURE);
+            }
+            if (optind > argc)
+            {
+                std::cout << "optind: " << optind << std::endl;
+                std::cerr << "Expected argument after options" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+        }
+        if (verbose)
+        {
+            std::cout << "passed parameters:\n"
+                      << "\nd: directory = " << path
+                      << "\nc: number of files to read = " << numberFilesToRead
+                      << "\np: percentage of variables to read = "
+                      << percentVarsToRead
+                      << "\nn: engine name = " << engineName
+                      << "\ns: scenario = " << scenario << "\n"
+                      << std::endl;
+        }
+
         switch (scenario)
         {
         case 0:
@@ -114,12 +148,22 @@ int main(int argc, char *argv[])
             // NCReadFile();
             break;
         case 2:
-            AdiosReadMinMax(fileName2, "t2m");
+            // read
+            if (adios)
+            {
+                AdiosRead(name, path, numberFilesToRead, percentVarsToRead);
+            }
+            else if (julea)
+            {
+                JuleaRead(name, path, numberFilesToRead, percentVarsToRead);
+            }
             break;
         case 3:
+            // read random
             JuleaReadMinMax(fileName2, "t2m");
             break;
         case 4:
+            // query
             JuleaReadMinMax(fileName2, "t2m");
             break;
         }
