@@ -96,8 +96,8 @@ int main(int argc, char *argv[])
                 percentVarsToRead = atoi(optarg);
                 break;
             case 'n':
-                name = engineName.c_str();
                 engineName = optarg;
+                name = engineName.c_str();
                 if ((strcmp(name, "bp3") == 0) || (strcmp(name, "bp4") == 0) ||
                     (strcmp(name, "hdf5") == 0))
                 {
@@ -119,6 +119,7 @@ int main(int argc, char *argv[])
                 scenario = atoi(optarg);
                 break;
             default: /* '?' */
+                std::cout << "default: exit failure" << std::endl;
                 exit(EXIT_FAILURE);
             }
             if (optind > argc)
@@ -127,7 +128,10 @@ int main(int argc, char *argv[])
                 std::cerr << "Expected argument after options" << std::endl;
                 exit(EXIT_FAILURE);
             }
+                    std::cout << "DEBUG 1" << std::endl;
         }
+
+        std::cout << "DEBUG " << std::endl;
         if (verbose)
         {
             std::cout << "passed parameters:\n"
@@ -151,6 +155,7 @@ int main(int argc, char *argv[])
             // read
             if (adios)
             {
+                std::cout << "Reached" << std::endl;
                 AdiosRead(name, path, numberFilesToRead, percentVarsToRead);
             }
             else if (julea)
