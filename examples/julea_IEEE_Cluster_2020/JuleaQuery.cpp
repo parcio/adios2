@@ -11,7 +11,6 @@
 #include <adios2.h>
 #include <iomanip>
 #include <iostream>
-#include <netcdf>
 #include <vector>
 
 #include <julea-db.h>
@@ -74,7 +73,7 @@ void setMinMaxString(const char *varType, std::string &minField,
     }
 }
 
-void readMinMax(std::string fileName, std::string variableName)
+void JuleaReadMinMax(std::string fileName, std::string variableName)
 {
     size_t err = 0;
     size_t db_length = 0;
@@ -134,42 +133,3 @@ void readMinMax(std::string fileName, std::string variableName)
 
 }
 
-int main(int argc, char *argv[])
-{
-    int rank = 0;
-    std::cout << "... Convert nc file to bp/jv/jb ... " << std::endl;
-    std::string fileName = "sresa1b_ncar_ccsm3-example.nc";
-    std::string fileName2 = "_grib2netcdf-webmars-public-svc-blue-004-"
-                            "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.nc";
-    try
-    {
-        // TODO: include option to pass a directory and this application then
-        // figures out which files are inside and need to be included in query
-        readMinMax(fileName2, "t2m");
-    }
-    catch (std::invalid_argument &e)
-    {
-        if (rank == 0)
-        {
-            std::cout << "Invalid argument exception, STOPPING PROGRAM\n";
-            std::cout << e.what() << "\n";
-        }
-    }
-    catch (std::ios_base::failure &e)
-    {
-        if (rank == 0)
-        {
-            std::cout << "System exception, STOPPING PROGRAM\n";
-            std::cout << e.what() << "\n";
-        }
-    }
-    catch (std::exception &e)
-    {
-        if (rank == 0)
-        {
-            std::cout << "Exception, STOPPING PROGRAM\n";
-            std::cout << e.what() << "\n";
-        }
-    }
-    return 0;
-}
