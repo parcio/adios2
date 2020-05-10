@@ -14,11 +14,23 @@
 // #include <getopt.h>
 #include "AdiosQuery.h"
 #include "JuleaQuery.h"
+#include "NetCDFQuery.h"
 #include <unistd.h>
 #include <vector>
 
-void showUsage(std::string name)
+void showUsage()
 {
+    std::cout << "Usage: \n" <<
+    "-d: directory where the files are located\n" <<
+    "-c: number of files to read\n" <<
+    "-p: percentage of variables to read; e.g. 50 -> 50%\n" <<
+    "-n: name of engine to use; valid are 'bp3', 'bp4', 'julea-db', 'julea-kv'\n" <<
+    "-s: scenario to benchmark: \n" <<
+    "0: all (NetCDF to ADIOS, Read contiguous, Query)\n" <<
+    "1: NetCDF to ADIOS\n" <<
+    "2: Read contiguous -> read everything up to specified percentage of variables \n" <<
+    "3: Read random -> read certain variables/steps/blocks in a random order \n" <<
+    "4: Query -> directly works on JULEA interfaces not on ADIOS2 \n" << std::endl;
     //TODO: print usage infos
 }
 
@@ -39,14 +51,18 @@ int main(int argc, char *argv[])
     std::string path; //can be file or directory
     std::string engineName; //valid engines: bp3, bp4, julea-db, julea-kv
     size_t numberFilesToRead;
+    size_t percentageVariablesToRead;
     size_t scenario; //0 = both, 1 Adios, 2 Julea
 
-    std::cout << "argc: " << argc << std::endl;
+    // std::cout << "argc: " << argc << std::endl;
 
-    while ((opt = getopt(argc, argv, "d:c:n:s:")) != -1)
+    while ((opt = getopt(argc, argv, "hd:c:n:s:")) != -1)
     {
         switch (opt)
         {
+        case 'h':
+            showUsage();
+            break;
         case 'd':
             path = optarg;
             std::cout << "d: " << path << std::endl;
@@ -54,6 +70,10 @@ int main(int argc, char *argv[])
         case 'c':
             numberFilesToRead = atoi(optarg);
             std::cout << "c: " << numberFilesToRead << std::endl;
+            break;
+        case 'p':
+            percentageVariablesToRead = atoi(optarg);
+            std::cout << "p: " << percentageVariablesToRead << std::endl;
             break;
         case 'n':
             engineName = optarg;
@@ -81,11 +101,18 @@ int main(int argc, char *argv[])
             case 0:
                 //JULEA + ADIOS
             case 1:
-                AdiosReadMinMax(fileName2, "t2m");
+                // NCReadFile();
                 break;
             case 2:
+                AdiosReadMinMax(fileName2, "t2m");
+                break;
+            case 3:
                 JuleaReadMinMax(fileName2, "t2m");
                 break;
+            case 4:
+                JuleaReadMinMax(fileName2, "t2m");
+                break;
+
         }
     }
     catch (std::invalid_argument &e)
