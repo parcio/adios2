@@ -20,23 +20,28 @@
 
 void showUsage()
 {
-    std::cout << "Usage: \n" <<
-    "-d: directory where the files are located\n" <<
-    "-c: number of files to read\n" <<
-    "-p: percentage of variables to read; e.g. 50 -> 50%\n" <<
-    "-n: name of engine to use; valid are 'bp3', 'bp4', 'julea-db', 'julea-kv'\n" <<
-    "-s: scenario to benchmark: \n" <<
-    "0: all (NetCDF to ADIOS, Read contiguous, Query)\n" <<
-    "1: NetCDF to ADIOS\n" <<
-    "2: Read contiguous -> read everything up to specified percentage of variables \n" <<
-    "3: Read random -> read certain variables/steps/blocks in a random order \n" <<
-    "4: Query -> directly works on JULEA interfaces not on ADIOS2 \n" << std::endl;
-    //TODO: print usage infos
+    std::cout
+        << "Usage: \n"
+        << "-d: directory where the files are located\n"
+        << "-c: number of files to read\n"
+        << "-p: percentage of variables to read; e.g. 50 -> 50%\n"
+        << "-n: name of engine to use; valid are 'bp3', 'bp4', 'julea-db', "
+           "'julea-kv'\n"
+        << "-s: scenario to benchmark: \n"
+        << "0: all (NetCDF to ADIOS, Read contiguous, Query)\n"
+        << "1: NetCDF to ADIOS\n"
+        << "2: Read contiguous -> read everything up to specified percentage "
+           "of variables \n"
+        << "3: Read random -> read certain variables/steps/blocks in a random "
+           "order \n"
+        << "4: Query -> directly works on JULEA interfaces not on ADIOS2 \n"
+        << std::endl;
+    // TODO: print usage infos
 }
 
 void showInformation()
 {
-    //TODO: print infos about program
+    // TODO: print infos about program
 }
 
 int main(int argc, char *argv[])
@@ -48,11 +53,11 @@ int main(int argc, char *argv[])
     std::string fileName2 = "_grib2netcdf-webmars-public-svc-blue-004-"
                             "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.nc";
 
-    std::string path; //can be file or directory
-    std::string engineName; //valid engines: bp3, bp4, julea-db, julea-kv
+    std::string path;       // can be file or directory
+    std::string engineName; // valid engines: bp3, bp4, julea-db, julea-kv
     size_t numberFilesToRead;
     size_t percentageVariablesToRead;
-    size_t scenario; //0 = both, 1 Adios, 2 Julea
+    size_t scenario; // 0 = both, 1 Adios, 2 Julea
 
     // std::cout << "argc: " << argc << std::endl;
 
@@ -98,21 +103,20 @@ int main(int argc, char *argv[])
     {
         switch (scenario)
         {
-            case 0:
-                //JULEA + ADIOS
-            case 1:
-                // NCReadFile();
-                break;
-            case 2:
-                AdiosReadMinMax(fileName2, "t2m");
-                break;
-            case 3:
-                JuleaReadMinMax(fileName2, "t2m");
-                break;
-            case 4:
-                JuleaReadMinMax(fileName2, "t2m");
-                break;
-
+        case 0:
+            // JULEA + ADIOS
+        case 1:
+            // NCReadFile();
+            break;
+        case 2:
+            AdiosReadMinMax(fileName2, "t2m");
+            break;
+        case 3:
+            JuleaReadMinMax(fileName2, "t2m");
+            break;
+        case 4:
+            JuleaReadMinMax(fileName2, "t2m");
+            break;
         }
     }
     catch (std::invalid_argument &e)
