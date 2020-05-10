@@ -131,5 +131,10 @@ void JuleaReadMinMax(std::string fileName, std::string variableName)
     // std::cout << "min: " << min << std::endl;                          \
             // std::cout << "max: " << max << std::endl;                          \
 
+    j_db_schema_unref(schema);
+    // j_db_iterator_unref(iterator);
+    j_db_selector_unref(selector);
+    // j_batch_unref(batch);
+    // j_db_entry_unref(entry);
 }
 

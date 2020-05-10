@@ -36,13 +36,14 @@ int main(int argc, char *argv[])
     std::string fileName2 = "_grib2netcdf-webmars-public-svc-blue-004-"
                             "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.nc";
 
-    std::string engineName;
+    std::string path; //can be file or directory
+    std::string engineName; //valid engines: bp3, bp4, julea-db, julea-kv
     size_t numberFilesToRead;
-    std::string path;
+    size_t scenario; //0 = both, 1 Adios, 2 Julea
 
     std::cout << "argc: " << argc << std::endl;
 
-    while ((opt = getopt(argc, argv, "d:c:n:")) != -1)
+    while ((opt = getopt(argc, argv, "d:c:n:s:")) != -1)
     {
         switch (opt)
         {
@@ -58,6 +59,10 @@ int main(int argc, char *argv[])
             engineName = optarg;
             std::cout << "n: " << engineName << std::endl;
             break;
+        case 's':
+            scenario = atoi(optarg);
+            std::cout << "s: " << scenario << std::endl;
+            break;
         default: /* '?' */
             exit(EXIT_FAILURE);
         }
@@ -71,10 +76,17 @@ int main(int argc, char *argv[])
 
     try
     {
-        // TODO: include option to pass a directory and this application then
-        // figures out which files are inside and need to be included in query
-        AdiosReadMinMax(fileName2, "t2m");
-        JuleaReadMinMax(fileName2, "t2m");
+        switch (scenario)
+        {
+            case 0:
+                //JULEA + ADIOS
+            case 1:
+                AdiosReadMinMax(fileName2, "t2m");
+                break;
+            case 2:
+                JuleaReadMinMax(fileName2, "t2m");
+                break;
+        }
     }
     catch (std::invalid_argument &e)
     {
