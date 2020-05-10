@@ -15,7 +15,7 @@
 #include <iostream>
 #include <netcdf>
 #include <vector>
-#include "NetCDFQuery.h"
+#include "NetCDFRead.h"
 
 // std::string mapNCTypeToAdiosType(size_t typeID)
 // {
