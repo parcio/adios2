@@ -14,7 +14,7 @@
 #include <iostream>
 #include <unistd.h>
 
-#include "NetCDFRead.h"
+#include "benchmarkSource/NetCDFRead.h"
 
 void showUsage()
 {

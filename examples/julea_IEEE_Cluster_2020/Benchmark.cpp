@@ -12,9 +12,9 @@
 #include <iomanip>
 #include <iostream>
 // #include <getopt.h>
-#include "AdiosRead.h"
-#include "JuleaRead.h"
-#include "NetCDFRead.h"
+#include "benchmarkSource/AdiosRead.h"
+#include "benchmarkSource/JuleaRead.h"
+#include "benchmarkSource/NetCDFRead.h"
 #include <unistd.h>
 #include <vector>
 
@@ -59,9 +59,10 @@ int main(int argc, char *argv[])
     size_t percentageVariablesToRead;
     size_t scenario; // 0 = both, 1 Adios, 2 Julea
 
+        std::cout << "------------ TEST ----" << std::endl;
     // std::cout << "argc: " << argc << std::endl;
 
-    while ((opt = getopt(argc, argv, "hd:c:n:s:")) != -1)
+    while ((opt = getopt(argc, argv, "hd:c:p:n:s:")) != -1)
     {
         switch (opt)
         {
