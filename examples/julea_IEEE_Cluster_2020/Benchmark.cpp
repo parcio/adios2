@@ -25,16 +25,21 @@ void showUsage()
         << "-d: directory where the files are located\n"
         << "-c: number of files to read\n"
         << "-p: percentage of variables to read; e.g. 50 -> 50%\n"
-        << "-n: name of engine to use; valid are 'bp3', 'bp4', 'julea-db', "
-           "'julea-kv'\n"
-        << "-s: scenario to benchmark: \n"
-        << "0: all (NetCDF to ADIOS, Read contiguous, Query)\n"
-        << "1: NetCDF to ADIOS\n"
-        << "2: Read contiguous -> read everything up to specified percentage "
+        << "-n: name of engine to use\n"
+        << "    'bp3'\n"
+        << "    'bp4'\n"
+        << "    if compiled accordingly:\n"
+        << "    'julea-db'\n"
+        << "    'julea-kv'\n"
+        << "    'hdf5'\n"
+        << "-s: scenario that will be run: \n"
+        << "    0: all (NetCDF4 to ADIOS 2, Read contiguous, Query)\n"
+        << "    1: NetCDF4 to ADIOS 2\n"
+        << "    2: Read contiguous -> read everything up to specified percentage "
            "of variables \n"
-        << "3: Read random -> read certain variables/steps/blocks in a random "
+        << "    3: Read random -> read certain variables/steps/blocks in a random "
            "order \n"
-        << "4: Query -> directly works on JULEA interfaces not on ADIOS2 \n"
+        << "    4: Query -> directly works on JULEA interfaces not on ADIOS2 \n"
         << std::endl;
     // TODO: print usage infos
 }
@@ -59,7 +64,6 @@ int main(int argc, char *argv[])
     size_t percentageVariablesToRead;
     size_t scenario; // 0 = both, 1 Adios, 2 Julea
 
-        std::cout << "------------ TEST ----" << std::endl;
     // std::cout << "argc: " << argc << std::endl;
 
     while ((opt = getopt(argc, argv, "hd:c:p:n:s:")) != -1)
