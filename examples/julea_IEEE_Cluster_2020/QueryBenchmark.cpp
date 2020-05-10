@@ -11,29 +11,63 @@
 #include <adios2.h>
 #include <iomanip>
 #include <iostream>
-#include <vector>
+// #include <getopt.h>
 #include "AdiosQuery.h"
 #include "JuleaQuery.h"
+#include <unistd.h>
+#include <vector>
 
-void Test(std::string fileName, std::string variableName)
+void showUsage(std::string name)
 {
-
+    //TODO: print usage infos
 }
 
+void showInformation()
+{
+    //TODO: print infos about program
+}
 
 int main(int argc, char *argv[])
 {
     int rank = 0;
-    std::cout << "... Convert nc file to bp/jv/jb ... " << std::endl;
+    size_t opt;
+
     std::string fileName = "sresa1b_ncar_ccsm3-example.nc";
     std::string fileName2 = "_grib2netcdf-webmars-public-svc-blue-004-"
                             "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.nc";
 
+    std::string engineName;
+    size_t numberFilesToRead;
+    std::string path;
 
-    //TODO:
-    // parameter: directory with files to read
-    // parameter: number of files to read
-    // parameter: engine name
+    std::cout << "argc: " << argc << std::endl;
+
+    while ((opt = getopt(argc, argv, "d:c:n:")) != -1)
+    {
+        switch (opt)
+        {
+        case 'd':
+            path = optarg;
+            std::cout << "d: " << path << std::endl;
+            break;
+        case 'c':
+            numberFilesToRead = atoi(optarg);
+            std::cout << "c: " << numberFilesToRead << std::endl;
+            break;
+        case 'n':
+            engineName = optarg;
+            std::cout << "n: " << engineName << std::endl;
+            break;
+        default: /* '?' */
+            exit(EXIT_FAILURE);
+        }
+        if (optind > argc)
+        {
+            std::cout << "optind: " << optind << std::endl;
+            std::cerr << "Expected argument after options" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+    }
 
     try
     {
