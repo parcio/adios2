@@ -33,6 +33,7 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
     std::string fileName = "sresa1b_ncar_ccsm3-example.bp";
     size_t steps = 0;
     size_t stepsStart = 0;
+    size_t varCount = 0;
     std::string varName;
 
     adios2::ADIOS adios(adios2::DebugON);
@@ -48,6 +49,7 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
         std::cout << "varName: " << varName << std::endl;
         auto type = io.VariableType(varName);
 
+        std::vector<float> test(128);
         if (type == "compound")
         {
         }
@@ -55,35 +57,60 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
     else if (type == adios2::GetType<T>())                                     \
     {                                                                          \
         auto variable = io.InquireVariable<T>(varName);                        \
+        auto variable2 = io.InquireVariable<float>(varName);                   \
+        adios2::Dims shape = variable.Shape();                                 \
+        adios2::Dims start = variable.Start();                                 \
+        adios2::Dims count = variable.Count();                                 \
+        std::cout << "shape size: " << shape.size() << std::endl;              \
+        std::cout << "shape front: " << shape[0] << std::endl;                 \
+        std::cout << "start size: " << start.size() << std::endl;              \
+        std::cout << "start front: " << start.front() << std::endl;            \
+        std::cout << "count size: " << count.size() << std::endl;              \
+        std::cout << "count front: " << count.front() << std::endl;            \
         std::cout << "type: " << type << std::endl;                            \
         steps = variable.Steps();                                              \
         std::cout << "steps: " << steps << std::endl;                          \
-        for (uint step = 0; step < steps; step++)                              \
+        for (size_t step = 0; step < steps; step++)                            \
         {                                                                      \
             reader.BeginStep(adios2::StepMode::Read);                          \
+            std::cout << "step: " << step << std::endl;                        \
             stepsStart = variable.StepsStart();                                \
             auto blocksInfo = reader.BlocksInfo(variable, step);               \
             std::cout << "number of blocks = " << blocksInfo.size()            \
                       << std::endl;                                            \
             std::vector<std::vector<T>> dataSet;                               \
             dataSet.resize(blocksInfo.size());                                 \
+            std::cout << "sizeof(dataSet): " << sizeof(dataSet) << std::endl;  \
             size_t i = 0;                                                      \
             for (auto &info : blocksInfo)                                      \
             {                                                                  \
+                std::cout << "i: " << i << std::endl;                          \
                 std::cout << "block loop " << std::endl;                       \
                 std::cout << "blockID: " << info.BlockID << std::endl;         \
                 variable.SetBlockSelection(info.BlockID);                      \
                 std::cout << "reached" << std::endl;                           \
-                std::cout << "sizeof(dataSet): " << sizeof(dataSet)            \
-                          << std::endl;                                        \
-                reader.Get<T>(variable, dataSet[i], adios2::Mode::Sync);       \
+                if (varCount == 1)                                             \
+                {                                                              \
+                    reader.Get<float>(variable2, test.data(),                  \
+                                      adios2::Mode::Deferred);                 \
+                }                                                              \
+                else                                                           \
+                {                                                              \
+                    reader.Get<T>(variable, dataSet[i],                        \
+                                  adios2::Mode::Deferred);                     \
+                }                                                              \
+                std::cout << "size: " << dataSet.size() << std::endl;          \
+                std::cout << "size: " << dataSet[i].size() << std::endl;       \
+                std::cout << "front: " << dataSet[i].front() << std::endl;     \
                 std::cout << "reached2" << std::endl;                          \
                 ++i;                                                           \
             }                                                                  \
+            reader.PerformGets();                                              \
             reader.EndStep();                                                  \
         }                                                                      \
     }
         ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
+        varCount++;
     }
 }
