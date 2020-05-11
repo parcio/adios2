@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     bool verbose = 0;
     bool adios = 0;
     bool julea = 0;
-    int8_t opt; //must be signed to work with while loop
+    int8_t opt; // must be signed to work with while loop
     uint8_t percentVarsToRead;
     uint8_t scenario; // 0 = both, 1 Adios, 2 Julea
     size_t numberFilesToRead;
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
                       << "\np: percentage of variables to read = "
                       << percentVarsToRead
                       << "\nn: engine name = " << engineName
-                      << "\ns: scenario = " << (uint) scenario << "\n"
+                      << "\ns: scenario = " << (uint)scenario << "\n"
                       << std::endl;
         }
 
@@ -151,15 +151,15 @@ int main(int argc, char *argv[])
             break;
         case 2:
             // read
-            if (adios)
+            if (adios || julea)
             {
                 std::cout << "Reached" << std::endl;
                 AdiosRead(name, path, numberFilesToRead, percentVarsToRead);
             }
-            else if (julea)
-            {
-                JuleaRead(name, path, numberFilesToRead, percentVarsToRead);
-            }
+            // else if (julea)
+            // {
+            //     JuleaRead(name, path, numberFilesToRead, percentVarsToRead);
+            // }
             break;
         case 3:
             // read random
