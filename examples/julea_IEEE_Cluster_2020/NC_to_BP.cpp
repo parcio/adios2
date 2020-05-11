@@ -87,8 +87,8 @@ int main(int argc, char *argv[])
     bool printDimensions = 0;
     bool verbose = 0;
 
-    size_t opt;
-    size_t output; // print output option
+    int8_t opt;
+    uint8_t output; // print output option
 
     std::string NetCDFFile; // NetCDF file to read in
     std::string engineName; // valid engines: bp3, bp4, julea-db, julea-kv
