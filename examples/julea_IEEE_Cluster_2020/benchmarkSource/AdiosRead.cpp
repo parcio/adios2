@@ -46,7 +46,7 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
     {
         varName = var.first;
         adios2::Params params = var.second;
-        std::cout << "varName: " << varName << std::endl;
+        std::cout << "\nvarName: " << varName << std::endl;
         auto type = io.VariableType(varName);
 
         std::vector<float> test(128);
@@ -59,13 +59,19 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
         auto variable = io.InquireVariable<T>(varName);                        \
         auto variable2 = io.InquireVariable<float>(varName);                   \
         adios2::Dims shape = variable.Shape();                                 \
+        adios2::Dims shape2 = variable.Shape();                                \
         adios2::Dims start = variable.Start();                                 \
+        adios2::Dims start2 = variable.Start();                                \
         adios2::Dims count = variable.Count();                                 \
+        adios2::Dims count2 = variable.Count();                                \
         std::cout << "shape size: " << shape.size() << std::endl;              \
+        std::cout << "shape2 size: " << shape2.size() << std::endl;            \
         std::cout << "shape front: " << shape[0] << std::endl;                 \
         std::cout << "start size: " << start.size() << std::endl;              \
+        std::cout << "start2 size: " << start2.size() << std::endl;            \
         std::cout << "start front: " << start.front() << std::endl;            \
         std::cout << "count size: " << count.size() << std::endl;              \
+        std::cout << "count2 size: " << count2.size() << std::endl;            \
         std::cout << "count front: " << count.front() << std::endl;            \
         std::cout << "type: " << type << std::endl;                            \
         steps = variable.Steps();                                              \
@@ -84,7 +90,7 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
             size_t i = 0;                                                      \
             for (auto &info : blocksInfo)                                      \
             {                                                                  \
-                std::cout << "i: " << i << std::endl;                          \
+                std::cout << "\ni: " << i << std::endl;                        \
                 std::cout << "block loop " << std::endl;                       \
                 std::cout << "blockID: " << info.BlockID << std::endl;         \
                 variable.SetBlockSelection(info.BlockID);                      \
@@ -92,16 +98,18 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
                 if (varCount == 1)                                             \
                 {                                                              \
                     reader.Get<float>(variable2, test.data(),                  \
-                                      adios2::Mode::Deferred);                 \
+                                      adios2::Mode::Sync);                     \
+                    reader.Get<T>(variable, dataSet[i], adios2::Mode::Sync);   \
+                    std::cout << "test size: " << test.size() << std::endl;    \
+                    std::cout << "size: " << dataSet.size() << std::endl;      \
+                    std::cout << "size: " << dataSet[i].size() << std::endl;   \
                 }                                                              \
                 else                                                           \
                 {                                                              \
-                    reader.Get<T>(variable, dataSet[i],                        \
-                                  adios2::Mode::Deferred);                     \
+                    reader.Get<T>(variable, dataSet[i], adios2::Mode::Sync);   \
+                    std::cout << "size: " << dataSet.size() << std::endl;      \
+                    std::cout << "size: " << dataSet[i].size() << std::endl;   \
                 }                                                              \
-                std::cout << "size: " << dataSet.size() << std::endl;          \
-                std::cout << "size: " << dataSet[i].size() << std::endl;       \
-                std::cout << "front: " << dataSet[i].front() << std::endl;     \
                 std::cout << "reached2" << std::endl;                          \
                 ++i;                                                           \
             }                                                                  \
@@ -114,3 +122,4 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
         varCount++;
     }
 }
+// std::cout << "front: " << dataSet[i].front() << std::endl;     \
