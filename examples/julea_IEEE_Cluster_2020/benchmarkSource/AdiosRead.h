@@ -1,6 +1,6 @@
 #ifndef ADIOS2_READ_H_
 #define ADIOS2_READ_H_
-
+#include <iostream>
 
 void AdiosReadMinMax(std::string fileName, std::string variableName);
 void AdiosRead(std::string engineName, std::string directory, size_t fileCount, uint32_t percentageVarsToRead);

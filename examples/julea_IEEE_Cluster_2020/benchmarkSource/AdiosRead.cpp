@@ -26,11 +26,14 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
     std::cout << "AdiosRead" << std::endl;
 
     // is directory? is file?
+
     // get all files
     // read first fileCount
     // read variables but only percentage
     // std::string fileName;
-    std::string fileName = "TESTsresa1b_ncar_ccsm3-example.bp";
+    std::string fileName = "sresa1b_ncar_ccsm3-example.bp";
+    std::string fileName2 = "_grib2netcdf-webmars-public-svc-blue-004-"
+                            "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.bp";
     size_t steps = 0;
     size_t stepsStart = 0;
     size_t varCount = 0;
@@ -40,11 +43,13 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
     adios2::IO io = adios.DeclareIO("Output");
     io.SetEngine(engineName);
 
-    adios2::Engine reader = io.Open(fileName, adios2::Mode::Read);
+    adios2::Engine reader = io.Open(fileName2, adios2::Mode::Read);
     auto varMap = io.AvailableVariables();
-            reader.BeginStep(adios2::StepMode::Read);
+    reader.BeginStep(adios2::StepMode::Read);
     for (const auto &var : varMap)
     {
+        // TODO: maybe use SetStepSelection before Step loop
+
         varName = var.first;
         adios2::Params params = var.second;
         std::cout << "\nvarName: " << varName << std::endl;
@@ -63,8 +68,6 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
         adios2::Dims start = variable.Start();                                 \
         adios2::Dims count = variable.Count();                                 \
         std::cout << "shape size: " << shape.size() << std::endl;              \
-        std::cout << "start size: " << start.size() << std::endl;              \
-        std::cout << "count size: " << count.size() << std::endl;              \
         steps = variable.Steps();                                              \
         std::cout << "steps: " << steps << std::endl;                          \
         for (size_t step = 0; step < steps; step++)                            \
@@ -73,61 +76,13 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
             auto blocksInfo = reader.BlocksInfo(variable, step);               \
             std::cout << "number of blocks = " << blocksInfo.size()            \
                       << std::endl;                                            \
-        std::cout << "shape size: " << shape.size() << std::endl;              \
-        std::cout << "start size: " << start.size() << std::endl;              \
-        std::cout << "count size: " << count.size() << std::endl;              \
             std::vector<std::vector<T>> dataSet;                               \
             dataSet.resize(blocksInfo.size());                                 \
-            std::vector<T> dataEntry;                                          \
-            std::vector<T> dataEntry2;                                         \
-            std::cout << "sizeof(dataSet): " << sizeof(dataSet) << std::endl;  \
             size_t i = 0;                                                      \
             for (auto &info : blocksInfo)                                      \
             {                                                                  \
-                std::cout << "\ni: " << i << std::endl;                        \
                 variable.SetBlockSelection(info.BlockID);                      \
-                std::cout << "blockID: " << variable.BlockID() << std::endl;   \
-                if (shape.size() == 0)                                         \
-                {                                                              \
-                    std::cout << "-- IF --" << std::endl;                      \
-                    std::cout << "start front" << start.front() << std::endl;\
-                    std::cout << "start " << start[0] << std::endl;\
-                    std::cout << "start " << start[1] << std::endl;\
-                    std::cout << "count front" << count.front() << std::endl;\
-                    std::cout << "count " << count[0] << std::endl;\
-                    std::cout << "count " << count[1] << std::endl;\
-                    dataEntry.resize(count.size());                            \
-                    std::cout << "resize worked" << std::endl;                 \
-                    reader.Get<T>(variable, dataSet[i], adios2::Mode::Sync);   \
-                    std::cout << "get worked" << std::endl;                    \
-                    reader.Get<T>(variable, dataEntry.data(),                  \
-                                  adios2::Mode::Sync);                         \
-                }                                                              \
-                else if (shape.size() == 1)                                    \
-                {                                                              \
-                    std::cout << "-- ELSE IF --" << std::endl;                 \
-                    dataEntry.resize(shape[step]);                             \
-                    std::cout <<"shape: " << shape[0] << std::endl;\
-                    std::cout << "size dataEntry: " << dataEntry.size()        \
-                              << std::endl;                                    \
-                    reader.Get<T>(variable, dataEntry.data(),                  \
-                                  adios2::Mode::Sync);                         \
-                }                                                              \
-                else                                                           \
-                {                                                              \
-                    std::cout <<"shape: " << shape[0] << std::endl;\
-                    std::cout <<"shape: " << shape[1] << std::endl;\
-                    std::cout << "shape front: " << shape.front()              \
-                              << std::endl;                                    \
-                    std::cout << "start front: " << start.front()              \
-                              << std::endl;                                    \
-                    std::cout << "count front: " << count.front()              \
-                              << std::endl;                                    \
-                    reader.Get<T>(variable, dataSet[i], adios2::Mode::Sync);   \
-                    std::cout << "size: " << dataSet.size() << std::endl;      \
-                    std::cout << "size: " << dataSet[i].size() << std::endl;   \
-                }                                                              \
-                std::cout << "reached END" << std::endl;                       \
+                reader.Get<T>(variable, dataSet[i], adios2::Mode::Sync);       \
                 ++i;                                                           \
             }                                                                  \
         }                                                                      \
@@ -135,9 +90,9 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
         ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
         varCount++;
-        std::cout << "------------------------- \n" << std::endl;\
+        std::cout << "-------------------------" << std::endl;
     }
-            reader.PerformGets();
-            reader.EndStep();
+    reader.PerformGets();
+    reader.EndStep();
 }
 // std::cout << "front: " << dataSet[i].front() << std::endl;     \

@@ -10,12 +10,12 @@
  * Created on: May 3, 2020
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
+#include "NetCDFRead.h"
 #include <adios2.h>
 #include <iomanip>
 #include <iostream>
 #include <netcdf>
 #include <vector>
-#include "NetCDFRead.h"
 
 std::string mapNCTypeToAdiosType(size_t typeID)
 {
@@ -92,8 +92,9 @@ std::string mapNCTypeToAdiosType(size_t typeID)
     return std::string(type);
 }
 
-void NCReadFile(std::string engine, std::string ncFileName, std::string adiosFileName,
-          bool printDimensions, bool printVariable)
+void NCReadFile(std::string engine, std::string ncFileName,
+                std::string adiosFileName, bool printDimensions,
+                bool printVariable)
 {
     std::cout << "\n____ Read file ____" << std::endl;
     std::cout << "NetCDF4 file: " << ncFileName << std::endl;
@@ -185,7 +186,8 @@ void NCReadFile(std::string engine, std::string ncFileName, std::string adiosFil
             dimsSize = dims.getSize();
 
             /** if variable is time variable */
-            if ((strcmp(dimsName.c_str(), "time") == 0) && (varDims.size() ==1))
+            if ((strcmp(dimsName.c_str(), "time") == 0) &&
+                (varDims.size() == 1))
             {
                 hasSteps = true;
                 isTime = true;
@@ -196,11 +198,8 @@ void NCReadFile(std::string engine, std::string ncFileName, std::string adiosFil
                 start.push_back(0);
                 count.push_back(dimsSize);
 
-
-                    ncStart.push_back(0);
-                    ncCount.push_back(dimsSize);
-
-
+                ncStart.push_back(0);
+                ncCount.push_back(1);
             }
             /** if variable has time dependency */
             else if (strcmp(dimsName.c_str(), "time") == 0)
@@ -227,7 +226,7 @@ void NCReadFile(std::string engine, std::string ncFileName, std::string adiosFil
 
             if (printVariable)
             {
-                std::cout << "\n-- Dim: " << dimCount +1 << std::endl;
+                std::cout << "\n-- Dim: " << dimCount + 1 << std::endl;
                 std::cout << "Name: " << dims.getName() << std::endl;
                 std::cout << "getID: " << dims.getId() << std::endl;
                 std::cout << "size: " << dims.getSize() << std::endl;
@@ -248,11 +247,15 @@ void NCReadFile(std::string engine, std::string ncFileName, std::string adiosFil
 #define declare_type(T)                                                        \
     else if (adiosType == adios2::GetType<T>())                                \
     {                                                                          \
-        if(isTime)\
-        {\
-            auto var = io.DefineVariable<T>(name, {adios2::LocalValueDim});            \
-        }\
-        auto var = io.DefineVariable<T>(name, shape, start, count);            \
+        adios2::Variable<T> adiosVar;\
+        if (isTime)                                                            \
+        {                                                                      \
+            adiosVar = io.DefineVariable<T>(name, {adios2::LocalValueDim});    \
+        }                                                                      \
+        else                                                                   \
+        {                                                                      \
+            adiosVar = io.DefineVariable<T>(name, shape, start, count);        \
+        }                                                                      \
         T data[dataSize];                                                      \
         if (hasSteps)                                                          \
         {                                                                      \
@@ -260,7 +263,7 @@ void NCReadFile(std::string engine, std::string ncFileName, std::string adiosFil
             {                                                                  \
                 ncStart[0] = i;                                                \
                 variable.getVar(ncStart, ncCount, data);                       \
-                writer.Put<T>(var, (T *)data, adios2::Mode::Deferred);         \
+                writer.Put<T>(adiosVar, (T *)data, adios2::Mode::Deferred);         \
                 writer.PerformPuts();                                          \
             }                                                                  \
         }                                                                      \
@@ -269,9 +272,9 @@ void NCReadFile(std::string engine, std::string ncFileName, std::string adiosFil
             variable.getVar(data);                                             \
             if (printVariable)                                                 \
                 std::cout << "GetType: " << adios2::GetType<T>() << std::endl; \
-            if (var)                                                           \
+            if (adiosVar)                                                           \
             {                                                                  \
-                writer.Put<T>(var, (T *)data, adios2::Mode::Sync);             \
+                writer.Put<T>(adiosVar, (T *)data, adios2::Mode::Sync);             \
             }                                                                  \
         }                                                                      \
     }
