@@ -182,13 +182,13 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
     }
 
     size_t countBuffer[countSize];
-    std::cout << "countSize: " << countSize << std::endl;
+    // std::cout << "countSize: " << countSize << std::endl;
     for (uint i = 0; i < countSize; i++)
     {
         countBuffer[i] = variable.m_Count.data()[i];
-        std::cout << "countBuffer[i]:" << countBuffer[i] << std::endl;
-        std::cout << "sizeof(countBuffer): " << sizeof(countBuffer)
-                  << std::endl;
+        // std::cout << "countBuffer[i]:" << countBuffer[i] << std::endl;
+        // std::cout << "sizeof(countBuffer): " << sizeof(countBuffer)
+                  // << std::endl;
     }
 
     size_t blocks[numberSteps];
@@ -377,7 +377,7 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
     }
     else
     {
-        std::cout << "valueLen= " << valueLen << std::endl;
+        // std::cout << "valueLen= " << valueLen << std::endl;
         size_t value = 0;
         valueLen = sizeof(value);
         // j_db_entry_set_field(entry, "value", , valueLen, NULL);
@@ -542,7 +542,7 @@ void DBPutBlockMetadataToJulea(Variable<T> &variable,
     }
     else
     {
-        std::cout << "Variable metadata does not exist yet." << std::endl;
+        // std::cout << "Variable metadata does not exist yet." << std::endl;
         j_db_entry_insert(entry, batch2, NULL);
     }
 
@@ -585,8 +585,8 @@ void DBPutVariableDataToJulea(Variable<T> &variable, const T *data,
 
     if (bytesWritten == dataSize)
     {
-        std::cout << "++ Julea Interaction Writer: Data written for:  "
-                  << stepBlockID << std::endl;
+        // std::cout << "++ Julea Interaction Writer: Data written for:  "
+                  // << stepBlockID << std::endl;
     }
     else
     {

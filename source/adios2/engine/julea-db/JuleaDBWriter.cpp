@@ -159,7 +159,6 @@ void JuleaDBWriter::PerformPuts()
     {                                                                          \
         Variable<T> &variable = FindVariable<T>(                               \
             variableName, "in call to PerformPuts, EndStep or Close");         \
-        std::cout << "ATTENTION" << std::endl;                                 \
                                                                                \
         PerformPutCommon(variable);                                            \
     }
@@ -168,6 +167,7 @@ void JuleaDBWriter::PerformPuts()
     }
     m_DeferredVariables.clear();
     m_CurrentBlockID = 0;
+    // std::cout << "--- PerformPuts -- " << std::endl;
 }
 // ADIOS2_FOREACH_TYPE_1ARG(declare_template_instantiation)
 

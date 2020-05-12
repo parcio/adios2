@@ -72,18 +72,24 @@ void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     auto itVariableWritten = m_WrittenVariableNames.find(variable.m_Name);
     if (itVariableWritten == m_WrittenVariableNames.end())
     {
+        if(m_Verbosity == 5)
+        {
         std::cout << "--- Variable name not yet written with this writer "
                   << std::endl;
+        }
 
         // PutNameToJulea(variable.m_Name, m_Name, "variable_names");
         m_WrittenVariableNames.insert(variable.m_Name);
     }
 
     // std::cout << "Variable names written to the names DB: " << std::endl;
-    for (auto it = m_WrittenVariableNames.begin();
-         it != m_WrittenVariableNames.end(); ++it)
+    if(m_Verbosity == 5)
     {
-        std::cout << "___ Written variables:" << ' ' << *it << std::endl;
+        for (auto it = m_WrittenVariableNames.begin();
+             it != m_WrittenVariableNames.end(); ++it)
+        {
+            std::cout << "___ Written variables:" << ' ' << *it << std::endl;
+        }
     }
 
     /** updates the variable metadata as there is a new block now */
@@ -163,8 +169,8 @@ void JuleaDBWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
 
     if (variable.m_SingleValue)
     {
-        std::cout << "variable.m_SingleValue: " << variable.m_SingleValue
-                  << std::endl;
+        // std::cout << "variable.m_SingleValue: " << variable.m_SingleValue
+                  // << std::endl;
         DoPutSync(variable, data); // TODO: correct?!
         return;
     }
@@ -194,7 +200,8 @@ void JuleaDBWriter::PerformPutCommon(Variable<T> &variable)
         if (itSpanBlock == variable.m_BlocksSpan.end())
         {
             PutSyncCommon(variable, variable.m_BlocksInfo[i]);
-            m_CurrentBlockID = m_CurrentBlockID + i + 1;
+            // m_CurrentBlockID = m_CurrentBlockID + i + 1;
+            m_CurrentBlockID = m_CurrentBlockID + 1;
         }
         // else
         // {
