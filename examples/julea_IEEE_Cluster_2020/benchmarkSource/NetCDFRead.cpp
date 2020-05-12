@@ -247,7 +247,7 @@ void NCReadFile(std::string engine, std::string ncFileName,
 #define declare_type(T)                                                        \
     else if (adiosType == adios2::GetType<T>())                                \
     {                                                                          \
-        adios2::Variable<T> adiosVar;\
+        adios2::Variable<T> adiosVar;                                          \
         if (isTime)                                                            \
         {                                                                      \
             adiosVar = io.DefineVariable<T>(name, {adios2::LocalValueDim});    \
@@ -263,18 +263,19 @@ void NCReadFile(std::string engine, std::string ncFileName,
             {                                                                  \
                 ncStart[0] = i;                                                \
                 variable.getVar(ncStart, ncCount, data);                       \
-                writer.Put<T>(adiosVar, (T *)data, adios2::Mode::Deferred);         \
-                writer.PerformPuts();                                          \
+                writer.Put<T>(adiosVar, (T *)data, adios2::Mode::Deferred);    \
             }                                                                  \
+                writer.PerformPuts();                                          \
         }                                                                      \
         else                                                                   \
         {                                                                      \
             variable.getVar(data);                                             \
             if (printVariable)                                                 \
                 std::cout << "GetType: " << adios2::GetType<T>() << std::endl; \
-            if (adiosVar)                                                           \
+            if (adiosVar)                                                      \
             {                                                                  \
-                writer.Put<T>(adiosVar, (T *)data, adios2::Mode::Sync);             \
+                writer.Put<T>(adiosVar, (T *)data, adios2::Mode::Deferred);    \
+                writer.PerformPuts();                                          \
             }                                                                  \
         }                                                                      \
     }
