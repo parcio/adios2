@@ -101,6 +101,7 @@ void NCReadFile(std::string engine, std::string ncFileName, std::string adiosFil
     std::cout << "engine: " << engine << std::endl;
 
     bool hasSteps = false;
+    bool isTime = false;
     size_t varCount = 0;
     size_t dimCount = 0;
     size_t dimsID = 0;
@@ -166,6 +167,7 @@ void NCReadFile(std::string engine, std::string ncFileName, std::string adiosFil
         dimCount = 0;
         dataSize = 1;
         hasSteps = 0;
+        isTime = 0;
 
         if (printVariable)
         {
@@ -182,17 +184,25 @@ void NCReadFile(std::string engine, std::string ncFileName, std::string adiosFil
             std::string dimsName = dims.getName();
             dimsSize = dims.getSize();
 
-            if ((strcmp(dimsName.c_str(), "time") == 0) && dimsSize ==1)
+            /** if variable is time variable */
+            if ((strcmp(dimsName.c_str(), "time") == 0) && (varDims.size() ==1))
             {
                 hasSteps = true;
+                isTime = true;
                 numberSteps = dimsSize;
-                ncStart.push_back(0);
-                ncCount.push_back(1);
+                // ncStart.push_back(0);
+                // ncCount.push_back(1);
                 shape.push_back(dimsSize);
                 start.push_back(0);
                 count.push_back(dimsSize);
 
+
+                    ncStart.push_back(0);
+                    ncCount.push_back(dimsSize);
+
+
             }
+            /** if variable has time dependency */
             else if (strcmp(dimsName.c_str(), "time") == 0)
             {
                 hasSteps = true;
@@ -217,7 +227,7 @@ void NCReadFile(std::string engine, std::string ncFileName, std::string adiosFil
 
             if (printVariable)
             {
-                std::cout << "\n-- Dim: " << dimCount << std::endl;
+                std::cout << "\n-- Dim: " << dimCount +1 << std::endl;
                 std::cout << "Name: " << dims.getName() << std::endl;
                 std::cout << "getID: " << dims.getId() << std::endl;
                 std::cout << "size: " << dims.getSize() << std::endl;
@@ -238,6 +248,10 @@ void NCReadFile(std::string engine, std::string ncFileName, std::string adiosFil
 #define declare_type(T)                                                        \
     else if (adiosType == adios2::GetType<T>())                                \
     {                                                                          \
+        if(isTime)\
+        {\
+            auto var = io.DefineVariable<T>(name, {adios2::LocalValueDim});            \
+        }\
         auto var = io.DefineVariable<T>(name, shape, start, count);            \
         T data[dataSize];                                                      \
         if (hasSteps)                                                          \
