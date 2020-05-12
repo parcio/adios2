@@ -182,7 +182,18 @@ void NCReadFile(std::string engine, std::string ncFileName, std::string adiosFil
             std::string dimsName = dims.getName();
             dimsSize = dims.getSize();
 
-            if (strcmp(dimsName.c_str(), "time") == 0)
+            if ((strcmp(dimsName.c_str(), "time") == 0) && dimsSize ==1)
+            {
+                hasSteps = true;
+                numberSteps = dimsSize;
+                ncStart.push_back(0);
+                ncCount.push_back(1);
+                shape.push_back(dimsSize);
+                start.push_back(0);
+                count.push_back(dimsSize);
+
+            }
+            else if (strcmp(dimsName.c_str(), "time") == 0)
             {
                 hasSteps = true;
                 numberSteps = dimsSize;
