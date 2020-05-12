@@ -53,6 +53,7 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
         varName = var.first;
         adios2::Params params = var.second;
         std::cout << "\nvarName: " << varName << std::endl;
+
         auto type = io.VariableType(varName);
 
         std::vector<float> test(128);
@@ -62,20 +63,25 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
 #define declare_type(T)                                                        \
     else if (type == adios2::GetType<T>())                                     \
     {                                                                          \
-        std::cout << "type: " << type << std::endl;                            \
         auto variable = io.InquireVariable<T>(varName);                        \
-        adios2::Dims shape = variable.Shape();                                 \
-        adios2::Dims start = variable.Start();                                 \
-        adios2::Dims count = variable.Count();                                 \
-        std::cout << "shape size: " << shape.size() << std::endl;              \
+                                                                               \
         steps = variable.Steps();                                              \
-        std::cout << "steps: " << steps << std::endl;                          \
+                                                                               \
         for (size_t step = 0; step < steps; step++)                            \
         {                                                                      \
             stepsStart = variable.StepsStart();                                \
             auto blocksInfo = reader.BlocksInfo(variable, step);               \
-            std::cout << "number of blocks = " << blocksInfo.size()            \
-                      << std::endl;                                            \
+            \
+            if (false)                                                         \
+            {                                                                  \
+                std::cout << "type: " << type << std::endl;                    \
+                std::cout << "shape size: " << variable.Shape().size()         \
+                          << std::endl;                                        \
+                std::cout << "steps: " << steps << std::endl;                  \
+                std::cout << "number of blocks = " << blocksInfo.size()        \
+                          << std::endl;                                        \
+            }                                                                  \
+                                                                               \
             std::vector<std::vector<T>> dataSet;                               \
             dataSet.resize(blocksInfo.size());                                 \
             size_t i = 0;                                                      \
