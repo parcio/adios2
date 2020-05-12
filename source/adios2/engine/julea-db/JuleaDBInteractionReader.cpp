@@ -402,17 +402,17 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
                        *shapeID, *isReadAsJoined, *isReadAsLocalValue,
                        *isRandomAccess, *isSingleValue);
     }
-    g_free(isConstantDims);
-    g_free(isReadAsJoined);
-    g_free(isReadAsLocalValue);
-    g_free(isRandomAccess);
-    g_free(isSingleValue);
-    g_free(varName);
-    g_free(shapeID);
-    g_free(varTypePtr);
-    g_free(shapeSize);
-    g_free(startSize);
-    g_free(countSize);
+    // g_free(isConstantDims);
+    // g_free(isReadAsJoined);
+    // g_free(isReadAsLocalValue);
+    // g_free(isRandomAccess);
+    // g_free(isSingleValue);
+    // g_free(varName);
+    // g_free(shapeID);
+    // g_free(varTypePtr);
+    // g_free(shapeSize);
+    // g_free(startSize);
+    // g_free(countSize);
     // j_db_iterator_unref(iterator);
     // j_db_entry_unref(entry);
     // j_db_schema_unref(schema);
@@ -479,7 +479,7 @@ void GetCountFromBlockMetadata(const std::string nameSpace,
             g_free(tmpCountBuffer);
         }
     }
-    g_free(countSize);
+    // g_free(countSize);
     j_batch_unref(batch);
     j_semantics_unref(semantics);
 }
