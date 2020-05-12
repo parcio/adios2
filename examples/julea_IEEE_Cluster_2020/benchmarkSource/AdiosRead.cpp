@@ -59,11 +59,11 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
         auto variable = io.InquireVariable<T>(varName);                        \
         auto variable2 = io.InquireVariable<float>(varName);                   \
         adios2::Dims shape = variable.Shape();                                 \
-        adios2::Dims shape2 = variable.Shape();                                \
+        adios2::Dims shape2 = variable2.Shape();                               \
         adios2::Dims start = variable.Start();                                 \
-        adios2::Dims start2 = variable.Start();                                \
+        adios2::Dims start2 = variable2.Start();                               \
         adios2::Dims count = variable.Count();                                 \
-        adios2::Dims count2 = variable.Count();                                \
+        adios2::Dims count2 = variable2.Count();                               \
         std::cout << "shape size: " << shape.size() << std::endl;              \
         std::cout << "shape2 size: " << shape2.size() << std::endl;            \
         std::cout << "shape front: " << shape[0] << std::endl;                 \
@@ -93,15 +93,31 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
                 std::cout << "\ni: " << i << std::endl;                        \
                 std::cout << "block loop " << std::endl;                       \
                 std::cout << "blockID: " << info.BlockID << std::endl;         \
+                std::cout << "blockID: " << variable.BlockID() << std::endl;   \
+                std::cout << "blockID2: " << variable2.BlockID() << std::endl; \
                 variable.SetBlockSelection(info.BlockID);                      \
+                std::cout << "blockID: " << variable.BlockID() << std::endl;   \
+                std::cout << "blockID2: " << variable2.BlockID() << std::endl; \
                 std::cout << "reached" << std::endl;                           \
                 if (varCount == 1)                                             \
                 {                                                              \
+                    std::cout << "reached 1" << std::endl;                     \
                     reader.Get<float>(variable2, test.data(),                  \
                                       adios2::Mode::Sync);                     \
+                    std::cout << "blockID: " << variable.BlockID()             \
+                              << std::endl;                                    \
+                    std::cout << "blockID2: " << variable2.BlockID()           \
+                              << std::endl;                                    \
+                    std::cout << "reached 2" << std::endl;                     \
                     reader.Get<T>(variable, dataSet[i], adios2::Mode::Sync);   \
-                    std::cout << "test size: " << test.size() << std::endl;    \
+                    std::cout << "blockID: " << variable.BlockID()             \
+                              << std::endl;                                    \
                     std::cout << "size: " << dataSet.size() << std::endl;      \
+                    std::cout << "size: " << dataSet[i].size() << std::endl;   \
+                    std::cout << "test size: " << test.size() << std::endl;    \
+                    reader.Get<T>(variable, dataSet[i], adios2::Mode::Sync);   \
+                    std::cout << "blockID: " << variable.BlockID()             \
+                              << std::endl;                                    \
                     std::cout << "size: " << dataSet[i].size() << std::endl;   \
                 }                                                              \
                 else                                                           \
@@ -110,7 +126,7 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
                     std::cout << "size: " << dataSet.size() << std::endl;      \
                     std::cout << "size: " << dataSet[i].size() << std::endl;   \
                 }                                                              \
-                std::cout << "reached2" << std::endl;                          \
+                std::cout << "reached END" << std::endl;                       \
                 ++i;                                                           \
             }                                                                  \
             reader.PerformGets();                                              \
