@@ -56,21 +56,14 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
 #define declare_type(T)                                                        \
     else if (type == adios2::GetType<T>())                                     \
     {                                                                          \
+        std::cout << "type: " << type << std::endl;                            \
         auto variable = io.InquireVariable<T>(varName);                        \
-        auto variable2 = io.InquireVariable<float>(varName);                   \
-        std::vector<T> dataEntry;\
         adios2::Dims shape = variable.Shape();                                 \
-        adios2::Dims shape2 = variable2.Shape();                               \
         adios2::Dims start = variable.Start();                                 \
-        adios2::Dims start2 = variable2.Start();                               \
         adios2::Dims count = variable.Count();                                 \
-        adios2::Dims count2 = variable2.Count();                               \
         std::cout << "shape size: " << shape.size() << std::endl;              \
-        std::cout << "shape front: " << shape.front() << std::endl;                 \
         std::cout << "start size: " << start.size() << std::endl;              \
-        std::cout << "start front: " << start.front() << std::endl;            \
         std::cout << "count size: " << count.size() << std::endl;              \
-        std::cout << "count front: " << count.front() << std::endl;            \
         steps = variable.Steps();                                              \
         std::cout << "steps: " << steps << std::endl;                          \
         for (size_t step = 0; step < steps; step++)                            \
@@ -82,46 +75,42 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
                       << std::endl;                                            \
             std::vector<std::vector<T>> dataSet;                               \
             dataSet.resize(blocksInfo.size());                                 \
+            std::vector<T> dataEntry;                                          \
+            std::vector<T> dataEntry2;                                         \
             std::cout << "sizeof(dataSet): " << sizeof(dataSet) << std::endl;  \
             size_t i = 0;                                                      \
             for (auto &info : blocksInfo)                                      \
             {                                                                  \
-            dataSet[i].resize(shape[step]);                                 \
-            dataEntry.resize(shape[step]);\
-            std::cout << "size dataSet[step]: " << dataSet[i].size() << std::endl;  \
                 std::cout << "\ni: " << i << std::endl;                        \
-                std::cout << "block loop " << std::endl;                       \
-                std::cout << "blockID: " << info.BlockID << std::endl;         \
-                std::cout << "blockID: " << variable.BlockID() << std::endl;   \
-                std::cout << "blockID2: " << variable2.BlockID() << std::endl; \
                 variable.SetBlockSelection(info.BlockID);                      \
                 std::cout << "blockID: " << variable.BlockID() << std::endl;   \
-                std::cout << "blockID2: " << variable2.BlockID() << std::endl; \
-                std::cout << "reached" << std::endl;                           \
-                if (shape.size() < 2)                                             \
+                if (shape.size() == 0)                                         \
                 {                                                              \
-                	std::cout << "-- IF --" << std::endl;\
-                    reader.Get<T>(variable, dataEntry.data(), adios2::Mode::Sync);   \
-                    std::cout << "reached 1" << std::endl;                     \
-                    reader.Get<float>(variable2, test.data(),                  \
-                                      adios2::Mode::Sync);                     \
-                    std::cout << "blockID: " << variable.BlockID()             \
-                              << std::endl;                                    \
-                    std::cout << "blockID2: " << variable2.BlockID()           \
-                              << std::endl;                                    \
-                    std::cout << "reached 2" << std::endl;                     \
-                    std::cout << "blockID: " << variable.BlockID()             \
-                              << std::endl;                                    \
-                    std::cout << "size: " << dataSet.size() << std::endl;      \
-                    std::cout << "size: " << dataSet[i].size() << std::endl;   \
-                    std::cout << "test size: " << test.size() << std::endl;    \
+                    std::cout << "-- IF --" << std::endl;                      \
+                    dataEntry.resize(count.size());                            \
+                    std::cout << "resize worked" << std::endl;                 \
                     reader.Get<T>(variable, dataSet[i], adios2::Mode::Sync);   \
-                    std::cout << "blockID: " << variable.BlockID()             \
+                    std::cout << "get worked" << std::endl;                    \
+                    reader.Get<T>(variable, dataEntry.data(),                  \
+                                  adios2::Mode::Sync);                         \
+                }                                                              \
+                else if (shape.size() == 1)                                    \
+                {                                                              \
+                    std::cout << "-- ELSE IF --" << std::endl;                 \
+                    dataEntry.resize(shape[step]);                             \
+                    std::cout << "size dataEntry: " << dataEntry.size()        \
                               << std::endl;                                    \
-                    std::cout << "size: " << dataSet[i].size() << std::endl;   \
+                    reader.Get<T>(variable, dataEntry.data(),                  \
+                                  adios2::Mode::Sync);                         \
                 }                                                              \
                 else                                                           \
                 {                                                              \
+                    std::cout << "shape front: " << shape.front()              \
+                              << std::endl;                                    \
+                    std::cout << "start front: " << start.front()              \
+                              << std::endl;                                    \
+                    std::cout << "count front: " << count.front()              \
+                              << std::endl;                                    \
                     reader.Get<T>(variable, dataSet[i], adios2::Mode::Sync);   \
                     std::cout << "size: " << dataSet.size() << std::endl;      \
                     std::cout << "size: " << dataSet[i].size() << std::endl;   \
