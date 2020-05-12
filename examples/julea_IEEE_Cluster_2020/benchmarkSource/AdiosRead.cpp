@@ -30,7 +30,7 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
     // read first fileCount
     // read variables but only percentage
     // std::string fileName;
-    std::string fileName = "sresa1b_ncar_ccsm3-example.bp";
+    std::string fileName = "TESTsresa1b_ncar_ccsm3-example.bp";
     size_t steps = 0;
     size_t stepsStart = 0;
     size_t varCount = 0;
@@ -42,6 +42,7 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
 
     adios2::Engine reader = io.Open(fileName, adios2::Mode::Read);
     auto varMap = io.AvailableVariables();
+            reader.BeginStep(adios2::StepMode::Read);
     for (const auto &var : varMap)
     {
         varName = var.first;
@@ -68,11 +69,13 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
         std::cout << "steps: " << steps << std::endl;                          \
         for (size_t step = 0; step < steps; step++)                            \
         {                                                                      \
-            reader.BeginStep(adios2::StepMode::Read);                          \
             stepsStart = variable.StepsStart();                                \
             auto blocksInfo = reader.BlocksInfo(variable, step);               \
             std::cout << "number of blocks = " << blocksInfo.size()            \
                       << std::endl;                                            \
+        std::cout << "shape size: " << shape.size() << std::endl;              \
+        std::cout << "start size: " << start.size() << std::endl;              \
+        std::cout << "count size: " << count.size() << std::endl;              \
             std::vector<std::vector<T>> dataSet;                               \
             dataSet.resize(blocksInfo.size());                                 \
             std::vector<T> dataEntry;                                          \
@@ -87,6 +90,12 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
                 if (shape.size() == 0)                                         \
                 {                                                              \
                     std::cout << "-- IF --" << std::endl;                      \
+                    std::cout << "start front" << start.front() << std::endl;\
+                    std::cout << "start " << start[0] << std::endl;\
+                    std::cout << "start " << start[1] << std::endl;\
+                    std::cout << "count front" << count.front() << std::endl;\
+                    std::cout << "count " << count[0] << std::endl;\
+                    std::cout << "count " << count[1] << std::endl;\
                     dataEntry.resize(count.size());                            \
                     std::cout << "resize worked" << std::endl;                 \
                     reader.Get<T>(variable, dataSet[i], adios2::Mode::Sync);   \
@@ -98,6 +107,7 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
                 {                                                              \
                     std::cout << "-- ELSE IF --" << std::endl;                 \
                     dataEntry.resize(shape[step]);                             \
+                    std::cout <<"shape: " << shape[0] << std::endl;\
                     std::cout << "size dataEntry: " << dataEntry.size()        \
                               << std::endl;                                    \
                     reader.Get<T>(variable, dataEntry.data(),                  \
@@ -105,6 +115,8 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
                 }                                                              \
                 else                                                           \
                 {                                                              \
+                    std::cout <<"shape: " << shape[0] << std::endl;\
+                    std::cout <<"shape: " << shape[1] << std::endl;\
                     std::cout << "shape front: " << shape.front()              \
                               << std::endl;                                    \
                     std::cout << "start front: " << start.front()              \
@@ -118,13 +130,14 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
                 std::cout << "reached END" << std::endl;                       \
                 ++i;                                                           \
             }                                                                  \
-            reader.PerformGets();                                              \
-            reader.EndStep();                                                  \
         }                                                                      \
     }
         ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
         varCount++;
+        std::cout << "------------------------- \n" << std::endl;\
     }
+            reader.PerformGets();
+            reader.EndStep();
 }
 // std::cout << "front: " << dataSet[i].front() << std::endl;     \
