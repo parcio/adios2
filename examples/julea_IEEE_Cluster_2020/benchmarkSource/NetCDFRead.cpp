@@ -92,6 +92,53 @@ std::string mapNCTypeToAdiosType(size_t typeID)
     return std::string(type);
 }
 
+template <class T>
+void transformValues(std::string varName, netCDF::NcVar variable, T *data)
+{
+    std::cout << "--- transformValues " << std::endl;
+
+    auto varAttrMap = variable.getAtts();
+    auto parentGroup = variable.getParentGroup();
+    auto groupAttrMap = parentGroup.getAtts();
+
+    // std::cout << "number of attributes: " << groupAttrMap.size() << std::endl;
+    for (const auto &attr: groupAttrMap)
+    {
+        std::string attrName = attr.first;
+        netCDF::NcGroupAtt attribute = attr.second;
+        // std::cout << "variable: attribute name:" << attrName << std::endl;
+    }
+
+    for (const auto &attr2: varAttrMap)
+    {
+        std::string attrName2 = attr2.first;
+        netCDF::NcVarAtt attribute2 = attr2.second;
+        std::cout << "variable: attribute name:" << attrName2 << std::endl;
+        netCDF::NcType type = attribute2.getType();
+        std::cout << "type: " << type.getName() << std::endl;
+    }
+    std::string scaleName = "scale_factor";
+    auto scaleFactor = variable.getAtt(scaleName);
+
+    std::string offsetName = "add_offset";
+    auto offSet = variable.getAtt(offsetName);
+
+
+    std::cout << "scaleName: " << scaleName << std::endl;
+    // std::cout << "offsetName: " << offsetName << std::endl;
+
+    char *value;
+    // char *int;
+    double scale;
+    double offset;
+    std::cout << "before get" << std::endl;
+    scaleFactor.getValues(&scale);
+    // scaleFactor.getValues(int);
+    std::cout << "scale: " << scale << std::endl;
+    offSet.getValues(&offset);
+    std::cout << "offset: " << offset << std::endl;
+}
+
 void NCReadFile(std::string engine, std::string ncFileName,
                 std::string adiosFileName, bool printDimensions,
                 bool printVariable)
@@ -102,6 +149,7 @@ void NCReadFile(std::string engine, std::string ncFileName,
     std::cout << "engine: " << engine << std::endl;
 
     bool hasSteps = false;
+    bool needsTransform = false;
     bool isTime = false;
     size_t varCount = 0;
     size_t dimCount = 0;
@@ -140,6 +188,16 @@ void NCReadFile(std::string engine, std::string ncFileName,
         {
             std::cout << "dimension name: " << name << std::endl;
         }
+    }
+
+     auto groupAttrMap = dataFile.getAtts();
+
+    std::cout << "number of attributes: " << groupAttrMap.size() << std::endl;
+    for (const auto &attr: groupAttrMap)
+    {
+        std::string attrName = attr.first;
+        netCDF::NcGroupAtt attribute = attr.second;
+        std::cout << "group attribute name:" << attrName << std::endl;
     }
 
     auto varMap = dataFile.getVars();
@@ -192,6 +250,10 @@ void NCReadFile(std::string engine, std::string ncFileName,
                 hasSteps = true;
                 isTime = true;
                 numberSteps = dimsSize;
+                if (dimsSize == 0)
+                {
+                    numberSteps = 1;
+                }
                 // ncStart.push_back(0);
                 // ncCount.push_back(1);
                 shape.push_back(dimsSize);
@@ -240,6 +302,12 @@ void NCReadFile(std::string engine, std::string ncFileName,
 
         std::string adiosType = mapNCTypeToAdiosType(typeID);
 
+        if (typeID == NC_SHORT)
+        {
+            std::cout << "set needsTransform" << std::endl;
+            needsTransform = true;
+        }
+
         /** Define and write ADIOS 2 variable */
         if (adiosType == "compound")
         {
@@ -263,13 +331,21 @@ void NCReadFile(std::string engine, std::string ncFileName,
             {                                                                  \
                 ncStart[0] = i;                                                \
                 variable.getVar(ncStart, ncCount, data);                       \
+                if (needsTransform)                                            \
+                {                                                              \
+                    transformValues(name, variable, data);                           \
+                }                                                              \
                 writer.Put<T>(adiosVar, (T *)data, adios2::Mode::Deferred);    \
             }                                                                  \
-                writer.PerformPuts();                                          \
+            writer.PerformPuts();                                              \
         }                                                                      \
         else                                                                   \
         {                                                                      \
             variable.getVar(data);                                             \
+            if (needsTransform)                                                \
+            {                                                                  \
+                transformValues(name, variable, data);                               \
+            }                                                                  \
             if (printVariable)                                                 \
                 std::cout << "GetType: " << adios2::GetType<T>() << std::endl; \
             if (adiosVar)                                                      \
