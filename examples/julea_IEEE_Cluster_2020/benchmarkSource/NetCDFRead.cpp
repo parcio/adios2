@@ -92,63 +92,16 @@ std::string mapNCTypeToAdiosType(size_t typeID)
     return std::string(type);
 }
 
-
-
 template <class T>
 void transformValues(std::string varName, netCDF::NcVar variable, T *data,
-                     size_t dataSize)
+                     size_t dataSize, float *data2)
 {
     std::cout << "--- transformValues T " << std::endl;
-
-//     auto varAttrMap = variable.getAtts();
-//     auto parentGroup = variable.getParentGroup();
-//     auto groupAttrMap = parentGroup.getAtts();
-
-//     std::string scaleName = "scale_factor";
-//     auto scaleFactor = variable.getAtt(scaleName);
-
-//     std::string offsetName = "add_offset";
-//     auto offSet = variable.getAtt(offsetName);
-
-//     double scale;
-//     double offset;
-
-//     // T *data2[dataSize];
-//     scaleFactor.getValues(&scale);
-//     offSet.getValues(&offset);
-
-//     // std::cout << "scale: " << scale << std::endl;
-//     // std::cout << "offset: " << offset << std::endl;
-
-//     auto numberElements = dataSize / sizeof(short);
-//     // std::cout << "numberElements: " << numberElements << std::endl;
-//     auto currentValue = 0;
-
-//     for (int i = 0; i < 3; i++)
-//     {
-//         // std::cout << "test" << std::endl;
-//         // std::cout << "test: " << (short) data[0] << std::endl;
-//         currentValue += currentValue;
-
-//         std::string adiosType = "int16_t";
-//         // data[i] = data[i] * scale + offset;\
-
-//         if (adiosType == "compound")
-//         {
-//         }
-// #define declare_type(T)                                                        \
-//     else if (adiosType == adios2::GetType<T>())                                \
-//     {                                                                          \
-//         std::cout << "test: " << data[0] << std::endl;                         \
-//     }
-//         ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
-// #undef declare_type
-//     }
 }
 
 template <>
 void transformValues<int16_t>(std::string varName, netCDF::NcVar variable,
-int16_t *data, size_t dataSize )
+                              int16_t *data, size_t dataSize, float *data2)
 {
     std::cout << "--- transformValues " << std::endl;
 
@@ -165,36 +118,25 @@ int16_t *data, size_t dataSize )
     double scale;
     double offset;
 
-    // T *data2[dataSize];
     scaleFactor.getValues(&scale);
     offSet.getValues(&offset);
 
-    // std::cout << "scale: " << scale << std::endl;
-    // std::cout << "offset: " << offset << std::endl;
+    std::cout << "scale: " << scale << std::endl;
+    std::cout << "offset: " << offset << std::endl;
 
     auto numberElements = dataSize / sizeof(short);
     // std::cout << "numberElements: " << numberElements << std::endl;
     auto currentValue = 0;
 
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < numberElements; i++)
     {
-        // std::cout << "test" << std::endl;
-        // std::cout << "test: " << (short) data[0] << std::endl;
         currentValue += currentValue;
 
         std::string adiosType = "int16_t";
-        // data[i] = data[i] * scale + offset;\
 
-        if (adiosType == "compound")
-        {
-        }
-#define declare_type(T)                                                        \
-    else if (adiosType == adios2::GetType<T>())                                \
-    {                                                                          \
-        std::cout << "test: " << data[0] << std::endl;                         \
-    }
-        ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
-#undef declare_type
+        data2[i] = (float) (data[i] * scale + offset);
+        std::cout << "data1: " << data[i] << std::endl;
+        std::cout << "data2: " << data2[i] << std::endl;
     }
 }
 
@@ -374,14 +316,41 @@ void NCReadFile(std::string engine, std::string ncFileName,
             std::cout << "set needsTransform" << std::endl;
             needsTransform = true;
         }
-        T *data;
+
         /** Define and write ADIOS 2 variable */
         if (adiosType == "compound")
         {
         }
-        else if((adiosType == "int16_t") && needsTransform)
+        else if ((adiosType == "int16_t") && needsTransform)
         {
-
+            adios2::Variable<float> adiosVar;
+                adiosVar = io.DefineVariable<float>(name, shape, start, count);
+            int16_t data[dataSize];
+            float data2[dataSize];
+            if (hasSteps)
+            {
+                for (uint i = 0; i < numberSteps; i++)
+                {
+                    ncStart[0] = i;
+                    variable.getVar(ncStart, ncCount, data);
+                    transformValues(name, variable, data, dataSize, data2);
+                    std::cout << "data2: " << data2[0] << std::endl;
+                    writer.Put<float>(adiosVar, data2, adios2::Mode::Deferred);
+                }
+                writer.PerformPuts();
+            }
+            else
+            {
+                variable.getVar(data);
+                if (printVariable)
+                    std::cout << "GetType: " << adios2::GetType<float>()
+                              << std::endl;
+                if (adiosVar)
+                {
+                    writer.Put<float>(adiosVar, data2, adios2::Mode::Deferred);
+                    writer.PerformPuts();
+                }
+            }
         }
 #define declare_type(T)                                                        \
     else if (adiosType == adios2::GetType<T>())                                \
@@ -402,11 +371,6 @@ void NCReadFile(std::string engine, std::string ncFileName,
             {                                                                  \
                 ncStart[0] = i;                                                \
                 variable.getVar(ncStart, ncCount, data);                       \
-                if (needsTransform)                                            \
-                {                                                              \
-                    float data2[dataSize];\
-                    transformValues(name, variable, data, dataSize);           \
-                }                                                              \
                 writer.Put<T>(adiosVar, (T *)data, adios2::Mode::Deferred);    \
             }                                                                  \
             writer.PerformPuts();                                              \
@@ -414,10 +378,6 @@ void NCReadFile(std::string engine, std::string ncFileName,
         else                                                                   \
         {                                                                      \
             variable.getVar(data);                                             \
-            if (needsTransform)                                                \
-            {                                                                  \
-                transformValues(name, variable, data, dataSize);               \
-            }                                                                  \
             if (printVariable)                                                 \
                 std::cout << "GetType: " << adios2::GetType<T>() << std::endl; \
             if (adiosVar)                                                      \
