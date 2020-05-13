@@ -150,7 +150,7 @@ void transformValues<int16_t>(std::string varName, netCDF::NcVar variable,
  */
 void NCReadFile(std::string engine, std::string ncFileName,
                 std::string adiosFileName, bool printDimensions,
-                bool printVariable)
+                bool printVariable, bool needsTransform)
 {
     std::cout << "\n____ Read file ____" << std::endl;
     std::cout << "NetCDF4 file: " << ncFileName << std::endl;
@@ -158,7 +158,7 @@ void NCReadFile(std::string engine, std::string ncFileName,
     std::cout << "engine: " << engine << std::endl;
 
     bool hasSteps = false;
-    bool needsTransform = false;
+    // bool needsTransform = false;
     bool isTime = false;
     size_t varCount = 0;
     size_t dimCount = 0;
@@ -199,15 +199,14 @@ void NCReadFile(std::string engine, std::string ncFileName,
         }
     }
 
-    auto groupAttrMap = dataFile.getAtts();
-
-    std::cout << "number of attributes: " << groupAttrMap.size() << std::endl;
-    for (const auto &attr : groupAttrMap)
-    {
-        std::string attrName = attr.first;
-        netCDF::NcGroupAtt attribute = attr.second;
-        std::cout << "group attribute name:" << attrName << std::endl;
-    }
+    // auto groupAttrMap = dataFile.getAtts();
+    // std::cout << "number of attributes: " << groupAttrMap.size() << std::endl;
+    // for (const auto &attr : groupAttrMap)
+    // {
+    //     std::string attrName = attr.first;
+    //     netCDF::NcGroupAtt attribute = attr.second;
+    //     std::cout << "group attribute name:" << attrName << std::endl;
+    // }
 
     auto varMap = dataFile.getVars();
 
@@ -310,12 +309,6 @@ void NCReadFile(std::string engine, std::string ncFileName,
         }
 
         std::string adiosType = mapNCTypeToAdiosType(typeID);
-
-        if (typeID == NC_SHORT)
-        {
-            std::cout << "set needsTransform" << std::endl;
-            needsTransform = true;
-        }
 
         /** Define and write ADIOS 2 variable */
         if (adiosType == "compound")

@@ -21,22 +21,23 @@ void showUsage()
     std::cout
         << "Usage: \n"
         << "-h: help\n"
-        << "-i: additional information for engines and bpls (optional)\n"
-        << "-v: print provided parameters (optional)\n"
-        << "-d: NetCDF file (from)\n"
-        << "-f: ADIOS file (to) \n"
-        << "-n: name of engine to use\n"
+        << "-i: additional information for engines and bpls (optional, no value)\n"
+        << "-v: print provided parameters (optional, no value)\n"
+        << "-d: NetCDF file to read in (value required)\n"
+        << "-f: ADIOS file to write to (value required)\n"
+        << "-n: name of engine to use (value required) \n"
         << "    'bp3'\n"
         << "    'bp4'\n"
         << "    if compiled accordingly:\n"
         << "    'julea-db'\n"
         << "    'julea-kv'\n"
         << "    'hdf5'\n"
-        << "-o: print output: (optional)\n"
+        << "-o: print output: (optional,value required)\n"
         << "    0: none\n"
         << "    1: print file dimensions\n"
         << "    2: print variables\n"
         << "    3: print both\n"
+        << "-t: data needs transformation from short with scale and offset to float (optional, no value)\n"
         << std::endl;
 }
 
@@ -86,6 +87,7 @@ int main(int argc, char *argv[])
     bool printVariable = 0;
     bool printDimensions = 0;
     bool verbose = 0;
+    bool needsTransform = 0;
 
     int8_t opt;
     uint8_t output; // print output option
@@ -96,7 +98,7 @@ int main(int argc, char *argv[])
 
     try
     {
-        while ((opt = getopt(argc, argv, "hivo:d:f:n:")) != -1)
+        while ((opt = getopt(argc, argv, "hivo:d:f:n:t")) != -1)
         {
             switch (opt)
             {
@@ -139,6 +141,9 @@ int main(int argc, char *argv[])
             case 'n':
                 engineName = optarg;
                 break;
+            case 't':
+                needsTransform = true;
+                break;
             default: /* '?' */
                 exit(EXIT_FAILURE);
             }
@@ -158,7 +163,7 @@ int main(int argc, char *argv[])
                 << "\no: print output = " << output << std::endl;
         }
         NCReadFile(engineName, NetCDFFile, ADIOSFile, printDimensions,
-                   printVariable);
+                   printVariable, needsTransform);
     }
     catch (std::invalid_argument &e)
     {
