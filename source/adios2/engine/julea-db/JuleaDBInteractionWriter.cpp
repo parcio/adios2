@@ -70,8 +70,8 @@ void addFieldsForBlockMD(JDBSchema *schema)
     gchar const *varIndex[] = {"variableName", NULL};
     gchar const *stepIndex[] = {"step", NULL};
     gchar const *blockIndex[] = {"block", NULL};
-    gchar const *minIndex[] = {"min", NULL};
-    gchar const *maxIndex[] = {"max", NULL};
+    gchar const *minIndex[] = {"min_blob", NULL};
+    gchar const *maxIndex[] = {"max_blob", NULL};
 
     j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
     j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
@@ -188,7 +188,7 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
         countBuffer[i] = variable.m_Count.data()[i];
         // std::cout << "countBuffer[i]:" << countBuffer[i] << std::endl;
         // std::cout << "sizeof(countBuffer): " << sizeof(countBuffer)
-                  // << std::endl;
+        // << std::endl;
     }
 
     size_t blocks[numberSteps];
@@ -352,20 +352,83 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
     j_db_entry_set_field(entry, "memoryCount", &memoryCountBuffer,
                          sizeof(memoryCountBuffer), NULL);
 
-    //FIXME: for all types
+    // FIXME: for all types
     const char *varType = variable.m_Type.c_str();
+    std::string minField;
+        std::string maxField;
+        std::string valueField;
 
-    if (strcmp(varType, "float") == 0)
-    {
-    j_db_entry_set_field(entry, "min_float32", &variable.m_Min, minLen, NULL);
-    j_db_entry_set_field(entry, "max_float32", &variable.m_Max, maxLen, NULL);
+if ((strcmp(varType, "char") == 0) ||
+            (strcmp(varType, "int8_t") == 0) ||
+            (strcmp(varType, "uint8_t") == 0) ||
+            (strcmp(varType, "int16_t") == 0) ||
+            (strcmp(varType, "uint16_t") == 0) ||
+            (strcmp(varType, "int32_t") == 0))
+        {
+            minField = "min_sint32";
+            maxField = "max_sint32";
+            valueField = "value_sint32";
+        }
+        else if (strcmp(varType, "uint32_t") == 0)
+        {
+            minField = "min_uint32";
+            maxField = "max_uint32";
+            valueField = "value_uint32";
+        }
+        else if (strcmp(varType, "int64_t") == 0)
+        {
+            minField = "min_sint64";
+            maxField = "max_sint64";
+            valueField = "value_sint64";
+        }
+        else if (strcmp(varType, "uint64_t") == 0)
+        {
+            minField = "min_uint64";
+            maxField = "max_uint64";
+            valueField = "value_uint64";
+        }
+        else if (strcmp(varType, "float") == 0)
+        {
+            minField = "min_float32";
+            maxField = "max_float32";
+            valueField = "value_float32";
+        }
+        else if (strcmp(varType, "double") == 0)
+        {
+            minField = "min_float64";
+            maxField = "max_float64";
+            valueField = "value_float64";
+        }
+        else if (strcmp(varType, "string") == 0)
+        {
+            valueField = "value_sint32";
+        }
 
-    }
-    else if(strcmp(varType, "double") == 0)
-    {
-    j_db_entry_set_field(entry, "min_float64", &variable.m_Min, minLen, NULL);
-    j_db_entry_set_field(entry, "max_float64", &variable.m_Max, maxLen, NULL);
-    }
+        else if ((strcmp(varType, "long double") == 0) ||
+                 (strcmp(varType, "float complex") == 0) ||
+                 (strcmp(varType, "double complex") == 0))
+        {
+            minField = "min_blob";
+            maxField = "max_blob";
+            valueField = "value_blob";
+        }
+    // if (strcmp(varType, "float") == 0)
+    // {
+    //     j_db_entry_set_field(entry, "min_float32", &variable.m_Min, minLen,
+    //                          NULL);
+    //     j_db_entry_set_field(entry, "max_float32", &variable.m_Max, maxLen,
+    //                          NULL);
+    // }
+    // else if (strcmp(varType, "double") == 0)
+    // {
+        j_db_entry_set_field(entry, minField.c_str(), &variable.m_Min, minLen,
+                             NULL);
+        j_db_entry_set_field(entry, maxField.c_str(), &variable.m_Max, maxLen, NULL);
+        std::cout << "minLen: " << minLen << std::endl;
+        // j_db_entry_set_field(entry, "max_float64", &variable.m_Max, maxLen,
+                             // NULL);
+        // j_db_entry_set_field(entry, "max_blob", &variable.m_Max, maxLen, NULL);
+    // }
 
     // j_db_entry_set_field(entry, "min", &min, sizeof(min), NULL);
     j_db_entry_set_field(entry, "isValue", &tmp, sizeof(tmp), NULL);
@@ -373,7 +436,7 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
     // TODO: check whether is value otherwise set to 0?
     if (isValue)
     {
-        j_db_entry_set_field(entry, "value", &variable.m_Value, valueLen, NULL);
+        j_db_entry_set_field(entry, valueField.c_str(), &variable.m_Value, valueLen, NULL);
     }
     else
     {
@@ -586,7 +649,7 @@ void DBPutVariableDataToJulea(Variable<T> &variable, const T *data,
     if (bytesWritten == dataSize)
     {
         // std::cout << "++ Julea Interaction Writer: Data written for:  "
-                  // << stepBlockID << std::endl;
+        // << stepBlockID << std::endl;
     }
     else
     {

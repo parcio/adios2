@@ -43,7 +43,7 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
     adios2::IO io = adios.DeclareIO("Output");
     io.SetEngine(engineName);
 
-    adios2::Engine reader = io.Open(fileName2, adios2::Mode::Read);
+    adios2::Engine reader = io.Open(fileName, adios2::Mode::Read);
     auto varMap = io.AvailableVariables();
     reader.BeginStep(adios2::StepMode::Read);
     for (const auto &var : varMap)
@@ -72,7 +72,7 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
             stepsStart = variable.StepsStart();                                \
             auto blocksInfo = reader.BlocksInfo(variable, step);               \
             \
-            if (false)                                                         \
+            if (true)                                                         \
             {                                                                  \
                 std::cout << "type: " << type << std::endl;                    \
                 std::cout << "shape size: " << variable.Shape().size()         \

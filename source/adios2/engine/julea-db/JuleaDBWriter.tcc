@@ -29,7 +29,7 @@ namespace engine
 {
 
 template <class T>
-void SetMinMax(Variable<T> &variable, const T *data)
+void JuleaDBSetMinMax(Variable<T> &variable, const T *data)
 {
     T min;
     T max;
@@ -55,8 +55,7 @@ void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     // guint32 varMD_len = 0;
     // gpointer md_buffer = NULL;
     // auto bsonMetadata = bson_new();
-
-    SetMinMax(variable, data);
+    JuleaDBSetMinMax(variable, data);
 
     auto stepBlockID =
         g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
@@ -72,10 +71,10 @@ void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     auto itVariableWritten = m_WrittenVariableNames.find(variable.m_Name);
     if (itVariableWritten == m_WrittenVariableNames.end())
     {
-        if(m_Verbosity == 5)
+        if (m_Verbosity == 5)
         {
-        std::cout << "--- Variable name not yet written with this writer "
-                  << std::endl;
+            std::cout << "--- Variable name not yet written with this writer "
+                      << std::endl;
         }
 
         // PutNameToJulea(variable.m_Name, m_Name, "variable_names");
@@ -83,12 +82,12 @@ void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     }
 
     // std::cout << "Variable names written to the names DB: " << std::endl;
-    if(m_Verbosity == 5)
+    if (m_Verbosity == 5)
     {
         for (auto it = m_WrittenVariableNames.begin();
              it != m_WrittenVariableNames.end(); ++it)
         {
-            std::cout << "___ Written variables:" << ' ' << *it << std::endl;
+            // std::cout << "___ Written variables:" << ' ' << *it << std::endl;
         }
     }
 
@@ -169,10 +168,10 @@ void JuleaDBWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
 
     if (variable.m_SingleValue)
     {
-        // std::cout << "variable.m_SingleValue: " << variable.m_SingleValue
-                  // << std::endl;
-        DoPutSync(variable, data); // TODO: correct?!
-        return;
+        std::cout << "variable.m_SingleValue: " << variable.m_SingleValue
+                  << std::endl;
+        // DoPutSync(variable, data); // causes issues with blockID when no
+        // steps and no bpls return;
     }
 
     m_DeferredVariables.insert(variable.m_Name);
