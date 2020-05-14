@@ -1135,20 +1135,14 @@ void printMeshes(core::Engine *fp)
 std::vector<std::string> getEnginesList(const std::string path)
 {
     std::vector<std::string> list;
-#ifdef ADIOS2_HAVE_HDF5
+#ifdef ADIOS2_HAVE_HDF5 || ADIOS2_HAVE_JULEA
     size_t slen = path.length();
     if (slen >= 3 && path.compare(slen - 3, 3, ".h5") == 0)
     {
         list.push_back("HDF5");
         list.push_back("BPFile");
     }
-    else
-    {
-        list.push_back("BPFile");
-        list.push_back("HDF5");
-    }
-#elif defined ADIOS2_HAVE_JULEA
-    /** --- IMPORTANT! ---
+     /** --- IMPORTANT! ---
      * It is necessary to create a dummy file in your file system with the
      * according ending. BPLS checks whether the file exists and the
      * application using Julea Engines did write only to Julea. So there is no
@@ -1157,12 +1151,6 @@ std::vector<std::string> getEnginesList(const std::string path)
 
     // FIXME: make possible to still read .bp and .h5 files without "pseudo file
     // formats" jv for julea-kv jb for julea-db
-    size_t slen = path.length();
-    if (slen >= 3 && path.compare(slen - 3, 3, ".h5") == 0)
-    {
-        list.push_back("HDF5");
-        list.push_back("BPFile");
-    }
     else if (slen >= 3 && path.compare(slen - 3, 3, ".jv") == 0)
     {
         list.push_back("julea-kv");
