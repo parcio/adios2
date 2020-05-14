@@ -1135,7 +1135,7 @@ void printMeshes(core::Engine *fp)
 std::vector<std::string> getEnginesList(const std::string path)
 {
     std::vector<std::string> list;
-#ifdef ADIOS2_HAVE_HDF5 || ADIOS2_HAVE_JULEA
+#if defined(ADIOS2_HAVE_HDF5) || defined(ADIOS2_HAVE_JULEA)
     size_t slen = path.length();
     if (slen >= 3 && path.compare(slen - 3, 3, ".h5") == 0)
     {
