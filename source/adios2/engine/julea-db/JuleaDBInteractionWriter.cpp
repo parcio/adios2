@@ -70,8 +70,8 @@ void addFieldsForBlockMD(JDBSchema *schema)
     gchar const *varIndex[] = {"variableName", NULL};
     gchar const *stepIndex[] = {"step", NULL};
     gchar const *blockIndex[] = {"block", NULL};
-    gchar const *minIndex[] = {"min_blob", NULL};
-    gchar const *maxIndex[] = {"max_blob", NULL};
+//    gchar const *minIndex[] = {"min_blob", NULL};
+//    gchar const *maxIndex[] = {"max_blob", NULL};
 
     j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
     j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
@@ -133,8 +133,8 @@ void addFieldsForBlockMD(JDBSchema *schema)
     j_db_schema_add_index(schema, varIndex, NULL);
     j_db_schema_add_index(schema, stepIndex, NULL);
     j_db_schema_add_index(schema, blockIndex, NULL);
-    j_db_schema_add_index(schema, minIndex, NULL);
-    j_db_schema_add_index(schema, maxIndex, NULL);
+//    j_db_schema_add_index(schema, minIndex, NULL);
+//    j_db_schema_add_index(schema, maxIndex, NULL);
 }
 
 template <class T>
@@ -482,8 +482,8 @@ void InitDBSchemas()
         std::cout << "variable schema does not exist" << std::endl;
         varSchema = j_db_schema_new("adios2", "variable-metadata", NULL);
         addFieldsForVariableMD(varSchema);
-        j_db_schema_create(varSchema, batch2, NULL);
-        g_assert_true(j_batch_execute(batch2) == true);
+        j_db_schema_create(varSchema, batch, NULL);
+        g_assert_true(j_batch_execute(batch) == true);
     }
 
     if (existsBlock == 0)
