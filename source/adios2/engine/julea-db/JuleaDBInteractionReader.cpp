@@ -37,7 +37,7 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
                     bool isReadAsLocalValue, bool isRandomAccess,
                     bool isSingleValue)
 {
-    std::cout << "----- InitVariable --- " << varName << std::endl;
+    // std::cout << "----- InitVariable --- " << varName << std::endl;
     const std::string type(io->InquireVariableType(varName));
 
     int err = 0;
@@ -136,10 +136,10 @@ void DBDefineVariableInInit(core::IO *io, const std::string varName,
                             Dims count, bool constantDims)
 {
     const char *type = stringType.c_str();
-    std::cout << "------ DefineVariableInInit ----------" << std::endl;
-    std::cout << "------ type  ---------- " << type << std::endl;
-    std::cout << "------ constantDims  ---------- " << constantDims
-              << std::endl;
+    // std::cout << "------ DefineVariableInInit ----------" << std::endl;
+    // std::cout << "------ type  ---------- " << type << std::endl;
+    // std::cout << "------ constantDims  ---------- " << constantDims
+    // << std::endl;
 
     if (strcmp(type, "unknown") == 0)
     {
@@ -266,7 +266,7 @@ void CheckSchemas()
 void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
                          core::Engine &engine)
 {
-    std::cout << "--- InitVariablesFromDB ---" << std::endl;
+    // std::cout << "--- InitVariablesFromDB ---" << std::endl;
     int err = 0;
     JDBType type;
     guint64 db_length = 0;
@@ -725,18 +725,21 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
                                 (gpointer *)&blockID, &db_length, NULL);
         info->BlockID = *blockID;
 
-        std::cout << "shapeSize: " << *shapeSize << std::endl;
-        std::cout << "startSize: " << *startSize << std::endl;
-        std::cout << "countSize: " << *countSize << std::endl;
-        std::cout << "memoryStartSize: " << *memoryStartSize << std::endl;
-        std::cout << "memoryCountSize: " << *memoryCountSize << std::endl;
-        std::cout << "info->Min: " << info->Min << std::endl;
-        std::cout << "info->Max: " << info->Max << std::endl;
-        std::cout << "info->Value: " << info->Value << std::endl;
-        std::cout << "info->StepsStart: " << info->StepsStart << std::endl;
-        std::cout << "info->StepsCount: " << info->StepsCount << std::endl;
-        std::cout << "info->BlockID: " << info->BlockID << std::endl;
-        std::cout << "info->IsValue: " << info->IsValue << std::endl;
+        if (false)
+        {
+            std::cout << "shapeSize: " << *shapeSize << std::endl;
+            std::cout << "startSize: " << *startSize << std::endl;
+            std::cout << "countSize: " << *countSize << std::endl;
+            std::cout << "memoryStartSize: " << *memoryStartSize << std::endl;
+            std::cout << "memoryCountSize: " << *memoryCountSize << std::endl;
+            std::cout << "info->Min: " << info->Min << std::endl;
+            std::cout << "info->Max: " << info->Max << std::endl;
+            std::cout << "info->Value: " << info->Value << std::endl;
+            std::cout << "info->StepsStart: " << info->StepsStart << std::endl;
+            std::cout << "info->StepsCount: " << info->StepsCount << std::endl;
+            std::cout << "info->BlockID: " << info->BlockID << std::endl;
+            std::cout << "info->IsValue: " << info->IsValue << std::endl;
+        }
     }
     if (isValue)
     {
