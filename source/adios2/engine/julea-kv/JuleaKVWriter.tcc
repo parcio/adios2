@@ -140,8 +140,8 @@ void JuleaKVWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
         std::cout << "\n___________________________PutDeferred "
                      "T____________________________"
                   << std::endl;
-        std::cout << "data[0]: " << data[0] << std::endl;
-        std::cout << "data[1]: " << data[1] << std::endl;
+        // std::cout << "data[0]: " << data[0] << std::endl;
+        // std::cout << "data[1]: " << data[1] << std::endl;
     }
 
     const typename Variable<T>::Info blockInfo =
