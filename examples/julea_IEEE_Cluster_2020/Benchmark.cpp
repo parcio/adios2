@@ -24,7 +24,7 @@ void showUsage()
     std::cout
         << "Usage: \n"
         << "-d: directory where the files are located\n"
-        << "-c: number of files to read\n"
+        << "-c: number of files to read (if higher than number of files in path, it is ignored)\n"
         << "-p: percentage of variables to read; e.g. 50 -> 50%\n"
         << "-n: name of engine to use\n"
         << "    'bp3'\n"
