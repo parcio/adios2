@@ -24,6 +24,7 @@ time_point<Clock> startOpen;
 time_point<Clock> startStep;
 time_point<Clock> startGets;
 time_point<Clock> startGetBlock;
+std::vector<time_point<Clock>> GetBlockTimes;
 
 time_point<Clock> endGetBlock;
 time_point<Clock> endGets;
@@ -79,7 +80,7 @@ void readInput(const std::string &path, std::vector<std::string> &files)
     }
 }
 
-void AdiosReadMinMax(std::string fileName, std::string variableName)
+void AdiosReadMinMax(std::string path, std::string variableName)
 {
     std::cout << "AdiosReadMinMax" << std::endl;
 }
