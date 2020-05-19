@@ -178,9 +178,9 @@ void AdiosRead(std::string engineName, std::string path, size_t fileCount,
                                                                                \
             for (auto &info : blocksInfo)                                      \
             {                                                                  \
-                startGetBlock = Clock::now();                                  \
                                                                                \
                 variable.SetBlockSelection(info.BlockID);                      \
+                startGetBlock = Clock::now();                                  \
                 reader.Get<T>(variable, dataSet[i], adios2::Mode::Sync);       \
                                                                                \
                 endGetBlock = Clock::now();                                    \
