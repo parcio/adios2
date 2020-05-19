@@ -9,57 +9,117 @@
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 #include <adios2.h>
+#include <chrono>
+#include <dirent.h>
 #include <iomanip>
 #include <iostream>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <vector>
 
+using Clock = std::chrono::steady_clock;
+using std::chrono::time_point;
+using std::chrono::duration_cast;
+// using std::chrono::milliseconds;
+// using namespace std::literals::chrono_literals;
+// using std::this_thread::sleep_for;
+
 // #include "AdiosQuery.h"
+
+void readDirectory(const std::string &path, std::vector<std::string> &v)
+{
+    DIR *dirPtr = opendir(path.c_str());
+    struct dirent *dirEntry;
+    while ((dirEntry = readdir(dirPtr)) != NULL)
+    {
+        v.push_back(dirEntry->d_name);
+        std::cout << dirEntry->d_name << std::endl;
+    }
+    closedir(dirPtr);
+}
+
+void readInput(const std::string &path, std::vector<std::string> &files)
+{
+
+    struct stat s;
+    if (stat(path.c_str(), &s) == 0)
+    {
+        if (s.st_mode & S_IFDIR)
+        {
+            // it's a directory
+            std::cout << "directory contains: " << std::endl;
+            readDirectory(path, files);
+        }
+        else if (s.st_mode & S_IFREG)
+        {
+            // it's a file
+            files.push_back(path);
+        }
+        else
+        {
+            // something else
+            std::cout << "When reading path it was neither directory nor file. " << std::endl;
+        }
+    }
+    else
+    {
+        // error
+        std::cerr << "Reading directory failed!" << std::endl;
+    }
+}
+
 
 void AdiosReadMinMax(std::string fileName, std::string variableName)
 {
     std::cout << "AdiosReadMinMax" << std::endl;
 }
 
-void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
+void AdiosRead(std::string engineName, std::string path, size_t fileCount,
                uint32_t percentageVarsToRead)
 {
     std::cout << "AdiosRead" << std::endl;
+    std::vector<std::string> files;
 
-    // is directory? is file?
+    readInput(path, files);
 
-    // get all files
-    // read first fileCount
-    // read variables but only percentage
-    // std::string fileName;
-    std::string fileName = "sresa1b_ncar_ccsm3-example.bp";
-    std::string fileName2 = "_grib2netcdf-webmars-public-svc-blue-004-"
-                            "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.bp";
-    size_t steps = 0;
-    size_t stepsStart = 0;
-    size_t varCount = 0;
-    std::string varName;
-
-    adios2::ADIOS adios(adios2::DebugON);
-    adios2::IO io = adios.DeclareIO("Output");
-    io.SetEngine(engineName);
-
-    adios2::Engine reader = io.Open(fileName, adios2::Mode::Read);
-    auto varMap = io.AvailableVariables();
-    reader.BeginStep(adios2::StepMode::Read);
-    for (const auto &var : varMap)
+    for (auto &file : files)
     {
-        // TODO: maybe use SetStepSelection before Step loop
 
-        varName = var.first;
-        adios2::Params params = var.second;
-        std::cout << "\nvarName: " << varName << std::endl;
+        // read first fileCount
+        // read variables but only percentage
+        // std::string fileName;
+        // std::string fileName = "sresa1b_ncar_ccsm3-example.bp";
+        // std::string fileName2 = "_grib2netcdf-webmars-public-svc-blue-004-"
+        //                         "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.bp";
+        size_t steps = 0;
+        // size_t stepsStart = 0;
+        size_t varCount = 0;
+        std::string varName;
 
-        auto type = io.VariableType(varName);
+        adios2::ADIOS adios(adios2::DebugON);
+        adios2::IO io = adios.DeclareIO("Output");
+        io.SetEngine(engineName);
 
-        std::vector<float> test(128);
-        if (type == "compound")
+        time_point<Clock> startOpen = Clock::now();
+
+        adios2::Engine reader = io.Open(file, adios2::Mode::Read);
+        auto varMap = io.AvailableVariables();
+        reader.BeginStep(adios2::StepMode::Read);
+        for (const auto &var : varMap)
         {
-        }
+            // TODO: maybe use SetStepSelection before Step loop
+            // stepsStart = variable.StepsStart();                                \
+
+            varName = var.first;
+            adios2::Params params = var.second;
+            std::cout << "\nvarName: " << varName << std::endl;
+
+            auto type = io.VariableType(varName);
+
+            std::vector<float> test(128);
+            if (type == "compound")
+            {
+            }
 #define declare_type(T)                                                        \
     else if (type == adios2::GetType<T>())                                     \
     {                                                                          \
@@ -69,10 +129,9 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
                                                                                \
         for (size_t step = 0; step < steps; step++)                            \
         {                                                                      \
-            stepsStart = variable.StepsStart();                                \
             auto blocksInfo = reader.BlocksInfo(variable, step);               \
-            \
-            if (true)                                                         \
+                                                                               \
+            if (true)                                                          \
             {                                                                  \
                 std::cout << "type: " << type << std::endl;                    \
                 std::cout << "shape size: " << variable.Shape().size()         \
@@ -93,12 +152,13 @@ void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
             }                                                                  \
         }                                                                      \
     }
-        ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
+            ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
-        varCount++;
-        std::cout << "-------------------------" << std::endl;
+            varCount++;
+            std::cout << "-------------------------" << std::endl;
+        }
+        reader.PerformGets();
+        reader.EndStep();
     }
-    reader.PerformGets();
-    reader.EndStep();
 }
 // std::cout << "front: " << dataSet[i].front() << std::endl;     \
