@@ -19,8 +19,18 @@
 
 using Clock = std::chrono::steady_clock;
 using std::chrono::time_point;
+
+time_point<Clock> startOpen;
+time_point<Clock> startStep;
+time_point<Clock> startGets;
+time_point<Clock> startGetBlock;
+
+time_point<Clock> endGetBlock;
+time_point<Clock> endGets;
+time_point<Clock> endStep;
+time_point<Clock> endOpen;
 using std::chrono::duration_cast;
-// using std::chrono::milliseconds;
+using std::chrono::milliseconds;
 // using namespace std::literals::chrono_literals;
 // using std::this_thread::sleep_for;
 
@@ -58,7 +68,8 @@ void readInput(const std::string &path, std::vector<std::string> &files)
         else
         {
             // something else
-            std::cout << "When reading path it was neither directory nor file. " << std::endl;
+            std::cout << "When reading path it was neither directory nor file. "
+                      << std::endl;
         }
     }
     else
@@ -68,48 +79,66 @@ void readInput(const std::string &path, std::vector<std::string> &files)
     }
 }
 
-
 void AdiosReadMinMax(std::string fileName, std::string variableName)
 {
     std::cout << "AdiosReadMinMax" << std::endl;
 }
 
+void calculateStatistics()
+{
+    // time_point<Clock> timeOpenClose = endOpen - startOpen;
+    milliseconds timeOpenClose = duration_cast<milliseconds>(endOpen - startOpen);
+    milliseconds timeStep = duration_cast<milliseconds>(endStep - startStep);
+    milliseconds timeGets = duration_cast<milliseconds>(endGets - startGets);
+    milliseconds timeGetBlocks = duration_cast<milliseconds>(endGetBlock - startGetBlock);
+
+    std::cout << "Time from open to close: " << timeOpenClose.count() << " ms"<< std::endl;
+    std::cout << "step duration: " << timeStep.count() << " ms"<< std::endl;
+    std::cout << "complete read time: " << timeGets.count() << " ms"<< std::endl;
+    std::cout << "read block time: " << timeGetBlocks.count() << " ms"<< std::endl;
+}
+
 void AdiosRead(std::string engineName, std::string path, size_t fileCount,
                uint32_t percentageVarsToRead)
 {
+    // time_point<Clock> startOpen;
+    // time_point<Clock> startStep;
+    // time_point<Clock> startGets;
+    // time_point<Clock> startGetBlock;
+
+    // time_point<Clock> endGetBlock;
+    // time_point<Clock> endGets;
+    // time_point<Clock> endStep;
+    // time_point<Clock> endOpen;
+
     std::cout << "AdiosRead" << std::endl;
     std::vector<std::string> files;
 
     readInput(path, files);
+    std::string varName;
+
+    adios2::ADIOS adios(adios2::DebugON);
+    adios2::IO io = adios.DeclareIO("Output");
+    io.SetEngine(engineName);
 
     for (auto &file : files)
     {
 
         // read first fileCount
         // read variables but only percentage
-        // std::string fileName;
-        // std::string fileName = "sresa1b_ncar_ccsm3-example.bp";
-        // std::string fileName2 = "_grib2netcdf-webmars-public-svc-blue-004-"
-        //                         "6fe5cac1a363ec1525f54343b6cc9fd8-ICkLWm.bp";
         size_t steps = 0;
-        // size_t stepsStart = 0;
         size_t varCount = 0;
-        std::string varName;
 
-        adios2::ADIOS adios(adios2::DebugON);
-        adios2::IO io = adios.DeclareIO("Output");
-        io.SetEngine(engineName);
-
-        time_point<Clock> startOpen = Clock::now();
-
+        startOpen = Clock::now();
         adios2::Engine reader = io.Open(file, adios2::Mode::Read);
         auto varMap = io.AvailableVariables();
+
         reader.BeginStep(adios2::StepMode::Read);
+        startStep = Clock::now();
+
         for (const auto &var : varMap)
         {
             // TODO: maybe use SetStepSelection before Step loop
-            // stepsStart = variable.StepsStart();                                \
-
             varName = var.first;
             adios2::Params params = var.second;
             std::cout << "\nvarName: " << varName << std::endl;
@@ -131,7 +160,7 @@ void AdiosRead(std::string engineName, std::string path, size_t fileCount,
         {                                                                      \
             auto blocksInfo = reader.BlocksInfo(variable, step);               \
                                                                                \
-            if (true)                                                          \
+            if (true)                                                         \
             {                                                                  \
                 std::cout << "type: " << type << std::endl;                    \
                 std::cout << "shape size: " << variable.Shape().size()         \
@@ -143,13 +172,21 @@ void AdiosRead(std::string engineName, std::string path, size_t fileCount,
                                                                                \
             std::vector<std::vector<T>> dataSet;                               \
             dataSet.resize(blocksInfo.size());                                 \
+                                                                               \
             size_t i = 0;                                                      \
+            startGets = Clock::now();                                          \
+                                                                               \
             for (auto &info : blocksInfo)                                      \
             {                                                                  \
+                startGetBlock = Clock::now();                                  \
+                                                                               \
                 variable.SetBlockSelection(info.BlockID);                      \
                 reader.Get<T>(variable, dataSet[i], adios2::Mode::Sync);       \
+                                                                               \
+                endGetBlock = Clock::now();                                    \
                 ++i;                                                           \
             }                                                                  \
+            endGets = Clock::now();                                            \
         }                                                                      \
     }
             ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
@@ -159,6 +196,10 @@ void AdiosRead(std::string engineName, std::string path, size_t fileCount,
         }
         reader.PerformGets();
         reader.EndStep();
+        endStep = Clock::now();
+        reader.Close();
+        endOpen = Clock::now();
+        calculateStatistics();
     }
 }
 // std::cout << "front: " << dataSet[i].front() << std::endl;     \
