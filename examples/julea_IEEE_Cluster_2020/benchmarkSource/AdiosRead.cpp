@@ -10,6 +10,7 @@
  */
 #include <adios2.h>
 #include <chrono>
+#include <cstring>
 #include <dirent.h>
 #include <iomanip>
 #include <iostream>
@@ -19,19 +20,24 @@
 
 using Clock = std::chrono::steady_clock;
 using std::chrono::time_point;
+using std::chrono::duration_cast;
+using std::chrono::milliseconds;
 
 time_point<Clock> startOpen;
 time_point<Clock> startStep;
 time_point<Clock> startGets;
 time_point<Clock> startGetBlock;
-std::vector<time_point<Clock>> GetBlockTimes;
+
+std::vector<time_point<Clock>> getBlockTimes;
+std::vector<milliseconds> getBlockDelta;
+milliseconds blockDelta;
+std::vector<milliseconds> getsDelta;
+milliseconds getDelta;
 
 time_point<Clock> endGetBlock;
 time_point<Clock> endGets;
 time_point<Clock> endStep;
 time_point<Clock> endOpen;
-using std::chrono::duration_cast;
-using std::chrono::milliseconds;
 // using namespace std::literals::chrono_literals;
 // using std::this_thread::sleep_for;
 
@@ -85,6 +91,51 @@ void AdiosReadMinMax(std::string path, std::string variableName)
     std::cout << "AdiosReadMinMax" << std::endl;
 }
 
+void caculateMeanBlockTime()
+{
+    // milliseconds sumTimes;
+    size_t sumTimes2;
+    // milliseconds mean;
+    // milliseconds mean3;
+    size_t mean2;
+    for (auto &times : getBlockDelta)
+    {
+        // sumTimes += times;
+        sumTimes2 += times.count();
+        // std::cout << "getBlockDelta: " << times.count() << std::endl;
+        // std::cout << "getBlockDelta: " << times << std::endl;
+    }
+    // std::cout << "sumTimes: " << sumTimes.count() << std::endl;
+    std::cout << "getBlockDelta.size: " << getBlockDelta.size() << std::endl;
+    // mean = duration_cast<milliseconds>(sumTimes / getBlockDelta.size());
+    // mean3 = duration_cast<milliseconds>(sumTimes2 / getBlockDelta.size());
+    mean2 = (sumTimes2 / getBlockDelta.size()) / 1000000;
+    // std::cout << "Average time to read a block: " << mean.count() << " ms" <<
+    // std::endl;
+    std::cout << " Average time to read a block: " << mean2 << " ms"
+              << std::endl;
+    // std::cout << "3 Average time to read a block: " << mean3.count() << " ms"
+    // << std::endl;
+}
+
+void caculateMeanGetsTime()
+{
+    // milliseconds sumTimes;
+    size_t sumTimes;
+    size_t mean;
+    for (auto &times : getsDelta)
+    {
+        sumTimes += times.count();
+        // std::cout << "getsDelta: " << times.count() << std::endl;
+    }
+    std::cout << "getsDelta.size: " << getsDelta.size() << std::endl;
+    mean = (sumTimes / getsDelta.size()) / 1000000;
+    std::cout << " Average time to get all blocks: " << mean << " ms"
+              << std::endl;
+    // std::cout << "3 Average time to read a block: " << mean3.count() << " ms"
+    // << std::endl;
+}
+
 void calculateStatistics()
 {
     milliseconds timeOpenClose =
@@ -107,7 +158,7 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
                uint32_t variablesToRead)
 {
     std::cout << "AdiosRead" << std::endl;
-    size_t fileCount = 0; //loop counter
+    size_t fileCount = 0; // loop counter
     std::string varName;
     std::vector<std::string> files;
 
@@ -116,7 +167,6 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
     adios2::ADIOS adios(adios2::DebugON);
     adios2::IO io = adios.DeclareIO("Output");
     io.SetEngine(engineName);
-
 
     for (auto &file : files)
     {
@@ -128,7 +178,7 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
         }
 
         size_t steps = 0;
-        size_t varCount = 0; //loop couner
+        size_t varCount = 0; // loop couner
 
         startOpen = Clock::now();
         adios2::Engine reader = io.Open(file, adios2::Mode::Read);
@@ -141,15 +191,21 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
         {
             if (variablesToRead == varCount)
             {
-                 std::cout << "varCount: " << varCount
-                      << " variablesToRead: " << variablesToRead << std::endl;
-                      continue;
+                std::cout << "varCount: " << varCount
+                          << " variablesToRead: " << variablesToRead
+                          << std::endl;
+                continue;
             }
 
             // TODO: maybe use SetStepSelection before Step loop
             varName = var.first;
             adios2::Params params = var.second;
             std::cout << "\nvarName: " << varName << std::endl;
+
+            if (strcmp(varName.c_str(),"time")==0)
+            {
+                continue;
+            }
 
             auto type = io.VariableType(varName);
 
@@ -192,16 +248,24 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
                 reader.Get<T>(variable, dataSet[i], adios2::Mode::Sync);       \
                                                                                \
                 endGetBlock = Clock::now();                                    \
+                blockDelta =                                                   \
+                    duration_cast<milliseconds>(endGetBlock - startGetBlock);  \
+                getBlockDelta.push_back(blockDelta);                           \
                 ++i;                                                           \
             }                                                                  \
-            endGets = Clock::now();                                            \
+            if (i > 1)                                                         \
+            {                                                                  \
+                endGets = Clock::now();                                        \
+                getDelta = duration_cast<milliseconds>(endGets - startGets);   \
+                getsDelta.push_back(getDelta);                                 \
+            }                                                                  \
         }                                                                      \
     }
             ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
             varCount++;
             std::cout << "-------------------------" << std::endl;
-        } //end for varMap loop
+        } // end for varMap loop
 
         reader.PerformGets();
         reader.EndStep();
@@ -209,7 +273,9 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
         reader.Close();
         endOpen = Clock::now();
         calculateStatistics();
+        caculateMeanBlockTime();
+        caculateMeanGetsTime();
         fileCount++;
-    }// end for files loop
+    } // end for files loop
 }
 // std::cout << "front: " << dataSet[i].front() << std::endl;     \
