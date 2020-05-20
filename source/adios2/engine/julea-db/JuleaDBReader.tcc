@@ -96,6 +96,7 @@ void JuleaDBReader::GetSyncCommon(Variable<T> &variable, T *data)
 
     if (variable.m_SingleValue)
     {
+        std::cout << "FIXME: read single value" << std::endl;
         // FIXME: just read metadata from DB. value is stored in there.
         // m_BP3Deserializer.GetValueFromMetadata(variable, data);
         // return;
@@ -164,7 +165,7 @@ void JuleaDBReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
      * determine block position in buffer and for AllStepsBlockInfo for bpls */
     auto entryID = variable.m_AvailableStepBlockIndexOffsets[step + 1][blockID];
     GetCountFromBlockMetadata(nameSpace, variable.m_Name, step, blockID, &count,
-                              entryID);
+                              entryID, variable.m_SingleValue, data);
     if (variable.m_SingleValue)
     {
         //FIXME: get Value from DB

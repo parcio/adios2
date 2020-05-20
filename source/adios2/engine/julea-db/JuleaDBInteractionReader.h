@@ -41,10 +41,10 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
 // void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
 //                               size_t blockID,
 //                               typename core::Variable<T>::Info &info);
-
+template <class T>
 void GetCountFromBlockMetadata(const std::string nameSpace,
                                const std::string varName, size_t step,
-                               size_t block, Dims *count, size_t entryID);
+                               size_t block, Dims *count, size_t entryID, bool isLocalValue, T *value);
 
 template <class T>
 std::unique_ptr<typename core::Variable<T>::Info>
@@ -81,6 +81,9 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
                                 const std::string stepBlockID);
 
 #define variable_template_instantiation(T)                                     \
+extern template void GetCountFromBlockMetadata(const std::string nameSpace,\
+                               const std::string varName, size_t step,\
+                               size_t block, Dims *count, size_t entryID, bool isLocalValue, T *value);\
     extern template std::unique_ptr<typename core::Variable<T>::Info>          \
     DBGetBlockMetadata(const core::Variable<T> &variable,                      \
                        const std::string nameSpace, size_t step, size_t block, \

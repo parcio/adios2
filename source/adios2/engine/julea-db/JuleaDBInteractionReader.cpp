@@ -31,6 +31,66 @@ namespace core
 {
 namespace engine
 {
+void setMinMaxValueFields(std::string *minField, std::string *maxField, std::string *valueField, const char *varType)
+{
+
+        if ((strcmp(varType, "char") == 0) ||
+            (strcmp(varType, "int8_t") == 0) ||
+            (strcmp(varType, "uint8_t") == 0) ||
+            (strcmp(varType, "int16_t") == 0) ||
+            (strcmp(varType, "uint16_t") == 0) ||
+            (strcmp(varType, "int32_t") == 0))
+        {
+            *minField = "min_sint32";
+            *maxField = "max_sint32";
+            *valueField = "value_sint32";
+        }
+        else if (strcmp(varType, "uint32_t") == 0)
+        {
+            *minField = "min_uint32";
+            *maxField = "max_uint32";
+            *valueField = "value_uint32";
+        }
+        else if (strcmp(varType, "int64_t") == 0)
+        {
+            *minField = "min_sint64";
+            *maxField = "max_sint64";
+            *valueField = "value_sint64";
+        }
+        else if (strcmp(varType, "uint64_t") == 0)
+        {
+            *minField = "min_uint64";
+            *maxField = "max_uint64";
+            *valueField = "value_uint64";
+        }
+        else if (strcmp(varType, "float") == 0)
+        {
+            *minField = "min_float32";
+            *maxField = "max_float32";
+            *valueField = "value_float32";
+        }
+        else if (strcmp(varType, "double") == 0)
+        {
+            *minField = "min_float64";
+            *maxField = "max_float64";
+            *valueField = "value_float64";
+        }
+        else if (strcmp(varType, "string") == 0)
+        {
+            *valueField = "value_sint32";
+        }
+
+        else if ((strcmp(varType, "long double") == 0) ||
+                 (strcmp(varType, "float complex") == 0) ||
+                 (strcmp(varType, "double complex") == 0))
+        {
+            *minField = "min_blob";
+            *maxField = "max_blob";
+            *valueField = "value_blob";
+        }
+}
+
+
 void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
                     std::string varName, size_t *blocks, size_t numberSteps,
                     ShapeID shapeID, bool isReadAsJoined,
@@ -289,6 +349,7 @@ void DBDefineVariableInInit(core::IO *io, const std::string varName,
         }
         else
         {
+            // std::cout << "Single Value double " << std::endl;
             auto &var = io->DefineVariable<double>(
                 varName, {adios2::LocalValueDim});
         }
@@ -391,7 +452,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
     char *varTypePtr;
     std::string varType;
 
-    bool localValue;
+    // bool localValue;
     bool *isConstantDims;
     bool *isReadAsJoined;
     bool *isReadAsLocalValue;
@@ -425,6 +486,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
 
     while (j_db_iterator_next(iterator, NULL))
     {
+        // localValue = false;
         j_db_iterator_get_field(iterator, "variableName", &type,
                                 (gpointer *)&varName, &db_length, NULL);
 
@@ -499,7 +561,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
         {
             // std::cout << "numberSteps: " << blocks[0] << std::endl;
             // std::cout << "numberSteps: " << blocks[1] << std::endl;
-            std::cout << "varName = " << varName << std::endl;
+            std::cout << "\nvarName = " << varName << std::endl;
             std::cout << "length: " << db_length << std::endl;
             std::cout << "constantDims: " << *isConstantDims << std::endl;
             std::cout << "isReadAsJoined: " << *isReadAsJoined << std::endl;
@@ -518,7 +580,8 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
 
         if (*shapeID == ShapeID::LocalValue)
         {
-            localValue = true;
+            std::cout << " SHAPEID: LOCAL VALUE" << std::endl;
+            // localValue = true;
         }
         // // FIXME: localValueDim is screwing everything up
         // if (strcmp(varName, "time") == 0)
@@ -527,7 +590,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
         // }
 
         DBDefineVariableInInit(io, varName, varType, shape, start, count,
-                               *isConstantDims, localValue);
+                               *isConstantDims, *isSingleValue);
         DBInitVariable(io, engine, nameSpace, varName, blocks, *numberSteps,
                        *shapeID, *isReadAsJoined, *isReadAsLocalValue,
                        *isRandomAccess, *isSingleValue);
@@ -556,9 +619,10 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
     j_semantics_unref(semantics);
 }
 
+template <class T>
 void GetCountFromBlockMetadata(const std::string nameSpace,
                                const std::string varName, size_t step,
-                               size_t block, Dims *count, size_t entryID)
+                               size_t block, Dims *count, size_t entryID, bool isLocalValue, T *value)
 {
     // std::cout << "------ GetCountFromBlockMetadata ----------" << std::endl;
     int err = 0;
@@ -570,6 +634,8 @@ void GetCountFromBlockMetadata(const std::string nameSpace,
     g_autoptr(JDBIterator) iterator = NULL;
     g_autoptr(JDBSelector) selector = NULL;
     g_autoptr(JDBSelector) selectorShort = NULL;
+    std::string valueField;
+    const char *varType;
 
     size_t *countSize;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -613,6 +679,15 @@ void GetCountFromBlockMetadata(const std::string nameSpace,
             *count = tmpCount;
             g_free(tmpCountBuffer);
         }
+        // if(isLocalValue)
+        // {
+        //     //FIXME: not yet tested!
+        //     setMinMaxValueFields(NULL, NULL,valueField, varType );
+        //     std::cout << "valueField: " << valueField << std::endl;
+        //     j_db_iterator_get_field(iterator, valueField.c_str(), &type,
+        //                             (gpointer *)&value, &db_length,
+        //                             NULL);
+        // }
     }
     g_free(countSize);
     j_batch_unref(batch);
@@ -758,60 +833,65 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
         std::string maxField;
         std::string valueField;
 
-        if ((strcmp(varType, "char") == 0) ||
-            (strcmp(varType, "int8_t") == 0) ||
-            (strcmp(varType, "uint8_t") == 0) ||
-            (strcmp(varType, "int16_t") == 0) ||
-            (strcmp(varType, "uint16_t") == 0) ||
-            (strcmp(varType, "int32_t") == 0))
-        {
-            minField = "min_sint32";
-            maxField = "max_sint32";
-            valueField = "value_sint32";
-        }
-        else if (strcmp(varType, "uint32_t") == 0)
-        {
-            minField = "min_uint32";
-            maxField = "max_uint32";
-            valueField = "value_uint32";
-        }
-        else if (strcmp(varType, "int64_t") == 0)
-        {
-            minField = "min_sint64";
-            maxField = "max_sint64";
-            valueField = "value_sint64";
-        }
-        else if (strcmp(varType, "uint64_t") == 0)
-        {
-            minField = "min_uint64";
-            maxField = "max_uint64";
-            valueField = "value_uint64";
-        }
-        else if (strcmp(varType, "float") == 0)
-        {
-            minField = "min_float32";
-            maxField = "max_float32";
-            valueField = "value_float32";
-        }
-        else if (strcmp(varType, "double") == 0)
-        {
-            minField = "min_float64";
-            maxField = "max_float64";
-            valueField = "value_float64";
-        }
-        else if (strcmp(varType, "string") == 0)
-        {
-            valueField = "value_sint32";
-        }
+        // if ((strcmp(varType, "char") == 0) ||
+        //     (strcmp(varType, "int8_t") == 0) ||
+        //     (strcmp(varType, "uint8_t") == 0) ||
+        //     (strcmp(varType, "int16_t") == 0) ||
+        //     (strcmp(varType, "uint16_t") == 0) ||
+        //     (strcmp(varType, "int32_t") == 0))
+        // {
+        //     minField = "min_sint32";
+        //     maxField = "max_sint32";
+        //     valueField = "value_sint32";
+        // }
+        // else if (strcmp(varType, "uint32_t") == 0)
+        // {
+        //     minField = "min_uint32";
+        //     maxField = "max_uint32";
+        //     valueField = "value_uint32";
+        // }
+        // else if (strcmp(varType, "int64_t") == 0)
+        // {
+        //     minField = "min_sint64";
+        //     maxField = "max_sint64";
+        //     valueField = "value_sint64";
+        // }
+        // else if (strcmp(varType, "uint64_t") == 0)
+        // {
+        //     minField = "min_uint64";
+        //     maxField = "max_uint64";
+        //     valueField = "value_uint64";
+        // }
+        // else if (strcmp(varType, "float") == 0)
+        // {
+        //     minField = "min_float32";
+        //     maxField = "max_float32";
+        //     valueField = "value_float32";
+        // }
+        // else if (strcmp(varType, "double") == 0)
+        // {
+        //     minField = "min_float64";
+        //     maxField = "max_float64";
+        //     valueField = "value_float64";
+        // }
+        // else if (strcmp(varType, "string") == 0)
+        // {
+        //     valueField = "value_sint32";
+        // }
 
-        else if ((strcmp(varType, "long double") == 0) ||
-                 (strcmp(varType, "float complex") == 0) ||
-                 (strcmp(varType, "double complex") == 0))
-        {
-            minField = "min_blob";
-            maxField = "max_blob";
-            valueField = "value_blob";
-        }
+        // else if ((strcmp(varType, "long double") == 0) ||
+        //          (strcmp(varType, "float complex") == 0) ||
+        //          (strcmp(varType, "double complex") == 0))
+        // {
+        //     minField = "min_blob";
+        //     maxField = "max_blob";
+        //     valueField = "value_blob";
+        // }
+        setMinMaxValueFields(&minField,&maxField,&valueField,varType);
+        // std::cout << "minField: " << minField << std::endl;
+        // std::cout << "maxField: " << maxField << std::endl;
+        // std::cout << "valueField: " << valueField << std::endl;
+        // std::cout << "varType: " << varType << std::endl;
 
         j_db_iterator_get_field(iterator, minField.c_str(), &type,
                                 (gpointer *)&min, &db_length, NULL);
@@ -821,7 +901,8 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
         info->Max = *max;
         j_db_iterator_get_field(iterator, "isValue", &type,
                                 (gpointer *)&isValue, &db_length, NULL);
-
+                    std::cout << "info->Min: " << info->Min << std::endl;
+            std::cout << "info->Max: " << info->Max << std::endl;
         info->IsValue = *isValue;
         if (isValue)
         {
@@ -854,7 +935,6 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
             std::cout << "info->BlockID: " << info->BlockID << std::endl;
             std::cout << "info->IsValue: " << info->IsValue << std::endl;
         }
-    }
     if (isValue)
     {
         g_free(value);
@@ -872,6 +952,7 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
     g_free(blockID);
     j_batch_unref(batch);
     j_semantics_unref(semantics);
+    }
     return info;
 }
 
@@ -917,6 +998,9 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
 }
 
 #define variable_template_instantiation(T)                                     \
+    template void GetCountFromBlockMetadata(const std::string nameSpace,\
+                               const std::string varName, size_t step,\
+                               size_t block, Dims *count, size_t entryID, bool isLocalValue, T *value);\
     template std::unique_ptr<typename core::Variable<T>::Info>                 \
     DBGetBlockMetadata(const core::Variable<T> &variable,                      \
                        const std::string nameSpace, size_t step, size_t block, \

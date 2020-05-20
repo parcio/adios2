@@ -435,6 +435,7 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
     // TODO: check whether is value otherwise set to 0?
     if (isValue)
     {
+        std::cout << "Writing local value for " << varName << std::endl;
         j_db_entry_set_field(entry, valueField.c_str(), &variable.m_Value,
                              valueLen, NULL);
     }
