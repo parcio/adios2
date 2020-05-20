@@ -76,7 +76,6 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
         var->m_ShapeID = shapeID;                                              \
         for (size_t i = 0; i < numberSteps; i++)                               \
         {                                                                      \
-            std::cout << "i: " << i << std::endl;                              \
             for (size_t j = 0; j < blocks[i]; j++)                             \
             {                                                                  \
                 step = i;                                                      \
@@ -133,7 +132,7 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
 
 void DBDefineVariableInInit(core::IO *io, const std::string varName,
                             std::string stringType, Dims shape, Dims start,
-                            Dims count, bool constantDims)
+                            Dims count, bool constantDims, bool isLocalValue)
 {
     const char *type = stringType.c_str();
     // std::cout << "------ DefineVariableInInit ----------" << std::endl;
@@ -150,80 +149,192 @@ void DBDefineVariableInInit(core::IO *io, const std::string varName,
     }
     else if (strcmp(type, "string") == 0)
     {
-        auto &var = io->DefineVariable<std::string>(varName, shape, start,
-                                                    count, constantDims);
-        std::cout << "Defined variable of type: " << type << std::endl;
+        if (!isLocalValue)
+        {
+            auto &var = io->DefineVariable<std::string>(varName, shape, start,
+                                                        count, constantDims);
+        }
+        else
+        {
+            auto &var = io->DefineVariable<std::string>(
+                varName, {adios2::LocalValueDim});
+        }
+        // std::cout << "Defined variable of type: " << type << std::endl;
     }
     else if (strcmp(type, "int8_t") == 0)
     {
+         if (!isLocalValue)
+        {
         auto &var = io->DefineVariable<int8_t>(varName, shape, start, count,
                                                constantDims);
-        std::cout << "Defined variable of type: " << type << std::endl;
+        }
+        else
+        {
+            auto &var = io->DefineVariable<int8_t>(
+                varName, {adios2::LocalValueDim});
+        }
+        // std::cout << "Defined variable of type: " << type << std::endl;
     }
     else if (strcmp(type, "uint8_t") == 0)
     {
+         if (!isLocalValue)
+        {
         auto &var = io->DefineVariable<uint8_t>(varName, shape, start, count,
                                                 constantDims);
+        }
+        else
+        {
+            auto &var = io->DefineVariable<uint8_t>(
+                varName, {adios2::LocalValueDim});
+        }
     }
     else if (strcmp(type, "int16_t") == 0)
     {
+         if (!isLocalValue)
+        {
         auto &var = io->DefineVariable<int16_t>(varName, shape, start, count,
                                                 constantDims);
+        }
+        else
+        {
+            auto &var = io->DefineVariable<int16_t>(
+                varName, {adios2::LocalValueDim});
+        }
     }
     else if (strcmp(type, "uint16_t") == 0)
     {
+         if (!isLocalValue)
+        {
         auto &var = io->DefineVariable<uint16_t>(varName, shape, start, count,
                                                  constantDims);
+        }
+        else
+        {
+            auto &var = io->DefineVariable<uint16_t>(
+                varName, {adios2::LocalValueDim});
+        }
     }
     else if (strcmp(type, "int32_t") == 0)
     {
+         if (!isLocalValue)
+        {
         auto &var = io->DefineVariable<int32_t>(varName, shape, start, count,
                                                 constantDims);
+        }
+        else
+        {
+            auto &var = io->DefineVariable<int32_t>(
+                varName, {adios2::LocalValueDim});
+        }
     }
     else if (strcmp(type, "uint32_t") == 0)
     {
+         if (!isLocalValue)
+        {
         auto &var = io->DefineVariable<uint32_t>(varName, shape, start, count,
                                                  constantDims);
+        }
+        else
+        {
+            auto &var = io->DefineVariable<uint32_t>(
+                varName, {adios2::LocalValueDim});
+        }
     }
     else if (strcmp(type, "int64_t") == 0)
     {
+         if (!isLocalValue)
+        {
         auto &var = io->DefineVariable<int64_t>(varName, shape, start, count,
                                                 constantDims);
+        }
+        else
+        {
+            auto &var = io->DefineVariable<int64_t>(
+                varName, {adios2::LocalValueDim});
+        }
     }
     else if (strcmp(type, "uint64_t") == 0)
     {
+         if (!isLocalValue)
+        {
         auto &var = io->DefineVariable<uint64_t>(varName, shape, start, count,
                                                  constantDims);
+        }
+        else
+        {
+            auto &var = io->DefineVariable<uint64_t>(
+                varName, {adios2::LocalValueDim});
+        }
     }
     else if (strcmp(type, "float") == 0)
     {
+         if (!isLocalValue)
+        {
         auto &var = io->DefineVariable<float>(varName, shape, start, count,
                                               constantDims);
-        std::cout << "Defined variable of type: " << type << std::endl;
+        }
+        else
+        {
+            auto &var = io->DefineVariable<float>(
+                varName, {adios2::LocalValueDim});
+        }
+        // std::cout << "Defined variable of type: " << type << std::endl;
     }
     else if (strcmp(type, "double") == 0)
     {
+         if (!isLocalValue)
+        {
         auto &var = io->DefineVariable<double>(varName, shape, start, count,
                                                constantDims);
-        std::cout << "Defined variable of type: " << type << std::endl;
+        }
+        else
+        {
+            auto &var = io->DefineVariable<double>(
+                varName, {adios2::LocalValueDim});
+        }
+        // std::cout << "Defined variable of type: " << type << std::endl;
     }
     else if (strcmp(type, "long double") == 0)
     {
+         if (!isLocalValue)
+        {
         auto &var = io->DefineVariable<long double>(varName, shape, start,
                                                     count, constantDims);
-        std::cout << "Defined variable of type: " << type << std::endl;
+        }
+        else
+        {
+            auto &var = io->DefineVariable<long double>(
+                varName, {adios2::LocalValueDim});
+        }
+        // std::cout << "Defined variable of type: " << type << std::endl;
     }
     else if (strcmp(type, "complex float") == 0)
     {
+         if (!isLocalValue)
+        {
         auto &var = io->DefineVariable<std::complex<float>>(
             varName, shape, start, count, constantDims);
-        std::cout << "Defined variable of type: " << type << std::endl;
+        }
+        else
+        {
+            auto &var = io->DefineVariable<std::complex<float>>(
+                varName, {adios2::LocalValueDim});
+        }
+        // std::cout << "Defined variable of type: " << type << std::endl;
     }
     else if (strcmp(type, "complex double") == 0)
     {
+         if (!isLocalValue)
+        {
         auto &var = io->DefineVariable<std::complex<double>>(
             varName, shape, start, count, constantDims);
-        std::cout << "Defined variable of type: " << type << std::endl;
+        }
+        else
+        {
+            auto &var = io->DefineVariable<std::complex<double>>(
+                varName, {adios2::LocalValueDim});
+        }
+        // std::cout << "Defined variable of type: " << type << std::endl;
     }
 
     // std::map<std::string, Params> varMap = io->GetAvailableVariables();
@@ -280,6 +391,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
     char *varTypePtr;
     std::string varType;
 
+    bool localValue;
     bool *isConstantDims;
     bool *isReadAsJoined;
     bool *isReadAsLocalValue;
@@ -403,20 +515,22 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
             std::cout << "count: " << count.front() << std::endl;
             std::cout << "numberSteps: " << *numberSteps << std::endl;
         }
-        // FIXME: localValueDim is screwing everything up
-        if (strcmp(varName, "time") == 0)
-        {
-            std::cout << "\n FIXME: time\n" << std::endl;
-        }
-        else
-        {
 
-            DBDefineVariableInInit(io, varName, varType, shape, start, count,
-                                   *isConstantDims);
-            DBInitVariable(io, engine, nameSpace, varName, blocks, *numberSteps,
-                           *shapeID, *isReadAsJoined, *isReadAsLocalValue,
-                           *isRandomAccess, *isSingleValue);
+        if (*shapeID == ShapeID::LocalValue)
+        {
+            localValue = true;
         }
+        // // FIXME: localValueDim is screwing everything up
+        // if (strcmp(varName, "time") == 0)
+        // {
+        //     std::cout << "\n FIXME: time\n" << std::endl;
+        // }
+
+        DBDefineVariableInInit(io, varName, varType, shape, start, count,
+                               *isConstantDims, localValue);
+        DBInitVariable(io, engine, nameSpace, varName, blocks, *numberSteps,
+                       *shapeID, *isReadAsJoined, *isReadAsLocalValue,
+                       *isRandomAccess, *isSingleValue);
         if (*numberSteps > 0)
         {
             g_free(*tmpblocks);

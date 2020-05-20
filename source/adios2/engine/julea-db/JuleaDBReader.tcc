@@ -167,6 +167,7 @@ void JuleaDBReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
                               entryID);
     if (variable.m_SingleValue)
     {
+        //FIXME: get Value from DB
         std::cout << "Single value" << std::endl;
         return;
     }

@@ -23,7 +23,7 @@ namespace engine
 
 void DBDefineVariableInInit(core::IO *io, const std::string varName,
                             std::string type, Dims shape, Dims start,
-                            Dims count, bool constantDims);
+                            Dims count, bool constantDims, bool isLocalValue);
 
 void CheckSchemas();
 
