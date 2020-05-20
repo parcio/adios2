@@ -104,7 +104,7 @@ void caculateMeanBlockTime()
     mean = (sumTimes / getBlockDelta.size()) / 1000000;
     // std::cout << "Average time to read a block: " << mean << " ms"
               // << std::endl;
-    std::cout << "Block \t" << mean << std::endl;
+    // std::cout << "Block \t" << mean << std::endl;
 }
 
 void caculateMeanGetsTime()
@@ -119,7 +119,7 @@ void caculateMeanGetsTime()
     mean = (sumTimes / getsDelta.size()) / 1000000;
     // std::cout << "Average time to get all blocks: " << mean << " ms"
               // << std::endl;
-    std::cout << "AllBl \t" << mean << std::endl;
+    // std::cout << "AllBl \t" << mean << std::endl;
 }
 
 void calculateStatistics()
@@ -133,7 +133,8 @@ void calculateStatistics()
 
     // std::cout << "Time from open to close: " << timeOpenClose.count() << " ms"
     //           << std::endl;
-    // std::cout << "step duration: " << timeStep.count() << " ms" << std::endl;
+    std::cout << "Step \t" << timeStep.count() << std::endl;
+    std::cout << "SumIO \t" << timeOpenClose.count() << std::endl;
     // std::cout << "complete read time: " << timeGets.count() << " ms"
     //           << std::endl;
     // std::cout << "read block time: " << timeGetBlocks.count() << " ms"
@@ -258,9 +259,9 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
         endStep = Clock::now();
         reader.Close();
         endOpen = Clock::now();
-        calculateStatistics();
         caculateMeanBlockTime();
         caculateMeanGetsTime();
+        calculateStatistics();
         fileCount++;
     } // end for files loop
 }
