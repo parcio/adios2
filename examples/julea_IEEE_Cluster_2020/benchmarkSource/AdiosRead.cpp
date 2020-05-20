@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <vector>
+#include "AdiosRead.h"
 
 using Clock = std::chrono::steady_clock;
 using std::chrono::time_point;
@@ -29,10 +30,10 @@ time_point<Clock> startGets;
 time_point<Clock> startGetBlock;
 
 std::vector<time_point<Clock>> getBlockTimes;
-std::vector<milliseconds> getBlockDelta;
 milliseconds blockDelta;
-std::vector<milliseconds> getsDelta;
 milliseconds getDelta;
+std::vector<milliseconds> getBlockDelta;
+std::vector<milliseconds> getsDelta;
 
 time_point<Clock> endGetBlock;
 time_point<Clock> endGets;
@@ -101,8 +102,9 @@ void caculateMeanBlockTime()
         // std::cout << "getBlockDelta: " << times.count() << std::endl;
     }
     mean = (sumTimes / getBlockDelta.size()) / 1000000;
-    std::cout << "Average time to read a block: " << mean << " ms"
-              << std::endl;
+    // std::cout << "Average time to read a block: " << mean << " ms"
+              // << std::endl;
+    std::cout << "Block \t" << mean << std::endl;
 }
 
 void caculateMeanGetsTime()
@@ -115,8 +117,9 @@ void caculateMeanGetsTime()
         // std::cout << "getsDelta: " << times.count() << std::endl;
     }
     mean = (sumTimes / getsDelta.size()) / 1000000;
-    std::cout << "Average time to get all blocks: " << mean << " ms"
-              << std::endl;
+    // std::cout << "Average time to get all blocks: " << mean << " ms"
+              // << std::endl;
+    std::cout << "AllBl \t" << mean << std::endl;
 }
 
 void calculateStatistics()
@@ -128,19 +131,19 @@ void calculateStatistics()
     milliseconds timeGetBlocks =
         duration_cast<milliseconds>(endGetBlock - startGetBlock);
 
-    std::cout << "Time from open to close: " << timeOpenClose.count() << " ms"
-              << std::endl;
-    std::cout << "step duration: " << timeStep.count() << " ms" << std::endl;
-    std::cout << "complete read time: " << timeGets.count() << " ms"
-              << std::endl;
-    std::cout << "read block time: " << timeGetBlocks.count() << " ms"
-              << std::endl;
+    // std::cout << "Time from open to close: " << timeOpenClose.count() << " ms"
+    //           << std::endl;
+    // std::cout << "step duration: " << timeStep.count() << " ms" << std::endl;
+    // std::cout << "complete read time: " << timeGets.count() << " ms"
+    //           << std::endl;
+    // std::cout << "read block time: " << timeGetBlocks.count() << " ms"
+    //           << std::endl;
 }
 
 void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
                uint32_t variablesToRead)
 {
-    std::cout << "AdiosRead" << std::endl;
+    // std::cout << "AdiosRead" << std::endl;
     size_t fileCount = 0; // loop counter
     std::string varName;
     std::vector<std::string> files;
@@ -183,7 +186,7 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
             // TODO: maybe use SetStepSelection before Step loop
             varName = var.first;
             adios2::Params params = var.second;
-            std::cout << "\nvarName: " << varName << std::endl;
+            // std::cout << "\nvarName: " << varName << std::endl;
 
             if (strcmp(varName.c_str(),"time")==0)
             {
@@ -207,7 +210,7 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
         {                                                                      \
             auto blocksInfo = reader.BlocksInfo(variable, step);               \
                                                                                \
-            if (true)                                                          \
+            if (false)                                                          \
             {                                                                  \
                 std::cout << "type: " << type << std::endl;                    \
                 std::cout << "shape size: " << variable.Shape().size()         \
@@ -247,7 +250,7 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
             ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
             varCount++;
-            std::cout << "-------------------------" << std::endl;
+            // std::cout << "-------------------------" << std::endl;
         } // end for varMap loop
 
         reader.PerformGets();

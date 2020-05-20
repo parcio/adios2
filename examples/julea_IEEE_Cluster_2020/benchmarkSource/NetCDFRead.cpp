@@ -103,7 +103,7 @@ template <>
 void transformValues<int16_t>(std::string varName, netCDF::NcVar variable,
                               int16_t *data, size_t dataSize, float *data2)
 {
-    std::cout << "--- transformValues " << std::endl;
+    // std::cout << "--- transformValues " << std::endl;
 
     auto varAttrMap = variable.getAtts();
     auto parentGroup = variable.getParentGroup();
@@ -121,8 +121,8 @@ void transformValues<int16_t>(std::string varName, netCDF::NcVar variable,
     scaleFactor.getValues(&scale);
     offSet.getValues(&offset);
 
-    std::cout << "scale: " << scale << std::endl;
-    std::cout << "offset: " << offset << std::endl;
+    // std::cout << "scale: " << scale << std::endl;
+    // std::cout << "offset: " << offset << std::endl;
 
     auto numberElements = dataSize / sizeof(short);
     // std::cout << "numberElements: " << numberElements << std::endl;
@@ -135,8 +135,8 @@ void transformValues<int16_t>(std::string varName, netCDF::NcVar variable,
         std::string adiosType = "int16_t";
 
         data2[i] = (float) (data[i] * scale + offset);
-        std::cout << "data1: " << data[i] << std::endl;
-        std::cout << "data2: " << data2[i] << std::endl;
+        // std::cout << "data1: " << data[i] << std::endl;
+        // std::cout << "data2: " << data2[i] << std::endl;
     }
 }
 
@@ -327,7 +327,7 @@ void NCReadFile(std::string engine, std::string ncFileName,
                     ncStart[0] = i;
                     variable.getVar(ncStart, ncCount, data);
                     transformValues(name, variable, data, dataSize, data2);
-                    std::cout << "data2: " << data2[0] << std::endl;
+                    // std::cout << "data2: " << data2[0] << std::endl;
                     writer.Put<float>(adiosVar, data2, adios2::Mode::Deferred);
                 }
                 writer.PerformPuts();

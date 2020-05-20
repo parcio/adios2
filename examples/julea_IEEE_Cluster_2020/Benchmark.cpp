@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
             // read
             if (adios || julea)
             {
-                std::cout << "Reached" << std::endl;
+                // std::cout << "Reached" << std::endl;
                 AdiosRead(name, path, numberFilesToRead, percentVarsToRead);
             }
             // else if (julea)
