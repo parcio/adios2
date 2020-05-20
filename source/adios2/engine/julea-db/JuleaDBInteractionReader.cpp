@@ -901,8 +901,7 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
         info->Max = *max;
         j_db_iterator_get_field(iterator, "isValue", &type,
                                 (gpointer *)&isValue, &db_length, NULL);
-                    std::cout << "info->Min: " << info->Min << std::endl;
-            std::cout << "info->Max: " << info->Max << std::endl;
+
         info->IsValue = *isValue;
         if (isValue)
         {
