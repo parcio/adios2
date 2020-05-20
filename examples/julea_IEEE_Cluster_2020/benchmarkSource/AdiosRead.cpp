@@ -93,34 +93,20 @@ void AdiosReadMinMax(std::string path, std::string variableName)
 
 void caculateMeanBlockTime()
 {
-    // milliseconds sumTimes;
-    size_t sumTimes2;
-    // milliseconds mean;
-    // milliseconds mean3;
-    size_t mean2;
+    size_t sumTimes;
+    size_t mean;
     for (auto &times : getBlockDelta)
     {
-        // sumTimes += times;
-        sumTimes2 += times.count();
+        sumTimes += times.count();
         // std::cout << "getBlockDelta: " << times.count() << std::endl;
-        // std::cout << "getBlockDelta: " << times << std::endl;
     }
-    // std::cout << "sumTimes: " << sumTimes.count() << std::endl;
-    std::cout << "getBlockDelta.size: " << getBlockDelta.size() << std::endl;
-    // mean = duration_cast<milliseconds>(sumTimes / getBlockDelta.size());
-    // mean3 = duration_cast<milliseconds>(sumTimes2 / getBlockDelta.size());
-    mean2 = (sumTimes2 / getBlockDelta.size()) / 1000000;
-    // std::cout << "Average time to read a block: " << mean.count() << " ms" <<
-    // std::endl;
-    std::cout << " Average time to read a block: " << mean2 << " ms"
+    mean = (sumTimes / getBlockDelta.size()) / 1000000;
+    std::cout << "Average time to read a block: " << mean << " ms"
               << std::endl;
-    // std::cout << "3 Average time to read a block: " << mean3.count() << " ms"
-    // << std::endl;
 }
 
 void caculateMeanGetsTime()
 {
-    // milliseconds sumTimes;
     size_t sumTimes;
     size_t mean;
     for (auto &times : getsDelta)
@@ -128,12 +114,9 @@ void caculateMeanGetsTime()
         sumTimes += times.count();
         // std::cout << "getsDelta: " << times.count() << std::endl;
     }
-    std::cout << "getsDelta.size: " << getsDelta.size() << std::endl;
     mean = (sumTimes / getsDelta.size()) / 1000000;
-    std::cout << " Average time to get all blocks: " << mean << " ms"
+    std::cout << "Average time to get all blocks: " << mean << " ms"
               << std::endl;
-    // std::cout << "3 Average time to read a block: " << mean3.count() << " ms"
-    // << std::endl;
 }
 
 void calculateStatistics()
