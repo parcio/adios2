@@ -65,7 +65,7 @@ size_t getTime(std::ofstream &outputFile, std::vector<milliseconds> &delta)
     for (auto &times : delta)
     {
         sumTimes += times.count();
-        // std::cout << "delta: " << times.count() << std::endl;
+        std::cout << "delta: " << times.count() << std::endl;
     }
     // mean = (sumTimes / delta.size());
     return sumTimes;
@@ -595,7 +595,7 @@ void NCReadFile(std::string engine, std::string ncFileName,
         NCcalculateMeanTime(outputFile, putsDelta, true);
 
         size_t ncTime = getTime(outputFile, ncGetDeltaVector);
-        // std::cout << "ncTime: " << ncTime << std::endl;
+        std::cout << "ncTime: " << ncTime << std::endl;
         sumNcGetDeltaVector.push_back(ncTime);
 
         putsDelta.clear();
