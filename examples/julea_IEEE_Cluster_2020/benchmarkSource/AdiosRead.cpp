@@ -26,22 +26,61 @@ using std::chrono::time_point;
 using std::chrono::duration_cast;
 using std::chrono::milliseconds;
 
-time_point<Clock> startOpen;
-time_point<Clock> startStep;
-time_point<Clock> startGets;
-time_point<Clock> startGetBlock;
+time_point<Clock> startOpen; //start time of complete I/O
+time_point<Clock> startStep; //start time of step
+time_point<Clock> startGets; //start time of reading all blocks
+time_point<Clock> startGetBlock; //start time of reading block
 
-std::vector<time_point<Clock>> getBlockTimes;
-milliseconds blockDelta;
-milliseconds getDelta;
-std::vector<milliseconds> getBlockDelta;
-std::vector<milliseconds> getsDelta;
+time_point<Clock> endGetBlock; //end time of reading block
+time_point<Clock> endGets; //end time of reading all blocks
+time_point<Clock> endStep; //end time of step
+time_point<Clock> endOpen; //end time of complete I/O
 
-time_point<Clock> endGetBlock;
-time_point<Clock> endGets;
-time_point<Clock> endStep;
-time_point<Clock> endOpen;
+milliseconds blockDelta;    //time interval to read one block
+milliseconds getDelta;      //time interval to read all blocks
 
+std::vector<milliseconds> getBlockDelta; //all times intervals to read a block
+std::vector<milliseconds> getsDelta; //all times intervals to read all blocks
+
+void buildDebugFileName(std::string &fileName,std::string engineName, std::string path, size_t filesToRead,
+               uint32_t variablesToRead, std::time_t &curr_time)
+{
+     std::ofstream outputFile;
+    auto currentTime = std::chrono::system_clock::now();
+    curr_time = std::chrono::system_clock::to_time_t(currentTime);
+
+    char timeBuffer[80];
+    std::tm *timeinfo;
+    timeinfo = localtime(&curr_time);
+    strftime (timeBuffer,80,"-%Y-%m-%d-%I:%M%p",timeinfo);
+
+    fileName = engineName + "-" + path + "-" + std::to_string(filesToRead) + "-"+ std::to_string(variablesToRead) + timeBuffer + ".txt";
+}
+
+void printDebugHeader(std::ofstream &outputFile, std::time_t curr_time)
+{
+    outputFile << "--- AdiosRead ---" << std::endl;
+    outputFile << "Current time: " <<  std::ctime(&curr_time);
+    outputFile << "\nvariableName \n" <<
+    "BlkCnt: \tBlock count \n" <<
+    "Block:  \tAverage time to read block in ms \n" <<
+    "AllBl:  \tTime to read all blocks in ms \n\n" <<
+    "Step:   \tTime for a step in ms\n" <<
+    "SumIO:  \tTime for complete I/O in ms\n"  << std::endl;
+    outputFile << "-------------------------------" << std::endl;
+}
+
+/**
+ * Read the passed directory.
+ * Ignores . and ..
+ * Checks for .dir directories from bp3 file fomat.
+ * These cannot be read directly by BP3 (nor by any other engine).
+ * BP3 needs only the .bp file as an input.
+ * BP4 needs only the .bp directory as an input.
+ * @param path       directory path
+ * @param v          stores all file paths insides
+ * @param outputFile file to write debug output to
+ */
 void readDirectory(const std::string &path, std::vector<std::string> &v, std::ofstream &outputFile)
 {
     DIR *dirPtr = opendir(path.c_str());
@@ -71,6 +110,13 @@ void readDirectory(const std::string &path, std::vector<std::string> &v, std::of
     closedir(dirPtr);
 }
 
+/**
+ * Reads the Input.
+ * Checks whether the path is a file or directory (or anything else)
+ * @param path       passed path
+ * @param files      stores all file paths insides
+ * @param outputFile file to write debug output to
+ */
 void readInput(const std::string &path, std::vector<std::string> &files, std::ofstream &outputFile)
 {
 
@@ -100,6 +146,7 @@ void readInput(const std::string &path, std::vector<std::string> &files, std::of
         // error
         std::cerr << "Reading directory failed!" << std::endl;
     }
+    outputFile << "-------------------------------" << std::endl;
 }
 
 void AdiosReadMinMax(std::string path, std::string variableName)
@@ -107,6 +154,10 @@ void AdiosReadMinMax(std::string path, std::string variableName)
     std::cout << "AdiosReadMinMax" << std::endl;
 }
 
+/**
+ * Calculate the mean time it takes to read one block.
+ * @param outputFile file to write debug output to
+ */
 void caculateMeanBlockTime(std::ofstream &outputFile)
 {
     size_t sumTimes = 0;
@@ -122,6 +173,10 @@ void caculateMeanBlockTime(std::ofstream &outputFile)
     outputFile << "Block \t" << mean << std::endl;
 }
 
+/**
+ * Calculate the mean time it takes to read all blocks.
+ * @param outputFile file to write debug output to
+ */
 void caculateMeanGetsTime(std::ofstream &outputFile)
 {
     size_t sumTimes = 0 ;
@@ -137,14 +192,16 @@ void caculateMeanGetsTime(std::ofstream &outputFile)
     outputFile << "AllBl \t" << mean << std::endl;
 }
 
-void calculateStatistics(std::ofstream &outputFile)
+//TODO: calculate mean for step interval
+/**
+ * Calculate the time interval for a step and the complete I/O
+ * @param outputFile [description]
+ */
+void calculateIOTime(std::ofstream &outputFile)
 {
     milliseconds timeOpenClose =
         duration_cast<milliseconds>(endOpen - startOpen);
     milliseconds timeStep = duration_cast<milliseconds>(endStep - startStep);
-    milliseconds timeGets = duration_cast<milliseconds>(endGets - startGets);
-    milliseconds timeGetBlocks =
-        duration_cast<milliseconds>(endGetBlock - startGetBlock);
 
     outputFile << "\nStep \t" << timeStep.count() << std::endl;
     outputFile << "SumIO \t" << timeOpenClose.count() << std::endl;
@@ -153,71 +210,29 @@ void calculateStatistics(std::ofstream &outputFile)
     std::cout << "SumIO \t" << timeOpenClose.count() << std::endl;
 }
 
-void buildDebugFileName(std::string &fileName,std::string engineName, std::string path, size_t filesToRead,
-               uint32_t variablesToRead, std::time_t &curr_time)
-{
-     std::ofstream outputFile;
-    auto currentTime = std::chrono::system_clock::now();
-    // std::time_t curr_time = std::chrono::system_clock::to_time_t(currentTime);
-    curr_time = std::chrono::system_clock::to_time_t(currentTime);
-
-    char timeBuffer[80];
-    std::tm *timeinfo;
-    timeinfo = localtime(&curr_time);
-    strftime (timeBuffer,80,"-%Y-%m-%d-%I:%M%p",timeinfo);
-
-    fileName = engineName + "-" + path + "-" + std::to_string(filesToRead) + "-"+ std::to_string(variablesToRead) + timeBuffer + ".txt";
-}
-
-void printDebugHeader(std::ofstream &outputFile, std::time_t curr_time)
-{
-    outputFile << "--- AdiosRead ---" << std::endl;
-    outputFile << "Current time: " <<  std::ctime(&curr_time);
-    outputFile << "\nvariableName \n" <<
-    "BlkCnt: \tBlock count \n" <<
-    "Block:  \tAverage time to read block in ms \n" <<
-    "AllBl:  \tTime to read all blocks in ms \n\n" <<
-    "Step:   \tTime for a step in ms\n" <<
-    "SumIO:  \tTime for complete I/O in ms\n"  << std::endl;
-}
-
+/**
+ * Read all passed files with the passed engine.
+ * @param engineName      engine Reader
+ * @param path            directory or file to read
+ * @param filesToRead     number of files to read
+ * @param variablesToRead number of variables to read
+ */
 void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
                uint32_t variablesToRead)
 {
     std::ofstream outputFile;
-    // auto currentTime = std::chrono::system_clock::now();
-    // std::time_t curr_time = std::chrono::system_clock::to_time_t(currentTime);
-
-    // char timeBuffer[80];
-    // std::tm *timeinfo;
-    // timeinfo = localtime(&curr_time);
-    // strftime (timeBuffer,80,"-%Y-%m-%d-%I:%M%p",timeinfo);
-
-    // std::string debugFileName = engineName + "-" + path + "-" + std::to_string(filesToRead) + "-"+ std::to_string(variablesToRead) + timeBuffer + ".txt";
     std::time_t curr_time;
     std::string debugFileName;
-    buildDebugFileName(debugFileName, engineName, path, filesToRead, variablesToRead, curr_time);
-    // std::cout << "debugFileName: " << debugFileName << std::endl;
 
+    buildDebugFileName(debugFileName, engineName, path, filesToRead, variablesToRead, curr_time);
     outputFile.open(debugFileName);
     printDebugHeader(outputFile, curr_time);
-
-    // outputFile << "--- AdiosRead ---" << std::endl;
-    // outputFile << "Current time: " <<  std::ctime(&curr_time);
-    // outputFile << "\nvariableName \n" <<
-    // "BlkCnt: \tBlock count \n" <<
-    // "Block:  \tAverage time to read block in ms \n" <<
-    // "AllBl:  \tTime to read all blocks in ms \n\n" <<
-    // "Step:   \tTime for a step in ms\n" <<
-    // "SumIO:  \tTime for complete I/O in ms\n"  << std::endl;
 
     size_t fileCount = 0; // loop counter
     std::string varName;
     std::vector<std::string> files;
 
-        outputFile << "-------------------------------" << std::endl;
     readInput(path, files, outputFile);
-        outputFile << "-------------------------------" << std::endl;
 
     adios2::ADIOS adios(adios2::DebugON);
 
@@ -233,8 +248,6 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
         outputFile << "\n-------------------------------" << std::endl;
         outputFile << "ioName: " << ioName  << std::endl;
 
-
-        // adios2::IO io = adios.DeclareIO("Output");
         adios2::IO io = adios.DeclareIO(ioName);
         io.SetEngine(engineName);
         outputFile << "FileName: " << file << std::endl;
@@ -242,13 +255,13 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
         size_t steps = 0;
         size_t varCount = 0; // loop couner
 
-        startOpen = Clock::now();
-        // adios2::Engine reader = io.Open(files[2], adios2::Mode::Read);
+        startOpen = Clock::now(); //start time complete I/O
+
         adios2::Engine reader = io.Open(file, adios2::Mode::Read);
         auto varMap = io.AvailableVariables();
 
         reader.BeginStep(adios2::StepMode::Read);
-        startStep = Clock::now();
+        startStep = Clock::now(); //start stime of step
 
         for (const auto &var : varMap)
         {
@@ -328,18 +341,19 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
             ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
             varCount++;
-            // std::cout << "-------------------------" << std::endl;
         caculateMeanBlockTime(outputFile);
         caculateMeanGetsTime(outputFile);
+
         } // end for varMap loop
+
         reader.PerformGets();
         reader.EndStep();
         endStep = Clock::now();
+
         reader.Close();
         endOpen = Clock::now();
 
-        calculateStatistics(outputFile);
+        calculateIOTime(outputFile);
         fileCount++;
     } // end for files loop
 }
-// std::cout << "front: " << dataSet[i].front() << std::endl;     \
