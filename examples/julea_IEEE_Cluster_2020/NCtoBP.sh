@@ -1,4 +1,5 @@
 #! /usr/bin/env bash
+engines="bp3 bp4 julea-kv julea-db"
 
 declare -A ending
 declare -A result
@@ -17,7 +18,7 @@ do
 		# 	read fileCount often varCount many vars from engine-Files
 		result[$engine]="$(./path -d $file -f $outfile -n $engine -t )\t"
 	done
-	echo -e "$fileCount\t $varCount\t ${result[*]}"
+	echo -e "$engine\t $file\t ${result[*]}"
 	# echo -e "$interline\t $iteration\t ${result[*]}"
 done
 
