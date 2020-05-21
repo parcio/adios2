@@ -21,6 +21,7 @@ do
 		for engine in $engines
 		do
 			outfile=/tmp/AdiosReadBenchmark/$engine-$fileCount-$varCount.${ending[$engine]}
+
 			#outfile=$engine-$interline-$iteration.${ending[$engine]}
 			# 100 nach $iteration für checkpoints in jeder
 			# iteration (100%)
@@ -29,6 +30,7 @@ do
 			# 	$outfile $engine | grep I/O | tr -d ' ' | \
 			# 	tr -d 's' | cut -d : -f 2)\t"
 			# 	read fileCount often varCount many vars from engine-Files
+
 			result[$engine]="$(./bin/BENCHMARK -d $engine-Files -c $fileCount -p $varCount -n $engine -s2 )\t"
 		done
 		echo -e "$fileCount\t $varCount\t ${result[*]}"
