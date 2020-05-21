@@ -325,7 +325,7 @@ void NCReadFile(std::string engine, std::string ncFileName,
 
     adios2::IO io = adios.DeclareIO("Output");
     io.SetEngine(engine);
-    std::cout << "adiosFileName: " << adiosFileName << std::endl;
+   // std::cout << "adiosFileName: " << adiosFileName << std::endl;
 
     startOpen = Clock::now(); // start time complete I/O
 
@@ -552,5 +552,5 @@ void NCReadFile(std::string engine, std::string ncFileName,
     outputFile << "SumIO \t" << timeOpenClose.count() << std::endl;
     outputFile << "-------------------------------\n" << std::endl;
 
-    std::cout << "SumIO \t" << timeOpenClose.count() << std::endl;
+    std::cout << timeOpenClose.count() << std::endl;
 }
