@@ -58,6 +58,31 @@ void NCprintDebugHeader(std::ofstream &outputFile, std::time_t curr_time,
     outputFile << "-------------------------------" << std::endl;
 }
 
+void NCcalculateMeanTime(std::ofstream &outputFile,
+                         std::vector<milliseconds> &delta, bool allBlocks)
+{
+    size_t sumTimes = 0;
+    size_t mean = 0;
+    for (auto &times : delta)
+    {
+        sumTimes += times.count();
+        // std::cout << "delta: " << times.count() << std::endl;
+    }
+    mean = (sumTimes / delta.size());
+    // std::cout << "sumTimes: " << sumTimes << std::endl;
+    // std::cout << "getsDelta.size(): " << delta.size() << std::endl;
+    if (allBlocks)
+    {
+        // std::cout << "AllBl \t" << mean << std::endl;
+        outputFile << "AllBl \t" << mean << std::endl;
+    }
+    else
+    {
+        // std::cout << "Block \t" << mean << std::endl;
+        outputFile << "Block \t" << mean << std::endl;
+    }
+}
+
 std::string mapNCTypeToAdiosType(size_t typeID)
 {
     const char *type;
@@ -312,6 +337,8 @@ void NCReadFile(std::string engine, std::string ncFileName,
 
         std::string name = var.first;
         netCDF::NcVar variable = var.second;
+        std::cout << "\n " << name << std::endl;
+            outputFile << "\n " << name << std::endl;
 
         netCDF::NcType type = variable.getType();
         auto typeID = type.getId();
@@ -416,7 +443,7 @@ void NCReadFile(std::string engine, std::string ncFileName,
             adiosVar = io.DefineVariable<float>(name, shape, start, count);
             int16_t data[dataSize];
             float data2[dataSize];
-
+             outputFile << "BlkCnt \t" << numberSteps << std::endl;       \
             startPuts = Clock::now();
             if (hasSteps)
             {
@@ -509,12 +536,21 @@ void NCReadFile(std::string engine, std::string ncFileName,
 #undef declare_type
 
         ++varCount;
+
+        NCcalculateMeanTime(outputFile, putBlockDelta, false);
+        NCcalculateMeanTime(outputFile, putsDelta, true);
+
+        putsDelta.clear();
+        putBlockDelta.clear();
     }
     writer.Close();
     endOpen = Clock::now();
+
     milliseconds timeOpenClose =
         duration_cast<milliseconds>(endOpen - startOpen);
+
     outputFile << "SumIO \t" << timeOpenClose.count() << std::endl;
     outputFile << "-------------------------------\n" << std::endl;
+
     std::cout << "SumIO \t" << timeOpenClose.count() << std::endl;
 }
