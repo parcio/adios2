@@ -611,7 +611,6 @@ void NCReadFile(std::string engine, std::string ncFileName,
         sumNcTimes += time;
         // std::cout << "delta: " << times.count() << std::endl;
     }
-    std::cout << "sumNcTimes: " << sumNcTimes << std::endl;
 
     milliseconds timeOpenClose =
         duration_cast<milliseconds>(endOpen - startOpen);
@@ -622,6 +621,5 @@ void NCReadFile(std::string engine, std::string ncFileName,
     outputFile << "sumIOWithoutNc \t" << sumIOWithoutNc << std::endl;
     outputFile << "-------------------------------\n" << std::endl;
 
-    std::cout << timeOpenClose.count() << std::endl;
-    std::cout << sumIOWithoutNc << std::endl;
+    std::cout << "complete:"<< timeOpenClose.count() << "nc: " << sumNcTimes<< "without nc: "<< sumIOWithoutNc << std::endl;
 }
