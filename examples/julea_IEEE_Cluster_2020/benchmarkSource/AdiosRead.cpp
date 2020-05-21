@@ -89,8 +89,18 @@ void readDirectory(const std::string &path, std::vector<std::string> &v,
             outputFile << "something.dir that is ignored" << std::endl;
             continue;
         }
-
+            //this should only apply to bp4 files.
+            //bp3 has .dir directories and bp files
+        else if(slen >= 3 && file.compare(slen -3,3,".bp")==0)
+        {
+            completeFileName = path;
+        }
+        else
+        {
+            //Hopefully no BP4 file...
         completeFileName = path + "/" + dirEntry->d_name;
+        }
+
         v.push_back(completeFileName);
 
         outputFile << completeFileName << std::endl;
@@ -237,15 +247,15 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
     std::string varName;
     std::vector<std::string> files;
 
-    // readInput(path, files, outputFile);
-    files.push_back("Test.bp");
-    std::cout << "DEBUG 1" << std::endl;
+    readInput(path, files, outputFile);
+    // files.push_back("Test.bp");
+    // std::cout << "DEBUG 1" << std::endl;
 
     adios2::ADIOS adios(adios2::DebugON);
 
     for (auto &file : files)
     {
-    std::cout << "DEBUG 2" << std::endl;
+    // std::cout << "DEBUG 2" << std::endl;
         if (filesToRead == fileCount)
         {
             outputFile << "filesToRead: " << filesToRead
