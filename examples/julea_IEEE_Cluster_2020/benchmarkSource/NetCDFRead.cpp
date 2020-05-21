@@ -337,7 +337,7 @@ void NCReadFile(std::string engine, std::string ncFileName,
 
         std::string name = var.first;
         netCDF::NcVar variable = var.second;
-        std::cout << "\n " << name << std::endl;
+        // std::cout << "\n " << name << std::endl;
             outputFile << "\n " << name << std::endl;
 
         netCDF::NcType type = variable.getType();
