@@ -26,47 +26,50 @@ using std::chrono::time_point;
 using std::chrono::duration_cast;
 using std::chrono::milliseconds;
 
-time_point<Clock> startOpen; //start time of complete I/O
-time_point<Clock> startStep; //start time of step
-time_point<Clock> startGets; //start time of reading all blocks
-time_point<Clock> startGetBlock; //start time of reading block
+time_point<Clock> startOpen;     // start time of complete I/O
+time_point<Clock> startStep;     // start time of step
+time_point<Clock> startGets;     // start time of reading all blocks
+time_point<Clock> startGetBlock; // start time of reading block
 
-time_point<Clock> endGetBlock; //end time of reading block
-time_point<Clock> endGets; //end time of reading all blocks
-time_point<Clock> endStep; //end time of step
-time_point<Clock> endOpen; //end time of complete I/O
+time_point<Clock> endGetBlock; // end time of reading block
+time_point<Clock> endGets;     // end time of reading all blocks
+time_point<Clock> endStep;     // end time of step
+time_point<Clock> endOpen;     // end time of complete I/O
 
-milliseconds blockDelta;    //time interval to read one block
-milliseconds getDelta;      //time interval to read all blocks
+milliseconds blockDelta; // time interval to read one block
+milliseconds getDelta;   // time interval to read all blocks
 
-std::vector<milliseconds> getBlockDelta; //all times intervals to read a block
-std::vector<milliseconds> getsDelta; //all times intervals to read all blocks
+std::vector<milliseconds> getBlockDelta; // all times intervals to read a block
+std::vector<milliseconds> getsDelta; // all times intervals to read all blocks
 
-void buildDebugFileName(std::string &fileName,std::string engineName, std::string path, size_t filesToRead,
-               uint32_t variablesToRead, std::time_t &curr_time)
+void buildDebugFileName(std::string &fileName, std::string engineName,
+                        std::string path, size_t filesToRead,
+                        uint32_t variablesToRead, std::time_t &curr_time)
 {
-     std::ofstream outputFile;
+    std::ofstream outputFile;
     auto currentTime = std::chrono::system_clock::now();
     curr_time = std::chrono::system_clock::to_time_t(currentTime);
 
     char timeBuffer[80];
     std::tm *timeinfo;
     timeinfo = localtime(&curr_time);
-    strftime (timeBuffer,80,"-%Y-%m-%d-%I:%M%p",timeinfo);
+    strftime(timeBuffer, 80, "-%Y-%m-%d-%I:%M%p", timeinfo);
 
-    fileName = engineName + "-" + path + "-" + std::to_string(filesToRead) + "-"+ std::to_string(variablesToRead) + timeBuffer + ".txt";
+    fileName = engineName + "-" + path + "-" + std::to_string(filesToRead) +
+               "-" + std::to_string(variablesToRead) + timeBuffer + ".txt";
 }
 
 void printDebugHeader(std::ofstream &outputFile, std::time_t curr_time)
 {
     outputFile << "--- AdiosRead ---" << std::endl;
-    outputFile << "Current time: " <<  std::ctime(&curr_time);
-    outputFile << "\nvariableName \n" <<
-    "BlkCnt: \tBlock count \n" <<
-    "Block:  \tAverage time to read block in ms \n" <<
-    "AllBl:  \tTime to read all blocks in ms \n\n" <<
-    "Step:   \tTime for a step in ms\n" <<
-    "SumIO:  \tTime for complete I/O in ms\n"  << std::endl;
+    outputFile << "Current time: " << std::ctime(&curr_time);
+    outputFile << "\nvariableName \n"
+               << "BlkCnt: \tBlock count \n"
+               << "Block:  \tAverage time to read block in ms \n"
+               << "AllBl:  \tTime to read all blocks in ms \n\n"
+               << "Step:   \tTime for a step in ms\n"
+               << "SumIO:  \tTime for complete I/O in ms\n"
+               << std::endl;
     outputFile << "-------------------------------" << std::endl;
 }
 
@@ -81,7 +84,8 @@ void printDebugHeader(std::ofstream &outputFile, std::time_t curr_time)
  * @param v          stores all file paths insides
  * @param outputFile file to write debug output to
  */
-void readDirectory(const std::string &path, std::vector<std::string> &v, std::ofstream &outputFile)
+void readDirectory(const std::string &path, std::vector<std::string> &v,
+                   std::ofstream &outputFile)
 {
     DIR *dirPtr = opendir(path.c_str());
     struct dirent *dirEntry;
@@ -117,7 +121,8 @@ void readDirectory(const std::string &path, std::vector<std::string> &v, std::of
  * @param files      stores all file paths insides
  * @param outputFile file to write debug output to
  */
-void readInput(const std::string &path, std::vector<std::string> &files, std::ofstream &outputFile)
+void readInput(const std::string &path, std::vector<std::string> &files,
+               std::ofstream &outputFile)
 {
 
     struct stat s;
@@ -167,9 +172,9 @@ void caculateMeanBlockTime(std::ofstream &outputFile)
         sumTimes += times.count();
         // std::cout << "getBlockDelta: " << times.count() << std::endl;
     }
-    mean = (sumTimes / getBlockDelta.size()) ;
-    // std::cout << "getBlockDelta.size(): " << getBlockDelta.size() << std::endl;
-    // std::cout << "sumTimes: " << sumTimes << std::endl;
+    mean = (sumTimes / getBlockDelta.size());
+    // std::cout << "getBlockDelta.size(): " << getBlockDelta.size() <<
+    // std::endl; std::cout << "sumTimes: " << sumTimes << std::endl;
     outputFile << "Block \t" << mean << std::endl;
 }
 
@@ -179,7 +184,7 @@ void caculateMeanBlockTime(std::ofstream &outputFile)
  */
 void caculateMeanGetsTime(std::ofstream &outputFile)
 {
-    size_t sumTimes = 0 ;
+    size_t sumTimes = 0;
     size_t mean = 0;
     for (auto &times : getsDelta)
     {
@@ -192,10 +197,9 @@ void caculateMeanGetsTime(std::ofstream &outputFile)
     outputFile << "AllBl \t" << mean << std::endl;
 }
 
-//TODO: calculate mean for step interval
 /**
  * Calculate the time interval for a step and the complete I/O
- * @param outputFile [description]
+ * @param outputFile file to write debug output to
  */
 void calculateIOTime(std::ofstream &outputFile)
 {
@@ -212,6 +216,34 @@ void calculateIOTime(std::ofstream &outputFile)
 
 /**
  * Read all passed files with the passed engine.
+ * As the BP files containing the transformed NetCDF data only have one step
+ * currently, there is only one step time interval. So calculating mean time is
+ * not sensible.
+ *
+ * This behaviour of writing the BP files is intentional.
+ * There are two solutions that both are not ideal!
+ *
+ * 1) The NetCDF variables are read in one at a time. To be able to directly
+ * write this data to an ADIOS2 variable steps cannot be used. Otherwise the
+ * variables would have continuous step numbers, because endStep increases the
+ * step counter. So that, e.g. the second variable cannot start at 0 as this
+ * step is already used by the first variable.
+ *
+ * However, the NetCDF variables belong together so separating logically
+ * concurrent data into different steps is not useful. These can start capture
+ * the relationships, so that every first time entry is mapped to blockID one.
+ *
+ * 2) Another possibility would be first read the complete NetCDF data and to
+ * store it for every NetCDF variable in a large buffer, that is written after
+ * reading the complete NetCDF file. As the file sizes easily reach a
+ * significant order such as 30-100 GB temporarily storing all this data is not
+ * feasible. This is why I decided to map the steps of the NetCDF data to ADIOS2
+ * blocks. Since NetCDF has no concept of blocks this is not a problem.
+ *
+ * Maybe using SetStepSelection will help to use steps correctly.
+ * SetBlockSelection works only for reading ADIOS2 variables. So, I am not sure.
+ * Unfortunately, there was no time for detailed testing until now.
+ *
  * @param engineName      engine Reader
  * @param path            directory or file to read
  * @param filesToRead     number of files to read
@@ -224,7 +256,8 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
     std::time_t curr_time;
     std::string debugFileName;
 
-    buildDebugFileName(debugFileName, engineName, path, filesToRead, variablesToRead, curr_time);
+    buildDebugFileName(debugFileName, engineName, path, filesToRead,
+                       variablesToRead, curr_time);
     outputFile.open(debugFileName);
     printDebugHeader(outputFile, curr_time);
 
@@ -241,12 +274,12 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
         if (filesToRead == fileCount)
         {
             outputFile << "filesToRead: " << filesToRead
-                      << " fileCount: " << fileCount << std::endl;
+                       << " fileCount: " << fileCount << std::endl;
             continue;
         }
         std::string ioName = "Output-" + std::to_string(fileCount);
         outputFile << "\n-------------------------------" << std::endl;
-        outputFile << "ioName: " << ioName  << std::endl;
+        outputFile << "ioName: " << ioName << std::endl;
 
         adios2::IO io = adios.DeclareIO(ioName);
         io.SetEngine(engineName);
@@ -255,28 +288,28 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
         size_t steps = 0;
         size_t varCount = 0; // loop couner
 
-        startOpen = Clock::now(); //start time complete I/O
+        startOpen = Clock::now(); // start time complete I/O
 
         adios2::Engine reader = io.Open(file, adios2::Mode::Read);
         auto varMap = io.AvailableVariables();
 
         reader.BeginStep(adios2::StepMode::Read);
-        startStep = Clock::now(); //start stime of step
+        startStep = Clock::now(); // start stime of step
 
         for (const auto &var : varMap)
         {
             if (variablesToRead == varCount)
             {
                 outputFile << "varCount: " << varCount
-                          << " variablesToRead: " << variablesToRead
-                          << std::endl;
+                           << " variablesToRead: " << variablesToRead
+                           << std::endl;
                 continue;
             }
 
             // TODO: maybe use SetStepSelection before Step loop
             varName = var.first;
             adios2::Params params = var.second;
-            outputFile << "\n " << varName << std::endl ;
+            outputFile << "\n " << varName << std::endl;
 
             if (strcmp(varName.c_str(), "time") == 0)
             {
@@ -312,7 +345,7 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
                                                                                \
             std::vector<std::vector<T>> dataSet;                               \
             dataSet.resize(blocksInfo.size());                                 \
-            outputFile << "BlkCnt \t" << blocksInfo.size() << std::endl;\
+            outputFile << "BlkCnt \t" << blocksInfo.size() << std::endl;       \
                                                                                \
             size_t i = 0;                                                      \
             startGets = Clock::now();                                          \
@@ -341,8 +374,8 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
             ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
             varCount++;
-        caculateMeanBlockTime(outputFile);
-        caculateMeanGetsTime(outputFile);
+            caculateMeanBlockTime(outputFile);
+            caculateMeanGetsTime(outputFile);
 
         } // end for varMap loop
 

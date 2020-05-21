@@ -134,13 +134,45 @@ void transformValues<int16_t>(std::string varName, netCDF::NcVar variable,
 
         std::string adiosType = "int16_t";
 
-        data2[i] = (float) (data[i] * scale + offset);
+        data2[i] = (float)(data[i] * scale + offset);
         // std::cout << "data1: " << data[i] << std::endl;
         // std::cout << "data2: " << data2[i] << std::endl;
     }
 }
 
 /**
+ * Read the passed NetCDF file and transform all variables to ADIOS2 variables.
+ *
+ * Important note:
+ * The BP files will only have one step! The step concept of NetCDF is mapped to
+ * blocks.
+ *
+ * This behaviour of writing the BP files is intentional.
+ * There are two solutions that both are not ideal!
+ *
+ * 1) The NetCDF variables are read in one at a time. To be able to directly
+ * write this data to an ADIOS2 variable steps cannot be used. Otherwise the
+ * variables would have continuous step numbers, because endStep increases the
+ * step counter. So that, e.g. the second variable cannot start at 0 as this
+ * step is already used by the first variable.
+ *
+ * However, the NetCDF variables belong together so separating logically
+ * concurrent data into different steps is not useful. The record concept
+ * (having multiple entries in the time variable) is mapped to ADIOS2 blocks.
+ * These can start capture the relationships, so that every first time entry is
+ * mapped to blockID one.
+ *
+ * 2) Another possibility would be first read the complete NetCDF data and to
+ * store it for every NetCDF variable in a large buffer, that is written after
+ * reading the complete NetCDF file. As the file sizes easily reach a
+ * significant order such as 30-100 GB temporarily storing all this data is not
+ * feasible. This is why I decided to map the steps of the NetCDF data to ADIOS2
+ * blocks. Since NetCDF has no concept of blocks this is not a problem.
+ *
+ * Maybe using SetStepSelection will help to use steps correctly.
+ * SetBlockSelection works only for reading ADIOS2 variables. So, I am not sure.
+ * Unfortunately, there was no time for detailed testing until now.
+ *
  * [NCReadFile description]
  * @param engine          [description]
  * @param ncFileName      [description]
@@ -200,8 +232,8 @@ void NCReadFile(std::string engine, std::string ncFileName,
     }
 
     // auto groupAttrMap = dataFile.getAtts();
-    // std::cout << "number of attributes: " << groupAttrMap.size() << std::endl;
-    // for (const auto &attr : groupAttrMap)
+    // std::cout << "number of attributes: " << groupAttrMap.size() <<
+    // std::endl; for (const auto &attr : groupAttrMap)
     // {
     //     std::string attrName = attr.first;
     //     netCDF::NcGroupAtt attribute = attr.second;
@@ -317,7 +349,7 @@ void NCReadFile(std::string engine, std::string ncFileName,
         else if ((adiosType == "int16_t") && needsTransform)
         {
             adios2::Variable<float> adiosVar;
-                adiosVar = io.DefineVariable<float>(name, shape, start, count);
+            adiosVar = io.DefineVariable<float>(name, shape, start, count);
             int16_t data[dataSize];
             float data2[dataSize];
             if (hasSteps)
