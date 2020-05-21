@@ -89,16 +89,16 @@ void readDirectory(const std::string &path, std::vector<std::string> &v,
             outputFile << "something.dir that is ignored" << std::endl;
             continue;
         }
-            //this should only apply to bp4 files.
-            //bp3 has .dir directories and bp files
-        else if(slen >= 3 && file.compare(slen -3,3,".bp")==0)
+        // this should only apply to bp4 files.
+        // bp3 has .dir directories and bp files
+        else if (slen >= 3 && file.compare(slen - 3, 3, ".bp") == 0)
         {
             completeFileName = path;
         }
         else
         {
-            //Hopefully no BP4 file...
-        completeFileName = path + "/" + dirEntry->d_name;
+            // Hopefully no BP4 file...
+            completeFileName = path + "/" + dirEntry->d_name;
         }
 
         v.push_back(completeFileName);
@@ -125,8 +125,21 @@ void readInput(const std::string &path, std::vector<std::string> &files,
         if (s.st_mode & S_IFDIR)
         {
             // it's a directory
+            size_t slen = path.length();
+            if (slen >= 4 && path.compare(slen - 4, 4, ".dir") == 0)
+            {
+                outputFile << "something.dir that is ignored" << std::endl;
+            }
+            // this should only apply to bp4 files.
+            // bp3 has .dir directories and bp files
+            else if (slen >= 3 && path.compare(slen - 3, 3, ".bp") == 0)
+            {
+                files.push_back(path);
+            }
+            else{
             outputFile << "Passed directory contains: " << std::endl;
             readDirectory(path, files, outputFile);
+            }
         }
         else if (s.st_mode & S_IFREG)
         {
@@ -255,7 +268,7 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
 
     for (auto &file : files)
     {
-    // std::cout << "DEBUG 2" << std::endl;
+        // std::cout << "DEBUG 2" << std::endl;
         if (filesToRead == fileCount)
         {
             outputFile << "filesToRead: " << filesToRead
