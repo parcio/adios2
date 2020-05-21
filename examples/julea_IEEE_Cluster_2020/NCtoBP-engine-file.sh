@@ -14,7 +14,7 @@ do
 	for file in /home/duwe/ieee_cluster_2020_adios2/ecmwf-data/*.nc
 	do
 		outfile=/tmp/$engine-Files/$file.${ending[$engine]}
-		path=/home/duwe/ieee_cluster_2020_adios2/julea-adios2/build/bin/NC_TO_BP
+		path=julea-adios2/build/bin/NC_TO_BP
 		# 	read fileCount often varCount many vars from engine-Files
 		result[$engine]="$(./path -d $file -f $outfile -n $engine -t )\t"
 	done
