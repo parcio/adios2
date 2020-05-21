@@ -622,5 +622,6 @@ void NCReadFile(std::string engine, std::string ncFileName,
     outputFile << "sumIOWithoutNc \t" << sumIOWithoutNc << std::endl;
     outputFile << "-------------------------------\n" << std::endl;
 
-    std::cout << "complete:"<< timeOpenClose.count() << "nc: " << sumNcTimes<< "without nc: "<< sumIOWithoutNc << std::endl;
+    outputFile << "complete: "<< timeOpenClose.count() << "\t nc: " << sumNcTimes<< " \t without nc: "<< sumIOWithoutNc << std::endl;
+    std::cout << sumIOWithoutNc << std::endl;
 }
