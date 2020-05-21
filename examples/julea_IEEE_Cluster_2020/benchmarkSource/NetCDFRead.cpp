@@ -600,6 +600,7 @@ void NCReadFile(std::string engine, std::string ncFileName,
 
         putsDelta.clear();
         putBlockDelta.clear();
+        ncGetDeltaVector.clear();
     }
     writer.Close();
     endOpen = Clock::now();
