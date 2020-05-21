@@ -216,8 +216,8 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
     time_point<Clock> endStep;     // end time of step
     time_point<Clock> endOpen;     // end time of complete I/O
 
-    milliseconds blockDelta;    // time interval to read one block
-    milliseconds getDelta;      // time interval to read all blocks
+    milliseconds blockDelta; // time interval to read one block
+    milliseconds getDelta;   // time interval to read all blocks
 
     std::vector<milliseconds> getBlockDelta; // time intervals to read a block
     std::vector<milliseconds> getsDelta; // time intervals to read all blocks
@@ -225,21 +225,27 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
     std::time_t curr_time;
     std::ofstream outputFile;
     std::string debugFileName;
+
     buildDebugFileName(debugFileName, engineName, path, filesToRead,
                        variablesToRead, curr_time);
     outputFile.open(debugFileName);
     printDebugHeader(outputFile, curr_time);
 
+    std::cout << "debugFileName: " << debugFileName << std::endl;
+
     size_t fileCount = 0; // loop counter
     std::string varName;
     std::vector<std::string> files;
 
-    readInput(path, files, outputFile);
+    // readInput(path, files, outputFile);
+    files.push_back("Test.bp");
+    std::cout << "DEBUG 1" << std::endl;
 
     adios2::ADIOS adios(adios2::DebugON);
 
     for (auto &file : files)
     {
+    std::cout << "DEBUG 2" << std::endl;
         if (filesToRead == fileCount)
         {
             outputFile << "filesToRead: " << filesToRead
@@ -249,10 +255,11 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
         std::string ioName = "Output-" + std::to_string(fileCount);
         outputFile << "\n-------------------------------" << std::endl;
         outputFile << "ioName: " << ioName << std::endl;
+        std::cout << "ioName: " << ioName << std::endl;
 
         adios2::IO io = adios.DeclareIO(ioName);
         io.SetEngine(engineName);
-        // std::cout << "FileName: " << file << std::endl;
+        std::cout << "FileName: " << file << std::endl;
         outputFile << "FileName: " << file << std::endl;
 
         size_t steps = 0;
@@ -279,7 +286,7 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
             // TODO: maybe use SetStepSelection before Step loop
             varName = var.first;
             adios2::Params params = var.second;
-            // std::cout << "\n " << varName << std::endl;
+            std::cout << "\n " << varName << std::endl;
             outputFile << "\n " << varName << std::endl;
 
             if (strcmp(varName.c_str(), "time") == 0)
@@ -351,7 +358,6 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
 
             getsDelta.clear();
             getBlockDelta.clear();
-
         } // end for varMap loop
 
         reader.PerformGets();
