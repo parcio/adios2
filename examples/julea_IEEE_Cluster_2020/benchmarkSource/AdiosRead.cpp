@@ -25,22 +25,7 @@ using Clock = std::chrono::steady_clock;
 using std::chrono::time_point;
 using std::chrono::duration_cast;
 using std::chrono::milliseconds;
-
-time_point<Clock> startOpen;     // start time of complete I/O
-time_point<Clock> startStep;     // start time of step
-time_point<Clock> startGets;     // start time of reading all blocks
-time_point<Clock> startGetBlock; // start time of reading block
-
-time_point<Clock> endGetBlock; // end time of reading block
-time_point<Clock> endGets;     // end time of reading all blocks
-time_point<Clock> endStep;     // end time of step
-time_point<Clock> endOpen;     // end time of complete I/O
-
-milliseconds blockDelta; // time interval to read one block
-milliseconds getDelta;   // time interval to read all blocks
-
-std::vector<milliseconds> getBlockDelta; // all times intervals to read a block
-std::vector<milliseconds> getsDelta; // all times intervals to read all blocks
+using std::chrono::nanoseconds;
 
 void buildDebugFileName(std::string &fileName, std::string engineName,
                         std::string path, size_t filesToRead,
@@ -165,17 +150,17 @@ void AdiosReadMinMax(std::string path, std::string variableName)
  */
 void caculateMeanBlockTime(std::ofstream &outputFile)
 {
-    size_t sumTimes = 0;
-    size_t mean = 0;
-    for (auto &times : getBlockDelta)
-    {
-        sumTimes += times.count();
-        // std::cout << "getBlockDelta: " << times.count() << std::endl;
-    }
-    mean = (sumTimes / getBlockDelta.size());
-    // std::cout << "getBlockDelta.size(): " << getBlockDelta.size() <<
-    // std::endl; std::cout << "sumTimes: " << sumTimes << std::endl;
-    outputFile << "Block \t" << mean << std::endl;
+    // size_t sumTimes = 0;
+    // size_t mean = 0;
+    // for (auto &times : getBlockDelta)
+    // {
+    //     sumTimes += times.count();
+    //     // std::cout << "getBlockDelta: " << times.count() << std::endl;
+    // }
+    // mean = (sumTimes / getBlockDelta.size());
+    // // std::cout << "getBlockDelta.size(): " << getBlockDelta.size() <<
+    // // std::endl; std::cout << "sumTimes: " << sumTimes << std::endl;
+    // outputFile << "Block \t" << mean << std::endl;
 }
 
 /**
@@ -184,17 +169,42 @@ void caculateMeanBlockTime(std::ofstream &outputFile)
  */
 void caculateMeanGetsTime(std::ofstream &outputFile)
 {
+    // size_t sumTimes = 0;
+    // size_t mean = 0;
+    // for (auto &times : getsDelta)
+    // {
+    //     sumTimes += times.count();
+    //     // std::cout << "getsDelta: " << times.count() << std::endl;
+    // }
+    // mean = (sumTimes / getsDelta.size());
+    // // std::cout << "sumTimes: " << sumTimes << std::endl;
+    // // std::cout << "getsDelta.size(): " << getsDelta.size() << std::endl;
+    // outputFile << "AllBl \t" << mean << std::endl;
+}
+
+void calculateMeanTime(std::ofstream &outputFile,
+                       std::vector<milliseconds> &delta, bool allBlocks)
+{
     size_t sumTimes = 0;
     size_t mean = 0;
-    for (auto &times : getsDelta)
+    for (auto &times : delta)
     {
         sumTimes += times.count();
-        // std::cout << "getsDelta: " << times.count() << std::endl;
+        // std::cout << "delta: " << times.count() << std::endl;
     }
-    mean = (sumTimes / getsDelta.size());
+    mean = (sumTimes / delta.size());
     // std::cout << "sumTimes: " << sumTimes << std::endl;
-    // std::cout << "getsDelta.size(): " << getsDelta.size() << std::endl;
-    outputFile << "AllBl \t" << mean << std::endl;
+    // std::cout << "getsDelta.size(): " << delta.size() << std::endl;
+    if (allBlocks)
+    {
+        // std::cout << "AllBl \t" << mean << std::endl;
+        outputFile << "AllBl \t" << mean << std::endl;
+    }
+    else
+    {
+        // std::cout << "Block \t" << mean << std::endl;
+        outputFile << "Block \t" << mean << std::endl;
+    }
 }
 
 /**
@@ -203,15 +213,15 @@ void caculateMeanGetsTime(std::ofstream &outputFile)
  */
 void calculateIOTime(std::ofstream &outputFile)
 {
-    milliseconds timeOpenClose =
-        duration_cast<milliseconds>(endOpen - startOpen);
-    milliseconds timeStep = duration_cast<milliseconds>(endStep - startStep);
+    // milliseconds timeOpenClose =
+    //     duration_cast<milliseconds>(endOpen - startOpen);
+    // milliseconds timeStep = duration_cast<milliseconds>(endStep - startStep);
 
-    outputFile << "\nStep \t" << timeStep.count() << std::endl;
-    outputFile << "SumIO \t" << timeOpenClose.count() << std::endl;
-    outputFile << "-------------------------------\n" << std::endl;
+    // outputFile << "\nStep \t" << timeStep.count() << std::endl;
+    // outputFile << "SumIO \t" << timeOpenClose.count() << std::endl;
+    // outputFile << "-------------------------------\n" << std::endl;
 
-    std::cout << "SumIO \t" << timeOpenClose.count() << std::endl;
+    // std::cout << "SumIO \t" << timeOpenClose.count() << std::endl;
 }
 
 /**
@@ -252,10 +262,31 @@ void calculateIOTime(std::ofstream &outputFile)
 void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
                uint32_t variablesToRead)
 {
-    std::ofstream outputFile;
-    std::time_t curr_time;
-    std::string debugFileName;
 
+    time_point<Clock> startOpen;     // start time of complete I/O
+    time_point<Clock> startStep;     // start time of step
+    time_point<Clock> startGets;     // start time of reading all blocks
+    time_point<Clock> startGetBlock; // start time of reading block
+
+    time_point<Clock> endGetBlock; // end time of reading block
+    time_point<Clock> endGets;     // end time of reading all blocks
+    time_point<Clock> endStep;     // end time of step
+    time_point<Clock> endOpen;     // end time of complete I/O
+
+    milliseconds blockDelta; // time interval to read one block
+    nanoseconds blockDeltaNANO; // time interval to read one block
+    milliseconds getDelta;   // time interval to read all blocks
+
+    std::vector<nanoseconds>
+        getBlockDeltaNANO; // all times intervals to read a block
+    std::vector<milliseconds>
+        getBlockDelta; // all times intervals to read a block
+    std::vector<milliseconds>
+        getsDelta; // all times intervals to read all blocks
+
+    std::time_t curr_time;
+    std::ofstream outputFile;
+    std::string debugFileName;
     buildDebugFileName(debugFileName, engineName, path, filesToRead,
                        variablesToRead, curr_time);
     outputFile.open(debugFileName);
@@ -283,6 +314,7 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
 
         adios2::IO io = adios.DeclareIO(ioName);
         io.SetEngine(engineName);
+        std::cout << "FileName: " << file << std::endl;
         outputFile << "FileName: " << file << std::endl;
 
         size_t steps = 0;
@@ -309,6 +341,7 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
             // TODO: maybe use SetStepSelection before Step loop
             varName = var.first;
             adios2::Params params = var.second;
+            std::cout << "\n " << varName << std::endl;
             outputFile << "\n " << varName << std::endl;
 
             if (strcmp(varName.c_str(), "time") == 0)
@@ -360,10 +393,13 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
                 endGetBlock = Clock::now();                                    \
                 blockDelta =                                                   \
                     duration_cast<milliseconds>(endGetBlock - startGetBlock);  \
+                blockDeltaNANO = \
+                    duration_cast<nanoseconds>(endGetBlock - startGetBlock);  \
                 getBlockDelta.push_back(blockDelta);                           \
+                getBlockDeltaNANO.push_back(blockDeltaNANO);                           \
                 ++i;                                                           \
             }                                                                  \
-            if (i > 0)                                                         \
+            if (blocksInfo.size() > 0)                                                         \
             {                                                                  \
                 endGets = Clock::now();                                        \
                 getDelta = duration_cast<milliseconds>(endGets - startGets);   \
@@ -374,8 +410,14 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
             ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
             varCount++;
-            caculateMeanBlockTime(outputFile);
-            caculateMeanGetsTime(outputFile);
+            // caculateMeanBlockTime(outputFile);
+            // caculateMeanGetsTime(outputFile);
+            calculateMeanTime(outputFile, getBlockDelta, false);
+            calculateMeanTime(outputFile, getsDelta, true);
+            std::cout << "Nano: "<< getBlockDeltaNANO[0].count() << std::endl;
+            getsDelta.clear();
+            getBlockDelta.clear();
+            getBlockDeltaNANO.clear();
 
         } // end for varMap loop
 
@@ -386,7 +428,17 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
         reader.Close();
         endOpen = Clock::now();
 
-        calculateIOTime(outputFile);
+            milliseconds timeOpenClose =
+        duration_cast<milliseconds>(endOpen - startOpen);
+    milliseconds timeStep = duration_cast<milliseconds>(endStep - startStep);
+
+    outputFile << "\nStep \t" << timeStep.count() << std::endl;
+    outputFile << "SumIO \t" << timeOpenClose.count() << std::endl;
+    outputFile << "-------------------------------\n" << std::endl;
+
+    std::cout << "\nStep \t" << timeStep.count() << std::endl;
+    std::cout << "SumIO \t" << timeOpenClose.count() << std::endl;
+        // calculateIOTime(outputFile);
         fileCount++;
     } // end for files loop
 }
