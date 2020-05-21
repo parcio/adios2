@@ -58,6 +58,19 @@ void NCprintDebugHeader(std::ofstream &outputFile, std::time_t curr_time,
     outputFile << "-------------------------------" << std::endl;
 }
 
+size_t getTime(std::ofstream &outputFile, std::vector<milliseconds> &delta)
+{
+    size_t sumTimes = 0;
+    // size_t mean = 0;
+    for (auto &times : delta)
+    {
+        sumTimes += times.count();
+        // std::cout << "delta: " << times.count() << std::endl;
+    }
+    // mean = (sumTimes / delta.size());
+    return sumTimes;
+}
+
 void NCcalculateMeanTime(std::ofstream &outputFile,
                          std::vector<milliseconds> &delta, bool allBlocks)
 {
@@ -266,6 +279,18 @@ void NCReadFile(std::string engine, std::string ncFileName,
     std::vector<milliseconds> putBlockDelta; // time intervals to write a block
     std::vector<milliseconds> putsDelta; // time intervals to write all blocks
 
+    time_point<Clock> startNcStuff;
+    time_point<Clock> startNcGet;
+    time_point<Clock> endNcStuff;
+    time_point<Clock> endNcGet;
+
+    milliseconds ncStuffDelta;
+    milliseconds ncGetDelta;
+
+    std::vector<milliseconds> ncStuffDeltaVector;
+    std::vector<milliseconds> ncGetDeltaVector;
+    std::vector<size_t> sumNcGetDeltaVector;
+
     std::time_t curr_time;
     std::ofstream outputFile;
     std::string debugFileName;
@@ -325,11 +350,12 @@ void NCReadFile(std::string engine, std::string ncFileName,
 
     adios2::IO io = adios.DeclareIO("Output");
     io.SetEngine(engine);
-   // std::cout << "adiosFileName: " << adiosFileName << std::endl;
+    // std::cout << "adiosFileName: " << adiosFileName << std::endl;
 
     startOpen = Clock::now(); // start time complete I/O
 
     adios2::Engine writer = io.Open(adiosFileName, adios2::Mode::Write);
+    startNcStuff = Clock::now();
 
     /** all variables declared in the nc file */
     for (const auto &var : varMap)
@@ -338,7 +364,7 @@ void NCReadFile(std::string engine, std::string ncFileName,
         std::string name = var.first;
         netCDF::NcVar variable = var.second;
         // std::cout << "\n " << name << std::endl;
-            outputFile << "\n " << name << std::endl;
+        outputFile << "\n " << name << std::endl;
 
         netCDF::NcType type = variable.getType();
         auto typeID = type.getId();
@@ -443,15 +469,25 @@ void NCReadFile(std::string engine, std::string ncFileName,
             adiosVar = io.DefineVariable<float>(name, shape, start, count);
             int16_t data[dataSize];
             float data2[dataSize];
-             outputFile << "BlkCnt \t" << numberSteps << std::endl;       \
+            outputFile << "BlkCnt \t" << numberSteps << std::endl;
             startPuts = Clock::now();
             if (hasSteps)
             {
                 for (uint i = 0; i < numberSteps; i++)
                 {
                     ncStart[0] = i;
+
+                    startNcGet = Clock::now();
                     variable.getVar(ncStart, ncCount, data);
                     transformValues(name, variable, data, dataSize, data2);
+                    endNcGet = Clock::now();
+
+                    ncGetDelta =
+                        duration_cast<milliseconds>(endNcGet - startNcGet);
+                    ncGetDeltaVector.push_back(ncGetDelta);
+                    // std::cout << "ncGetDelta: " << ncGetDelta.count() <<
+                    // std::endl;
+
                     // std::cout << "data2: " << data2[0] << std::endl;
                     startPutBlock = Clock::now();
                     writer.Put<float>(adiosVar, data2, adios2::Mode::Deferred);
@@ -464,7 +500,14 @@ void NCReadFile(std::string engine, std::string ncFileName,
             }
             else
             {
+                startNcGet = Clock::now();
                 variable.getVar(data);
+                endNcGet = Clock::now();
+
+                ncGetDelta = duration_cast<milliseconds>(endNcGet - startNcGet);
+                ncGetDeltaVector.push_back(ncGetDelta);
+                // std::cout << "ncGetDelta: " << ncGetDelta.count() <<
+                // std::endl;
                 if (printVariable)
                     std::cout << "GetType: " << adios2::GetType<float>()
                               << std::endl;
@@ -502,7 +545,14 @@ void NCReadFile(std::string engine, std::string ncFileName,
             for (uint i = 0; i < numberSteps; i++)                             \
             {                                                                  \
                 ncStart[0] = i;                                                \
+                                                                               \
+                startNcGet = Clock::now();                                     \
                 variable.getVar(ncStart, ncCount, data);                       \
+                endNcGet = Clock::now();                                       \
+                ncGetDelta =                                                   \
+                    duration_cast<milliseconds>(endNcGet - startNcGet);        \
+                ncGetDeltaVector.push_back(ncGetDelta);                        \
+                                                                               \
                 startPutBlock = Clock::now();                                  \
                 writer.Put<T>(adiosVar, (T *)data, adios2::Mode::Deferred);    \
                 endPutBlock = Clock::now();                                    \
@@ -514,7 +564,11 @@ void NCReadFile(std::string engine, std::string ncFileName,
         }                                                                      \
         else                                                                   \
         {                                                                      \
+            startNcGet = Clock::now();                                         \
             variable.getVar(data);                                             \
+            endNcGet = Clock::now();                                           \
+            ncGetDelta = duration_cast<milliseconds>(endNcGet - startNcGet);   \
+            ncGetDeltaVector.push_back(ncGetDelta);                            \
             if (printVariable)                                                 \
                 std::cout << "GetType: " << adios2::GetType<T>() << std::endl; \
             if (adiosVar)                                                      \
@@ -540,17 +594,34 @@ void NCReadFile(std::string engine, std::string ncFileName,
         NCcalculateMeanTime(outputFile, putBlockDelta, false);
         NCcalculateMeanTime(outputFile, putsDelta, true);
 
+        size_t ncTime = getTime(outputFile, ncGetDeltaVector);
+        // std::cout << "ncTime: " << ncTime << std::endl;
+        sumNcGetDeltaVector.push_back(ncTime);
+
         putsDelta.clear();
         putBlockDelta.clear();
     }
     writer.Close();
     endOpen = Clock::now();
 
+    size_t sumNcTimes = 0;
+    // size_t mean = 0;
+    for (auto &time : sumNcGetDeltaVector)
+    {
+        sumNcTimes += time;
+        // std::cout << "delta: " << times.count() << std::endl;
+    }
+    std::cout << "sumNcTimes: " << sumNcTimes << std::endl;
+
     milliseconds timeOpenClose =
         duration_cast<milliseconds>(endOpen - startOpen);
 
+    size_t sumIOWithoutNc = timeOpenClose.count() - sumNcTimes;
+
     outputFile << "SumIO \t" << timeOpenClose.count() << std::endl;
+    outputFile << "sumIOWithoutNc \t" << sumIOWithoutNc << std::endl;
     outputFile << "-------------------------------\n" << std::endl;
 
     std::cout << timeOpenClose.count() << std::endl;
+    std::cout << sumIOWithoutNc << std::endl;
 }
