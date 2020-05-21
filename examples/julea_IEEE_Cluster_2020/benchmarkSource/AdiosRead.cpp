@@ -25,7 +25,6 @@ using Clock = std::chrono::steady_clock;
 using std::chrono::time_point;
 using std::chrono::duration_cast;
 using std::chrono::milliseconds;
-// using std::chrono::nanoseconds;
 
 void buildDebugFileName(std::string &fileName, std::string engineName,
                         std::string path, size_t filesToRead,
@@ -218,11 +217,8 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
     time_point<Clock> endOpen;     // end time of complete I/O
 
     milliseconds blockDelta;    // time interval to read one block
-    // nanoseconds blockDeltaNANO; // time interval to read one block
     milliseconds getDelta;      // time interval to read all blocks
 
-    // std::vector<nanoseconds> getBlockDeltaNANO; // time intervals to read a
-                                                // block
     std::vector<milliseconds> getBlockDelta; // time intervals to read a block
     std::vector<milliseconds> getsDelta; // time intervals to read all blocks
 
@@ -353,14 +349,8 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
             calculateMeanTime(outputFile, getBlockDelta, false);
             calculateMeanTime(outputFile, getsDelta, true);
 
-            // std::cout << "Nano: " << getBlockDeltaNANO[0].count() << std::endl;
-
             getsDelta.clear();
             getBlockDelta.clear();
-            // getBlockDeltaNANO.clear();
-                // blockDeltaNANO =                                               \
-                //     duration_cast<nanoseconds>(endGetBlock - startGetBlock);   \
-                // getBlockDeltaNANO.push_back(blockDeltaNANO);                   \
 
         } // end for varMap loop
 
