@@ -13,10 +13,12 @@
 #include <chrono>
 #include <cstring>
 #include <dirent.h>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <time.h>
 #include <vector>
 
 using Clock = std::chrono::steady_clock;
@@ -43,6 +45,8 @@ time_point<Clock> endOpen;
 // using std::this_thread::sleep_for;
 
 // #include "AdiosQuery.h"
+
+// std::ofstream restOfOutput;
 
 void readDirectory(const std::string &path, std::vector<std::string> &v)
 {
@@ -83,7 +87,7 @@ void readInput(const std::string &path, std::vector<std::string> &files)
         if (s.st_mode & S_IFDIR)
         {
             // it's a directory
-            std::cout << "directory contains: " << std::endl;
+            // std::cout << "directory contains: " << std::endl;
             readDirectory(path, files);
         }
         else if (s.st_mode & S_IFREG)
@@ -110,7 +114,7 @@ void AdiosReadMinMax(std::string path, std::string variableName)
     std::cout << "AdiosReadMinMax" << std::endl;
 }
 
-void caculateMeanBlockTime()
+void caculateMeanBlockTime(std::ofstream &outputFile)
 {
     size_t sumTimes = 0;
     size_t mean = 0;
@@ -124,10 +128,10 @@ void caculateMeanBlockTime()
     // std::cout << "sumTimes: " << sumTimes << std::endl;
      // std::cout << "Average time to read a block: " << mean << " ms"
     // << std::endl;
-    std::cout << "Block \t" << mean << std::endl;
+    outputFile << "Block \t" << mean << std::endl;
 }
 
-void caculateMeanGetsTime()
+void caculateMeanGetsTime(std::ofstream &outputFile)
 {
     size_t sumTimes = 0 ;
     size_t mean = 0;
@@ -141,10 +145,10 @@ void caculateMeanGetsTime()
     // std::cout << "Average time to get all blocks: " << mean << " ms"
     // << std::endl;
     // std::cout << "getsDelta.size(): " << getsDelta.size() << std::endl;
-    std::cout << "AllBl \t" << mean << std::endl;
+    outputFile << "AllBl \t" << mean << std::endl;
 }
 
-void calculateStatistics()
+void calculateStatistics(std::ofstream &outputFile)
 {
     milliseconds timeOpenClose =
         duration_cast<milliseconds>(endOpen - startOpen);
@@ -156,7 +160,9 @@ void calculateStatistics()
     // std::cout << "Time from open to close: " << timeOpenClose.count() << "
     // ms"
     //           << std::endl;
-    std::cout << "Step \t" << timeStep.count() << std::endl;
+    outputFile << "\nStep \t" << timeStep.count() << std::endl;
+    outputFile << "SumIO \t" << timeOpenClose.count() << std::endl;
+    outputFile << "-------------------------------\n" << std::endl;
     std::cout << "SumIO \t" << timeOpenClose.count() << std::endl;
     // std::cout << "complete read time: " << timeGets.count() << " ms"
     //           << std::endl;
@@ -167,7 +173,30 @@ void calculateStatistics()
 void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
                uint32_t variablesToRead)
 {
-    // std::cout << "AdiosRead" << std::endl;
+    std::ofstream outputFile;
+    auto currentTime = std::chrono::system_clock::now();
+    std::time_t curr_time = std::chrono::system_clock::to_time_t(currentTime);
+
+    char timeBuffer[80];
+    std::tm *timeinfo;
+    timeinfo = localtime(&curr_time);
+    strftime (timeBuffer,80,"-%Y-%m-%d-%I:%M%p",timeinfo);
+
+    std::string debugFileName = engineName + "-" + path + "-" + std::to_string(filesToRead) + "-"+ std::to_string(variablesToRead) + timeBuffer + "-DEBUG" + ".txt";
+    // std::string dataFileName = engineName + "-" + path + "-" + std::to_string(filesToRead) + "-"+ std::to_string(variablesToRead) + timeBuffer + "-DATA"+ ".txt";
+    std::cout << "debugFileName: " << debugFileName << std::endl;
+
+    outputFile.open(debugFileName);
+
+    outputFile << "--- AdiosRead ---" << std::endl;
+    outputFile << "Current time: " <<  std::ctime(&curr_time);
+    outputFile << "\nvariableName \n" <<
+    "BlkCnt: \tBlock count \n" <<
+    "Block:  \tAverage time to read block in ms \n" <<
+    "AllBl:  \tTime to read all blocks in ms \n\n" <<
+    "Step:   \tTime for a step in ms\n" <<
+    "SumIO:  \tTime for complete I/O in ms\n"  << std::endl;
+
     size_t fileCount = 0; // loop counter
     std::string varName;
     std::vector<std::string> files;
@@ -180,17 +209,19 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
     {
         if (filesToRead == fileCount)
         {
-            std::cout << "filesToRead: " << filesToRead
+            outputFile << "filesToRead: " << filesToRead
                       << " fileCount: " << fileCount << std::endl;
             continue;
         }
         std::string ioName = "Output-" + std::to_string(fileCount);
-        std::cout << "ioName: " << ioName << std::endl;
+        outputFile << "\n-------------------------------" << std::endl;
+        outputFile << "ioName: " << ioName  << std::endl;
+
 
         // adios2::IO io = adios.DeclareIO("Output");
         adios2::IO io = adios.DeclareIO(ioName);
         io.SetEngine(engineName);
-        std::cout << "FileName: " << file << std::endl;
+        outputFile << "FileName: " << file << std::endl;
 
         size_t steps = 0;
         size_t varCount = 0; // loop couner
@@ -207,7 +238,7 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
         {
             if (variablesToRead == varCount)
             {
-                std::cout << "varCount: " << varCount
+                outputFile << "varCount: " << varCount
                           << " variablesToRead: " << variablesToRead
                           << std::endl;
                 continue;
@@ -216,7 +247,7 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
             // TODO: maybe use SetStepSelection before Step loop
             varName = var.first;
             adios2::Params params = var.second;
-            // std::cout << "\nvarName: " << varName << std::endl;
+            outputFile << "\n " << varName << std::endl ;
 
             if (strcmp(varName.c_str(), "time") == 0)
             {
@@ -252,6 +283,7 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
                                                                                \
             std::vector<std::vector<T>> dataSet;                               \
             dataSet.resize(blocksInfo.size());                                 \
+            outputFile << "BlkCnt \t" << blocksInfo.size() << std::endl;\
                                                                                \
             size_t i = 0;                                                      \
             startGets = Clock::now();                                          \
@@ -269,7 +301,7 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
                 getBlockDelta.push_back(blockDelta);                           \
                 ++i;                                                           \
             }                                                                  \
-            if (i > 1)                                                         \
+            if (i > 0)                                                         \
             {                                                                  \
                 endGets = Clock::now();                                        \
                 getDelta = duration_cast<milliseconds>(endGets - startGets);   \
@@ -281,6 +313,8 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
 #undef declare_type
             varCount++;
             // std::cout << "-------------------------" << std::endl;
+        caculateMeanBlockTime(outputFile);
+        caculateMeanGetsTime(outputFile);
         } // end for varMap loop
         reader.PerformGets();
         reader.EndStep();
@@ -288,9 +322,7 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
         reader.Close();
         endOpen = Clock::now();
 
-        caculateMeanBlockTime();
-        caculateMeanGetsTime();
-        calculateStatistics();
+        calculateStatistics(outputFile);
         fileCount++;
     } // end for files loop
 }
