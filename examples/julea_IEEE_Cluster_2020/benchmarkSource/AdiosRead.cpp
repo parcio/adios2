@@ -8,6 +8,7 @@
  *  Created on: May 06, 2020
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
+#include "AdiosRead.h"
 #include <adios2.h>
 #include <chrono>
 #include <cstring>
@@ -17,7 +18,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <vector>
-#include "AdiosRead.h"
 
 using Clock = std::chrono::steady_clock;
 using std::chrono::time_point;
@@ -48,10 +48,28 @@ void readDirectory(const std::string &path, std::vector<std::string> &v)
 {
     DIR *dirPtr = opendir(path.c_str());
     struct dirent *dirEntry;
+    std::string completeFileName;
+
     while ((dirEntry = readdir(dirPtr)) != NULL)
     {
-        v.push_back(dirEntry->d_name);
+        std::string file = dirEntry->d_name;
+        size_t slen = file.length();
+        if ((strcmp(dirEntry->d_name, ".") == 0) ||
+            (strcmp(dirEntry->d_name, "..") == 0))
+        {
+            continue;
+        }
+        else if (slen >= 4 && file.compare(slen - 4, 4, ".dir") == 0)
+        {
+            std::cout << "is .dir" << std::endl;
+            continue;
+        }
+        std::cout << "Slen: " << slen << std::endl;
+
+        completeFileName = path + "/" + dirEntry->d_name;
+        v.push_back(completeFileName);
         std::cout << dirEntry->d_name << std::endl;
+        std::cout << completeFileName << "\n" << std::endl;
     }
     closedir(dirPtr);
 }
@@ -94,32 +112,36 @@ void AdiosReadMinMax(std::string path, std::string variableName)
 
 void caculateMeanBlockTime()
 {
-    size_t sumTimes;
-    size_t mean;
+    size_t sumTimes = 0;
+    size_t mean = 0;
     for (auto &times : getBlockDelta)
     {
         sumTimes += times.count();
         // std::cout << "getBlockDelta: " << times.count() << std::endl;
     }
-    mean = (sumTimes / getBlockDelta.size()) / 1000000;
-    // std::cout << "Average time to read a block: " << mean << " ms"
-              // << std::endl;
-    // std::cout << "Block \t" << mean << std::endl;
+    mean = (sumTimes / getBlockDelta.size()) ;
+    // std::cout << "getBlockDelta.size(): " << getBlockDelta.size() << std::endl;
+    // std::cout << "sumTimes: " << sumTimes << std::endl;
+     // std::cout << "Average time to read a block: " << mean << " ms"
+    // << std::endl;
+    std::cout << "Block \t" << mean << std::endl;
 }
 
 void caculateMeanGetsTime()
 {
-    size_t sumTimes;
-    size_t mean;
+    size_t sumTimes = 0 ;
+    size_t mean = 0;
     for (auto &times : getsDelta)
     {
         sumTimes += times.count();
         // std::cout << "getsDelta: " << times.count() << std::endl;
     }
-    mean = (sumTimes / getsDelta.size()) / 1000000;
+    mean = (sumTimes / getsDelta.size());
+    // std::cout << "sumTimes: " << sumTimes << std::endl;
     // std::cout << "Average time to get all blocks: " << mean << " ms"
-              // << std::endl;
-    // std::cout << "AllBl \t" << mean << std::endl;
+    // << std::endl;
+    // std::cout << "getsDelta.size(): " << getsDelta.size() << std::endl;
+    std::cout << "AllBl \t" << mean << std::endl;
 }
 
 void calculateStatistics()
@@ -131,7 +153,8 @@ void calculateStatistics()
     milliseconds timeGetBlocks =
         duration_cast<milliseconds>(endGetBlock - startGetBlock);
 
-    // std::cout << "Time from open to close: " << timeOpenClose.count() << " ms"
+    // std::cout << "Time from open to close: " << timeOpenClose.count() << "
+    // ms"
     //           << std::endl;
     std::cout << "Step \t" << timeStep.count() << std::endl;
     std::cout << "SumIO \t" << timeOpenClose.count() << std::endl;
@@ -152,8 +175,6 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
     readInput(path, files);
 
     adios2::ADIOS adios(adios2::DebugON);
-    adios2::IO io = adios.DeclareIO("Output");
-    io.SetEngine(engineName);
 
     for (auto &file : files)
     {
@@ -163,11 +184,19 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
                       << " fileCount: " << fileCount << std::endl;
             continue;
         }
+        std::string ioName = "Output-" + std::to_string(fileCount);
+        std::cout << "ioName: " << ioName << std::endl;
+
+        // adios2::IO io = adios.DeclareIO("Output");
+        adios2::IO io = adios.DeclareIO(ioName);
+        io.SetEngine(engineName);
+        std::cout << "FileName: " << file << std::endl;
 
         size_t steps = 0;
         size_t varCount = 0; // loop couner
 
         startOpen = Clock::now();
+        // adios2::Engine reader = io.Open(files[2], adios2::Mode::Read);
         adios2::Engine reader = io.Open(file, adios2::Mode::Read);
         auto varMap = io.AvailableVariables();
 
@@ -189,7 +218,7 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
             adios2::Params params = var.second;
             // std::cout << "\nvarName: " << varName << std::endl;
 
-            if (strcmp(varName.c_str(),"time")==0)
+            if (strcmp(varName.c_str(), "time") == 0)
             {
                 continue;
             }
@@ -211,7 +240,7 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
         {                                                                      \
             auto blocksInfo = reader.BlocksInfo(variable, step);               \
                                                                                \
-            if (false)                                                          \
+            if (false)                                                         \
             {                                                                  \
                 std::cout << "type: " << type << std::endl;                    \
                 std::cout << "shape size: " << variable.Shape().size()         \
@@ -253,12 +282,12 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
             varCount++;
             // std::cout << "-------------------------" << std::endl;
         } // end for varMap loop
-
         reader.PerformGets();
         reader.EndStep();
         endStep = Clock::now();
         reader.Close();
         endOpen = Clock::now();
+
         caculateMeanBlockTime();
         caculateMeanGetsTime();
         calculateStatistics();
