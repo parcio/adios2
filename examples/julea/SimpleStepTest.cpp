@@ -84,6 +84,8 @@ void write_blocks(std::string engine, std::string fileName)
 
     adios2::Variable<double> varV0 =
         io.DefineVariable<double>("v0", {}, {}, {Nglobal});
+    adios2::Variable<double> varV1 =
+        io.DefineVariable<double>("v1", {}, {}, {Nglobal});
 
     adios2::Engine writer = io.Open(fileName, adios2::Mode::Write);
 
@@ -99,26 +101,44 @@ void write_blocks(std::string engine, std::string fileName)
         v8[i] = 88 + 8 * 0.1 + i * 100;
     }
 
-    writer.Put<double>(varV0, v1.data(), adios2::Mode::Deferred);
+    writer.Put<double>(varV0, v1.data(), adios2::Mode::Sync);
     writer.Put<double>(varV0, v2.data(), adios2::Mode::Sync);
-    writer.Put<double>(varV0, v3.data(), adios2::Mode::Deferred);
+    // writer.Put<double>(varV0, v2.data(), adios2::Mode::Sync);
+    writer.Put<double>(varV0, v3.data(), adios2::Mode::Sync);
 
-    for (int i = 0; i < 3; i++)
-    {
-        // writer.BeginStep();
+    // for (int i = 0; i < 1; i++)
+    // {
+    //     // writer.BeginStep();
+
+    //     // writer.Put<double>(varV0, v4.data(), adios2::Mode::Sync);
+    //     writer.Put<double>(varV0, v4.data(), adios2::Mode::Sync);
+    //     writer.Put<double>(varV0, v5.data(), adios2::Mode::Sync);
+    //     writer.Put<double>(varV0, v6.data(), adios2::Mode::Sync);
+    //     // writer.Put<double>(varV0, v6.data(), adios2::Mode::Sync);
+    //     writer.Put<double>(varV0, v7.data(), adios2::Mode::Sync);
+
+    //     if (i == 2)
+    //     {
+    //         writer.Put<double>(varV0, v8.data(), adios2::Mode::Sync);
+    //         // writer.Put<double>(varV0, v8.data(), adios2::Mode::Sync);
+    //         writer.Put<double>(varV1, v1.data(), adios2::Mode::Sync);
+    //         writer.Put<double>(varV1, v2.data(), adios2::Mode::Sync);
+    //     writer.PerformPuts();
+    //     }
+    //     // writer.EndStep();
+    //     writer.PerformPuts();
+    // }
 
         writer.Put<double>(varV0, v4.data(), adios2::Mode::Sync);
-        writer.Put<double>(varV0, v5.data(), adios2::Mode::Deferred);
+        writer.Put<double>(varV0, v5.data(), adios2::Mode::Sync);
         writer.Put<double>(varV0, v6.data(), adios2::Mode::Sync);
-        writer.Put<double>(varV0, v7.data(), adios2::Mode::Deferred);
-
-        if (i == 2)
-        {
+        writer.Put<double>(varV0, v7.data(), adios2::Mode::Sync);
             writer.Put<double>(varV0, v8.data(), adios2::Mode::Sync);
-        }
         writer.PerformPuts();
-        // writer.EndStep();
-    }
+
+            writer.Put<double>(varV1, v1.data(), adios2::Mode::Sync);
+            writer.Put<double>(varV1, v2.data(), adios2::Mode::Sync);
+        writer.PerformPuts();
     writer.Close();
 }
 
@@ -511,19 +531,20 @@ int main(int argc, char *argv[])
     {
         // write_complex("julea-kv", "SimpleSteps.jv");
         // write_complex("bp3", "SimpleSteps.bp");
-        // write_simple("bp3", "SimpleSteps.bp");
+        write_simple("bp3", "SimpleSteps.bp");
         // write_simple("julea-kv", "SimpleSteps.jv");
         write_blocks("bp3", "SimpleBlocks.bp");
-        // write_simple("julea-db", "SimpleSteps.jb");
+        write_blocks("julea-db", "SimpleBlocks.jb");
+        write_simple("julea-db", "SimpleSteps.jb");
         // write_simple("hdf5", "SimpleSteps.h5");
         // write("julea-kv", "SimpleSteps.bp");
         // write();
         // read_simple("bp3", "SimpleSteps.bp");
         // read_simple("julea-kv", "SimpleSteps.jv");
         // read_simple("julea-db", "SimpleSteps.jb");
-        // read_selection("bp3", "SimpleSteps.bp");
+        read_selection("bp3", "SimpleSteps.bp");
         // read_selection("julea-kv", "SimpleSteps.jv");
-        // read_selection("julea-db", "SimpleSteps.jb");
+        read_selection("julea-db", "SimpleSteps.jb");
     }
     catch (std::invalid_argument &e)
     {
