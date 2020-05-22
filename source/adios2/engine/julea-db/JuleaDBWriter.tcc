@@ -29,15 +29,45 @@ namespace engine
 {
 
 template <class T>
-void JuleaDBSetMinMax(Variable<T> &variable, const T *data)
+void JuleaDBSetMinMax(Variable<T> &variable, const T *data, T &blockMin,
+                      T &blockMax)
 {
     T min;
     T max;
 
     auto number_elements = adios2::helper::GetTotalSize(variable.m_Count);
     adios2::helper::GetMinMax(data, number_elements, min, max);
-    variable.m_Min = min;
-    variable.m_Max = max;
+    blockMin = min;
+    blockMax = max;
+    // blockInfo.Max = max;
+    if (min < variable.m_Min)
+    {
+        std::cout << "updated global min" << std::endl;
+        variable.m_Min = min;
+    }
+    if (max > variable.m_Max)
+    {
+        std::cout << "updated global max" << std::endl;
+        variable.m_Max = max;
+    }
+    std::cout << "min: " << min << std::endl;
+    std::cout << "global min: " << variable.m_Min << std::endl;
+    std::cout << "max: " << max << std::endl;
+    std::cout << "global max: " << variable.m_Max << std::endl;
+}
+
+template <>
+void JuleaDBSetMinMax<std::complex<float>>(
+    Variable<std::complex<float>> &variable, const std::complex<float> *data,
+    std::complex<float> &blockMin, std::complex<float> &blockMax)
+{
+}
+
+template <>
+void JuleaDBSetMinMax<std::complex<double>>(
+    Variable<std::complex<double>> &variable, const std::complex<double> *data,
+    std::complex<double> &blockMin, std::complex<double> &blockMax)
+{
 }
 
 template <class T>
@@ -50,12 +80,13 @@ void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
                   << "     PutSyncToJulea(" << variable.m_Name
                   << " ---- BlockID: " << m_CurrentBlockID << std::endl;
     }
-
+    T blockMin;
+    T blockMax;
     // guint32 blockMD_len = 0;
     // guint32 varMD_len = 0;
     // gpointer md_buffer = NULL;
     // auto bsonMetadata = bson_new();
-    JuleaDBSetMinMax(variable, data);
+    JuleaDBSetMinMax(variable, data, blockMin, blockMax);
 
     auto stepBlockID =
         g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
@@ -97,7 +128,7 @@ void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
 
     /** put block metadata to DB */
     DBPutBlockMetadataToJulea(variable, m_Name, variable.m_Name, m_CurrentStep,
-                              m_CurrentBlockID, blockInfo);
+                              m_CurrentBlockID, blockInfo, blockMin, blockMax);
     /** put data to object store */
     DBPutVariableDataToJulea(variable, data, m_Name, m_CurrentStep,
                              m_CurrentBlockID);

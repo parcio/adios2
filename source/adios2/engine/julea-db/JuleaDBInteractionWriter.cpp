@@ -9,6 +9,7 @@
  */
 
 #include "JuleaDBInteractionWriter.h"
+#include "JuleaDBInteractionReader.h"
 // #include "JuleaMetadata.h"
 
 #include <assert.h>
@@ -59,6 +60,39 @@ void addFieldsForVariableMD(JDBSchema *schema)
     /** number of blocks (steps are index starting at 0) */
     j_db_schema_add_field(schema, "numberSteps", J_DB_TYPE_UINT64, NULL);
     j_db_schema_add_field(schema, "blockArray", J_DB_TYPE_BLOB, NULL);
+
+    j_db_schema_add_field(schema, "min_blob", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "max_blob", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "value_blob", J_DB_TYPE_BLOB, NULL);
+
+    // add min/max/value for every type for performance improvement of querying
+    j_db_schema_add_field(schema, "min_sint32", J_DB_TYPE_SINT32, NULL);
+    j_db_schema_add_field(schema, "max_sint32", J_DB_TYPE_SINT32, NULL);
+    j_db_schema_add_field(schema, "value_sint32", J_DB_TYPE_SINT32, NULL);
+
+    j_db_schema_add_field(schema, "min_uint32", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "max_uint32", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "value_uint32", J_DB_TYPE_UINT32, NULL);
+
+    j_db_schema_add_field(schema, "min_sint64", J_DB_TYPE_SINT64, NULL);
+    j_db_schema_add_field(schema, "max_sint64", J_DB_TYPE_SINT64, NULL);
+    j_db_schema_add_field(schema, "value_sint64", J_DB_TYPE_SINT64, NULL);
+
+    j_db_schema_add_field(schema, "min_uint64", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "max_uint64", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "value_uint64", J_DB_TYPE_UINT64, NULL);
+
+    j_db_schema_add_field(schema, "min_float32", J_DB_TYPE_FLOAT32, NULL);
+    j_db_schema_add_field(schema, "max_float32", J_DB_TYPE_FLOAT32, NULL);
+    j_db_schema_add_field(schema, "value_float32", J_DB_TYPE_FLOAT32, NULL);
+
+    j_db_schema_add_field(schema, "min_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "max_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "value_float64", J_DB_TYPE_FLOAT64, NULL);
+
+    // j_db_schema_add_field(schema, "min_string", J_DB_TYPE_STRING, NULL);
+    // j_db_schema_add_field(schema, "max_string", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "value_string", J_DB_TYPE_STRING, NULL);
 
     j_db_schema_add_index(schema, fileIndex, NULL);
     j_db_schema_add_index(schema, varIndex, NULL);
@@ -248,6 +282,18 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
     j_db_entry_set_field(entry, "numberSteps", &numberSteps,
                          sizeof(numberSteps), NULL);
     j_db_entry_set_field(entry, "blockArray", blocks, sizeof(blocks), NULL);
+
+    const char *varType = variable.m_Type.c_str();
+    std::string minField;
+    std::string maxField;
+    std::string valueField;
+
+    setMinMaxValueFields(&minField, &maxField, &valueField, varType);
+
+    j_db_entry_set_field(entry, minField.c_str(), &variable.m_Min,
+                         sizeof(variable.m_Min), NULL);
+    j_db_entry_set_field(entry, maxField.c_str(), &variable.m_Max,
+                         sizeof(variable.m_Max), NULL);
 }
 
 template <class T>
@@ -255,7 +301,8 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
                           const std::string varName, size_t currStep,
                           size_t block,
                           const typename Variable<T>::Info &blockInfo,
-                          JDBSchema *schema, JDBEntry *entry)
+                          JDBSchema *schema, JDBEntry *entry, T &blockMin,
+                          T &blockMax)
 {
     size_t shapeSize = variable.m_Shape.size();
     size_t startSize = variable.m_Start.size();
@@ -263,8 +310,8 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
     size_t memoryStartSize = blockInfo.MemoryStart.size();
     size_t memoryCountSize = blockInfo.MemoryCount.size();
 
-    size_t minLen = sizeof(variable.m_Min);
-    size_t maxLen = sizeof(variable.m_Max);
+    size_t minLen = sizeof(blockMin);
+    size_t maxLen = sizeof(blockMax);
     size_t valueLen = sizeof(variable.m_Value);
     // size_t min = variable.m_Min;
     // size_t min = variable.m_Max;
@@ -352,90 +399,23 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
     j_db_entry_set_field(entry, "memoryCount", &memoryCountBuffer,
                          sizeof(memoryCountBuffer), NULL);
 
-    // FIXME: for all types
     const char *varType = variable.m_Type.c_str();
     std::string minField;
     std::string maxField;
     std::string valueField;
 
-    if ((strcmp(varType, "char") == 0) || (strcmp(varType, "int8_t") == 0) ||
-        (strcmp(varType, "uint8_t") == 0) ||
-        (strcmp(varType, "int16_t") == 0) ||
-        (strcmp(varType, "uint16_t") == 0) || (strcmp(varType, "int32_t") == 0))
-    {
-        minField = "min_sint32";
-        maxField = "max_sint32";
-        valueField = "value_sint32";
-    }
-    else if (strcmp(varType, "uint32_t") == 0)
-    {
-        minField = "min_uint32";
-        maxField = "max_uint32";
-        valueField = "value_uint32";
-    }
-    else if (strcmp(varType, "int64_t") == 0)
-    {
-        minField = "min_sint64";
-        maxField = "max_sint64";
-        valueField = "value_sint64";
-    }
-    else if (strcmp(varType, "uint64_t") == 0)
-    {
-        minField = "min_uint64";
-        maxField = "max_uint64";
-        valueField = "value_uint64";
-    }
-    else if (strcmp(varType, "float") == 0)
-    {
-        minField = "min_float32";
-        maxField = "max_float32";
-        valueField = "value_float32";
-    }
-    else if (strcmp(varType, "double") == 0)
-    {
-        minField = "min_float64";
-        maxField = "max_float64";
-        valueField = "value_float64";
-    }
-    else if (strcmp(varType, "string") == 0)
-    {
-        valueField = "value_sint32";
-    }
+    setMinMaxValueFields(&minField, &maxField, &valueField, varType);
 
-    else if ((strcmp(varType, "long double") == 0) ||
-             (strcmp(varType, "float complex") == 0) ||
-             (strcmp(varType, "double complex") == 0))
-    {
-        minField = "min_blob";
-        maxField = "max_blob";
-        valueField = "value_blob";
-    }
-    // if (strcmp(varType, "float") == 0)
-    // {
-    //     j_db_entry_set_field(entry, "min_float32", &variable.m_Min, minLen,
-    //                          NULL);
-    //     j_db_entry_set_field(entry, "max_float32", &variable.m_Max, maxLen,
-    //                          NULL);
-    // }
-    // else if (strcmp(varType, "double") == 0)
-    // {
-    j_db_entry_set_field(entry, minField.c_str(), &variable.m_Min, minLen,
-                         NULL);
-    j_db_entry_set_field(entry, maxField.c_str(), &variable.m_Max, maxLen,
-                         NULL);
+    j_db_entry_set_field(entry, minField.c_str(), &blockMin, minLen, NULL);
+    j_db_entry_set_field(entry, maxField.c_str(), &blockMax, maxLen, NULL);
     // std::cout << "minLen: " << minLen << std::endl;
-    // j_db_entry_set_field(entry, "max_float64", &variable.m_Max, maxLen,
-    // NULL);
-    // j_db_entry_set_field(entry, "max_blob", &variable.m_Max, maxLen, NULL);
-    // }
 
-    // j_db_entry_set_field(entry, "min", &min, sizeof(min), NULL);
     j_db_entry_set_field(entry, "isValue", &tmp, sizeof(tmp), NULL);
     // j_db_entry_set_field(entry, "max", &max, sizeof(max), NULL);
     // TODO: check whether is value otherwise set to 0?
     if (isValue)
     {
-        // std::cout << "Writing local value for " << varName << std::endl;
+        std::cout << "Writing local value for " << varName << std::endl;
         j_db_entry_set_field(entry, valueField.c_str(), &variable.m_Value,
                              valueLen, NULL);
     }
@@ -567,7 +547,8 @@ void DBPutBlockMetadataToJulea(Variable<T> &variable,
                                const std::string nameSpace,
                                const std::string varName, size_t step,
                                size_t block,
-                               const typename Variable<T>::Info &blockInfo)
+                               const typename Variable<T>::Info &blockInfo,
+                               T &blockMin, T &blockMax)
 {
     int err = 0;
     g_autoptr(JDBSchema) schema = NULL;
@@ -587,7 +568,7 @@ void DBPutBlockMetadataToJulea(Variable<T> &variable,
 
     entry = j_db_entry_new(schema, NULL);
     addEntriesForBlockMD(variable, nameSpace, varName, step, block, blockInfo,
-                         schema, entry);
+                         schema, entry, blockMin, blockMax);
 
     /** check whether blcock needs to be updated or inserted */
     selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
@@ -955,7 +936,8 @@ void DBPutAttributeMetadataToJulea(Attribute<T> &attribute,
     template void DBPutBlockMetadataToJulea(                                   \
         Variable<T> &variable, const std::string nameSpace,                    \
         const std::string varName, size_t step, size_t block,                  \
-        const typename Variable<T>::Info &blockInfo);                          \
+        const typename Variable<T>::Info &blockInfo, T &blockMin,              \
+        T &blockMax);                                                          \
                                                                                \
     template void DBPutAttributeDataToJulea(Attribute<T> &attribute,           \
                                             const std::string nameSpace);      \
