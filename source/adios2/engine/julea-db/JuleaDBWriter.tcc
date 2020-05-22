@@ -59,7 +59,7 @@ void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
 
     auto stepBlockID =
         g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
-    std::cout << "    stepBlockID: " << stepBlockID << std::endl;
+    // std::cout << "    stepBlockID: " << stepBlockID << std::endl;
 
     // gpointer varMD;
     // gpointer varMD =
@@ -168,8 +168,8 @@ void JuleaDBWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
 
     if (variable.m_SingleValue)
     {
-        std::cout << "variable.m_SingleValue: " << variable.m_SingleValue
-                  << std::endl;
+        // std::cout << "variable.m_SingleValue: " << variable.m_SingleValue
+        // << std::endl;
         // DoPutSync(variable, data); // causes issues with blockID when no
         // steps and no bpls return;
     }

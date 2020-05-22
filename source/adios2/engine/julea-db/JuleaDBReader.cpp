@@ -190,16 +190,19 @@ ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 
 void JuleaDBReader::Init()
 {
-    std::cout << "\n*********************** JULEA ENGINE READER "
-                 "*************************"
-              << std::endl;
-    std::cout << "JULEA DB READER: Init" << std::endl;
-    std::cout
-        << "      .___. \n     /     \\ \n    | O _ O | \n    /  \\_/  \\ \n  .' / \
+    if (m_Penguin == 42)
+    {
+        std::cout << "\n*********************** JULEA ENGINE READER "
+                     "*************************"
+                  << std::endl;
+        std::cout << "JULEA DB READER: Init" << std::endl;
+        std::cout
+            << "      .___. \n     /     \\ \n    | O _ O | \n    /  \\_/  \\ \n  .' / \
     \\ `. \n / _|       |_ \\ \n(_/ |       | \\_) \n    \\       / \n   __\\_>-<_/__ \
          \n   ~;/     \\;~"
-        << std::endl;
-    std::cout << "JULEA DB READER: Namespace = " << m_Name << std::endl;
+            << std::endl;
+        std::cout << "JULEA DB READER: Namespace = " << m_Name << std::endl;
+    }
 
     if (m_DebugMode)
     {

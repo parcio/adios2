@@ -31,65 +31,63 @@ namespace core
 {
 namespace engine
 {
-void setMinMaxValueFields(std::string *minField, std::string *maxField, std::string *valueField, const char *varType)
+void setMinMaxValueFields(std::string *minField, std::string *maxField,
+                          std::string *valueField, const char *varType)
 {
 
-        if ((strcmp(varType, "char") == 0) ||
-            (strcmp(varType, "int8_t") == 0) ||
-            (strcmp(varType, "uint8_t") == 0) ||
-            (strcmp(varType, "int16_t") == 0) ||
-            (strcmp(varType, "uint16_t") == 0) ||
-            (strcmp(varType, "int32_t") == 0))
-        {
-            *minField = "min_sint32";
-            *maxField = "max_sint32";
-            *valueField = "value_sint32";
-        }
-        else if (strcmp(varType, "uint32_t") == 0)
-        {
-            *minField = "min_uint32";
-            *maxField = "max_uint32";
-            *valueField = "value_uint32";
-        }
-        else if (strcmp(varType, "int64_t") == 0)
-        {
-            *minField = "min_sint64";
-            *maxField = "max_sint64";
-            *valueField = "value_sint64";
-        }
-        else if (strcmp(varType, "uint64_t") == 0)
-        {
-            *minField = "min_uint64";
-            *maxField = "max_uint64";
-            *valueField = "value_uint64";
-        }
-        else if (strcmp(varType, "float") == 0)
-        {
-            *minField = "min_float32";
-            *maxField = "max_float32";
-            *valueField = "value_float32";
-        }
-        else if (strcmp(varType, "double") == 0)
-        {
-            *minField = "min_float64";
-            *maxField = "max_float64";
-            *valueField = "value_float64";
-        }
-        else if (strcmp(varType, "string") == 0)
-        {
-            *valueField = "value_sint32";
-        }
+    if ((strcmp(varType, "char") == 0) || (strcmp(varType, "int8_t") == 0) ||
+        (strcmp(varType, "uint8_t") == 0) ||
+        (strcmp(varType, "int16_t") == 0) ||
+        (strcmp(varType, "uint16_t") == 0) || (strcmp(varType, "int32_t") == 0))
+    {
+        *minField = "min_sint32";
+        *maxField = "max_sint32";
+        *valueField = "value_sint32";
+    }
+    else if (strcmp(varType, "uint32_t") == 0)
+    {
+        *minField = "min_uint32";
+        *maxField = "max_uint32";
+        *valueField = "value_uint32";
+    }
+    else if (strcmp(varType, "int64_t") == 0)
+    {
+        *minField = "min_sint64";
+        *maxField = "max_sint64";
+        *valueField = "value_sint64";
+    }
+    else if (strcmp(varType, "uint64_t") == 0)
+    {
+        *minField = "min_uint64";
+        *maxField = "max_uint64";
+        *valueField = "value_uint64";
+    }
+    else if (strcmp(varType, "float") == 0)
+    {
+        *minField = "min_float32";
+        *maxField = "max_float32";
+        *valueField = "value_float32";
+    }
+    else if (strcmp(varType, "double") == 0)
+    {
+        *minField = "min_float64";
+        *maxField = "max_float64";
+        *valueField = "value_float64";
+    }
+    else if (strcmp(varType, "string") == 0)
+    {
+        *valueField = "value_sint32";
+    }
 
-        else if ((strcmp(varType, "long double") == 0) ||
-                 (strcmp(varType, "float complex") == 0) ||
-                 (strcmp(varType, "double complex") == 0))
-        {
-            *minField = "min_blob";
-            *maxField = "max_blob";
-            *valueField = "value_blob";
-        }
+    else if ((strcmp(varType, "long double") == 0) ||
+             (strcmp(varType, "float complex") == 0) ||
+             (strcmp(varType, "double complex") == 0))
+    {
+        *minField = "min_blob";
+        *maxField = "max_blob";
+        *valueField = "value_blob";
+    }
 }
-
 
 void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
                     std::string varName, size_t *blocks, size_t numberSteps,
@@ -223,144 +221,144 @@ void DBDefineVariableInInit(core::IO *io, const std::string varName,
     }
     else if (strcmp(type, "int8_t") == 0)
     {
-         if (!isLocalValue)
+        if (!isLocalValue)
         {
-        auto &var = io->DefineVariable<int8_t>(varName, shape, start, count,
-                                               constantDims);
+            auto &var = io->DefineVariable<int8_t>(varName, shape, start, count,
+                                                   constantDims);
         }
         else
         {
-            auto &var = io->DefineVariable<int8_t>(
-                varName, {adios2::LocalValueDim});
+            auto &var =
+                io->DefineVariable<int8_t>(varName, {adios2::LocalValueDim});
         }
         // std::cout << "Defined variable of type: " << type << std::endl;
     }
     else if (strcmp(type, "uint8_t") == 0)
     {
-         if (!isLocalValue)
+        if (!isLocalValue)
         {
-        auto &var = io->DefineVariable<uint8_t>(varName, shape, start, count,
-                                                constantDims);
+            auto &var = io->DefineVariable<uint8_t>(varName, shape, start,
+                                                    count, constantDims);
         }
         else
         {
-            auto &var = io->DefineVariable<uint8_t>(
-                varName, {adios2::LocalValueDim});
+            auto &var =
+                io->DefineVariable<uint8_t>(varName, {adios2::LocalValueDim});
         }
     }
     else if (strcmp(type, "int16_t") == 0)
     {
-         if (!isLocalValue)
+        if (!isLocalValue)
         {
-        auto &var = io->DefineVariable<int16_t>(varName, shape, start, count,
-                                                constantDims);
+            auto &var = io->DefineVariable<int16_t>(varName, shape, start,
+                                                    count, constantDims);
         }
         else
         {
-            auto &var = io->DefineVariable<int16_t>(
-                varName, {adios2::LocalValueDim});
+            auto &var =
+                io->DefineVariable<int16_t>(varName, {adios2::LocalValueDim});
         }
     }
     else if (strcmp(type, "uint16_t") == 0)
     {
-         if (!isLocalValue)
+        if (!isLocalValue)
         {
-        auto &var = io->DefineVariable<uint16_t>(varName, shape, start, count,
-                                                 constantDims);
+            auto &var = io->DefineVariable<uint16_t>(varName, shape, start,
+                                                     count, constantDims);
         }
         else
         {
-            auto &var = io->DefineVariable<uint16_t>(
-                varName, {adios2::LocalValueDim});
+            auto &var =
+                io->DefineVariable<uint16_t>(varName, {adios2::LocalValueDim});
         }
     }
     else if (strcmp(type, "int32_t") == 0)
     {
-         if (!isLocalValue)
+        if (!isLocalValue)
         {
-        auto &var = io->DefineVariable<int32_t>(varName, shape, start, count,
-                                                constantDims);
+            auto &var = io->DefineVariable<int32_t>(varName, shape, start,
+                                                    count, constantDims);
         }
         else
         {
-            auto &var = io->DefineVariable<int32_t>(
-                varName, {adios2::LocalValueDim});
+            auto &var =
+                io->DefineVariable<int32_t>(varName, {adios2::LocalValueDim});
         }
     }
     else if (strcmp(type, "uint32_t") == 0)
     {
-         if (!isLocalValue)
+        if (!isLocalValue)
         {
-        auto &var = io->DefineVariable<uint32_t>(varName, shape, start, count,
-                                                 constantDims);
+            auto &var = io->DefineVariable<uint32_t>(varName, shape, start,
+                                                     count, constantDims);
         }
         else
         {
-            auto &var = io->DefineVariable<uint32_t>(
-                varName, {adios2::LocalValueDim});
+            auto &var =
+                io->DefineVariable<uint32_t>(varName, {adios2::LocalValueDim});
         }
     }
     else if (strcmp(type, "int64_t") == 0)
     {
-         if (!isLocalValue)
+        if (!isLocalValue)
         {
-        auto &var = io->DefineVariable<int64_t>(varName, shape, start, count,
-                                                constantDims);
+            auto &var = io->DefineVariable<int64_t>(varName, shape, start,
+                                                    count, constantDims);
         }
         else
         {
-            auto &var = io->DefineVariable<int64_t>(
-                varName, {adios2::LocalValueDim});
+            auto &var =
+                io->DefineVariable<int64_t>(varName, {adios2::LocalValueDim});
         }
     }
     else if (strcmp(type, "uint64_t") == 0)
     {
-         if (!isLocalValue)
+        if (!isLocalValue)
         {
-        auto &var = io->DefineVariable<uint64_t>(varName, shape, start, count,
-                                                 constantDims);
+            auto &var = io->DefineVariable<uint64_t>(varName, shape, start,
+                                                     count, constantDims);
         }
         else
         {
-            auto &var = io->DefineVariable<uint64_t>(
-                varName, {adios2::LocalValueDim});
+            auto &var =
+                io->DefineVariable<uint64_t>(varName, {adios2::LocalValueDim});
         }
     }
     else if (strcmp(type, "float") == 0)
     {
-         if (!isLocalValue)
+        if (!isLocalValue)
         {
-        auto &var = io->DefineVariable<float>(varName, shape, start, count,
-                                              constantDims);
+            auto &var = io->DefineVariable<float>(varName, shape, start, count,
+                                                  constantDims);
         }
         else
         {
-            auto &var = io->DefineVariable<float>(
-                varName, {adios2::LocalValueDim});
+            auto &var =
+                io->DefineVariable<float>(varName, {adios2::LocalValueDim});
         }
         // std::cout << "Defined variable of type: " << type << std::endl;
     }
     else if (strcmp(type, "double") == 0)
     {
-         if (!isLocalValue)
+        if (!isLocalValue)
         {
-        auto &var = io->DefineVariable<double>(varName, shape, start, count,
-                                               constantDims);
+            auto &var = io->DefineVariable<double>(varName, shape, start, count,
+                                                   constantDims);
         }
         else
         {
             // std::cout << "Single Value double " << std::endl;
-            auto &var = io->DefineVariable<double>(
-                varName, {adios2::LocalValueDim});
+            auto &var =
+                io->DefineVariable<double>(varName, {adios2::LocalValueDim});
         }
         // std::cout << "Defined variable of type: " << type << std::endl;
     }
     else if (strcmp(type, "long double") == 0)
     {
-         if (!isLocalValue)
+        if (!isLocalValue)
         {
-        auto &var = io->DefineVariable<long double>(varName, shape, start,
-                                                    count, constantDims);
+            auto &var = io->DefineVariable<long double>(varName, shape, start,
+                                                        count, constantDims);
         }
         else
         {
@@ -371,10 +369,10 @@ void DBDefineVariableInInit(core::IO *io, const std::string varName,
     }
     else if (strcmp(type, "complex float") == 0)
     {
-         if (!isLocalValue)
+        if (!isLocalValue)
         {
-        auto &var = io->DefineVariable<std::complex<float>>(
-            varName, shape, start, count, constantDims);
+            auto &var = io->DefineVariable<std::complex<float>>(
+                varName, shape, start, count, constantDims);
         }
         else
         {
@@ -385,10 +383,10 @@ void DBDefineVariableInInit(core::IO *io, const std::string varName,
     }
     else if (strcmp(type, "complex double") == 0)
     {
-         if (!isLocalValue)
+        if (!isLocalValue)
         {
-        auto &var = io->DefineVariable<std::complex<double>>(
-            varName, shape, start, count, constantDims);
+            auto &var = io->DefineVariable<std::complex<double>>(
+                varName, shape, start, count, constantDims);
         }
         else
         {
@@ -622,7 +620,8 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
 template <class T>
 void GetCountFromBlockMetadata(const std::string nameSpace,
                                const std::string varName, size_t step,
-                               size_t block, Dims *count, size_t entryID, bool isLocalValue, T *value)
+                               size_t block, Dims *count, size_t entryID,
+                               bool isLocalValue, T *value)
 {
     // std::cout << "------ GetCountFromBlockMetadata ----------" << std::endl;
     int err = 0;
@@ -887,7 +886,7 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
         //     maxField = "max_blob";
         //     valueField = "value_blob";
         // }
-        setMinMaxValueFields(&minField,&maxField,&valueField,varType);
+        setMinMaxValueFields(&minField, &maxField, &valueField, varType);
         // std::cout << "minField: " << minField << std::endl;
         // std::cout << "maxField: " << maxField << std::endl;
         // std::cout << "valueField: " << valueField << std::endl;
@@ -934,23 +933,23 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
             std::cout << "info->BlockID: " << info->BlockID << std::endl;
             std::cout << "info->IsValue: " << info->IsValue << std::endl;
         }
-    if (isValue)
-    {
-        g_free(value);
-    }
-    g_free(isValue);
-    g_free(min);
-    g_free(max);
-    g_free(shapeSize);
-    g_free(startSize);
-    g_free(countSize);
-    g_free(memoryStartSize);
-    g_free(memoryCountSize);
-    g_free(stepsStart);
-    g_free(stepsCount);
-    g_free(blockID);
-    j_batch_unref(batch);
-    j_semantics_unref(semantics);
+        if (isValue)
+        {
+            g_free(value);
+        }
+        g_free(isValue);
+        g_free(min);
+        g_free(max);
+        g_free(shapeSize);
+        g_free(startSize);
+        g_free(countSize);
+        g_free(memoryStartSize);
+        g_free(memoryCountSize);
+        g_free(stepsStart);
+        g_free(stepsCount);
+        g_free(blockID);
+        j_batch_unref(batch);
+        j_semantics_unref(semantics);
     }
     return info;
 }
@@ -997,9 +996,10 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
 }
 
 #define variable_template_instantiation(T)                                     \
-    template void GetCountFromBlockMetadata(const std::string nameSpace,\
-                               const std::string varName, size_t step,\
-                               size_t block, Dims *count, size_t entryID, bool isLocalValue, T *value);\
+    template void GetCountFromBlockMetadata(                                   \
+        const std::string nameSpace, const std::string varName, size_t step,   \
+        size_t block, Dims *count, size_t entryID, bool isLocalValue,          \
+        T *value);                                                             \
     template std::unique_ptr<typename core::Variable<T>::Info>                 \
     DBGetBlockMetadata(const core::Variable<T> &variable,                      \
                        const std::string nameSpace, size_t step, size_t block, \

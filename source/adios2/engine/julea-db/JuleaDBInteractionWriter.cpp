@@ -423,7 +423,7 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
                          NULL);
     j_db_entry_set_field(entry, maxField.c_str(), &variable.m_Max, maxLen,
                          NULL);
-    std::cout << "minLen: " << minLen << std::endl;
+    // std::cout << "minLen: " << minLen << std::endl;
     // j_db_entry_set_field(entry, "max_float64", &variable.m_Max, maxLen,
     // NULL);
     // j_db_entry_set_field(entry, "max_blob", &variable.m_Max, maxLen, NULL);
@@ -435,7 +435,7 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
     // TODO: check whether is value otherwise set to 0?
     if (isValue)
     {
-        std::cout << "Writing local value for " << varName << std::endl;
+        // std::cout << "Writing local value for " << varName << std::endl;
         j_db_entry_set_field(entry, valueField.c_str(), &variable.m_Value,
                              valueLen, NULL);
     }
@@ -459,7 +459,7 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
 }
 void InitDBSchemas()
 {
-    std::cout << "--- InitDBSchemas ---" << std::endl;
+    // std::cout << "--- InitDBSchemas ---" << std::endl;
     int err = 0;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
@@ -475,12 +475,13 @@ void InitDBSchemas()
     j_db_schema_get(blockSchema, batch, NULL);
 
     bool existsBlock = j_batch_execute(batch);
-    std::cout << "existsVar: " << existsVar << " existsBlock: " << existsBlock
-              << std::endl;
+    // std::cout << "existsVar: " << existsVar << " existsBlock: " <<
+    // existsBlock
+    // << std::endl;
 
     if (existsVar == 0)
     {
-        std::cout << "variable schema does not exist" << std::endl;
+        // std::cout << "variable schema does not exist" << std::endl;
         varSchema = j_db_schema_new("adios2", "variable-metadata", NULL);
         addFieldsForVariableMD(varSchema);
         j_db_schema_create(varSchema, batch, NULL);
@@ -490,7 +491,7 @@ void InitDBSchemas()
     if (existsBlock == 0)
     {
 
-        std::cout << "block schema does not exist" << std::endl;
+        // std::cout << "block schema does not exist" << std::endl;
         blockSchema = j_db_schema_new("adios2", "block-metadata", NULL);
         addFieldsForBlockMD(blockSchema);
         j_db_schema_create(blockSchema, batch2, NULL);
@@ -547,7 +548,7 @@ void DBPutVariableMetadataToJulea(Variable<T> &variable,
     }
     else
     {
-        std::cout << "Variable metadata does not exist yet." << std::endl;
+        // std::cout << "Variable metadata does not exist yet." << std::endl;
         j_db_entry_insert(entry, batch2, NULL);
     }
 

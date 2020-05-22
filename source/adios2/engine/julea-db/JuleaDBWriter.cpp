@@ -96,7 +96,7 @@ size_t JuleaDBWriter::CurrentStep() const
  */
 void JuleaDBWriter::EndStep()
 {
-    std::cout << "--- DEBUG : EndStep1" << std::endl;
+    // std::cout << "--- DEBUG : EndStep1" << std::endl;
     // if (m_NeedPerformPuts)
     if (m_DeferredVariables.size() > 0)
     {
@@ -138,7 +138,7 @@ void JuleaDBWriter::PerformPuts()
     /** if there are no deferred variables there is nothing to do */
     if (m_DeferredVariables.empty())
     {
-        std::cout << "deferred variables are empty " << std::endl;
+        // std::cout << "deferred variables are empty " << std::endl;
         // FIXME: blockID not set correctly when using put sync without
         // begin/end step and without bpls just with perform puts
         // m_CurrentBlockID = 0;
@@ -169,7 +169,7 @@ void JuleaDBWriter::PerformPuts()
     }
     m_DeferredVariables.clear();
     m_CurrentBlockID = 0;
-    std::cout << "--- PerformPuts -- " << std::endl;
+    // std::cout << "--- PerformPuts -- " << std::endl;
 }
 // ADIOS2_FOREACH_TYPE_1ARG(declare_template_instantiation)
 
@@ -212,17 +212,20 @@ void JuleaDBWriter::Init()
         throw std::invalid_argument("JuleaDBWriter: OpenMode   -- Append --   "
                                     "hasn't been implemented, yet");
     }
-    std::cout << "\n*********************** JULEA ENGINE WRITER "
-                 "*************************"
-              << std::endl;
-    std::cout << "JULEA DB WRITER: Init" << std::endl;
-    std::cout
-        << "      .___. \n     /     \\ \n    | O _ O | \n    /  \\_/  \\ \n  .' / \
+    if (m_Penguin == 42)
+    {
+        std::cout << "\n*********************** JULEA ENGINE WRITER "
+                     "*************************"
+                  << std::endl;
+        std::cout << "JULEA DB WRITER: Init" << std::endl;
+        std::cout
+            << "      .___. \n     /     \\ \n    | O _ O | \n    /  \\_/  \\ \n  .' / \
     \\ `. \n / _|       |_ \\ \n(_/ |       | \\_) \n    \\       / \n   __\\_>-<_/__ \
          \n   ~;/     \\;~"
-        << std::endl;
+            << std::endl;
 
-    std::cout << "JULEA WRITER: Namespace = " << m_Name << std::endl;
+        std::cout << "JULEA WRITER: Namespace = " << m_Name << std::endl;
+    }
 
     m_JuleaSemantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
 
