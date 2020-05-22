@@ -60,8 +60,7 @@ void printMeanDebugHeader(std::ofstream &outputFile, std::time_t curr_time)
 void AdiosMean(std::string engineName, std::string path, size_t filesToRead,
                std::string variableToCalculateMeanOn)
 {
-    // std::cout << "--- AdiosReadMinMax--- engine: " << engineName <<
-    // std::endl;
+    std::cout << "--- AdiosReadMean--- engine: " << engineName << std::endl;
     time_point<Clock> startOpen;      // start time of complete I/O
     time_point<Clock> startStep;      // start time of step
     time_point<Clock> startGetBlocks; // start time of reading all blocks
@@ -88,25 +87,26 @@ void AdiosMean(std::string engineName, std::string path, size_t filesToRead,
     outputFile.open(debugFileName);
     printMeanDebugHeader(outputFile, curr_time);
 
-    // std::cout << "debugFileName: " << debugFileName << std::endl;
+    std::cout << "debugFileName: " << debugFileName << std::endl;
 
     size_t fileCount = 0; // loop counter
     size_t larger = 0;    // number of blocks with larger Max than compareValue
     double sum = 0.0;
     double mean = 0.0;
+    std::vector<double> allMeans;
 
-    std::string varName;
+    std::string varName = variableToCalculateMeanOn;
     std::vector<std::string> files;
 
     readInput(path, files, outputFile);
     // files.push_back("Test.bp");
-    // std::cout << "DEBUG 1" << std::endl;
+    std::cout << "DEBUG 1" << std::endl;
 
     adios2::ADIOS adios(adios2::DebugON);
 
     for (auto &file : files)
     {
-        // std::cout << "DEBUG 2" << std::endl;
+        std::cout << "DEBUG 2" << std::endl;
         if (filesToRead == fileCount)
         {
             outputFile << "filesToRead: " << filesToRead
@@ -120,7 +120,7 @@ void AdiosMean(std::string engineName, std::string path, size_t filesToRead,
 
         adios2::IO io = adios.DeclareIO(ioName);
         io.SetEngine(engineName);
-        // std::cout << "FileName: " << file << std::endl;
+        std::cout << "FileName: " << file << std::endl;
         outputFile << "FileName: " << file << std::endl;
 
         size_t steps = 0;
@@ -147,7 +147,7 @@ void AdiosMean(std::string engineName, std::string path, size_t filesToRead,
         // TODO: maybe use SetStepSelection before Step loop
         // varName = var.first;
         // adios2::Params params = var.second;
-        // std::cout << "\n " << varName << std::endl;
+        std::cout << "\n " << varName << std::endl;
         outputFile << "\n " << varName << std::endl;
 
         if (strcmp(varName.c_str(), "time") == 0)
@@ -186,10 +186,15 @@ void AdiosMean(std::string engineName, std::string path, size_t filesToRead,
                 reader.Get<T>(variable, dataSet[i], adios2::Mode::Sync);       \
                                                                                \
                 endGetBlock = Clock::now();                                    \
+                sum = std::accumulate(dataSet[i].begin(), dataSet[i].end(),    \
+                                      0.0);                                    \
+                mean = sum / dataSet[i].size();                                \
+                allMeans.push_back(mean);                                      \
+                std::cout << "mean: " << mean << std::endl;                    \
                 blockDelta =                                                   \
                     duration_cast<milliseconds>(endGetBlock - startGetBlock);  \
                 blockDeltaVector.push_back(blockDelta);                        \
-                ++i;                                                           \
+                i++;                                                           \
             }                                                                  \
             endGetBlocks = Clock::now();                                       \
             getBlocksDelta =                                                   \
@@ -197,15 +202,12 @@ void AdiosMean(std::string engineName, std::string path, size_t filesToRead,
             getBlocksDeltaVector.push_back(getBlocksDelta);                    \
         }                                                                      \
     }
-        ADIOS2_FOREACH_ATTRIBUTE_PRIMITIVE_STDTYPE_1ARG(declare_type)
+        ADIOS2_FOREACH_ATTRIBUTE_PRIMITIVE_TYPE_1ARG(declare_type)
 #undef declare_type
         varCount++;
 
-        calculateMeanTime(outputFile, getBlocksDeltaVector, true);
+        // calculateMeanTime(outputFile, getBlocksDeltaVector, true);
         // calculateMeanTime(outputFile, getsDelta, true);
-
-        // sum = std::accumulate(dataSet.begin(), dataSet.end(), 0.0);\
-        //         mean = sum / v.size();\
 
         // getsDelta.clear();
         // getBlockDelta.clear();

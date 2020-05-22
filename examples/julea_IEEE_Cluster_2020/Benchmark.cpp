@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
                 numberFilesToRead = atoi(optarg);
                 break;
             case 'k':
-                variableToCalculateMeanOn = atoi(optarg);
+                variableToCalculateMeanOn = optarg;
             case 'p':
                 percentVarsToRead = atoi(optarg);
                 numberVarsToRead = atoi(optarg);
@@ -178,6 +178,7 @@ int main(int argc, char *argv[])
             break;
         case 4:
             AdiosMean(name, path, numberFilesToRead, variableToCalculateMeanOn);
+            break;
         case 5:
             // query
             JuleaReadMinMax(fileName2, "t2m");

@@ -466,7 +466,8 @@ void NCReadFile(std::string engine, std::string ncFileName,
         else if ((adiosType == "int16_t") && needsTransform)
         {
             adios2::Variable<float> adiosVar;
-            adiosVar = io.DefineVariable<float>(name, shape, start, count);
+            adiosVar = io.DefineVariable<float>(name, {}, {}, count);
+            // adiosVar = io.DefineVariable<float>(name, shape, start, count);
             int16_t data[dataSize];
             float data2[dataSize];
             outputFile << "BlkCnt \t" << numberSteps << std::endl;
@@ -536,7 +537,7 @@ void NCReadFile(std::string engine, std::string ncFileName,
         }                                                                      \
         else                                                                   \
         {                                                                      \
-            adiosVar = io.DefineVariable<T>(name, shape, start, count);        \
+            adiosVar = io.DefineVariable<T>(name, {}, {}, count);        \
         }                                                                      \
         T data[dataSize];                                                      \
         startPuts = Clock::now();                                              \
