@@ -13,7 +13,7 @@ target_link_libraries(NC_TO_BP adios2)
 target_link_libraries(NC_TO_BP PkgConfig::NETCDF)
 
 set(BENCHMARK_SOURCES Benchmark.cpp
-	benchmarkSource/AdiosRead.h benchmarkSource/AdiosRead.cpp benchmarkSource/AdiosMinMax.cpp
+	benchmarkSource/AdiosRead.h benchmarkSource/AdiosRead.cpp benchmarkSource/AdiosMinMax.cpp benchmarkSource/AdiosMean.cpp
 	benchmarkSource/JuleaRead.h benchmarkSource/JuleaRead.cpp
 	benchmarkSource/NetCDFRead.cpp benchmarkSource/NetCDFRead.h)
 add_executable(BENCHMARK ${BENCHMARK_SOURCES})

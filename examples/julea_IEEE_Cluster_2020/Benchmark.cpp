@@ -68,6 +68,7 @@ int main(int argc, char *argv[])
 
     std::string path;       // can be file or directory
     std::string engineName; // valid engines: bp3, bp4, julea-db, julea-kv
+    std::string variableToCalculateMeanOn;
 
     std::string fileName = "sresa1b_ncar_ccsm3-example.nc";
     std::string fileName2 = "_grib2netcdf-webmars-public-svc-blue-004-"
@@ -75,7 +76,7 @@ int main(int argc, char *argv[])
 
     try
     {
-        while ((opt = getopt(argc, argv, "hivd:c:p:m:n:s:")) != -1)
+        while ((opt = getopt(argc, argv, "hivd:c:k:p:m:n:s:")) != -1)
         {
             switch (opt)
             {
@@ -94,6 +95,8 @@ int main(int argc, char *argv[])
             case 'c':
                 numberFilesToRead = atoi(optarg);
                 break;
+            case 'k':
+                variableToCalculateMeanOn = atoi(optarg);
             case 'p':
                 percentVarsToRead = atoi(optarg);
                 numberVarsToRead = atoi(optarg);
@@ -174,6 +177,8 @@ int main(int argc, char *argv[])
             AdiosReadMinMax(name, path, numberFilesToRead, numberVarsToRead, max, false);
             break;
         case 4:
+            AdiosMean(name, path, numberFilesToRead, variableToCalculateMeanOn);
+        case 5:
             // query
             JuleaReadMinMax(fileName2, "t2m");
             break;

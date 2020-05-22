@@ -14,6 +14,10 @@ void AdiosReadMinMax(std::string engineName, std::string path, size_t fileCount,
 void AdiosRead(std::string engineName, std::string directory, size_t fileCount,
                uint32_t percentageVarsToRead);
 
+void AdiosMean(std::string engineName, std::string path,
+                     size_t filesToRead, std::string variableToCalculateMeanOn);
+
+/** internal helper functions */
 void buildDebugFileName(std::string &fileName, std::string engineName,
                         std::string path, size_t filesToRead,
                         uint32_t variablesToRead, std::time_t &curr_time);
