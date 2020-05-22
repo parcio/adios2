@@ -37,9 +37,10 @@ void JuleaDBSetMinMax(Variable<T> &variable, const T *data, T &blockMin,
 
     auto number_elements = adios2::helper::GetTotalSize(variable.m_Count);
     adios2::helper::GetMinMax(data, number_elements, min, max);
+
     blockMin = min;
     blockMax = max;
-    // blockInfo.Max = max;
+
     if (min < variable.m_Min)
     {
         // std::cout << "updated global min" << std::endl;
@@ -64,6 +65,7 @@ void JuleaDBSetMinMax<std::complex<float>>(
     Variable<std::complex<float>> &variable, const std::complex<float> *data,
     std::complex<float> &blockMin, std::complex<float> &blockMax)
 {
+    // TODO implement?
 }
 
 template <>
@@ -71,6 +73,7 @@ void JuleaDBSetMinMax<std::complex<double>>(
     Variable<std::complex<double>> &variable, const std::complex<double> *data,
     std::complex<double> &blockMin, std::complex<double> &blockMax)
 {
+    // TODO implement?
 }
 
 template <class T>
@@ -85,21 +88,12 @@ void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     }
     T blockMin;
     T blockMax;
-    // guint32 blockMD_len = 0;
-    // guint32 varMD_len = 0;
-    // gpointer md_buffer = NULL;
-    // auto bsonMetadata = bson_new();
+
     JuleaDBSetMinMax(variable, data, blockMin, blockMax);
 
     auto stepBlockID =
         g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
     // std::cout << "    stepBlockID: " << stepBlockID << std::endl;
-
-    // gpointer varMD;
-    // gpointer varMD =
-    //     SerializeVariableMetadata(variable, varMD_len, m_CurrentStep);
-    // gpointer blockMD = SerializeBlockMetadata(
-    //     variable, blockMD_len, m_CurrentStep, m_CurrentBlockID, blockInfo);
 
     // check whether variable name is already in variable_names DB
     auto itVariableWritten = m_WrittenVariableNames.find(variable.m_Name);
@@ -111,7 +105,6 @@ void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
                       << std::endl;
         }
 
-        // PutNameToJulea(variable.m_Name, m_Name, "variable_names");
         m_WrittenVariableNames.insert(variable.m_Name);
     }
 
@@ -135,7 +128,6 @@ void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     /** put data to object store */
     DBPutVariableDataToJulea(variable, data, m_Name, m_CurrentStep,
                              m_CurrentBlockID);
-    // bson_destroy(bsonMetadata);
 }
 
 template <class T>
@@ -200,13 +192,13 @@ void JuleaDBWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
     const typename Variable<T>::Info blockInfo =
         variable.SetBlockInfo(data, CurrentStep());
 
-    if (variable.m_SingleValue)
-    {
-        // std::cout << "variable.m_SingleValue: " << variable.m_SingleValue
-        // << std::endl;
-        // DoPutSync(variable, data); // causes issues with blockID when no
-        // steps and no bpls return;
-    }
+    // if (variable.m_SingleValue)
+    // {
+    // std::cout << "variable.m_SingleValue: " << variable.m_SingleValue
+    // << std::endl;
+    // DoPutSync(variable, data); // causes issues with blockID when no
+    // steps and no bpls return;
+    // }
 
     m_DeferredVariables.insert(variable.m_Name);
 }

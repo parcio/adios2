@@ -214,11 +214,6 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
     size_t shapeIDLen = sizeof(int);
     size_t typeLen = sizeof(variable.m_Type.c_str());
 
-    // size_t shapeLen = shapeSize * sizeof(size_t);
-    // size_t startLen = startSize * sizeof(size_t);
-    // size_t countLen = countSize * sizeof(size_t);
-    // size_t blocksLen = numberSteps * sizeof(size_t);
-
     size_t shapeBuffer[shapeSize];
     for (uint i = 0; i < shapeSize; i++)
     {
@@ -329,9 +324,6 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
     size_t minLen = sizeof(blockMin);
     size_t maxLen = sizeof(blockMax);
     size_t valueLen = sizeof(variable.m_Value);
-    // size_t min = variable.m_Min;
-    // size_t min = variable.m_Max;
-    // size_t value = variable.m_Value;
 
     size_t stepsStart = blockInfo.StepsStart;
     size_t stepsCount = blockInfo.StepsCount;
@@ -424,11 +416,9 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
 
     j_db_entry_set_field(entry, minField.c_str(), &blockMin, minLen, NULL);
     j_db_entry_set_field(entry, maxField.c_str(), &blockMax, maxLen, NULL);
-    // std::cout << "minLen: " << minLen << std::endl;
 
     j_db_entry_set_field(entry, "isValue", &tmp, sizeof(tmp), NULL);
-    // j_db_entry_set_field(entry, "max", &max, sizeof(max), NULL);
-    // TODO: check whether is value otherwise set to 0?
+
     if (isValue)
     {
         std::cout << "Writing local value for " << varName << std::endl;
@@ -437,14 +427,9 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
     }
     else
     {
-        // std::cout << "valueLen= " << valueLen << std::endl;
         size_t value = 0;
         valueLen = sizeof(value);
-        // j_db_entry_set_field(entry, "value", , valueLen, NULL);
-        // j_db_entry_set_field(entry, "value", NULL, 0, NULL);
         j_db_entry_set_field(entry, "value", &value, valueLen, NULL);
-        // j_db_entry_set_field(entry, "value", &variable.m_Value, valueLen,
-        // NULL);
     }
 
     j_db_entry_set_field(entry, "stepsStart", &stepsStart, sizeof(stepsStart),
