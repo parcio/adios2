@@ -138,8 +138,8 @@ void JuleaDBWriter::PerformPuts()
     /** if there are no deferred variables there is nothing to do */
     if (m_DeferredVariables.empty())
     {
-        std::cout << "deferred variables are empty " << std::endl;
-        // FIXME: blockID not set correctly when using put sync without
+        // std::cout << "deferred variables are empty " << std::endl;
+        // TODO: blockID not set correctly when using put sync without
         // begin/end step and without bpls just with perform puts
         m_CurrentBlockID = 0;
         return;

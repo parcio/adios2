@@ -31,6 +31,7 @@ namespace core
 {
 namespace engine
 {
+
 void setMinMaxValueFields(std::string *minField, std::string *maxField,
                           std::string *valueField, const char *varType)
 {
@@ -175,9 +176,19 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
         var->m_ReadAsLocalValue = isReadAsLocalValue;                          \
         var->m_RandomAccess = isRandomAccess;                                  \
         var->m_SingleValue = isSingleValue;                                    \
+                                                                               \
+        if (var->m_ShapeID == ShapeID::LocalValue)                             \
+        {                                                                      \
+            var->m_ShapeID = ShapeID::GlobalArray;                             \
+            var->m_SingleValue = true;                                         \
+        }                                                                      \
     }
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
+
+    // the ShapeID is set to global array so that displaying it in bpls looks
+    // like the rest
+    // std::cout << "This is the tricky part! " << std::endl;             \
 
     j_batch_unref(batch);
     // j_db_schema_unref(schema);
@@ -348,8 +359,7 @@ void DBDefineVariableInInit(core::IO *io, const std::string varName,
         else
         {
             // std::cout << "Single Value double " << std::endl;
-            auto &var =
-                io->DefineVariable<double>(varName, {adios2::LocalValueDim});
+            auto &var = io->DefineVariable<double>(varName, {1}, {0}, {1});
         }
         // std::cout << "Defined variable of type: " << type << std::endl;
     }
@@ -578,7 +588,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
 
         if (*shapeID == ShapeID::LocalValue)
         {
-            std::cout << " SHAPEID: LOCAL VALUE" << std::endl;
+            // std::cout << " SHAPEID: LOCAL VALUE" << std::endl;
             // localValue = true;
         }
         // // FIXME: localValueDim is screwing everything up
@@ -904,6 +914,7 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
         info->IsValue = *isValue;
         if (isValue)
         {
+            // std::cout << "Get Value from DB" << std::endl;
             j_db_iterator_get_field(iterator, valueField.c_str(), &type,
                                     (gpointer *)&value, &db_length, NULL);
             info->Value = *value;
