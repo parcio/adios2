@@ -34,6 +34,10 @@ void addFieldsForVariableMD(JDBSchema *schema)
 {
     gchar const *fileIndex[] = {"file", NULL};
     gchar const *varIndex[] = {"variableName", NULL};
+    gchar const *minFloatIndex[] = {"variableName", NULL};
+    gchar const *maxFloatIndex[] = {"variableName", NULL};
+    gchar const *minDoubleIndex[] = {"variableName", NULL};
+    gchar const *maxDoubleIndex[] = {"variableName", NULL};
 
     j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
     j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
@@ -96,6 +100,10 @@ void addFieldsForVariableMD(JDBSchema *schema)
 
     j_db_schema_add_index(schema, fileIndex, NULL);
     j_db_schema_add_index(schema, varIndex, NULL);
+    j_db_schema_add_index(schema, minFloatIndex, NULL);
+    j_db_schema_add_index(schema, maxFloatIndex, NULL);
+    j_db_schema_add_index(schema, minDoubleIndex, NULL);
+    j_db_schema_add_index(schema, maxDoubleIndex, NULL);
 }
 
 void addFieldsForBlockMD(JDBSchema *schema)
@@ -104,6 +112,10 @@ void addFieldsForBlockMD(JDBSchema *schema)
     gchar const *varIndex[] = {"variableName", NULL};
     gchar const *stepIndex[] = {"step", NULL};
     gchar const *blockIndex[] = {"block", NULL};
+    gchar const *minFloatIndex[] = {"variableName", NULL};
+    gchar const *maxFloatIndex[] = {"variableName", NULL};
+    gchar const *minDoubleIndex[] = {"variableName", NULL};
+    gchar const *maxDoubleIndex[] = {"variableName", NULL};
     //    gchar const *minIndex[] = {"min_blob", NULL};
     //    gchar const *maxIndex[] = {"max_blob", NULL};
 
@@ -167,6 +179,10 @@ void addFieldsForBlockMD(JDBSchema *schema)
     j_db_schema_add_index(schema, varIndex, NULL);
     j_db_schema_add_index(schema, stepIndex, NULL);
     j_db_schema_add_index(schema, blockIndex, NULL);
+    j_db_schema_add_index(schema, minFloatIndex, NULL);
+    j_db_schema_add_index(schema, maxFloatIndex, NULL);
+    j_db_schema_add_index(schema, minDoubleIndex, NULL);
+    j_db_schema_add_index(schema, maxDoubleIndex, NULL);
     //    j_db_schema_add_index(schema, minIndex, NULL);
     //    j_db_schema_add_index(schema, maxIndex, NULL);
 }

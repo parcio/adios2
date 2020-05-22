@@ -42,18 +42,21 @@ void JuleaDBSetMinMax(Variable<T> &variable, const T *data, T &blockMin,
     // blockInfo.Max = max;
     if (min < variable.m_Min)
     {
-        std::cout << "updated global min" << std::endl;
+        // std::cout << "updated global min" << std::endl;
         variable.m_Min = min;
     }
     if (max > variable.m_Max)
     {
-        std::cout << "updated global max" << std::endl;
+        // std::cout << "updated global max" << std::endl;
         variable.m_Max = max;
     }
-    std::cout << "min: " << min << std::endl;
-    std::cout << "global min: " << variable.m_Min << std::endl;
-    std::cout << "max: " << max << std::endl;
-    std::cout << "global max: " << variable.m_Max << std::endl;
+    if (false)
+    {
+        std::cout << "min: " << min << std::endl;
+        std::cout << "global min: " << variable.m_Min << std::endl;
+        std::cout << "max: " << max << std::endl;
+        std::cout << "global max: " << variable.m_Max << std::endl;
+    }
 }
 
 template <>
