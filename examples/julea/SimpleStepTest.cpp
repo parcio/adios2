@@ -66,6 +66,61 @@ std::string DimsToString(const adios2::Dims &dims)
     s += "\"";
     return s;
 }
+void write_blocks(std::string engine, std::string fileName)
+{
+    const size_t Nglobal = 2;
+    std::vector<double> v1(Nglobal);
+    std::vector<double> v2(Nglobal);
+    std::vector<double> v3(Nglobal);
+    std::vector<double> v4(Nglobal);
+    std::vector<double> v5(Nglobal);
+    std::vector<double> v6(Nglobal);
+    std::vector<double> v7(Nglobal);
+    std::vector<double> v8(Nglobal);
+
+    adios2::ADIOS adios(adios2::DebugON);
+    adios2::IO io = adios.DeclareIO("Output");
+    io.SetEngine(engine);
+
+    adios2::Variable<double> varV0 =
+        io.DefineVariable<double>("v0", {}, {}, {Nglobal});
+
+    adios2::Engine writer = io.Open(fileName, adios2::Mode::Write);
+
+    for (size_t i = 0; i < Nglobal; i++)
+    {
+        v1[i] = 11 + 1 * 0.1 + i * 100;
+        v2[i] = 22 + 2 * 0.1 + i * 100;
+        v3[i] = 33 + 3 * 0.1 + i * 100;
+        v4[i] = 44 + 4 * 0.1 + i * 100;
+        v5[i] = 55 + 5 * 0.1 + i * 100;
+        v6[i] = 66 + 6 * 0.1 + i * 100;
+        v7[i] = 77 + 7 * 0.1 + i * 100;
+        v8[i] = 88 + 8 * 0.1 + i * 100;
+    }
+
+    writer.Put<double>(varV0, v1.data(), adios2::Mode::Deferred);
+    writer.Put<double>(varV0, v2.data(), adios2::Mode::Sync);
+    writer.Put<double>(varV0, v3.data(), adios2::Mode::Deferred);
+
+    for (int i = 0; i < 3; i++)
+    {
+        // writer.BeginStep();
+
+        writer.Put<double>(varV0, v4.data(), adios2::Mode::Sync);
+        writer.Put<double>(varV0, v5.data(), adios2::Mode::Deferred);
+        writer.Put<double>(varV0, v6.data(), adios2::Mode::Sync);
+        writer.Put<double>(varV0, v7.data(), adios2::Mode::Deferred);
+
+        if (i == 2)
+        {
+            writer.Put<double>(varV0, v8.data(), adios2::Mode::Sync);
+        }
+        writer.PerformPuts();
+        // writer.EndStep();
+    }
+    writer.Close();
+}
 
 void write_simple(std::string engine, std::string fileName)
 {
@@ -458,7 +513,8 @@ int main(int argc, char *argv[])
         // write_complex("bp3", "SimpleSteps.bp");
         // write_simple("bp3", "SimpleSteps.bp");
         // write_simple("julea-kv", "SimpleSteps.jv");
-        write_simple("julea-db", "SimpleSteps.jb");
+        write_blocks("bp3", "SimpleBlocks.bp");
+        // write_simple("julea-db", "SimpleSteps.jb");
         // write_simple("hdf5", "SimpleSteps.h5");
         // write("julea-kv", "SimpleSteps.bp");
         // write();
@@ -467,7 +523,7 @@ int main(int argc, char *argv[])
         // read_simple("julea-db", "SimpleSteps.jb");
         // read_selection("bp3", "SimpleSteps.bp");
         // read_selection("julea-kv", "SimpleSteps.jv");
-        read_selection("julea-db", "SimpleSteps.jb");
+        // read_selection("julea-db", "SimpleSteps.jb");
     }
     catch (std::invalid_argument &e)
     {
