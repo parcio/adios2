@@ -490,7 +490,7 @@ void NCReadFile(std::string engine, std::string ncFileName,
 
                     // std::cout << "data2: " << data2[0] << std::endl;
                     startPutBlock = Clock::now();
-                    writer.Put<float>(adiosVar, data2, adios2::Mode::Deferred);
+                    writer.Put<float>(adiosVar, data2, adios2::Mode::Sync);
                     endPutBlock = Clock::now();
                     blockDelta = duration_cast<milliseconds>(endPutBlock -
                                                              startPutBlock);
@@ -514,7 +514,7 @@ void NCReadFile(std::string engine, std::string ncFileName,
                 if (adiosVar)
                 {
                     startPutBlock = Clock::now();
-                    writer.Put<float>(adiosVar, data2, adios2::Mode::Deferred);
+                    writer.Put<float>(adiosVar, data2, adios2::Mode::Sync);
                     writer.PerformPuts();
                     endPutBlock = Clock::now();
                     blockDelta = duration_cast<milliseconds>(endPutBlock -
@@ -554,7 +554,7 @@ void NCReadFile(std::string engine, std::string ncFileName,
                 ncGetDeltaVector.push_back(ncGetDelta);                        \
                                                                                \
                 startPutBlock = Clock::now();                                  \
-                writer.Put<T>(adiosVar, (T *)data, adios2::Mode::Deferred);    \
+                writer.Put<T>(adiosVar, (T *)data, adios2::Mode::Sync);    \
                 endPutBlock = Clock::now();                                    \
                 blockDelta =                                                   \
                     duration_cast<milliseconds>(endPutBlock - startPutBlock);  \
@@ -574,7 +574,7 @@ void NCReadFile(std::string engine, std::string ncFileName,
             if (adiosVar)                                                      \
             {                                                                  \
                 startPutBlock = Clock::now();                                  \
-                writer.Put<T>(adiosVar, (T *)data, adios2::Mode::Deferred);    \
+                writer.Put<T>(adiosVar, (T *)data, adios2::Mode::Sync);    \
                 endPutBlock = Clock::now();                                    \
                 blockDelta =                                                   \
                     duration_cast<milliseconds>(endPutBlock - startPutBlock);  \
