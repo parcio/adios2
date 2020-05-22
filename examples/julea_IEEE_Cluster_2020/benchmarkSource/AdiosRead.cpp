@@ -136,9 +136,10 @@ void readInput(const std::string &path, std::vector<std::string> &files,
             {
                 files.push_back(path);
             }
-            else{
-            outputFile << "Passed directory contains: " << std::endl;
-            readDirectory(path, files, outputFile);
+            else
+            {
+                outputFile << "Passed directory contains: " << std::endl;
+                readDirectory(path, files, outputFile);
             }
         }
         else if (s.st_mode & S_IFREG)
@@ -161,10 +162,10 @@ void readInput(const std::string &path, std::vector<std::string> &files,
     outputFile << "-------------------------------" << std::endl;
 }
 
-void AdiosReadMinMax(std::string path, std::string variableName)
-{
-    std::cout << "AdiosReadMinMax" << std::endl;
-}
+// void AdiosReadMinMax(std::string path, std::string variableName)
+// {
+//     std::cout << "AdiosReadMinMax" << std::endl;
+// }
 
 void calculateMeanTime(std::ofstream &outputFile,
                        std::vector<milliseconds> &delta, bool allBlocks)
@@ -278,11 +279,11 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
         std::string ioName = "Output-" + std::to_string(fileCount);
         outputFile << "\n-------------------------------" << std::endl;
         outputFile << "ioName: " << ioName << std::endl;
-        std::cout << "ioName: " << ioName << std::endl;
+        // std::cout << "ioName: " << ioName << std::endl;
 
         adios2::IO io = adios.DeclareIO(ioName);
         io.SetEngine(engineName);
-        std::cout << "FileName: " << file << std::endl;
+        // std::cout << "FileName: " << file << std::endl;
         outputFile << "FileName: " << file << std::endl;
 
         size_t steps = 0;

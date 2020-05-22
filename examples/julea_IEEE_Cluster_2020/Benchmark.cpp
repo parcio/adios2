@@ -62,6 +62,8 @@ int main(int argc, char *argv[])
     uint8_t percentVarsToRead;
     uint8_t scenario; // 0 = both, 1 Adios, 2 Julea
     size_t numberFilesToRead;
+    size_t numberVarsToRead;
+    size_t max;
     const char *name;
 
     std::string path;       // can be file or directory
@@ -73,7 +75,7 @@ int main(int argc, char *argv[])
 
     try
     {
-        while ((opt = getopt(argc, argv, "hivd:c:p:n:s:")) != -1)
+        while ((opt = getopt(argc, argv, "hivd:c:p:m:n:s:")) != -1)
         {
             switch (opt)
             {
@@ -94,6 +96,10 @@ int main(int argc, char *argv[])
                 break;
             case 'p':
                 percentVarsToRead = atoi(optarg);
+                numberVarsToRead = atoi(optarg);
+                break;
+            case 'm':
+                max = atoi(optarg);
                 break;
             case 'n':
                 engineName = optarg;
@@ -154,7 +160,7 @@ int main(int argc, char *argv[])
             if (adios || julea)
             {
                 // std::cout << "Reached" << std::endl;
-                AdiosRead(name, path, numberFilesToRead, percentVarsToRead);
+                AdiosRead(name, path, numberFilesToRead, numberVarsToRead);
             }
             // else if (julea)
             // {
@@ -162,8 +168,10 @@ int main(int argc, char *argv[])
             // }
             break;
         case 3:
-            // read random
-            JuleaReadMinMax(fileName2, "t2m");
+            //read min or max
+            // 42 compare variable value with
+            // false = compare with max not min
+            AdiosReadMinMax(name, path, numberFilesToRead, numberVarsToRead, max, false);
             break;
         case 4:
             // query
