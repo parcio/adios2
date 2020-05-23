@@ -15,7 +15,6 @@ engines="bp3 bp4"
 declare -A ending
 declare -A result
 
-sum=0
 ending=(["bp3"]="bp" ["bp4"]="bp" ["julea-kv"]="jv" ["julea-db"]="jb")
 
 echo -e "#files\t #vars\t io-time[s] ${engines[*]}"
