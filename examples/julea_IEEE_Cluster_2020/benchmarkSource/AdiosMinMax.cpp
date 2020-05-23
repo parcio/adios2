@@ -38,7 +38,7 @@ void buildMinMaxDebugFileName(std::string &fileName, std::string engineName,
     timeinfo = localtime(&curr_time);
     strftime(timeBuffer, 80, "-%Y-%m-%d-%I:%M%p", timeinfo);
 
-    fileName = engineName + "-" + path + "-" + timeBuffer + ".txt";
+    fileName = engineName + "-" + path + timeBuffer + ".txt";
 }
 
 void printMinMaxDebugHeader(std::ofstream &outputFile, std::time_t curr_time)
@@ -47,6 +47,7 @@ void printMinMaxDebugHeader(std::ofstream &outputFile, std::time_t curr_time)
     outputFile << "Current time: " << std::ctime(&curr_time);
     outputFile << "\nvariableName \n"
                << "AllBl:  \tTime to read all blocks that have a min smaller/max larger than compareValue in ms \n\n"
+               << "blockMax: \tMaximum of the block"
                 << "Larger: \tNumber of blocks that have a min smaller/max larger than compareValue"
                << "Step:   \tTime for a step in ms\n"
                << "SumIO:  \tTime for complete I/O in ms\n"
@@ -87,7 +88,11 @@ void AdiosReadMinMax(std::string engineName, std::string path,
     // std::cout << "debugFileName: " << debugFileName << std::endl;
 
     size_t fileCount = 0; // loop counter
-    size_t larger = 0;    // number of blocks with larger Max than compareValue
+    size_t wasLarger = 0;    // number of blocks with larger Max than compareValue
+    size_t sumWasLarger = 0;
+
+    size_t totalSum = 0;
+    size_t sum = 0;
     std::string varName;
     std::vector<std::string> files;
 
@@ -177,7 +182,7 @@ void AdiosReadMinMax(std::string engineName, std::string path,
                 if (blockMax > compareValue)                                   \
                 {                                                              \
                     outputFile << "blockMax: " << blockMax << std::endl;        \
-                    larger++;                                                  \
+                    wasLarger++;                                                  \
                 }                                                              \
             }                                                                  \
             endGetBlocks = Clock::now();                                       \
@@ -209,15 +214,23 @@ void AdiosReadMinMax(std::string engineName, std::string path,
         milliseconds timeStep =
             duration_cast<milliseconds>(endStep - startStep);
 
-        outputFile << "Larger \t" << larger << std::endl;
-        outputFile << "\nStep \t" << timeStep.count() << std::endl;
-        outputFile << "SumIO \t" << timeOpenClose.count() << std::endl;
-        outputFile << "-------------------------------\n" << std::endl;
+        sum = timeOpenClose.count();
+        totalSum = totalSum + sum;
 
-        // std::cout << "\nStep \t" << timeStep.count() << std::endl;
-        std::cout << "Larger \t" << larger << std::endl;
-        std::cout << "SumIO \t" << timeOpenClose.count() << std::endl;
+        outputFile << "\nStep \t" << timeStep.count() << std::endl;
+
+        sumWasLarger = sumWasLarger + wasLarger;
+        outputFile << "SumIO \t" << sum << " wasLarger \t" << wasLarger << std::endl;
 
         fileCount++;
     } // end for files loop
+
+        outputFile << "-------------------------------\n" << std::endl;
+        // outputFile << "SumIO \t" << sum << " totalSum \t" << totalSum << "\t  \t Larger" << wasLarger << " sumWasLarger \t" << sumWasLarger << std::endl;
+        outputFile << "SumIO \t\t" << sum << " \t totalSum \t" << totalSum << std::endl;
+        outputFile << "wasLarger \t" <<  wasLarger << " \t sumWasLarger \t" << sumWasLarger << std::endl;
+        // outputFile<<  totalSum << " \t " << sumWasLarger <<  std::endl;
+
+        std::cout << sum << " \t " <<  totalSum << " \t\t " << wasLarger << " \t " << sumWasLarger <<  std::endl;
+        std::cout <<  totalSum << " \t " << sumWasLarger <<  std::endl;
 }
