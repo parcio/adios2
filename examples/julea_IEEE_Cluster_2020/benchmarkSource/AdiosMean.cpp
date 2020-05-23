@@ -60,22 +60,27 @@ void printMeanDebugHeader(std::ofstream &outputFile, std::time_t curr_time)
 void AdiosMean(std::string engineName, std::string path, size_t filesToRead,
                std::string variableToCalculateMeanOn)
 {
-    std::cout << "--- AdiosReadMean--- engine: " << engineName << std::endl;
+    // std::cout << "--- AdiosReadMean--- engine: " << engineName << std::endl;
     time_point<Clock> startOpen;      // start time of complete I/O
     time_point<Clock> startStep;      // start time of step
+    time_point<Clock> startCalculate;      // start time of mean calc
     time_point<Clock> startGetBlocks; // start time of reading all blocks
     time_point<Clock> startGetBlock;  // start time of reading block
 
     time_point<Clock> endGetBlock;  // end time of reading block
     time_point<Clock> endGetBlocks; // end time of reading all blocks
+    time_point<Clock> endCalculate;      // end time of mean calc
     time_point<Clock> endStep;      // end time of step
     time_point<Clock> endOpen;      // end time of complete I/O
 
     milliseconds blockDelta;     // time interval to read one block
+    milliseconds calculateDelta;     // time interval to read one block
     milliseconds getBlocksDelta; // time interval to read all blocks
 
     std::vector<milliseconds>
         getBlocksDeltaVector; // time intervals to read all blocks
+    std::vector<milliseconds>
+        calculateDeltaVector; // time intervals to read all blocks
     std::vector<milliseconds>
         blockDeltaVector; // time intervals to read one block
 
@@ -87,26 +92,25 @@ void AdiosMean(std::string engineName, std::string path, size_t filesToRead,
     outputFile.open(debugFileName);
     printMeanDebugHeader(outputFile, curr_time);
 
-    std::cout << "debugFileName: " << debugFileName << std::endl;
+    // std::cout << "debugFileName: " << debugFileName << std::endl;
 
     size_t fileCount = 0; // loop counter
     size_t larger = 0;    // number of blocks with larger Max than compareValue
     double sum = 0.0;
     double mean = 0.0;
     std::vector<double> allMeans;
+    size_t totalIOSum = 0;
 
     std::string varName = variableToCalculateMeanOn;
     std::vector<std::string> files;
 
     readInput(path, files, outputFile);
     // files.push_back("Test.bp");
-    std::cout << "DEBUG 1" << std::endl;
 
     adios2::ADIOS adios(adios2::DebugON);
 
     for (auto &file : files)
     {
-        std::cout << "DEBUG 2" << std::endl;
         if (filesToRead == fileCount)
         {
             outputFile << "filesToRead: " << filesToRead
@@ -120,7 +124,7 @@ void AdiosMean(std::string engineName, std::string path, size_t filesToRead,
 
         adios2::IO io = adios.DeclareIO(ioName);
         io.SetEngine(engineName);
-        std::cout << "FileName: " << file << std::endl;
+        // std::cout << "FileName: " << file << std::endl;
         outputFile << "FileName: " << file << std::endl;
 
         size_t steps = 0;
@@ -147,7 +151,7 @@ void AdiosMean(std::string engineName, std::string path, size_t filesToRead,
         // TODO: maybe use SetStepSelection before Step loop
         // varName = var.first;
         // adios2::Params params = var.second;
-        std::cout << "\n " << varName << std::endl;
+        // std::cout << "\n " << varName << std::endl;
         outputFile << "\n " << varName << std::endl;
 
         if (strcmp(varName.c_str(), "time") == 0)
@@ -186,11 +190,15 @@ void AdiosMean(std::string engineName, std::string path, size_t filesToRead,
                 reader.Get<T>(variable, dataSet[i], adios2::Mode::Sync);       \
                                                                                \
                 endGetBlock = Clock::now();                                    \
+                startCalculate = Clock::now();                                  \
                 sum = std::accumulate(dataSet[i].begin(), dataSet[i].end(),    \
                                       0.0);                                    \
                 mean = sum / dataSet[i].size();                                \
-                allMeans.push_back(mean);                                      \
-                std::cout << "mean: " << mean << std::endl;                    \
+                outputFile << "mean: " << mean << std::endl;                    \
+                endCalculate = Clock::now();                                  \
+                calculateDelta =                                                   \
+                    duration_cast<milliseconds>(endCalculate - startCalculate);  \
+                calculateDeltaVector.push_back(calculateDelta);                        \
                 blockDelta =                                                   \
                     duration_cast<milliseconds>(endGetBlock - startGetBlock);  \
                 blockDeltaVector.push_back(blockDelta);                        \
@@ -220,20 +228,33 @@ void AdiosMean(std::string engineName, std::string path, size_t filesToRead,
         reader.Close();
         endOpen = Clock::now();
 
+         size_t sumCalculateTimes = 0;
+        // size_t mean = 0;
+        for (auto &time : calculateDeltaVector)
+        {
+            sumCalculateTimes += time.count();
+            // std::cout << "delta: " << time.count() << std::endl;
+        }
+
         milliseconds timeOpenClose =
             duration_cast<milliseconds>(endOpen - startOpen);
         milliseconds timeStep =
             duration_cast<milliseconds>(endStep - startStep);
 
-        outputFile << "Larger \t" << larger << std::endl;
-        outputFile << "\nStep \t" << timeStep.count() << std::endl;
+        size_t sumIOWithoutMeanCalculation = timeOpenClose.count() - sumCalculateTimes;
+
         outputFile << "SumIO \t" << timeOpenClose.count() << std::endl;
+         // std::cout << "SumIO \t" << timeOpenClose.count() << std::endl;
+        outputFile << "sumIOWithoutMeanCalculation \t" << sumIOWithoutMeanCalculation << std::endl;
+         // std::cout << "sumIOWithoutMeanCalculation \t" << sumIOWithoutMeanCalculation << std::endl;
         outputFile << "-------------------------------\n" << std::endl;
 
         // std::cout << "\nStep \t" << timeStep.count() << std::endl;
-        std::cout << "Larger \t" << larger << std::endl;
-        std::cout << "SumIO \t" << timeOpenClose.count() << std::endl;
+        // std::cout << "SumIO \t" << timeOpenClose.count() << std::endl;
 
+        totalIOSum = totalIOSum + sumIOWithoutMeanCalculation;
         fileCount++;
     } // end for files loop
+        outputFile<< "SumIO \t" << totalIOSum << std::endl;
+        std::cout <<  totalIOSum << std::endl;
 }
