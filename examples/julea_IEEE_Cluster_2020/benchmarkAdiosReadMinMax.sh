@@ -5,10 +5,11 @@ vars="1 4 8 16 26"
 # vars="1 4 8 16"
 # files="1 2 4 8 16 32 64 128 256 512"
 # files="1 4 16 64 256 512"
-files="1 4 16 64"
+# files="1 4 16 64"
+files="250"
 
 # engines="julea-kv julea-db"
-engines="bp3"
+engines="bp3 bp4"
 maximum="42"
 # maximum="42 420 4200"
 
@@ -31,7 +32,7 @@ do
 				outfile=/tmp/AdiosReadBenchmark/$engine-$fileCount-$varCount.${ending[$engine]}
 
 				# result[$engine]="$(./bin/BENCHMARK -d testFiles -c $fileCount -p $varCount -n $engine -s3 -m $max )\t"
-				result[$engine]="$(./bin/BENCHMARK -d /tmp/$engine-Files -c $fileCount -p $varCount -n $engine -s3 -m $max )\t"
+				result[$engine]="$(./julea-adios2/build/bin/BENCHMARK -d /tmp/$engine-Files -c $fileCount -p $varCount -n $engine -s3 -m $max )\t"
 			done
 		echo -e "$fileCount\t $varCount\t $max\t ${result[*]} \t"
 		done
