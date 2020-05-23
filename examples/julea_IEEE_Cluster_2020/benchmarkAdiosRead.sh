@@ -4,7 +4,7 @@ vars="1 4 8 16 32"
 
 # engines="julea-kv julea-db"
 engines="bp3 bp4"
-# engines="bp3"
+#engines="bp4"
 
 filenumber=0
 
@@ -20,19 +20,24 @@ for engine in $engines
 do
 	for file in /tmp/$engine-Files/*.bp
 	do
-#	let "filenumber +=1"
+	let "filenumber +=1"
 		for varCount in $vars
 		do
-			echo "$file"
+			#echo "$file"
+			
 			filename=$(basename -- "$file")
 			extension="${filename##*.}"
 			filename="${filename%.*}"
+			
 			#outfile=/tmp/AdiosReadBenchmark/$engine-$fileCount-$varCount.${ending[$engine]}
-			echo "$filename"
-			result[$engine]="$(./julea-adios2/build/bin/BENCHMARK -d file -c 1 -p $varCount -n $engine -s2 )\t"
+			#echo "$filename"
+			
+			result[$engine]="$(./julea-adios2/build/bin/BENCHMARK -d $file -c 1 -p $varCount -n $engine -s2 )\t"
 			# result[$engine]="$(./bin/BENCHMARK -d /tmp/$engine-Files -c $fileCount -p $varCount -n $engine -s2 )\t"
+		
+			#filenumber=$((filenumber+1))
+			echo -e "$filenumber\t $varCount\t ${result[*]}\t $engine\t $filename"
 		done
-	echo -e "$filenumber\t $varCount\t ${result[*]} filename\t"
 	done
 done
 
