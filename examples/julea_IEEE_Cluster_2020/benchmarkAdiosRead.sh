@@ -16,12 +16,12 @@ ending=(["bp3"]="bp" ["bp4"]="bp" ["julea-kv"]="jv" ["julea-db"]="jb")
 echo -e "#files\t #vars\t io-time[s] ${engines[*]}"
 
 # for file in /home/duwe/ieee_cluster_2020_adios2/ecmwf-data/*.nc
-for file in /tmp/$engine-Files/*.bp
+for engine in $engines
 do
-#	let "filenumber +=1"
-	for varCount in $vars
+	for file in /tmp/$engine-Files/*.bp
 	do
-		for engine in $engines
+#	let "filenumber +=1"
+		for varCount in $vars
 		do
 			echo "$file"
 			filename=$(basename -- "$file")
