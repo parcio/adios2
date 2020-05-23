@@ -109,7 +109,8 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
     guint64 db_length = 0;
     g_autofree gchar *db_field = NULL;
 
-    g_autoptr(JDBSchema) schema = NULL;
+    g_autoptr(JDBSchema) blockSchema = NULL;
+    g_autoptr(JDBSchema) varSchema = NULL;
     // JDBSchema *schema = NULL;
     // JDBEntry *entry = NULL;
     // JDBIterator *iterator = NULL;
@@ -119,9 +120,15 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
-    schema = j_db_schema_new("adios2", "block-metadata", NULL);
-    j_db_schema_get(schema, batch, NULL);
+    blockSchema = j_db_schema_new("adios2", "block-metadata", NULL);
+    j_db_schema_get(blockSchema, batch, NULL);
     err = j_batch_execute(batch);
+    varSchema = j_db_schema_new("adios2", "variable-metadata", NULL);
+    j_db_schema_get(varSchema, batch, NULL);
+    err = j_batch_execute(batch);
+    std::string minField;
+    std::string maxField;
+    std::string valueField;
 
     /** AvailableStepBlockIndexOffsets stores the entries (= blocks) _id (= line
      * in the sql table) */
@@ -139,8 +146,8 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
             {                                                                  \
                 step = i;                                                      \
                 block = j;                                                     \
-                g_autoptr(JDBSelector) selector =                              \
-                    j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);   \
+                g_autoptr(JDBSelector) selector = j_db_selector_new(           \
+                    blockSchema, J_DB_SELECTOR_MODE_AND, NULL);                \
                 j_db_selector_add_field(                                       \
                     selector, "file", J_DB_SELECTOR_OPERATOR_EQ,               \
                     nameSpace.c_str(), strlen(nameSpace.c_str()) + 1, NULL);   \
@@ -154,7 +161,7 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
                                         J_DB_SELECTOR_OPERATOR_EQ, &block,     \
                                         sizeof(block), NULL);                  \
                 g_autoptr(JDBIterator) iterator =                              \
-                    j_db_iterator_new(schema, selector, NULL);                 \
+                    j_db_iterator_new(blockSchema, selector, NULL);            \
                 while (j_db_iterator_next(iterator, NULL))                     \
                 {                                                              \
                     j_db_iterator_get_field(iterator, "_id", &jdbType,         \
@@ -168,6 +175,34 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
             }                                                                  \
             var->m_AvailableStepsCount++;                                      \
         }                                                                      \
+                                                                               \
+        setMinMaxValueFields(&minField, &maxField, &valueField, type.c_str()); \
+        g_autoptr(JDBSelector) selector =                                      \
+            j_db_selector_new(varSchema, J_DB_SELECTOR_MODE_AND, NULL);        \
+                                                                               \
+        j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,   \
+                                nameSpace.c_str(),                             \
+                                strlen(nameSpace.c_str()) + 1, NULL);          \
+        j_db_selector_add_field(selector, "variableName",                      \
+                                J_DB_SELECTOR_OPERATOR_EQ, varName.c_str(),    \
+                                strlen(varName.c_str()) + 1, NULL);            \
+                                                                               \
+        g_autoptr(JDBIterator) iterator =                                      \
+            j_db_iterator_new(varSchema, selector, NULL);                      \
+        while (j_db_iterator_next(iterator, NULL))                             \
+        {                                                                      \
+            T *min;                                                            \
+            T *max;                                                            \
+            j_db_iterator_get_field(iterator, minField.c_str(), &jdbType,      \
+                                    (gpointer *)&min, &db_length, NULL);       \
+            var->m_Min = *min;                                                 \
+            j_db_iterator_get_field(iterator, maxField.c_str(), &jdbType,      \
+                                    (gpointer *)&max, &db_length, NULL);       \
+            var->m_Max = *max;                                                 \
+            g_free(min);                                                       \
+            g_free(max);                                                       \
+        }                                                                      \
+                                                                               \
         var->m_AvailableStepsStart = 0;                                        \
         var->m_StepsStart = 0;                                                 \
         var->m_Engine = &engine;                                               \
