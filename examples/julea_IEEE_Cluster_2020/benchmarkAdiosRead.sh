@@ -26,7 +26,7 @@ do
 			filename=$(basename -- "$file")
 			extension="${filename##*.}"
 			filename="${filename%.*}"
-			outfile=/tmp/AdiosReadBenchmark/$engine-$fileCount-$varCount.${ending[$engine]}
+			#outfile=/tmp/AdiosReadBenchmark/$engine-$fileCount-$varCount.${ending[$engine]}
 
 			result[$engine]="$(./bin/BENCHMARK -d file -c 1 -p $varCount -n $engine -s2 )\t"
 			# result[$engine]="$(./bin/BENCHMARK -d /tmp/$engine-Files -c $fileCount -p $varCount -n $engine -s2 )\t"
