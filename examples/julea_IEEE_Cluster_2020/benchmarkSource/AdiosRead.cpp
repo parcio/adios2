@@ -86,14 +86,17 @@ void readDirectory(const std::string &path, std::vector<std::string> &v,
         }
         else if (slen >= 4 && file.compare(slen - 4, 4, ".dir") == 0)
         {
-            outputFile << "something.dir that is ignored" << std::endl;
+            // outputFile << "something.dir that is ignored" << std::endl;
             continue;
         }
         // this should only apply to bp4 files.
         // bp3 has .dir directories and bp files
+        // FIXME: works but probably only because unpleasant cases are not tested
+        // here is no check anymore whether it is a dir or file
         else if (slen >= 3 && file.compare(slen - 3, 3, ".bp") == 0)
         {
-            completeFileName = path;
+            // completeFileName = path;
+            completeFileName = path + "/" + dirEntry->d_name;
         }
         else
         {
@@ -255,7 +258,7 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
     outputFile.open(debugFileName);
     printDebugHeader(outputFile, curr_time);
 
-    std::cout << "debugFileName: " << debugFileName << std::endl;
+    // std::cout << "debugFileName: " << debugFileName << std::endl;
 
     size_t fileCount = 0; // loop counter
     std::string varName;
@@ -310,7 +313,7 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
             // TODO: maybe use SetStepSelection before Step loop
             varName = var.first;
             adios2::Params params = var.second;
-            std::cout << "\n " << varName << std::endl;
+            // std::cout << "\n " << varName << std::endl;
             outputFile << "\n " << varName << std::endl;
 
             if (strcmp(varName.c_str(), "time") == 0)
@@ -401,7 +404,11 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
         outputFile << "-------------------------------\n" << std::endl;
 
         // std::cout << "\nStep \t" << timeStep.count() << std::endl;
-        std::cout << "SumIO \t" << timeOpenClose.count() << std::endl;
+        // std::cout << "SumIO \t" << timeOpenClose.count() << std::endl;
+        size_t sum = timeOpenClose.count();
+        // std::cout << timeOpenClose.count() << std::endl;
+        std::cout << sum << std::endl;
+        // std::cout <<" " <<sum;
 
         fileCount++;
     } // end for files loop
