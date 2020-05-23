@@ -261,6 +261,7 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
     // std::cout << "debugFileName: " << debugFileName << std::endl;
 
     size_t fileCount = 0; // loop counter
+    size_t totalSum = 0;
     std::string varName;
     std::vector<std::string> files;
 
@@ -401,15 +402,18 @@ void AdiosRead(std::string engineName, std::string path, size_t filesToRead,
 
         outputFile << "\nStep \t" << timeStep.count() << std::endl;
         outputFile << "SumIO \t" << timeOpenClose.count() << std::endl;
-        outputFile << "-------------------------------\n" << std::endl;
 
         // std::cout << "\nStep \t" << timeStep.count() << std::endl;
         // std::cout << "SumIO \t" << timeOpenClose.count() << std::endl;
         size_t sum = timeOpenClose.count();
         // std::cout << timeOpenClose.count() << std::endl;
-        std::cout << sum << std::endl;
+        // std::cout << sum << std::endl;
         // std::cout <<" " <<sum;
-
+        totalSum = totalSum + sum;
         fileCount++;
     } // end for files loop
+        outputFile << "totalSum \t" << totalSum << std::endl;
+        outputFile << "-------------------------------\n" << std::endl;
+        std::cout << totalSum << std::endl;
+
 }
