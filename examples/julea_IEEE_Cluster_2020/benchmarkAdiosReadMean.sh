@@ -4,7 +4,7 @@ varNames="t2m stl1"
 files="1 4 16 64 250"
 
 # engines="julea-kv julea-db"
-engines="bp3"
+engines="bp3 bp4"
 
 declare -A ending
 declare -A result
@@ -23,7 +23,7 @@ do
             filename="${filename%.*}"
             outfile=/tmp/AdiosReadBenchmark/$engine-$fileCount-$varCount.${ending[$engine]}
             # result[$engine]="$(./bin/BENCHMARK -d testFiles -c $fileCount -n $engine -s 4 -k $varName )\t"
-            result[$engine]="$(./bin/BENCHMARK -d /tmp/$engine-Files -c $fileCount -n $engine -s 4 -k $varName )\t"
+            result[$engine]="$(./julea-adios2/build/bin/BENCHMARK -d /tmp/$engine-Files -c $fileCount -n $engine -s 4 -k $varName )\t"
         done
         echo -e "$fileCount\t $varName\t ${result[*]} $filename \t"
     done
