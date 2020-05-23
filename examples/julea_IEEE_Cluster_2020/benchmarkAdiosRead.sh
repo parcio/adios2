@@ -31,7 +31,7 @@ do
 			outfile=/tmp/AdiosReadBenchmark/$engine-$fileCount-$varCount.${ending[$engine]}
 
 			result[$engine]="$(./bin/BENCHMARK -d testFiles -c $fileCount -p $varCount -n $engine -s2 )\t"
-			# result[$engine]="$(./bin/BENCHMARK -d $engine-Files -c $fileCount -p $varCount -n $engine -s2 )\t"
+			# result[$engine]="$(./bin/BENCHMARK -d /tmp/$engine-Files -c $fileCount -p $varCount -n $engine -s2 )\t"
 		done
 		echo -e "$fileCount\t $varCount\t ${result[*]} \t"
 	done
