@@ -231,6 +231,6 @@ void AdiosReadMinMax(std::string engineName, std::string path,
         outputFile << "wasLarger \t" <<  wasLarger << " \t sumWasLarger \t" << sumWasLarger << std::endl;
         // outputFile<<  totalSum << " \t " << sumWasLarger <<  std::endl;
 
-        std::cout << sum << " \t " <<  totalSum << " \t\t " << wasLarger << " \t " << sumWasLarger <<  std::endl;
+        // std::cout << sum << " \t " <<  totalSum << " \t\t " << wasLarger << " \t " << sumWasLarger <<  std::endl;
         std::cout <<  totalSum << " \t " << sumWasLarger <<  std::endl;
 }
