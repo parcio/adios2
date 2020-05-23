@@ -1,14 +1,16 @@
 #! /usr/bin/env bash
 
-#100= more than in any file -> all
-# vars="1 4 8 16 32 100"
-vars="1 4 8 16 32"
+#32 = all; 27 variables are in nc files
+vars="1 4 8 16 26"
+# vars="1 4 8 16"
 # files="1 2 4 8 16 32 64 128 256 512"
-files="1 4 16 64 256 512"
+# files="1 4 16 64 256 512"
+files="1 4 16 64"
 
 # engines="julea-kv julea-db"
 engines="bp3"
-maximum="42 420 4200"
+maximum="42"
+# maximum="42 420 4200"
 
 declare -A ending
 declare -A result
@@ -28,8 +30,8 @@ do
 			do
 				outfile=/tmp/AdiosReadBenchmark/$engine-$fileCount-$varCount.${ending[$engine]}
 
-				result[$engine]="$(./bin/BENCHMARK -d testFiles -c $fileCount -p $varCount -n $engine -s3 -m $max )\t"
-				# result[$engine]="$(./bin/BENCHMARK -d /tmp/$engine-Files -c $fileCount -p $varCount -n $engine -s3 -m 2000 )\t"
+				# result[$engine]="$(./bin/BENCHMARK -d testFiles -c $fileCount -p $varCount -n $engine -s3 -m $max )\t"
+				result[$engine]="$(./bin/BENCHMARK -d /tmp/$engine-Files -c $fileCount -p $varCount -n $engine -s3 -m $max )\t"
 			done
 		echo -e "$fileCount\t $varCount\t $max\t ${result[*]} \t"
 		done
