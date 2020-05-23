@@ -16,19 +16,20 @@ ending=(["bp3"]="bp" ["bp4"]="bp" ["julea-kv"]="jv" ["julea-db"]="jb")
 echo -e "#files\t #vars\t io-time[s] ${engines[*]}"
 
 # for file in /home/duwe/ieee_cluster_2020_adios2/ecmwf-data/*.nc
-for file in /tmp/$engine-Files
+for file in /tmp/$engine-Files/*.bp
 do
-	let "filenumber +=1"
+#	let "filenumber +=1"
 	for varCount in $vars
 	do
 		for engine in $engines
 		do
+			echo "$file"
 			filename=$(basename -- "$file")
 			extension="${filename##*.}"
 			filename="${filename%.*}"
 			#outfile=/tmp/AdiosReadBenchmark/$engine-$fileCount-$varCount.${ending[$engine]}
-
-			result[$engine]="$(./bin/BENCHMARK -d file -c 1 -p $varCount -n $engine -s2 )\t"
+			echo "$filename"
+			result[$engine]="$(./julea-adios2/build/bin/BENCHMARK -d file -c 1 -p $varCount -n $engine -s2 )\t"
 			# result[$engine]="$(./bin/BENCHMARK -d /tmp/$engine-Files -c $fileCount -p $varCount -n $engine -s2 )\t"
 		done
 	echo -e "$filenumber\t $varCount\t ${result[*]} filename\t"
