@@ -1,6 +1,7 @@
 #! /usr/bin/env bash
 
 varNames="t2m stl1"
+#varNames="t2m stl1 stl2 stl3"
 files="1 4 16 64 250"
 
 # engines="julea-kv julea-db"

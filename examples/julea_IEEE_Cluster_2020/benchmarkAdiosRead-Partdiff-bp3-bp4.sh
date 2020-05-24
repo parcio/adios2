@@ -3,8 +3,8 @@
 vars="1 4 8 16 32"
 
 # engines="julea-kv julea-db"
-#engines="bp3 bp4"
-engines="julea-db"
+engines="bp3 bp4"
+#engines="julea-db"
 
 filenumber=0
 
@@ -13,12 +13,12 @@ declare -A result
 
 ending=(["bp3"]="bp" ["bp4"]="bp" ["julea-kv"]="jv" ["julea-db"]="jb")
 
-echo -e "#files\t #vars\t io-time[s] ${engines[*]}"
+echo -e "#files\t #vars\t io-time[ms] ${engines[*]}"
 
 # for file in /home/duwe/ieee_cluster_2020_adios2/ecmwf-data/*.nc
 for engine in $engines
 do
-	for file in /tmp/$engine-Files/*.jb
+	for file in /tmp/$engine-Files/*.bp
 	do
 	let "filenumber +=1"
 		for varCount in $vars
