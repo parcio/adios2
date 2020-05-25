@@ -375,7 +375,7 @@ void DBDefineVariableInInit(core::IO *io, const std::string varName,
         if (!isLocalValue)
         {
             auto &var = io->DefineVariable<float>(varName, shape, start, count,
-                                                  constantDims);
+                                          constantDims);
         }
         else
         {
@@ -504,14 +504,11 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
 
     // size_t typeLen;
     size_t *blocks;
+    size_t *numberSteps;
     size_t *shapeSize;
     size_t *startSize;
     size_t *countSize;
-    size_t *numberSteps;
 
-    Dims shape;
-    Dims start;
-    Dims count;
     ShapeID *shapeID;
 
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -529,6 +526,9 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
 
     while (j_db_iterator_next(iterator, NULL))
     {
+        Dims shape;
+        Dims start;
+        Dims count;
         // localValue = false;
         j_db_iterator_get_field(iterator, "variableName", &type,
                                 (gpointer *)&varName, &db_length, NULL);
