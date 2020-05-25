@@ -10,9 +10,10 @@ ending=(["bp3"]="bp" ["bp4"]="bp" ["julea-kv"]="jv" ["julea-db"]="jb")
 # echo -e "#interlines\t iterations\t io-time[s] ${engines[*]}"
 echo -e "engine\t io-time[ms] \t file"
 
-for file in /home/duwe/ieee_cluster_2020_adios2/ecmwf-data/*.nc
+for engine in $engines
 do
-	for engine in $engines
+mkdir /tmp/$engine-Files
+	for file in /home/duwe/ieee_cluster_2020_adios2/ecmwf-data/*.nc
 	do
 		filename=$(basename -- "$file")
 		filename="${filename%.*}"
