@@ -57,9 +57,6 @@ void InitVariable(core::IO *io, core::Engine &engine, std::string varName,
             {                                                                  \
                 var->m_AvailableStepBlockIndexOffsets[i + 1].push_back(42 +    \
                                                                        i);     \
-                std::cout << "AvailableStepBlockIndexOffsets.size"             \
-                          << var->m_AvailableStepBlockIndexOffsets.size()      \
-                          << std::endl;                                        \
             }                                                                  \
             var->m_AvailableStepsCount++;                                      \
         }                                                                      \
@@ -101,13 +98,13 @@ void DefineVariableInInit(core::IO *io, const std::string varName,
     {
         auto &var = io->DefineVariable<std::string>(varName, shape, start,
                                                     count, constantDims);
-        std::cout << "Defined variable of type: " << type << std::endl;
+        // std::cout << "Defined variable of type: " << type << std::endl;
     }
     else if (strcmp(type, "int8_t") == 0)
     {
         auto &var = io->DefineVariable<int8_t>(varName, shape, start, count,
                                                constantDims);
-        std::cout << "Defined variable of type: " << type << std::endl;
+        // std::cout << "Defined variable of type: " << type << std::endl;
     }
     else if (strcmp(type, "uint8_t") == 0)
     {
@@ -148,31 +145,31 @@ void DefineVariableInInit(core::IO *io, const std::string varName,
     {
         auto &var = io->DefineVariable<float>(varName, shape, start, count,
                                               constantDims);
-        std::cout << "Defined variable of type: " << type << std::endl;
+        // std::cout << "Defined variable of type: " << type << std::endl;
     }
     else if (strcmp(type, "double") == 0)
     {
         auto &var = io->DefineVariable<double>(varName, shape, start, count,
                                                constantDims);
-        std::cout << "Defined variable of type: " << type << std::endl;
+        // std::cout << "Defined variable of type: " << type << std::endl;
     }
     else if (strcmp(type, "long double") == 0)
     {
         auto &var = io->DefineVariable<long double>(varName, shape, start,
                                                     count, constantDims);
-        std::cout << "Defined variable of type: " << type << std::endl;
+        // std::cout << "Defined variable of type: " << type << std::endl;
     }
     else if (strcmp(type, "complex float") == 0)
     {
         auto &var = io->DefineVariable<std::complex<float>>(
             varName, shape, start, count, constantDims);
-        std::cout << "Defined variable of type: " << type << std::endl;
+        // std::cout << "Defined variable of type: " << type << std::endl;
     }
     else if (strcmp(type, "complex double") == 0)
     {
         auto &var = io->DefineVariable<std::complex<double>>(
             varName, shape, start, count, constantDims);
-        std::cout << "Defined variable of type: " << type << std::endl;
+        // std::cout << "Defined variable of type: " << type << std::endl;
     }
 
     std::map<std::string, Params> varMap = io->GetAvailableVariables();
@@ -183,7 +180,7 @@ void DefineVariableInInit(core::IO *io, const std::string varName,
 
         // std::cout << "first: " << it->first << " => " << it->second.begin()
         // << '\n';
-        std::cout << "first: " << it->first << '\n';
+        // std::cout << "first: " << it->first << '\n';
     }
 }
 
@@ -792,12 +789,12 @@ void ParseAttributeFromBSON(const std::string nameSpace,
 
     if (bson_iter_init(&b_iter, bsonMetadata))
     {
-        std::cout << "++ Julea Format Reader: Bson iterator is valid"
-                  << std::endl;
+        // std::cout << "++ Julea Format Reader: Bson iterator is valid"
+                  // << std::endl;
     }
     else
     {
-        std::cout << "ERROR: Bson iterator is not valid!" << std::endl;
+        // std::cout << "ERROR: Bson iterator is not valid!" << std::endl;
     }
 
     while (bson_iter_next(&b_iter))

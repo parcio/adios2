@@ -198,6 +198,7 @@ void JuleaKVReader::Init()
         }
     }
     if (m_Verbosity == 5)
+    {
     std::cout << "\n*********************** JULEA ENGINE READER "
                  "*************************"
               << std::endl;
@@ -208,7 +209,6 @@ void JuleaKVReader::Init()
          \n   ~;/     \\;~"
         << std::endl;
     std::cout << "JULEA KV READER: Namespace = " << m_Name << std::endl;
-    {
         std::cout << "Julea Reader " << m_ReaderRank << " Init()\n";
     }
 
