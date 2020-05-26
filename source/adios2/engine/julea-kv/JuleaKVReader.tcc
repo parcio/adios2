@@ -69,7 +69,7 @@ void JuleaKVReader::GetSyncCommon(Variable<std::string> &variable,
         GetCountFromBlockMetadata(md_buffer, &count);
         if (variable.m_SingleValue)
         {
-            std::cout << "Single value" << std::endl;
+            // std::cout << "Single value" << std::endl;
             return;
         }
         m_CurrentBlockID++;
@@ -152,14 +152,18 @@ void JuleaKVReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
         // std::cout << "variable.m... stepBlockID: " << stepBlockID <<
         // std::endl;
     }
+    if (variable.m_Name == "time")
+    {
+        return;
+    }
 
     GetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
                               &buffer_len, stepBlockID);
     GetCountFromBlockMetadata(md_buffer, &count);
     if (variable.m_SingleValue)
     {
-        std::cout << "Single value" << std::endl;
-        return;
+        // std::cout << "Single value" << std::endl;
+        // return;
     }
 
     size_t numberElements = helper::GetTotalSize(count);
@@ -287,8 +291,8 @@ JuleaKVReader::BlocksInfo(const core::Variable<T> &variable,
     if (itStep == variable.m_AvailableStepBlockIndexOffsets.end())
     {
         return std::vector<typename core::Variable<T>::Info>();
-        std::cout << " --- step not found in m_AvailableStepBlockIndexOffsets "
-                  << std::endl;
+        // std::cout << " --- step not found in m_AvailableStepBlockIndexOffsets "
+                  // << std::endl;
     }
     return BlocksInfoCommon(variable, itStep->second, step);
 }

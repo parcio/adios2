@@ -42,8 +42,8 @@ void GetVariableMetadataFromJulea(const std::string nameSpace,
 
     auto stringMetadataKV =
         g_strdup_printf("%s_%s", nameSpace.c_str(), "variables");
-    std::cout << "stringMetadataKV: " << stringMetadataKV << std::endl;
-    std::cout << "varName: " << varName << std::endl;
+    // std::cout << "stringMetadataKV: " << stringMetadataKV << std::endl;
+    // std::cout << "varName: " << varName << std::endl;
     auto kvVarMetadata = j_kv_new(stringMetadataKV, varName.c_str());
 
     j_kv_get(kvVarMetadata, md, buffer_len, batch);
@@ -126,7 +126,7 @@ void GetVariableDataFromJulea(Variable<T> &variable, T *data,
 void GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
                        unsigned int *varCount, bool isVariable)
 {
-    std::cout << "-- GetNamesFromJulea ------" << std::endl;
+    // std::cout << "-- GetNamesFromJulea ------" << std::endl;
     guint32 valueLen = 0;
     int err = 0;
     void *namesBuf = NULL;
@@ -145,7 +145,7 @@ void GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
     }
 
     auto kvObject = j_kv_new(kvName.c_str(), nameSpace.c_str());
-    std::cout << "kvName :" << kvName << std::endl;
+    // std::cout << "kvName :" << kvName << std::endl;
 
     j_kv_get(kvObject, &namesBuf, &valueLen, batch);
     err = j_batch_execute(batch);
@@ -158,8 +158,8 @@ void GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
 
     if (valueLen == 0)
     {
-        std::cout << "WARNING: The kv store: " << kvName << " is empty!"
-                  << std::endl;
+        // std::cout << "WARNING: The kv store: " << kvName << " is empty!"
+                  // << std::endl;
 
         *varCount = 0;
         free(namesBuf);
@@ -200,7 +200,7 @@ void GetAttributeBSONFromJulea(const std::string nameSpace,
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
-    std::cout << "-- GetAttributeBSONFromJulea ---- " << std::endl;
+    // std::cout << "-- GetAttributeBSONFromJulea ---- " << std::endl;
 
     auto stringMetadataKV = g_strdup_printf("attributes_%s", nameSpace.c_str());
     auto kvObject = j_kv_new(stringMetadataKV, attrName.c_str());
@@ -236,7 +236,7 @@ void GetAttributeMetadataFromJulea(const std::string attrName,
                                    int *type)
 {
     bson_t *bsonMetadata;
-    std::cout << "-- GetAttributeMetadataFromJulea ------" << std::endl;
+    // std::cout << "-- GetAttributeMetadataFromJulea ------" << std::endl;
     guint32 valueLen = 0;
     GetAttributeBSONFromJulea(nameSpace, attrName, &bsonMetadata, &valueLen);
 
@@ -255,7 +255,7 @@ void GetAttributeMetadataFromJulea(const std::string attrName,
                                    int *type, unsigned long **dataSizes)
 {
     bson_t *bsonMetadata;
-    std::cout << "-- GetAttributeMetadataFromJulea ------" << std::endl;
+    // std::cout << "-- GetAttributeMetadataFromJulea ------" << std::endl;
     guint32 valueLen = 0;
     GetAttributeBSONFromJulea(nameSpace, attrName, &bsonMetadata, &valueLen);
 
@@ -272,7 +272,7 @@ void GetAttributeDataFromJulea(const std::string attrName, T *data,
                                const std::string nameSpace,
                                long unsigned int dataSize)
 {
-    std::cout << "-- GetAttributeDataFromJulea -----" << std::endl;
+    // std::cout << "-- GetAttributeDataFromJulea -----" << std::endl;
 
     guint64 bytesRead = 0;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -292,8 +292,8 @@ void GetAttributeDataFromJulea(const std::string attrName, T *data,
 
     if (bytesRead == dataSize)
     {
-        std::cout << "++ Julea Interaction Reader: Read data for attribute "
-                  << attrName << std::endl;
+        // std::cout << "++ Julea Interaction Reader: Read data for attribute "
+                  // << attrName << std::endl;
     }
     else
     {
@@ -312,8 +312,8 @@ void GetAttributeStringDataFromJulea(const std::string attrName, char *data,
                                      long unsigned int completeSize,
                                      bool IsSingleValue, size_t numberElements)
 {
-    std::cout << "-- GetAttributeDataFromJulea -- String version -----"
-              << std::endl;
+    // std::cout << "-- GetAttributeDataFromJulea -- String version -----"
+              // << std::endl;
 
     guint64 bytesRead = 0;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -349,8 +349,8 @@ void GetAttributeStringDataFromJulea(const std::string attrName, char *data,
     }
     if (bytesRead == completeSize)
     {
-        std::cout << "++ Julea Interaction Reader: Read data for attribute "
-                  << attrName << std::endl;
+        // std::cout << "++ Julea Interaction Reader: Read data for attribute "
+                  // << attrName << std::endl;
     }
     else
     {

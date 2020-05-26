@@ -45,6 +45,11 @@ void JuleaKVWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     gpointer md_buffer = NULL;
     auto bsonMetadata = bson_new();
 
+    if(variable.m_Name =="time")
+    {
+        return;
+    }
+
     SetMinMax(variable, data);
 
     auto stepBlockID =
@@ -60,7 +65,7 @@ void JuleaKVWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     auto itVariableWritten = m_WrittenVariableNames.find(variable.m_Name);
     if (itVariableWritten == m_WrittenVariableNames.end())
     {
-        std::cout << "--- Variable name not yet written " << std::endl;
+        // std::cout << "--- Variable name not yet written " << std::endl;
 
         PutNameToJulea(variable.m_Name, m_Name, "variable_names");
         m_WrittenVariableNames.insert(variable.m_Name);
@@ -70,7 +75,7 @@ void JuleaKVWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     for (auto it = m_WrittenVariableNames.begin();
          it != m_WrittenVariableNames.end(); ++it)
     {
-        std::cout << "___ Written variables:" << ' ' << *it << std::endl;
+        // std::cout << "___ Written variables:" << ' ' << *it << std::endl;
     }
 
     /** updates the variable metadata as there is a new block now */
@@ -149,8 +154,8 @@ void JuleaKVWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
 
     if (variable.m_SingleValue)
     {
-        std::cout << "variable.m_SingleValue: " << variable.m_SingleValue
-                  << std::endl;
+        // std::cout << "variable.m_SingleValue: " << variable.m_SingleValue
+                  // << std::endl;
         DoPutSync(variable, data); // TODO: correct?!
         return;
     }

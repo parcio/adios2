@@ -62,7 +62,7 @@ gpointer SerializeVariableMetadata(Variable<T> &variable, guint32 &len,
     /** calculating buffer size */
     len = numberVectors * sizeof(size_t) + typeLen + shapeLen + startLen +
           countLen + blocksLen + numberBools * sizeof(bool) + shapeIDLen;
-    std::cout << "    variable metadata buffer length: " << len << std::endl;
+    // std::cout << "    variable metadata buffer length: " << len << std::endl;
 
     char *buffer = (char *)g_slice_alloc(len);
 
@@ -365,7 +365,7 @@ template <>
 void ParseAttributeToBSON<std::string>(Attribute<std::string> &attribute,
                                        bson_t *bsonMetadata)
 {
-    std::cout << "-- ParseAttributeToBSON ------ " << std::endl;
+    // std::cout << "-- ParseAttributeToBSON ------ " << std::endl;
     unsigned int completeSize = 0;
     unsigned int entrySize = 0;
     gchar *key;

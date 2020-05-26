@@ -105,8 +105,8 @@ void JuleaKVReader::EndStep()
 
     if (m_DeferredVariables.size() > 0)
     {
-        std::cout << "m_DeferredVariables.size() = "
-                  << m_DeferredVariables.size() << std::endl;
+        // std::cout << "m_DeferredVariables.size() = "
+                  // << m_DeferredVariables.size() << std::endl;
         PerformGets();
     }
 
@@ -151,7 +151,7 @@ void JuleaKVReader::PerformGets()
     else if (type == helper::GetType<T>())                                     \
     {                                                                          \
         Variable<T> &variable = FindVariable<T>(                               \
-            variableName, "in call to PerformGets, EndStep or Close");         \
+            variableName,"in call to PerformGets, EndStep or Close");         \
         for (auto &blockInfo : variable.m_BlocksInfo)                          \
         {                                                                      \
             T *data = variable.m_BlocksInfo[i].Data;                           \
@@ -187,16 +187,6 @@ ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
  */
 void JuleaKVReader::Init()
 {
-    std::cout << "\n*********************** JULEA ENGINE READER "
-                 "*************************"
-              << std::endl;
-    std::cout << "JULEA KV READER: Init" << std::endl;
-    std::cout
-        << "      .___. \n     /     \\ \n    | O _ O | \n    /  \\_/  \\ \n  .' / \
-    \\ `. \n / _|       |_ \\ \n(_/ |       | \\_) \n    \\       / \n   __\\_>-<_/__ \
-         \n   ~;/     \\;~"
-        << std::endl;
-    std::cout << "JULEA KV READER: Namespace = " << m_Name << std::endl;
 
     if (m_DebugMode)
     {
@@ -208,6 +198,16 @@ void JuleaKVReader::Init()
         }
     }
     if (m_Verbosity == 5)
+    std::cout << "\n*********************** JULEA ENGINE READER "
+                 "*************************"
+              << std::endl;
+    std::cout << "JULEA KV READER: Init" << std::endl;
+    std::cout
+        << "      .___. \n     /     \\ \n    | O _ O | \n    /  \\_/  \\ \n  .' / \
+    \\ `. \n / _|       |_ \\ \n(_/ |       | \\_) \n    \\       / \n   __\\_>-<_/__ \
+         \n   ~;/     \\;~"
+        << std::endl;
+    std::cout << "JULEA KV READER: Namespace = " << m_Name << std::endl;
     {
         std::cout << "Julea Reader " << m_ReaderRank << " Init()\n";
     }
@@ -248,7 +248,7 @@ void JuleaKVReader::InitVariables()
     {
         bson_iter_init(&b_iter, bsonNames);
 
-        std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
+        // std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
 
         while (bson_iter_next(&b_iter))
         {
@@ -270,6 +270,10 @@ void JuleaKVReader::InitVariables()
 
             std::string varName(bson_iter_key(&b_iter));
 
+            if(varName =="time")
+            {
+                continue;
+            }
             GetVariableMetadataFromJulea(nameSpace, varName, &md_buffer,
                                          &buffer_len);
 
@@ -323,7 +327,7 @@ void JuleaKVReader::InitAttributes()
         bson_iter_init(&b_iter, bsonNames);
     }
 
-    std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
+    // std::cout << "-- bsonNames length: " << bsonNames->len << std::endl;
 
     while (bson_iter_next(&b_iter))
     {
@@ -339,8 +343,8 @@ void JuleaKVReader::InitAttributes()
         size_t numberElements = 0;
         bool IsSingleValue = false;
 
-        std::cout << "-----------------------------------" << std::endl;
-        std::cout << "-- Attribute name " << attrName << std::endl;
+        // std::cout << "-----------------------------------" << std::endl;
+        // std::cout << "-- Attribute name " << attrName << std::endl;
 
         // GetAttributeMetadataFromJulea(attrName, bsonMetadata, nameSpace,
         //                               &completeSize, &numberElements,
@@ -364,7 +368,6 @@ void JuleaKVReader::InitAttributes()
             if (IsSingleValue)                                                 \
             {                                                                  \
                 std::string dataString(data);                                  \
-                std::cout << "Data: " << dataString << std::endl;              \
                 m_IO.DefineAttribute<std::string>(attrName, dataString);       \
             }                                                                  \
             else                                                               \
@@ -374,8 +377,6 @@ void JuleaKVReader::InitAttributes()
                 for (size_t i = 0; i < numberElements; ++i)                    \
                 {                                                              \
                     dataStringArray.push_back(data + offset);                  \
-                    std::cout << "data[" << offset << "]: " << data + offset   \
-                              << std::endl;                                    \
                     offset += dataSizes[i];                                    \
                 }                                                              \
                 m_IO.DefineAttribute<std::string>(                             \
@@ -392,12 +393,10 @@ void JuleaKVReader::InitAttributes()
                                       completeSize);                           \
             if (IsSingleValue)                                                 \
             {                                                                  \
-                std::cout << "Data: " << *dataBuf << std::endl;                \
                 m_IO.DefineAttribute<T>(attrName, *dataBuf);                   \
             }                                                                  \
             else                                                               \
             {                                                                  \
-                std::cout << "Data: " << *dataBuf << std::endl;                \
                 m_IO.DefineAttribute<T>(attrName, dataBuf, numberElements);    \
             }                                                                  \
             g_slice_free(T, dataBuf);                                          \
@@ -409,8 +408,8 @@ void JuleaKVReader::InitAttributes()
         // free(attrName);
     } // end while
     bson_destroy(bsonNames);
-    std::cout << "_________________________________________________\n"
-              << std::endl;
+    // std::cout << "_________________________________________________\n"
+              // << std::endl;
 }
 
 void JuleaKVReader::DoClose(const int transportIndex)

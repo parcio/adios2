@@ -95,13 +95,13 @@ size_t JuleaKVWriter::CurrentStep() const
  */
 void JuleaKVWriter::EndStep()
 {
-    std::cout << "--- DEBUG : EndStep1" << std::endl;
+    // std::cout << "--- DEBUG : EndStep1" << std::endl;
     // if (m_NeedPerformPuts)
     if (m_DeferredVariables.size() > 0)
     {
-        std::cout << "--- DEBUG : EndStep2" << std::endl;
-        std::cout << "m_DeferredVariables.size() = "
-                  << m_DeferredVariables.size() << std::endl;
+        // std::cout << "--- DEBUG : EndStep2" << std::endl;
+        // std::cout << "m_DeferredVariables.size() = "
+                  // << m_DeferredVariables.size() << std::endl;
         PerformPuts();
     }
 
@@ -202,13 +202,6 @@ void JuleaKVWriter::Init()
     {
         std::cout << "Julea Writer " << m_WriterRank << "   Init() "
                   << std::endl;
-    }
-
-    if (m_OpenMode == Mode::Append)
-    {
-        throw std::invalid_argument("JuleaKVWriter: OpenMode   -- Append --   "
-                                    "hasn't been implemented, yet");
-    }
     std::cout << "\n*********************** JULEA ENGINE WRITER "
                  "*************************"
               << std::endl;
@@ -220,6 +213,13 @@ void JuleaKVWriter::Init()
         << std::endl;
 
     std::cout << "JULEA WRITER: Namespace = " << m_Name << std::endl;
+    }
+
+    if (m_OpenMode == Mode::Append)
+    {
+        throw std::invalid_argument("JuleaKVWriter: OpenMode   -- Append --   "
+                                    "hasn't been implemented, yet");
+    }
 
     m_JuleaSemantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
 
@@ -369,7 +369,7 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
     const uint32_t attributesCount =
         static_cast<uint32_t>(attributesDataMap.size());
 
-    std::cout << "attributesCount: " << attributesCount << std::endl;
+    // std::cout << "attributesCount: " << attributesCount << std::endl;
 
     for (const auto &attributePair : attributesDataMap)
     {
@@ -378,9 +378,9 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
         const std::string name(attributePair.first);
 
         auto bsonMetadata = bson_new();
-        std::cout << "------------------------------------" << std::endl;
-        std::cout << "-- PutAttributes: type " << type << std::endl;
-        std::cout << "-- PutAttributes: name " << name << std::endl;
+        // std::cout << "------------------------------------" << std::endl;
+        // std::cout << "-- PutAttributes: type " << type << std::endl;
+        // std::cout << "-- PutAttributes: name " << name << std::endl;
 
         // each attribute is only written to output once
         // so filter out the ones already written
@@ -401,8 +401,6 @@ void JuleaKVWriter::PutAttributes(core::IO &io)
     else if (type == helper::GetType<T>())                                     \
     {                                                                          \
         Attribute<T> &attribute = *io.InquireAttribute<T>(name);               \
-        std::cout << "-- PutAttributes: m_Elements " << attribute.m_Elements   \
-                  << std::endl;                                                \
         ParseAttributeToBSON(attribute, bsonMetadata);                         \
         ParseAttrTypeToBSON(attribute, bsonMetadata);                          \
         PutAttributeMetadataToJulea(attribute, bsonMetadata, m_Name);          \

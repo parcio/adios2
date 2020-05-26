@@ -48,9 +48,9 @@ void PutNameToJulea(std::string paramName, std::string nameSpace,
     auto batch2 = j_batch_new(semantics);
     auto name = strdup(paramName.c_str());
 
-    std::cout << "kvName: " << kvName << std::endl;
-    std::cout << "nameSpace: " << nameSpace << std::endl;
-    std::cout << "paramName: " << paramName << std::endl;
+    // std::cout << "kvName: " << kvName << std::endl;
+    // std::cout << "nameSpace: " << nameSpace << std::endl;
+    // std::cout << "paramName: " << paramName << std::endl;
 
     /** store all variable names for a file = namespace */
     auto kvObjectNames = j_kv_new(kvName.c_str(), nameSpace.c_str());
@@ -75,8 +75,8 @@ void PutNameToJulea(std::string paramName, std::string nameSpace,
     }
     else
     {
-        std::cout << "++ Julea Interaction Writer:  " << name
-                  << " already in kv store. " << std::endl;
+        // std::cout << "++ Julea Interaction Writer:  " << name
+                  // << " already in kv store. " << std::endl;
     }
 
     namesBuf = g_memdup(bson_get_data(bsonNames), bsonNames->len);
@@ -109,8 +109,8 @@ void PutVariableMetadataToJulea(const std::string nameSpace, gpointer buffer,
     auto stringMetadataKV =
         g_strdup_printf("%s_%s", nameSpace.c_str(), "variables");
     auto kvVarMetadata = j_kv_new(stringMetadataKV, varName.c_str());
-    std::cout << "--- WriteVarMetadataToJuleaKV --- kv: " << stringMetadataKV
-              << " --- key: " << varName.c_str() << " --- " << std::endl;
+    // std::cout << "--- WriteVarMetadataToJuleaKV --- kv: " << stringMetadataKV
+              // << " --- key: " << varName.c_str() << " --- " << std::endl;
 
     metaDataBuf = g_memdup(buffer, bufferLen);
 
@@ -222,8 +222,8 @@ void PutVariableDataToJulea(Variable<T> &variable, const T *data,
 
     if (bytesWritten == dataSize)
     {
-        std::cout << "++ Julea Interaction Writer: Data written for:  "
-                  << stepBlockID << std::endl;
+        // std::cout << "++ Julea Interaction Writer: Data written for:  "
+                  // << stepBlockID << std::endl;
     }
     else
     {
@@ -270,7 +270,7 @@ template <class T>
 void PutAttributeDataToJulea(Attribute<T> &attribute,
                              const std::string nameSpace)
 {
-    std::cout << "-- PutAttributeDataToJulea -------" << std::endl;
+    // std::cout << "-- PutAttributeDataToJulea -------" << std::endl;
     void *dataBuf = NULL;
     guint64 bytesWritten = 0;
     unsigned int dataSize = 0;
@@ -306,9 +306,9 @@ void PutAttributeDataToJulea(Attribute<T> &attribute,
     g_assert_true(j_batch_execute(batch) == true);
     if (bytesWritten == dataSize)
     {
-        std::cout << "++ Julea Interaction Writer: Data written for \
+        // std::cout << "++ Julea Interaction Writer: Data written for \
             attribute "
-                  << attrName << std::endl;
+                  // << attrName << std::endl;
     }
     else
     {
@@ -330,7 +330,7 @@ template <>
 void PutAttributeDataToJulea<std::string>(Attribute<std::string> &attribute,
                                           const std::string nameSpace)
 {
-    std::cout << "-- PutAttributeDataToJulea -------" << std::endl;
+    // std::cout << "-- PutAttributeDataToJulea -------" << std::endl;
 
     unsigned int dataSize = 0;
     guint64 bytesWritten = 0;
@@ -377,9 +377,9 @@ void PutAttributeDataToJulea<std::string>(Attribute<std::string> &attribute,
 
     if (bytesWritten == offset)
     {
-        std::cout << "++ Julea Interaction Writer: Data written for \
-            attribute "
-                  << attrName << std::endl;
+        // std::cout << "++ Julea Interaction Writer: Data written for \
+            // attribute "
+                  // << attrName << std::endl;
     }
     else
     {
@@ -393,14 +393,14 @@ void PutAttributeDataToJulea<std::string>(Attribute<std::string> &attribute,
     j_batch_unref(batch);
     j_semantics_unref(semantics);
 
-    std::cout << "++ Julea Interaction Writer: Put Attribute " << std::endl;
+    // std::cout << "++ Julea Interaction Writer: Put Attribute " << std::endl;
 }
 
 template <class T>
 void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetaData,
                                  const std::string nameSpace)
 {
-    std::cout << "-- PutAttributeMetadataToJulea ------ " << std::endl;
+    // std::cout << "-- PutAttributeMetadataToJulea ------ " << std::endl;
     guint32 valueLen = 0;
 
     bson_iter_t bIter;
@@ -433,15 +433,15 @@ void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetaData,
     /* Check if variable name is already in kv store */
     if (!bson_iter_init_find(&bIter, bsonNames, attrName))
     {
-        std::cout << "Init b_iter successfull " << std::endl;
+        // std::cout << "Init b_iter successfull " << std::endl;
         // bson_append_int32(bsonNames, varName, -1,
         // bsonMetaData->var_type);
         // //FIXME: var_type?!
     }
     else
     {
-        std::cout << "++ Julea Interaction Writer: Attribute " << attrName
-                  << " already in kv store. " << std::endl;
+        // std::cout << "++ Julea Interaction Writer: Attribute " << attrName
+                  // << " already in kv store. " << std::endl;
         // TODO: update variable -> is there anything else necessary to
         // do?
     }
@@ -468,7 +468,7 @@ void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetaData,
     bson_destroy(bsonNames);
     j_semantics_unref(semantics);
 
-    std::cout << "++ Julea Interaction Writer: Put Attribute " << std::endl;
+    // std::cout << "++ Julea Interaction Writer: Put Attribute " << std::endl;
 }
 
 #define declare_template_instantiation(T)                                      \
