@@ -12,6 +12,7 @@
 #include "InlineReader.tcc"
 
 #include "adios2/helper/adiosFunctions.h" // CSVToVector
+#include "adios2/toolkit/profiling/taustubs/tautimer.hpp"
 
 #include <iostream>
 
@@ -26,34 +27,41 @@ InlineReader::InlineReader(IO &io, const std::string &name, const Mode mode,
                            helper::Comm comm)
 : Engine("InlineReader", io, name, mode, std::move(comm))
 {
+    TAU_SCOPED_TIMER("InlineReader::Open");
     m_EndMessage = " in call to IO Open InlineReader " + m_Name + "\n";
     m_ReaderRank = m_Comm.Rank();
     Init();
-    Engine &writer = io.GetEngine(m_WriterID);
     if (m_Verbosity == 5)
     {
         std::cout << "Inline Reader " << m_ReaderRank << " Open(" << m_Name
-                  << ") in constructor, with writer: " << writer.m_Name
-                  << std::endl;
-    }
-}
-
-InlineReader::~InlineReader()
-{
-    /* m_Inline deconstructor does close and finalize */
-    if (m_Verbosity == 5)
-    {
-        std::cout << "Inline Reader " << m_ReaderRank << " deconstructor on "
-                  << m_Name << "\n";
+                  << ") in constructor" << std::endl;
     }
 }
 
 StepStatus InlineReader::BeginStep(const StepMode mode,
                                    const float timeoutSeconds)
 {
-    // step info should be received from the writer side in BeginStep()
-    // so this forced increase should not be here
-    ++m_CurrentStep;
+    TAU_SCOPED_TIMER("InlineReader::BeginStep");
+    if (m_InsideStep)
+    {
+        throw std::runtime_error("InlineReader::BeginStep was called but the "
+                                 "reader is already inside a step");
+    }
+    // Reader should be on step that writer just completed
+    const auto &writer =
+        dynamic_cast<InlineWriter &>(m_IO.GetEngine(m_WriterID));
+    if (writer.IsInsideStep())
+    {
+        m_InsideStep = false;
+        return StepStatus::NotReady;
+    }
+    m_CurrentStep = writer.CurrentStep();
+    if (m_CurrentStep == static_cast<size_t>(-1))
+    {
+        m_InsideStep = false;
+        return StepStatus::EndOfStream;
+    }
+    m_InsideStep = true;
 
     if (m_Verbosity == 5)
     {
@@ -61,53 +69,75 @@ StepStatus InlineReader::BeginStep(const StepMode mode,
                   << "   BeginStep() new step " << m_CurrentStep << "\n";
     }
 
-    // m_IO Variables and Attributes should be defined at this point
-    // so that the application can inquire them and start getting data
-
     return StepStatus::OK;
 }
 
 void InlineReader::PerformGets()
 {
+    TAU_SCOPED_TIMER("InlineReader::PerformGets");
     if (m_Verbosity == 5)
     {
         std::cout << "Inline Reader " << m_ReaderRank << "     PerformGets()\n";
     }
-    m_NeedPerformGets = false;
+    SetDeferredVariablePointers();
 }
 
-size_t InlineReader::CurrentStep() const { return m_CurrentStep; }
+size_t InlineReader::CurrentStep() const
+{
+    // Reader should be on same step as writer
+    // added here since it's not really necessary to use beginstep/endstep for
+    // this engine's reader so this ensures we do report the correct step
+    const auto &writer =
+        dynamic_cast<InlineWriter &>(m_IO.GetEngine(m_WriterID));
+    return writer.CurrentStep();
+}
 
 void InlineReader::EndStep()
 {
-    // EndStep should call PerformGets() if there are unserved GetDeferred()
-    // requests
-    if (m_NeedPerformGets)
+    TAU_SCOPED_TIMER("InlineReader::EndStep");
+    if (!m_InsideStep)
     {
-        PerformGets();
+        throw std::runtime_error("InlineReader::EndStep() cannot be called "
+                                 "without a call to BeginStep() first");
     }
-
     if (m_Verbosity == 5)
     {
-        std::cout << "Inline Reader " << m_ReaderRank << "   EndStep()\n";
+        std::cout << "Inline Reader " << m_ReaderRank << " EndStep() Step "
+                  << m_CurrentStep << std::endl;
     }
+    if (!m_DeferredVariables.empty())
+    {
+        SetDeferredVariablePointers();
+    }
+    m_InsideStep = false;
 }
+
+bool InlineReader::IsInsideStep() const { return m_InsideStep; }
 
 // PRIVATE
 
 #define declare_type(T)                                                        \
     void InlineReader::DoGetSync(Variable<T> &variable, T *data)               \
     {                                                                          \
+        TAU_SCOPED_TIMER("InlineReader::DoGetSync");                           \
         GetSyncCommon(variable, data);                                         \
     }                                                                          \
     void InlineReader::DoGetDeferred(Variable<T> &variable, T *data)           \
     {                                                                          \
+        TAU_SCOPED_TIMER("InlineReader::DoGetDeferred");                       \
         GetDeferredCommon(variable, data);                                     \
     }                                                                          \
     typename Variable<T>::Info *InlineReader::DoGetBlockSync(                  \
         Variable<T> &variable)                                                 \
     {                                                                          \
+        TAU_SCOPED_TIMER("InlineReader::DoGetBlockSync");                      \
         return GetBlockSyncCommon(variable);                                   \
+    }                                                                          \
+    typename Variable<T>::Info *InlineReader::DoGetBlockDeferred(              \
+        Variable<T> &variable)                                                 \
+    {                                                                          \
+        TAU_SCOPED_TIMER("InlineReader::DoGetBlockDeferred");                  \
+        return GetBlockDeferredCommon(variable);                               \
     }
 
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
@@ -121,12 +151,14 @@ ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
     std::map<size_t, std::vector<typename Variable<T>::Info>>                  \
     InlineReader::DoAllStepsBlocksInfo(const Variable<T> &variable) const      \
     {                                                                          \
+        TAU_SCOPED_TIMER("InlineReader::AllStepsBlockInfo");                   \
         return std::map<size_t, std::vector<typename Variable<T>::Info>>();    \
     }                                                                          \
                                                                                \
     std::vector<typename Variable<T>::Info> InlineReader::DoBlocksInfo(        \
         const Variable<T> &variable, const size_t step) const                  \
     {                                                                          \
+        TAU_SCOPED_TIMER("InlineReader::DoBlocksInfo");                        \
         return variable.m_BlocksInfo;                                          \
     }
 
@@ -147,19 +179,15 @@ void InlineReader::InitParameters()
         std::transform(key.begin(), key.end(), key.begin(), ::tolower);
 
         std::string value(pair.second);
-        // std::transform(value.begin(), value.end(), value.begin(), ::tolower);
 
         if (key == "verbose")
         {
             m_Verbosity = std::stoi(value);
-            if (m_DebugMode)
-            {
-                if (m_Verbosity < 0 || m_Verbosity > 5)
-                    throw std::invalid_argument(
-                        "ERROR: Method verbose argument must be an "
-                        "integer in the range [0,5], in call to "
-                        "Open or Engine constructor\n");
-            }
+            if (m_Verbosity < 0 || m_Verbosity > 5)
+                throw std::invalid_argument(
+                    "ERROR: Method verbose argument must be an "
+                    "integer in the range [0,5], in call to "
+                    "Open or Engine constructor\n");
         }
         else if (key == "writerid")
         {
@@ -180,11 +208,39 @@ void InlineReader::InitTransports()
 
 void InlineReader::DoClose(const int transportIndex)
 {
+    TAU_SCOPED_TIMER("InlineReader::DoClose");
     if (m_Verbosity == 5)
     {
         std::cout << "Inline Reader " << m_ReaderRank << " Close(" << m_Name
                   << ")\n";
     }
+}
+
+void InlineReader::SetDeferredVariablePointers()
+{
+    // need to set core::Variable::Info::BufferP for each deferred variable
+    // to the ptr stored in core::Variable::Info::Data
+    // this will make Variable::Info::Data() work correctly for the user
+    for (const auto &varName : m_DeferredVariables)
+    {
+        const std::string type = m_IO.InquireVariableType(varName);
+        if (type == "compound")
+        {
+        }
+#define declare_type(T)                                                        \
+    else if (type == helper::GetType<T>())                                     \
+    {                                                                          \
+        Variable<T> &variable =                                                \
+            FindVariable<T>(varName, "in call to EndStep");                    \
+        for (auto &info : variable.m_BlocksInfo)                               \
+        {                                                                      \
+            info.BufferP = info.Data;                                          \
+        }                                                                      \
+    }
+        ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
+#undef declare_type
+    }
+    m_DeferredVariables.clear();
 }
 
 } // end namespace engine

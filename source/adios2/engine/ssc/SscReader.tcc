@@ -12,7 +12,8 @@
 #define ADIOS2_ENGINE_SSCREADER_TCC_
 
 #include "SscReader.h"
-
+#include "adios2/helper/adiosMemory.h"
+#include "adios2/helper/adiosSystem.h"
 #include <iostream>
 
 namespace adios2
@@ -22,121 +23,169 @@ namespace core
 namespace engine
 {
 
-template <class T>
-inline void SscReader::GetSyncCommon(Variable<T> &variable, T *data)
+template <>
+void SscReader::GetDeferredCommon(Variable<std::string> &variable,
+                                  std::string *data)
 {
     TAU_SCOPED_TIMER_FUNC();
-    Log(5,
-        "SscReader::GetSync(" + variable.m_Name + ") begin " +
-            std::to_string(m_CurrentStep),
-        true, true);
+    variable.SetData(data);
+    if (m_CurrentStep == 0)
+    {
+        m_LocalReadPattern.emplace_back();
+        auto &b = m_LocalReadPattern.back();
+        b.name = variable.m_Name;
+        b.count = variable.m_Count;
+        b.start = variable.m_Start;
+        b.shape = variable.m_Shape;
+        b.type = "string";
 
-    GetDeferredCommon(variable, data);
-    PerformGets();
+        m_LocalReadPatternJson["Variables"].emplace_back();
+        auto &jref = m_LocalReadPatternJson["Variables"].back();
+        jref["Name"] = b.name;
+        jref["Type"] = b.type;
+        jref["ShapeID"] = variable.m_ShapeID;
+        jref["Start"] = b.start;
+        jref["Count"] = b.count;
+        jref["Shape"] = b.shape;
+        jref["BufferStart"] = 0;
+        jref["BufferCount"] = 0;
 
-    Log(5,
-        "SscReader::GetSync(" + variable.m_Name + ") end " +
-            std::to_string(m_CurrentStep),
-        true, true);
+        ssc::JsonToBlockVecVec(m_GlobalWritePatternJson, m_GlobalWritePattern);
+        m_AllReceivingWriterRanks =
+            ssc::CalculateOverlap(m_GlobalWritePattern, m_LocalReadPattern);
+        CalculatePosition(m_GlobalWritePattern, m_AllReceivingWriterRanks);
+        size_t totalDataSize = 0;
+        for (auto i : m_AllReceivingWriterRanks)
+        {
+            totalDataSize += i.second.second;
+        }
+        m_Buffer.resize(totalDataSize);
+        std::vector<MPI_Request> requests;
+        for (const auto &i : m_AllReceivingWriterRanks)
+        {
+            requests.emplace_back();
+            MPI_Rget(m_Buffer.data() + i.second.first, i.second.second,
+                     MPI_CHAR, i.first, 0, i.second.second, MPI_CHAR, m_MpiWin,
+                     &requests.back());
+        }
+        MPI_Status statuses[requests.size()];
+        MPI_Waitall(requests.size(), requests.data(), statuses);
+    }
+
+    for (const auto &i : m_AllReceivingWriterRanks)
+    {
+        const auto &v = m_GlobalWritePattern[i.first];
+        for (const auto &b : v)
+        {
+            if (b.name == variable.m_Name)
+            {
+                std::vector<char> str(b.bufferCount);
+                std::memcpy(str.data(), m_Buffer.data() + b.bufferStart,
+                            b.bufferCount);
+                *data = std::string(str.begin(), str.end());
+            }
+        }
+    }
 }
 
 template <class T>
 void SscReader::GetDeferredCommon(Variable<T> &variable, T *data)
 {
     TAU_SCOPED_TIMER_FUNC();
-    Log(5,
-        "SscReader::GetDeferred(" + variable.m_Name + ") begin " +
-            std::to_string(m_CurrentStep),
-        true, true);
 
-    if (variable.m_SingleValue)
+    variable.SetData(data);
+
+    Dims vStart = variable.m_Start;
+    Dims vCount = variable.m_Count;
+    Dims vShape = variable.m_Shape;
+
+    if (!helper::IsRowMajor(m_IO.m_HostLanguage))
     {
-        variable.m_Shape = Dims(1, 1);
-        variable.m_Start = Dims(1, 0);
-        variable.m_Count = Dims(1, 1);
+        std::reverse(vStart.begin(), vStart.end());
+        std::reverse(vCount.begin(), vCount.end());
+        std::reverse(vShape.begin(), vShape.end());
     }
-    m_DataManSerializer.PutDeferredRequest(variable.m_Name, CurrentStep(),
-                                           variable.m_Start, variable.m_Count,
-                                           data);
 
-    m_DeferredRequests.emplace_back();
-    auto &req = m_DeferredRequests.back();
-    req.variable = variable.m_Name;
-    req.step = m_CurrentStep;
-    req.start = variable.m_Start;
-    req.count = variable.m_Count;
-    req.data = data;
-    req.type = helper::GetType<T>();
-
-    if (m_Verbosity > 10)
+    if (m_CurrentStep == 0)
     {
-        std::cout << "SscReader::GetDeferred (" << variable.m_Name
-                  << ") registered Start = ";
-        for (int i = 0; i < req.start.size(); ++i)
+        m_LocalReadPattern.emplace_back();
+        auto &b = m_LocalReadPattern.back();
+        b.name = variable.m_Name;
+        b.count = vCount;
+        b.start = vStart;
+        b.shape = vShape;
+        b.type = helper::GetType<T>();
+
+        for (const auto &d : b.count)
         {
-            std::cout << req.start[i] << ", ";
+            if (d == 0)
+            {
+                throw(std::runtime_error(
+                    "SetSelection count dimensions cannot be 0"));
+            }
         }
-        std::cout << std::endl;
-        std::cout << "SscReader::GetDeferred (" << variable.m_Name
-                  << ") registered Count = ";
-        for (int i = 0; i < req.count.size(); ++i)
+
+        m_LocalReadPatternJson["Variables"].emplace_back();
+        auto &jref = m_LocalReadPatternJson["Variables"].back();
+        jref["Name"] = variable.m_Name;
+        jref["Type"] = helper::GetType<T>();
+        jref["ShapeID"] = variable.m_ShapeID;
+        jref["Start"] = vStart;
+        jref["Count"] = vCount;
+        jref["Shape"] = vShape;
+        jref["BufferStart"] = 0;
+        jref["BufferCount"] = 0;
+
+        ssc::JsonToBlockVecVec(m_GlobalWritePatternJson, m_GlobalWritePattern);
+        m_AllReceivingWriterRanks =
+            ssc::CalculateOverlap(m_GlobalWritePattern, m_LocalReadPattern);
+        CalculatePosition(m_GlobalWritePattern, m_AllReceivingWriterRanks);
+        size_t totalDataSize = 0;
+        for (auto i : m_AllReceivingWriterRanks)
         {
-            std::cout << req.count[i] << ", ";
+            totalDataSize += i.second.second;
         }
-        std::cout << std::endl;
+        m_Buffer.resize(totalDataSize);
+        std::vector<MPI_Request> requests;
+        for (const auto &i : m_AllReceivingWriterRanks)
+        {
+            requests.emplace_back();
+            MPI_Rget(m_Buffer.data() + i.second.first, i.second.second,
+                     MPI_CHAR, i.first, 0, i.second.second, MPI_CHAR, m_MpiWin,
+                     &requests.back());
+        }
+        MPI_Status statuses[requests.size()];
+        MPI_Waitall(requests.size(), requests.data(), statuses);
     }
 
-    Log(5,
-        "SscReader::GetDeferred(" + variable.m_Name + ") end " +
-            std::to_string(m_CurrentStep),
-        true, true);
-}
-
-template <>
-inline void SscReader::AccumulateMinMax<std::complex<float>>(
-    std::complex<float> &min, std::complex<float> &max,
-    const std::vector<char> &minVec, const std::vector<char> &maxVec) const
-{
-}
-
-template <>
-inline void SscReader::AccumulateMinMax<std::complex<double>>(
-    std::complex<double> &min, std::complex<double> &max,
-    const std::vector<char> &minVec, const std::vector<char> &maxVec) const
-{
-}
-
-template <typename T>
-void SscReader::AccumulateMinMax(T &min, T &max,
-                                 const std::vector<char> &minVec,
-                                 const std::vector<char> &maxVec) const
-{
-    T maxInMetadata = reinterpret_cast<const T *>(maxVec.data())[0];
-
-    if (maxInMetadata > max)
+    for (const auto &i : m_AllReceivingWriterRanks)
     {
-        max = maxInMetadata;
+        const auto &v = m_GlobalWritePattern[i.first];
+        for (const auto &b : v)
+        {
+            if (b.name == variable.m_Name)
+            {
+                if (b.shapeId == ShapeID::GlobalArray ||
+                    b.shapeId == ShapeID::LocalArray)
+                {
+                    helper::NdCopy<T>(m_Buffer.data() + b.bufferStart, b.start,
+                                      b.count, true, true,
+                                      reinterpret_cast<char *>(data), vStart,
+                                      vCount, true, true);
+                }
+                else if (b.shapeId == ShapeID::GlobalValue ||
+                         b.shapeId == ShapeID::LocalValue)
+                {
+                    std::memcpy(data, m_Buffer.data() + b.bufferStart,
+                                b.bufferCount);
+                }
+                else
+                {
+                    throw(std::runtime_error("ShapeID not supported"));
+                }
+            }
+        }
     }
-
-    T minInMetadata = reinterpret_cast<const T *>(minVec.data())[0];
-
-    if (minInMetadata < min)
-    {
-        min = minInMetadata;
-    }
-}
-
-template <typename T>
-std::map<size_t, std::vector<typename Variable<T>::Info>>
-SscReader::AllStepsBlocksInfoCommon(const Variable<T> &variable) const
-{
-    TAU_SCOPED_TIMER_FUNC();
-    std::map<size_t, std::vector<typename Variable<T>::Info>> m;
-    for (const auto &i : m_MetaDataMap)
-    {
-        m[i.first] = BlocksInfoCommon(variable, i.first);
-    }
-    return m;
 }
 
 template <typename T>
@@ -145,94 +194,47 @@ SscReader::BlocksInfoCommon(const Variable<T> &variable,
                             const size_t step) const
 {
     TAU_SCOPED_TIMER_FUNC();
-    if (m_Verbosity >= 10)
+
+    std::vector<typename Variable<T>::Info> ret;
+
+    for (const auto &r : m_GlobalWritePattern)
     {
-        std::cout << "SscReader::BlocksInfoCommon Step " << step << "\n";
-    }
-    std::vector<typename Variable<T>::Info> v;
-    auto it = m_MetaDataMap.find(step);
-    if (it == m_MetaDataMap.end())
-    {
-        return v;
-    }
-    T max = std::numeric_limits<T>::min();
-    T min = std::numeric_limits<T>::max();
-    for (const auto &i : *it->second)
-    {
-        if (i.name == variable.m_Name)
+        for (auto &v : r)
         {
-            typename Variable<T>::Info b;
-            b.Start = i.start;
-            b.Count = i.count;
-            b.Shape = i.shape;
-            b.IsValue = false;
-            if (i.shape.size() == 1)
+            if (v.name == variable.m_Name)
             {
-                if (i.shape[0] == 1)
+                ret.emplace_back();
+                auto &b = ret.back();
+                b.Start = v.start;
+                b.Count = v.count;
+                b.Shape = v.shape;
+                b.Step = m_CurrentStep;
+                b.StepsStart = m_CurrentStep;
+                b.StepsCount = 1;
+                if (!helper::IsRowMajor(m_IO.m_HostLanguage))
+                {
+                    std::reverse(b.Start.begin(), b.Start.end());
+                    std::reverse(b.Count.begin(), b.Count.end());
+                    std::reverse(b.Shape.begin(), b.Shape.end());
+                }
+                if (v.shapeId == ShapeID::GlobalValue ||
+                    v.shapeId == ShapeID::LocalValue)
                 {
                     b.IsValue = true;
+                    if (m_CurrentStep == 0)
+                    {
+                        std::memcpy(&b.Value, v.value.data(), v.value.size());
+                    }
+                    else
+                    {
+                        std::memcpy(&b.Value, m_Buffer.data() + v.bufferStart,
+                                    v.bufferCount);
+                    }
                 }
             }
-            AccumulateMinMax(min, max, i.min, i.max);
-            v.push_back(b);
         }
     }
-    for (auto &i : v)
-    {
-        i.Min = min;
-        i.Max = max;
-    }
-    return v;
-}
-
-template <typename T>
-void SscReader::CheckIOVariable(const std::string &name, const Dims &shape)
-{
-    TAU_SCOPED_TIMER_FUNC();
-    bool singleValue = false;
-    if (shape.size() == 1)
-    {
-        if (shape[0] == 1)
-        {
-            singleValue = true;
-        }
-    }
-    auto v = m_IO.InquireVariable<T>(name);
-    if (v == nullptr)
-    {
-        if (singleValue)
-        {
-            m_IO.DefineVariable<T>(name);
-        }
-        else
-        {
-            m_IO.DefineVariable<T>(name, shape, Dims(shape.size(), 0), shape);
-        }
-        v = m_IO.InquireVariable<T>(name);
-        v->m_Engine = this;
-        if (m_Verbosity >= 5)
-        {
-            std::cout << "SscReader::CheckIOVariable defined Variable " << name
-                      << " Dimension " << shape.size() << std::endl;
-        }
-    }
-    else
-    {
-        if (not singleValue)
-        {
-            if (v->m_Shape != shape)
-            {
-                v->SetShape(shape);
-                v->SetSelection({Dims(shape.size(), 0), shape});
-            }
-        }
-        if (m_Verbosity >= 5)
-        {
-            std::cout << "SscReader::CheckIOVariable Variable " << name
-                      << " existing, Dimension " << shape.size() << std::endl;
-        }
-    }
-    v->m_FirstStreamingStep = false;
+    return ret;
 }
 
 } // end namespace engine

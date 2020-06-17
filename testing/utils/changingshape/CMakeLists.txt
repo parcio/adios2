@@ -6,12 +6,12 @@
 include(ADIOSFunctions)
 
 add_executable(Test.Utils.ChangingShape TestUtilsChangingShape.cpp)
-target_link_libraries(Test.Utils.ChangingShape adios2)
 
 if(ADIOS2_HAVE_MPI)
-  target_link_libraries(Test.Utils.ChangingShape MPI::MPI_C)
-  set(cmd_executor ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 1)
+  target_link_libraries(Test.Utils.ChangingShape adios2::cxx11_mpi MPI::MPI_C)
+  set(cmd_executor ${MPIEXEC_COMMAND} ${MPIEXEC_NUMPROC_FLAG} 1)
 else()
+  target_link_libraries(Test.Utils.ChangingShape adios2::cxx11)
   set(cmd_executor)
 endif()
 
@@ -39,7 +39,7 @@ add_test(NAME Utils.ChangingShape.Dump
 
 if(ADIOS2_HAVE_MPI)
   add_test(NAME Utils.ChangingShape.Validate
-    COMMAND ${DIFF_EXECUTABLE} -uw
+    COMMAND ${DIFF_COMMAND} -u -w
       ${CMAKE_CURRENT_SOURCE_DIR}/TestUtilsChangingShape.bplsla.expected.txt
       TestUtilsChangingShape.bplsla.result.txt
   )
@@ -63,7 +63,7 @@ add_test(NAME Utils.ChangingShape.AlternatingStepsAndChangingShapeVar.Dump
 
 if(ADIOS2_HAVE_MPI)
   add_test(NAME Utils.ChangingShape.AlternatingStepsAndChangingShapeVar.Validate
-    COMMAND ${DIFF_EXECUTABLE} -uw
+    COMMAND ${DIFF_COMMAND} -u -w
       ${CMAKE_CURRENT_SOURCE_DIR}/TestUtilsChangingShape.bplsldAlternatingStepsAndChangingShapeVar.expected.txt
       TestUtilsChangingShape.bplsldAlternatingStepsAndChangingShapeVar.result.txt
   )
@@ -97,7 +97,7 @@ add_test(NAME Utils.ChangingShape.AlternatingStepsVarSelection.Dump
 
 if(ADIOS2_HAVE_MPI)
   add_test(NAME Utils.ChangingShape.AlternatingStepsVarSelection.Validate
-    COMMAND ${DIFF_EXECUTABLE} -uw
+    COMMAND ${DIFF_COMMAND} -u -w
       ${CMAKE_CURRENT_SOURCE_DIR}/TestUtilsChangingShape.bplsldAlternatingStepsVarSelection.expected.txt
       TestUtilsChangingShape.bplsldAlternatingStepsVarSelection.result.txt
   )
@@ -130,7 +130,7 @@ add_test(NAME Utils.ChangingShape.ChangingShapeVarOneStep.Dump
 )
 if(ADIOS2_HAVE_MPI)
   add_test(NAME Utils.ChangingShape.ChangingShapeVarOneStep.Validate
-    COMMAND ${DIFF_EXECUTABLE} -uw
+    COMMAND ${DIFF_COMMAND} -u -w
       ${CMAKE_CURRENT_SOURCE_DIR}/TestUtilsChangingShape.bplsldChangingShapeVarOneStep.expected.txt
       TestUtilsChangingShape.bplsldChangingShapeVarOneStep.result.txt
   )
@@ -160,7 +160,7 @@ add_test(NAME Utils.ChangingShape.FixedShapeVarTooManySteps.Dump
 
 if(ADIOS2_HAVE_MPI)
   add_test(NAME Utils.ChangingShape.FixedShapeVarTooManySteps.Validate
-    COMMAND ${DIFF_EXECUTABLE} -uw
+    COMMAND ${DIFF_COMMAND} -u -w
       ${CMAKE_CURRENT_SOURCE_DIR}/TestUtilsChangingShape.bplsldFixedShapeVarTooManySteps.expected.txt
       TestUtilsChangingShape.bplsldFixedShapeVarTooManySteps.result.txt
   )

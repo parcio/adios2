@@ -6,8 +6,10 @@
 #include <cstring>
 #include <ctime>
 
+#include <chrono>
 #include <iostream>
 #include <stdexcept>
+#include <thread>
 
 #include <adios2.h>
 
@@ -23,7 +25,7 @@ public:
     CommonWriteTest() = default;
 };
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
 MPI_Comm testComm;
 #endif
 
@@ -33,23 +35,30 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
     // form a mpiSize * Nx 1D array
     int mpiRank = 0, mpiSize = 1;
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Comm_rank(testComm, &mpiRank);
     MPI_Comm_size(testComm, &mpiSize);
 #endif
 
     // Write test data using ADIOS2
 
-#ifdef ADIOS2_HAVE_MPI
-    adios2::ADIOS adios(testComm, adios2::DebugON);
+#if ADIOS2_USE_MPI
+    adios2::ADIOS adios(testComm);
 #else
-    adios2::ADIOS adios(true);
+    adios2::ADIOS adios;
 #endif
     adios2::IO io = adios.DeclareIO("TestIO");
 
     // Declare 1D variables (NumOfProcesses * Nx)
     // The local process' part (start, count) can be defined now or later
     // before Write().
+
+    /* we'll be dropping the size for some vars */
+    if (VaryingDataSize)
+    {
+        assert(Nx > NSteps + mpiSize);
+    }
+
     {
         adios2::Dims shape{static_cast<unsigned int>(Nx * mpiSize)};
         adios2::Dims start{static_cast<unsigned int>(Nx * mpiRank)};
@@ -117,13 +126,17 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
         auto var_time = io.InquireVariable<int64_t>("time");
 
         // // Make a 1D selection to describe the local dimensions of the
-        // // variable we write and its offsets in the global spaces
+        // // variable we write
+        adios2::Box<adios2::Dims> sel_shrinking({}, {Nx - step - mpiRank});
         // adios2::Box<adios2::Dims> sel({mpiRank * Nx}, {Nx});
         // adios2::Box<adios2::Dims> sel2({mpiRank * Nx, 0}, {Nx, 2});
         // adios2::Box<adios2::Dims> sel3({0, mpiRank * Nx}, {2, Nx});
         // adios2::Box<adios2::Dims> sel_time(
         //     {static_cast<unsigned long>(mpiRank)}, {1});
-        // var_i8.SetSelection(sel);
+        if (VaryingDataSize)
+        {
+            var_i8.SetSelection(sel_shrinking);
+        }
         // var_i16.SetSelection(sel);
         // var_i32.SetSelection(sel);
         // var_i64.SetSelection(sel);
@@ -156,6 +169,8 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
         std::time_t localtime = std::time(NULL);
         engine.Put(var_time, (int64_t *)&localtime);
         engine.EndStep();
+        std::this_thread::sleep_for(std::chrono::milliseconds(
+            DelayMS)); /* sleep for DelayMS milliseconds */
     }
 
     // Close the file
@@ -164,7 +179,7 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
 
 int main(int argc, char **argv)
 {
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Init(nullptr, nullptr);
 
     int key;
@@ -177,11 +192,13 @@ int main(int argc, char **argv)
     int result;
     ::testing::InitGoogleTest(&argc, argv);
 
+    DelayMS = 0; // zero for common writer
+
     ParseArgs(argc, argv);
 
     result = RUN_ALL_TESTS();
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Finalize();
 #endif
 

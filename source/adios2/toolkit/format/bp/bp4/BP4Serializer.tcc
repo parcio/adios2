@@ -17,6 +17,7 @@
 #include "BP4Serializer.h"
 
 #include <algorithm> // std::all_of
+#include <array>
 #include <iostream>
 
 #include "adios2/helper/adiosFunctions.h"
@@ -436,11 +437,10 @@ size_t BP4Serializer::PutVariableMetadataInData(
                                      position);
 
     // here align pointer for span
-
     const size_t padLengthPosition = position;
-    uint8_t zero = 0;
+    constexpr std::array<uint8_t, 5> zeros = {0, 0, 0, 0, 0};
     // skip 1 for paddingLength and 4 for VMD] ending
-    helper::CopyToBuffer(buffer, position, &zero, 5);
+    helper::CopyToBuffer(buffer, position, zeros.data(), 5);
     // here check for the next aligned pointer
     const size_t extraBytes = span == nullptr ? 0 : m_Data.Align<T>();
     const std::string pad =
@@ -481,7 +481,15 @@ inline size_t BP4Serializer::PutVariableMetadataInData(
     helper::CopyToBuffer(buffer, position, &stats.MemberID);
 
     PutNameRecord(variable.m_Name, buffer, position);
-    position += 2; // skip layout and unused byte
+
+    // Layout can be 'K' = same as the language default, 'C' for row major and
+    // 'F' for column major -- these are Numpy-like flags
+    const char layout = 'K';
+    helper::CopyToBuffer(buffer, position, &layout);
+
+    // unused byte, write a 0 length to skip it
+    const uint8_t zero8 = 0;
+    helper::CopyToBuffer(buffer, position, &zero8);
 
     const uint8_t dataType = TypeTraits<std::string>::type_enum;
     helper::CopyToBuffer(buffer, position, &dataType);

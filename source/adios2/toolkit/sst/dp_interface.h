@@ -4,7 +4,7 @@
 #include <sst_data.h>
 
 #include "adios2/common/ADIOSConfig.h"
-#include "adios2/helper/mpiwrap.h"
+#include "sst_comm.h"
 #include <evpath.h>
 
 /*!
@@ -304,6 +304,15 @@ typedef void (*CP_DP_PerReaderReleaseTimestepFunc)(CP_Services Svcs,
                                                    long Timestep);
 
 /*!
+ * CP_DP_RSReleaseTimestepFunc is the type of a READER-SIDE dataplane function
+ * that informs the dataplane that the data associated with timestep `timestep`
+ * will no longer be the subject of remote read requests, so its resources
+ * may be released.
+ */
+typedef void (*CP_DP_RSReleaseTimestepFunc)(CP_Services Svcs,
+                                            DP_RS_Stream Stream, long Timestep);
+
+/*!
  * CP_DP_GetPriorityFunc is the type of a dataplane initialization
  * function that returns the relative priority of this particular
  * dataplane WRT other dataplanes.  Its return value is an integer
@@ -358,6 +367,9 @@ struct _CP_DP_Interface
     CP_DP_PerReaderReleaseTimestepFunc
         readerReleaseTimestep; // writer-side call, one per reader when that
                                // reader is done
+    CP_DP_RSReleaseTimestepFunc
+        RSReleaseTimestep; // reader-side call, one per timestep when all
+                           // readers are done
     CP_DP_WSR_ReadPatternLockedFunc WSRreadPatternLocked;
     CP_DP_RS_ReadPatternLockedFunc RSreadPatternLocked;
 
@@ -374,7 +386,7 @@ struct _CP_DP_Interface
 
 typedef void (*CP_VerboseFunc)(void *CP_Stream, char *Format, ...);
 typedef CManager (*CP_GetCManagerFunc)(void *CP_stream);
-typedef MPI_Comm (*CP_GetMPICommFunc)(void *CP_Stream);
+typedef SMPI_Comm (*CP_GetMPICommFunc)(void *CP_Stream);
 typedef int (*CP_SendToPeerFunc)(void *CP_Stream, CP_PeerCohort PeerCohort,
                                  int Rank, CMFormat Format, void *Data);
 struct _CP_Services

@@ -2,7 +2,7 @@
  * Distributed under the OSI-approved Apache License, Version 2.0.  See
  * accompanying file Copyright.txt for details.
  *
- * ADIOSPy.cpp
+ * py11ADIOS.cpp
  *
  *  Created on: Mar 13, 2017
  *      Author: William F Godoy godoywf@ornl.gov
@@ -10,33 +10,17 @@
 
 #include "py11ADIOS.h"
 
-#include "adios2/common/ADIOSMPI.h"
-
 namespace adios2
 {
 namespace py11
 {
 
-#ifdef ADIOS2_HAVE_MPI
-ADIOS::ADIOS(const std::string &configFile, MPI4PY_Comm mpiComm,
-             const bool debugMode)
-: m_ADIOS(std::make_shared<adios2::core::ADIOS>(configFile, mpiComm, debugMode,
-                                                "Python"))
-{
-}
-
-ADIOS::ADIOS(MPI4PY_Comm mpiComm, const bool debugMode)
-: ADIOS("", mpiComm, debugMode)
-{
-}
-#endif
 ADIOS::ADIOS(const std::string &configFile, const bool debugMode)
-: m_ADIOS(
-      std::make_shared<adios2::core::ADIOS>(configFile, debugMode, "Python"))
+: m_ADIOS(std::make_shared<adios2::core::ADIOS>(configFile, "Python"))
 {
 }
 
-ADIOS::ADIOS(const bool debugMode) : ADIOS("", debugMode) {}
+ADIOS::ADIOS(const bool debugMode) : ADIOS("", "Python") {}
 
 ADIOS::operator bool() const noexcept { return m_ADIOS ? true : false; }
 

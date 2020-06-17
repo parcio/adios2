@@ -11,13 +11,13 @@
 #ifndef ADIOS2_ENGINE_SST_SST_WRITER_H_
 #define ADIOS2_ENGINE_SST_SST_WRITER_H_
 
-#include <adios2/common/ADIOSMPI.h>
-
 #include "adios2/common/ADIOSConfig.h"
 #include "adios2/core/Engine.h"
 #include "adios2/helper/adiosComm.h"
 #include "adios2/toolkit/format/bp/bp3/BP3Serializer.h"
 #include "adios2/toolkit/sst/sst.h"
+
+#include <memory>
 
 namespace adios2
 {
@@ -63,7 +63,7 @@ private:
         _SstData metadata;
         format::BP3Serializer *serializer;
     };
-    format::BP3Serializer *m_BP3Serializer;
+    std::unique_ptr<format::BP3Serializer> m_BP3Serializer;
 
     SstStream m_Output;
     long m_WriterStep = -1;

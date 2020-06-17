@@ -13,7 +13,7 @@
 
 #include "adios2_c_types.h"
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
 #include <mpi.h>
 #endif
 
@@ -21,16 +21,18 @@
 extern "C" {
 #endif
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
+#define adios2_init(comm, debug_mode) adios2_init_mpi(comm)
+#define adios2_init_config(config_file, comm, debug_mode)                      \
+    adios2_init_config_mpi(config_file, comm)
+
 /**
  * Starting point for MPI apps. Creates an ADIOS handler.
  * MPI collective and it calls MPI_Comm_dup
  * @param comm defines domain scope from application
- * @param debug_mode true: extra user-input debugging information, false:
- * run without checking user-input (stable workflows)
  * @return success: handler, failure: NULL
  */
-adios2_adios *adios2_init(MPI_Comm comm, const adios2_debug_mode debug_mode);
+adios2_adios *adios2_init_mpi(MPI_Comm comm);
 
 /**
  * Starting point for MPI apps. Creates an ADIOS handler allowing a runtime
@@ -39,36 +41,28 @@ adios2_adios *adios2_init(MPI_Comm comm, const adios2_debug_mode debug_mode);
  * configFile contents
  * @param config_file runtime configuration file in xml format
  * @param comm defines domain scope from application
- * @param debug_mode true: extra user-input debugging information, false:
- * run without checking user-input (stable workflows)
  * @return success: handler, failure: NULL
  */
-adios2_adios *adios2_init_config(const char *config_file, MPI_Comm comm,
-                                 const adios2_debug_mode debug_mode);
-
+adios2_adios *adios2_init_config_mpi(const char *config_file, MPI_Comm comm);
 #else
-
-/**
- * Initialize an ADIOS struct pointer handler in a serial, non-MPI application.
- * Doesn't require a runtime config file.
- * @param debug_mode adios2_debug_mode_on or adios2_debug_mode_off, adds extra
- * checking to user input to be captured by adios2_error. Use it for stable
- * workflows
- * @return success: handler, failure: NULL
- */
-adios2_adios *adios2_init(const adios2_debug_mode debug_mode);
-
-/**
- * Initialize an ADIOS struct pointer handler in a serial, non-MPI application.
- * Doesn't require a runtime config file.
- * @param debug_mode adios2_debug_mode_on or adios2_debug_mode_off, adds extra
- * checking to user input to be captured by adios2_error. Use it for stable
- * workflows
- * @return success: handler, failure: NULL
- */
-adios2_adios *adios2_init_config(const char *config_file,
-                                 const adios2_debug_mode debug_mode);
+#define adios2_init(debug_mode) adios2_init_serial()
+#define adios2_init_config(config_file, debug_mode)                            \
+    adios2_init_config_serial(config_file)
 #endif
+
+/**
+ * Initialize an ADIOS struct pointer handler in a serial, non-MPI application.
+ * Doesn't require a runtime config file.
+ * @return success: handler, failure: NULL
+ */
+adios2_adios *adios2_init_serial(void);
+
+/**
+ * Initialize an ADIOS struct pointer handler in a serial, non-MPI application.
+ * Doesn't require a runtime config file.
+ * @return success: handler, failure: NULL
+ */
+adios2_adios *adios2_init_config_serial(const char *config_file);
 
 /**
  * Declares a new io handler

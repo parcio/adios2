@@ -13,6 +13,7 @@
 
 /// \cond EXCLUDE_FROM_DOXYGEN
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 /// \endcond
@@ -25,6 +26,14 @@ namespace helper
 {
 
 /**
+ * Transforms string to LowerCase: either single string or set of strings
+ * @param input string or set of strings
+ * @return input contents in lower case
+ */
+template <class T>
+T LowerCase(const T &input);
+
+/**
  * Opens and checks for file and dumps content to a single string.
  * @param fileName of text file
  * @param hint exception message
@@ -35,24 +44,20 @@ std::string FileToString(const std::string &fileName, const std::string hint);
 /**
  * Transforms a vector to a map of parameters
  * @param parameters vector of parameters with format "field=value"
- * @param debugMode true=check parameters format, false=no checks
  * @return a map with unique key=field, value=corresponding value
  */
 Params BuildParametersMap(const std::vector<std::string> &parameters,
-                          const char delimKeyValue = '=',
-                          const bool debugMode = false);
+                          const char delimKeyValue = '=');
 
 /**
  * Transforms a string to a map of parameters
  * @param parameters string of parameters with format "key=value,
  * key2=value2, ..."
- * @param debugMode true=check parameters format, false=no checks
  * @return a map with unique key/value pairs
  */
 Params BuildParametersMap(const std::string &input,
                           const char delimKeyValue = '=',
-                          const char delimItem = ',',
-                          const bool debugMode = false);
+                          const char delimItem = ',');
 
 /**
  * Add name extension if not existing at the end of name
@@ -95,23 +100,31 @@ void SetParameterValue(const std::string key, const Params &parameters,
                        std::string &value) noexcept;
 
 std::string GetParameter(const std::string key, const adios2::Params &params,
-                         const bool isMandatory, const bool debugMode,
-                         const std::string hint);
+                         const bool isMandatory, const std::string hint);
+
+/**
+ * Get parameter 'key' from 'params' and put into 'value'
+ * @param params parameter vector input
+ * @param key parameter name to find in params
+ * @param value to be modified if key is found in parameters
+ * @return true if key is found, false if key is not found
+ */
+template <typename T>
+bool GetParameter(const Params &params, const std::string &key, T &value);
+
 /**
  * Sets int value if found in parameters for input key
  * @param key input
  * @param parameters map with key: field, value: value
  * @param value to be modified if key is found in parameters
- * @param debugMode check for string conversion
  * @param hint passed for extra debugging info if exception is thrown
  */
 void SetParameterValueInt(const std::string key, const Params &parameters,
-                          int &value, const bool debugMode,
-                          const std::string &hint);
+                          int &value, const std::string &hint);
 
 template <class T>
 void SetParameterValue(const std::string key, const Params &parameters,
-                       T &value, const bool debugMode, const std::string &hint);
+                       T &value, const std::string &hint);
 
 /**
  * Returns a single string with dimension values
@@ -119,6 +132,8 @@ void SetParameterValue(const std::string key, const Params &parameters,
  * @return string dimensions values
  */
 std::string DimsToString(const Dims &dimensions);
+
+Dims StringToDims(const std::string &dimensions);
 
 /**
  * Sets global name: prefix + separator + localName. If prefix is empty it
@@ -134,44 +149,54 @@ std::string GlobalName(const std::string &localName, const std::string &prefix,
 
 /**
  * function that casts a string to a fixed width type verifying validity of the
- * cast with exceptions in debugMode. ONly int32_t, uint32_t, int64_t, uint64_t,
+ * cast with exceptions. ONly int32_t, uint32_t, int64_t, uint64_t,
  * float, double are supported
  * @param input to be converted
- * @param debugMode check for string conversion
  * @param hint passed for extra debugging info if exception is thrown
  * @return cast input string to output value of type T
  */
 template <class T>
-T StringTo(const std::string &input, const bool debugMode,
-           const std::string &hint);
+T StringTo(const std::string &input, const std::string &hint);
 
 /**
  * function that casts a string to a size_t value safely. Calls uint32_t or
  * uint64_t depending on sizeof(size_t)
  * @param input to be converted
- * @param debugMode check for string conversion
  * @param hint passed for extra debugging info if exception is thrown
  * @return cast input string to output value of type size_t
  */
-size_t StringToSizeT(const std::string &input, const bool debugMode,
-                     const std::string &hint);
+size_t StringToSizeT(const std::string &input, const std::string &hint);
 
 /**
  * Convert a string (e.g. 16Kb) to byte units. Last 2 characters must
  * @param input
- * @param debugMode
  * @param hint
  * @return
  */
-size_t StringToByteUnits(const std::string &input, const bool debugMode,
-                         const std::string &hint);
+size_t StringToByteUnits(const std::string &input, const std::string &hint);
 
 /**
- * Transforms string to LowerCase
- * @param input string
- * @return input contents in lower case
+ * Transforms parameter map to LowerCase.
+ * @param params parameter map
+ * @return parameter map with keys and values lower case.
  */
-std::string LowerCase(const std::string &input);
+Params LowerCaseParams(const Params &params);
+
+/**
+ * Extract inputs subset that matches a prefix input
+ * @param prefix input prefix
+ * @param inputs input names
+ * @return  all names with prefix "pre": pre1, pre2, ..., preXYZ,
+ */
+std::set<std::string>
+PrefixMatches(const std::string &prefix,
+              const std::set<std::string> &inputs) noexcept;
+
+/**
+ * Remove a trailing path separator character at the end of the string.
+ * Makes it easier to append file names to it later.
+ */
+std::string RemoveTrailingSlash(const std::string &name) noexcept;
 
 } // end namespace helper
 } // end namespace adios2

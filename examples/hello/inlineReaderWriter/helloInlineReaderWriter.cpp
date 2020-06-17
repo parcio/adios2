@@ -105,7 +105,7 @@ void DoAnalysis(adios2::IO &inlineIO, adios2::Engine &inlineReader, int rank,
 int main(int argc, char *argv[])
 {
     int rank = 0, size = 1;
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -117,12 +117,11 @@ int main(int argc, char *argv[])
 
     try
     {
-#ifdef ADIOS2_HAVE_MPI
-        /** ADIOS class factory of IO class objects, DebugON (default) is
-         * recommended */
-        adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
+#if ADIOS2_USE_MPI
+        /** ADIOS class factory of IO class objects */
+        adios2::ADIOS adios(MPI_COMM_WORLD);
 #else
-        adios2::ADIOS adios(adios2::DebugON);
+        adios2::ADIOS adios;
 #endif
         /*** IO class object: settings and factory of Settings: Variables,
          * Parameters, Transports, and Execution: Engines
@@ -131,7 +130,9 @@ int main(int argc, char *argv[])
         /// WRITE
         {
             inlineIO.SetEngine("Inline");
-            inlineIO.SetParameters({{"verbose", "4"}});
+            inlineIO.SetParameters({{"verbose", "4"},
+                                    {"writerID", "myWriteID"},
+                                    {"readerID", "myReadID"}});
 
             /** global array: name, { shape (total dimensions) }, { start
              * (local) },
@@ -167,10 +168,6 @@ int main(int argc, char *argv[])
             /** Engine derived class, spawned to start IO operations */
             adios2::Engine inlineWriter =
                 inlineIO.Open("myWriteID", adios2::Mode::Write);
-
-            inlineIO.SetEngine("Inline");
-            inlineIO.SetParameters(
-                {{"verbose", "4"}, {"writerID", "myWriteID"}});
 
             adios2::Engine inlineReader =
                 inlineIO.Open("myReadID", adios2::Mode::Read);
@@ -230,7 +227,7 @@ int main(int argc, char *argv[])
         std::cout << e.what() << "\n";
     }
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Finalize();
 #endif
 

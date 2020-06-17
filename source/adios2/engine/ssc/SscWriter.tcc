@@ -12,7 +12,7 @@
 #define ADIOS2_ENGINE_SSCWRITER_TCC_
 
 #include "SscWriter.h"
-
+#include "adios2/helper/adiosSystem.h"
 #include <iostream>
 
 namespace adios2
@@ -22,69 +22,114 @@ namespace core
 namespace engine
 {
 
-template <class T>
-void SscWriter::PutSyncCommon(Variable<T> &variable, const T *data)
+template <>
+void SscWriter::PutDeferredCommon(Variable<std::string> &variable,
+                                  const std::string *data)
 {
     TAU_SCOPED_TIMER_FUNC();
-    Log(5,
-        "SscWriter::PutSync(" + variable.m_Name + ") begin. Current step " +
-            std::to_string(m_CurrentStep),
-        true, true);
-    if (m_CurrentStepActive)
+    variable.SetData(data);
+
+    bool found = false;
+    for (const auto &b : m_GlobalWritePattern[m_StreamRank])
     {
-        PutDeferredCommon(variable, data);
-        PerformPuts();
+        if (b.name == variable.m_Name)
+        {
+            if (b.bufferCount < data->size())
+            {
+                throw(std::runtime_error(
+                    "SSC only accepts fixed length string variables"));
+            }
+            std::memcpy(m_Buffer.data() + b.bufferStart, data->data(),
+                        data->size());
+            found = true;
+        }
     }
-    Log(5,
-        "SscWriter::PutSync(" + variable.m_Name + ") end. Current step " +
-            std::to_string(m_CurrentStep),
-        true, true);
+
+    if (!found)
+    {
+        if (m_CurrentStep == 0)
+        {
+            m_GlobalWritePattern[m_StreamRank].emplace_back();
+            auto &b = m_GlobalWritePattern[m_StreamRank].back();
+            b.name = variable.m_Name;
+            b.type = "string";
+            b.shapeId = variable.m_ShapeID;
+            b.shape = variable.m_Shape;
+            b.start = variable.m_Start;
+            b.count = variable.m_Count;
+            b.bufferStart = m_Buffer.size();
+            b.bufferCount = data->size();
+            m_Buffer.resize(b.bufferStart + b.bufferCount);
+            std::memcpy(m_Buffer.data() + b.bufferStart, data->data(),
+                        data->size());
+            b.value.resize(data->size());
+            std::memcpy(b.value.data(), data->data(), data->size());
+        }
+        else
+        {
+            throw std::runtime_error("ssc only accepts fixed IO pattern");
+        }
+    }
 }
 
 template <class T>
 void SscWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
 {
     TAU_SCOPED_TIMER_FUNC();
-    Log(5,
-        "SscWriter::PutDeferred(" + variable.m_Name + ") start. Current step " +
-            std::to_string(m_CurrentStep),
-        true, true);
 
-    if (m_CurrentStepActive)
+    variable.SetData(data);
+
+    Dims vStart = variable.m_Start;
+    Dims vCount = variable.m_Count;
+    Dims vShape = variable.m_Shape;
+
+    if (!helper::IsRowMajor(m_IO.m_HostLanguage))
     {
-        for (const auto &op : variable.m_Operations)
-        {
-            std::lock_guard<std::mutex> l(m_CompressionParamsMutex);
-            std::string opName = op.Op->m_Type;
-            if (opName == "zfp" or opName == "bzip2" or opName == "sz")
-            {
-                m_CompressionParams[variable.m_Name]["CompressionMethod"] =
-                    opName;
-                for (const auto &p : op.Parameters)
-                {
-                    m_CompressionParams[variable.m_Name]
-                                       [opName + ":" + p.first] = p.second;
-                }
-                break;
-            }
-        }
-
-        if (variable.m_SingleValue)
-        {
-            variable.m_Shape = Dims(1, 1);
-            variable.m_Start = Dims(1, 0);
-            variable.m_Count = Dims(1, 1);
-        }
-        variable.SetData(data);
-        m_DataManSerializer.PutVar(
-            variable, m_Name, CurrentStep(), m_MpiRank,
-            m_FullAddresses[rand() % m_FullAddresses.size()], Params());
+        std::reverse(vStart.begin(), vStart.end());
+        std::reverse(vCount.begin(), vCount.end());
+        std::reverse(vShape.begin(), vShape.end());
     }
 
-    Log(5,
-        "SscWriter::PutDeferred(" + variable.m_Name + ") end. Current step " +
-            std::to_string(m_CurrentStep),
-        true, true);
+    bool found = false;
+    for (const auto &b : m_GlobalWritePattern[m_StreamRank])
+    {
+        if (b.name == variable.m_Name and ssc::AreSameDims(vStart, b.start) and
+            ssc::AreSameDims(vCount, b.count) and
+            ssc::AreSameDims(vShape, b.shape))
+        {
+            std::memcpy(m_Buffer.data() + b.bufferStart, data, b.bufferCount);
+            found = true;
+        }
+    }
+
+    if (!found)
+    {
+        if (m_CurrentStep == 0)
+        {
+            m_GlobalWritePattern[m_StreamRank].emplace_back();
+            auto &b = m_GlobalWritePattern[m_StreamRank].back();
+            b.name = variable.m_Name;
+            b.type = helper::GetType<T>();
+            b.shapeId = variable.m_ShapeID;
+            b.shape = vShape;
+            b.start = vStart;
+            b.count = vCount;
+            b.bufferStart = m_Buffer.size();
+            b.bufferCount = ssc::TotalDataSize(b.count, b.type, b.shapeId);
+            m_Buffer.resize(b.bufferStart + b.bufferCount);
+            std::memcpy(m_Buffer.data() + b.bufferStart, data, b.bufferCount);
+            if (b.shapeId == ShapeID::GlobalValue ||
+                b.shapeId == ShapeID::LocalValue)
+            {
+                b.value.resize(sizeof(T));
+                std::memcpy(b.value.data(), data, b.bufferCount);
+            }
+        }
+        else
+        {
+            throw std::runtime_error("ssc only accepts fixed IO pattern");
+        }
+    }
 }
 
 } // end namespace engine

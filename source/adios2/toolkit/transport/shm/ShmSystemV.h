@@ -32,15 +32,14 @@ public:
      * @param projectID  ftok input to create unique shared-memory key. Must be
      * greater than zero.
      * @param size shared-memory pre-allocated data size
-     * @param debugMode true: extra checks
      */
     ShmSystemV(const unsigned int projectID, const size_t size,
-               helper::Comm const &comm, const bool debugMode = false,
-               const bool removeAtClose = false);
+               helper::Comm const &comm, const bool removeAtClose = false);
 
     ~ShmSystemV();
 
-    void Open(const std::string &name, const Mode openMode) final;
+    void Open(const std::string &name, const Mode openMode,
+              const bool async = false) final;
 
     void Write(const char *buffer, size_t size, size_t start = MaxSizeT) final;
 

@@ -35,17 +35,17 @@ TEST_F(HDF5WriteReadAsStreamTestADIOS2, ADIOS2HDF5WriteRead1D8)
     // Number of steps
     const size_t NSteps = 5;
 
-#ifdef ADIOS2_HAVE_MPI
+#ifdef TEST_HDF5_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 #endif
 
     // Write test data using HDF5
 
-#ifdef ADIOS2_HAVE_MPI
-    adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
+#ifdef TEST_HDF5_MPI
+    adios2::ADIOS adios(MPI_COMM_WORLD);
 #else
-    adios2::ADIOS adios(true);
+    adios2::ADIOS adios;
 #endif
     {
         adios2::IO io = adios.DeclareIO("TestIO");
@@ -384,17 +384,17 @@ TEST_F(HDF5WriteReadAsStreamTestADIOS2, ADIOS2HDF5WriteRead2D2x4)
     // Number of steps
     const std::size_t NSteps = 3;
 
-#ifdef ADIOS2_HAVE_MPI
+#ifdef TEST_HDF5_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 #endif
 
     // Write test data using ADIOS2
 
-#ifdef ADIOS2_HAVE_MPI
-    adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
+#ifdef TEST_HDF5_MPI
+    adios2::ADIOS adios(MPI_COMM_WORLD);
 #else
-    adios2::ADIOS adios(true);
+    adios2::ADIOS adios;
 #endif
     {
         adios2::IO io = adios.DeclareIO("TestIO");
@@ -632,17 +632,17 @@ TEST_F(HDF5WriteReadAsStreamTestADIOS2, ADIOS2HDF5WriteRead2D4x2)
     // Number of steps
     const std::size_t NSteps = 3;
 
-#ifdef ADIOS2_HAVE_MPI
+#ifdef TEST_HDF5_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 #endif
 
     // Write test data using ADIOS2
 
-#ifdef ADIOS2_HAVE_MPI
-    adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
+#ifdef TEST_HDF5_MPI
+    adios2::ADIOS adios(MPI_COMM_WORLD);
 #else
-    adios2::ADIOS adios(true);
+    adios2::ADIOS adios;
 #endif
     {
         adios2::IO io = adios.DeclareIO("TestIO");
@@ -884,17 +884,17 @@ TEST_F(HDF5WriteReadAsStreamTestADIOS2, ReaderWriterDefineVariable)
     // Number of steps
     const std::size_t NSteps = 3;
 
-#ifdef ADIOS2_HAVE_MPI
+#ifdef TEST_HDF5_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 #endif
 
     // Write test data using ADIOS2
 
-#ifdef ADIOS2_HAVE_MPI
-    adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
+#ifdef TEST_HDF5_MPI
+    adios2::ADIOS adios(MPI_COMM_WORLD);
 #else
-    adios2::ADIOS adios(true);
+    adios2::ADIOS adios;
 #endif
 
     const adios2::Dims shape{Ny, static_cast<size_t>(Nx * mpiSize)};
@@ -921,7 +921,7 @@ TEST_F(HDF5WriteReadAsStreamTestADIOS2, ReaderWriterDefineVariable)
 
         h5Writer.Close();
     }
-#ifdef ADIOS2_HAVE_MPI
+#ifdef TEST_HDF5_MPI
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
     {
@@ -954,7 +954,7 @@ TEST_F(HDF5WriteReadAsStreamTestADIOS2, ReaderWriterDefineVariable)
         writer.Close();
         reader.Close();
     }
-#ifdef ADIOS2_HAVE_MPI
+#ifdef TEST_HDF5_MPI
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
     {
@@ -975,7 +975,7 @@ TEST_F(HDF5WriteReadAsStreamTestADIOS2, ReaderWriterDefineVariable)
 
 int main(int argc, char **argv)
 {
-#ifdef ADIOS2_HAVE_MPI
+#ifdef TEST_HDF5_MPI
     MPI_Init(nullptr, nullptr);
 #endif
 
@@ -983,7 +983,7 @@ int main(int argc, char **argv)
     ::testing::InitGoogleTest(&argc, argv);
     result = RUN_ALL_TESTS();
 
-#ifdef ADIOS2_HAVE_MPI
+#ifdef TEST_HDF5_MPI
     MPI_Finalize();
 #endif
 

@@ -16,6 +16,10 @@
 #include "adios2/common/ADIOSTypes.h"
 #include "adios2/core/Stream.h"
 
+#if ADIOS2_USE_MPI
+#include <mpi.h>
+#endif
+
 namespace adios2
 {
 namespace py11
@@ -27,11 +31,13 @@ public:
     const std::string m_Name;
     const std::string m_Mode;
 
+#if ADIOS2_USE_MPI
     File(const std::string &name, const std::string mode, MPI_Comm comm,
          const std::string engineType = "BPFile");
 
     File(const std::string &name, const std::string mode, MPI_Comm comm,
          const std::string &configFile, const std::string ioInConfigFile);
+#endif
 
     File(const std::string &name, const std::string mode,
          const std::string engineType = "BPFile");
@@ -48,7 +54,9 @@ public:
     size_t AddTransport(const std::string type,
                         const Params &parameters = Params());
 
-    std::map<std::string, adios2::Params> AvailableVariables() noexcept;
+    std::map<std::string, adios2::Params>
+    AvailableVariables(const std::vector<std::string> &keys =
+                           std::vector<std::string>()) noexcept;
 
     std::map<std::string, adios2::Params> AvailableAttributes() noexcept;
 

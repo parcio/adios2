@@ -86,6 +86,7 @@ typedef struct socket_client_data {
     CManager cm;
     char *hostname;
     int listen_port;
+    int conn_sock;
     attr_list characteristics;
     CMtrans_services svc;
 } *socket_client_data_ptr;
@@ -728,6 +729,15 @@ attr_list listen_info;
 	    fprintf(stderr, "Cannot bind INET socket\n");
 	    return NULL;
 	}
+    } else if (port_range_high == -1) {
+	/* bind to any port, range unconstrained */
+	sock_addr.sin_port = 0;
+	svc->trace_out(cm, "CMSocket trying to bind to any available port");
+	if (bind(conn_sock, (struct sockaddr *) &sock_addr,
+		 sizeof sock_addr) == SOCKET_ERROR) {
+	    fprintf(stderr, "Cannot bind INET socket\n");
+	    return NULL;
+	}
     } else {
 	long seedval = time(NULL) + getpid();
 	/* port num is free.  Constrain to range to standards */
@@ -777,6 +787,7 @@ attr_list listen_info;
     svc->fd_add_select(cm, conn_sock, socket_accept_conn,
 		       (void *) trans, (void *) (long)conn_sock);
 
+    sd->conn_sock = conn_sock;
     {
 	int int_port_num = ntohs(sock_addr.sin_port);
 	attr_list ret_list;
@@ -785,6 +796,8 @@ attr_list listen_info;
 		       int_port_num, conn_sock);
 	ret_list = create_attr_list();
 
+	if (sd->hostname != NULL)
+	    svc->free_func(sd->hostname);
 	sd->hostname = strdup(host_name);
 	sd->listen_port = int_port_num;
 	if ((IP != 0) && (!use_hostname)) {
@@ -1127,6 +1140,8 @@ free_socket_data(CManager cm, void *sdv)
     CMtrans_services svc = sd->svc;
     if (sd->hostname != NULL)
 	svc->free_func(sd->hostname);
+    free_attr_list(sd->characteristics);
+    close(sd->conn_sock);
     svc->free_func(sd);
 }
 
@@ -1138,7 +1153,7 @@ libcmsockets_LTX_initialize(CManager cm, CMtrans_services svc, transport_entry t
     (void)trans;
     socket_client_data_ptr socket_data;
     svc->trace_out(cm, "Initialize TCP/IP Socket transport built in %s",
-		   EVPATH_LIBRARY_BUILD_DIR);
+		   EVPATH_MODULE_BUILD_DIR);
     if (socket_global_init == 0) {
 #ifdef HAVE_WINDOWS_H
 	int nErrorStatus;
@@ -1187,6 +1202,7 @@ libcmsockets_LTX_get_transport_characteristics(transport_entry trans, CMtrans_se
 					       void* vsd)
 {
     struct socket_client_data * sd = (struct socket_client_data *) vsd;
+    add_ref_attr_list(sd->characteristics);
     return sd->characteristics;
 }
 

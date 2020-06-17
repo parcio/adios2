@@ -31,8 +31,8 @@ const std::map<std::string, uint32_t> CompressBlosc::m_Shuffles = {
 const std::set<std::string> CompressBlosc::m_Compressors = {
     "blosclz", "lz4", "lz4hc", "snappy", "zlib", "zstd"};
 
-CompressBlosc::CompressBlosc(const Params &parameters, const bool debugMode)
-: Operator("blosc", parameters, debugMode)
+CompressBlosc::CompressBlosc(const Params &parameters)
+: Operator("blosc", parameters)
 {
 }
 
@@ -60,44 +60,38 @@ size_t CompressBlosc::Compress(const void *dataIn, const Dims &dimensions,
         if (key == "compression_level" || key == "clevel")
         {
             compressionLevel = static_cast<int>(helper::StringTo<int32_t>(
-                value, m_DebugMode, "when setting Blosc clevel parameter\n"));
-            if (m_DebugMode)
+                value, "when setting Blosc clevel parameter\n"));
+            if (compressionLevel < 0 || compressionLevel > 9)
             {
-                if (compressionLevel < 0 || compressionLevel > 9)
-                {
-                    throw std::invalid_argument(
-                        "ERROR: compression_level must be an "
-                        "integer between 0 (default: no compression) and 9 "
-                        "(more compression, more memory) inclusive, in call to "
-                        "ADIOS2 Blosc Compress\n");
-                }
+                throw std::invalid_argument(
+                    "ERROR: compression_level must be an "
+                    "integer between 0 (default: no compression) and 9 "
+                    "(more compression, more memory) inclusive, in call to "
+                    "ADIOS2 Blosc Compress\n");
             }
         }
         else if (key == "doshuffle")
         {
             auto itShuffle = m_Shuffles.find(value);
-            if (m_DebugMode)
+            if (itShuffle == m_Shuffles.end())
             {
-                if (itShuffle == m_Shuffles.end())
-                {
-                    throw std::invalid_argument(
-                        "ERROR: invalid shuffle vale " + value +
-                        " must be BLOSC_SHUFFLE, BLOSC_NOSHUFFLE or "
-                        "BLOSC_BITSHUFFLE,  "
-                        " in call to ADIOS2 Blosc Compress\n");
-                }
+                throw std::invalid_argument(
+                    "ERROR: invalid shuffle vale " + value +
+                    " must be BLOSC_SHUFFLE, BLOSC_NOSHUFFLE or "
+                    "BLOSC_BITSHUFFLE,  "
+                    " in call to ADIOS2 Blosc Compress\n");
             }
             doShuffle = itShuffle->second;
         }
         else if (key == "nthreads")
         {
             threads = static_cast<int>(helper::StringTo<int32_t>(
-                value, m_DebugMode, "when setting Blosc nthreads parameter\n"));
+                value, "when setting Blosc nthreads parameter\n"));
         }
         else if (key == "compressor")
         {
             compressor = value;
-            if (m_DebugMode && m_Compressors.count(compressor) == 0)
+            if (m_Compressors.count(compressor) == 0)
             {
                 throw std::invalid_argument(
                     "ERROR: invalid compressor " + compressor +
@@ -108,13 +102,12 @@ size_t CompressBlosc::Compress(const void *dataIn, const Dims &dimensions,
         else if (key == "blocksize")
         {
             blockSize = static_cast<size_t>(helper::StringTo<uint64_t>(
-                value, m_DebugMode,
-                "when setting Blosc blocksize parameter\n"));
+                value, "when setting Blosc blocksize parameter\n"));
         }
     }
 
     const int result = blosc_set_compressor(compressor.c_str());
-    if (m_DebugMode && result == -1)
+    if (result == -1)
     {
         throw std::invalid_argument("ERROR: invalid compressor " + compressor +
                                     " check if supported by blosc build, in "
@@ -128,7 +121,7 @@ size_t CompressBlosc::Compress(const void *dataIn, const Dims &dimensions,
         blosc_compress(compressionLevel, doShuffle, elementSize, sizeIn, dataIn,
                        bufferOut, sizeIn);
 
-    if (m_DebugMode && compressedSize <= 0)
+    if (compressedSize <= 0)
     {
         throw std::invalid_argument(
             "ERROR: from blosc_compress return size: " +

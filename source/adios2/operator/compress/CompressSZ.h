@@ -26,9 +26,8 @@ class CompressSZ : public Operator
 public:
     /**
      * Unique constructor
-     * @param debugMode
      */
-    CompressSZ(const Params &parameters, const bool debugMode);
+    CompressSZ(const Params &parameters);
 
     ~CompressSZ() = default;
 
@@ -47,6 +46,8 @@ public:
                     const size_t elementSize, const std::string type,
                     void *bufferOut, const Params &parameters,
                     Params &info) const final;
+
+    using Operator::Decompress;
 
     /**
      * Wrapper around zfp decompression

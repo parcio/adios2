@@ -17,10 +17,9 @@ namespace adios2
 namespace profiling
 {
 
-Timer::Timer(const std::string process, const TimeUnit timeUnit,
-             const bool debug)
+Timer::Timer(const std::string process, const TimeUnit timeUnit)
 : m_Process(process), m_TimeUnit(timeUnit),
-  m_LocalTimeDate(helper::LocalTimeDate()), m_DebugMode(debug)
+  m_LocalTimeDate(helper::LocalTimeDate())
 {
 }
 
@@ -63,7 +62,7 @@ std::string Timer::GetShortUnits() const noexcept
 // PRIVATE
 int64_t Timer::GetElapsedTime()
 {
-    if (m_DebugMode && !m_InitialTimeSet)
+    if (!m_InitialTimeSet)
     {
         throw std::invalid_argument("ERROR: Resume() in process " + m_Process +
                                     " not called\n");

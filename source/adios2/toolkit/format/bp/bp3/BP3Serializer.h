@@ -34,9 +34,8 @@ public:
     /**
      * Unique constructor
      * @param mpiComm MPI communicator for BP1 Aggregator
-     * @param debug true: extra checks
      */
-    BP3Serializer(helper::Comm const &comm, const bool debugMode = false);
+    BP3Serializer(helper::Comm const &comm);
 
     ~BP3Serializer() = default;
 

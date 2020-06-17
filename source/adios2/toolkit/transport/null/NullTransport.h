@@ -30,11 +30,12 @@ class NullTransport : public Transport
 {
 
 public:
-    NullTransport(helper::Comm const &comm, const bool debugMode);
+    NullTransport(helper::Comm const &comm);
 
     virtual ~NullTransport();
 
-    void Open(const std::string &name, const Mode openMode) override;
+    void Open(const std::string &name, const Mode openMode,
+              const bool async = false) override;
 
     void SetBuffer(char *buffer, size_t size) override;
 
@@ -48,6 +49,8 @@ public:
     void Flush() override;
 
     void Close() override;
+
+    void Delete() final;
 
     void SeekToEnd() override;
 

@@ -14,6 +14,7 @@
 
 #include "InSituMPIReader.tcc"
 
+#include "adios2/helper/adiosCommMPI.h"
 #include "adios2/helper/adiosFunctions.h" // CSVToVector
 #include "adios2/toolkit/profiling/taustubs/tautimer.hpp"
 
@@ -31,20 +32,26 @@ namespace engine
 InSituMPIReader::InSituMPIReader(IO &io, const std::string &name,
                                  const Mode mode, helper::Comm comm)
 : Engine("InSituMPIReader", io, name, mode, std::move(comm)),
-  m_BP3Deserializer(m_Comm, m_DebugMode)
+  m_BP3Deserializer(m_Comm)
 {
     TAU_SCOPED_TIMER("InSituMPIReader::Open");
     m_EndMessage = " in call to IO Open InSituMPIReader " + m_Name + "\n";
     Init();
 
     m_RankAllPeers =
-        insitumpi::FindPeers(m_Comm.AsMPI(), m_Name, false, m_CommWorld);
+        insitumpi::FindPeers(CommAsMPI(m_Comm), m_Name, false, m_CommWorld);
     MPI_Comm_rank(m_CommWorld, &m_GlobalRank);
     MPI_Comm_size(m_CommWorld, &m_GlobalNproc);
     m_ReaderRank = m_Comm.Rank();
     m_ReaderNproc = m_Comm.Size();
     m_RankDirectPeers =
         insitumpi::AssignPeers(m_ReaderRank, m_ReaderNproc, m_RankAllPeers);
+    if (m_RankAllPeers.empty())
+    {
+        throw(std::runtime_error(
+            "no writers are found. Make sure that the writer and reader "
+            "applications are launched as one application in MPMD mode."));
+    }
     if (m_Verbosity == 5)
     {
         std::cout << "InSituMPI Reader " << m_ReaderRank << " Open(" << m_Name
@@ -146,7 +153,7 @@ StepStatus InSituMPIReader::BeginStep(const StepMode mode,
         /* Have timeout: do a collective wait for a step within timeout.
            Make sure every writer comes to the same conclusion */
         int haveStepMsg = 0;
-        uint64_t nanoTO = timeoutSeconds * 1000000000.0;
+        uint64_t nanoTO = static_cast<uint64_t>(timeoutSeconds * 1e9);
         if (nanoTO < 1)
         {
             nanoTO = 1; // avoid 0
@@ -191,7 +198,7 @@ StepStatus InSituMPIReader::BeginStep(const StepMode mode,
         }
         /* Exchange steps */
         int maxstep;
-        m_Comm.Allreduce(&step, &maxstep, 1, MPI_MAX);
+        m_Comm.Allreduce(&step, &maxstep, 1, helper::Comm::Op::Max);
 
         if (m_Verbosity == 5 && !m_ReaderRank)
         {
@@ -370,7 +377,8 @@ int InSituMPIReader::Statistics(uint64_t bytesInPlace, uint64_t bytesCopied)
 {
     if (bytesInPlace == 0)
         return 0;
-    return ((bytesInPlace + bytesCopied) * 100) / bytesInPlace;
+    return static_cast<int>(((bytesInPlace + bytesCopied) * 100) /
+                            bytesInPlace);
 }
 
 void InSituMPIReader::EndStep()
@@ -405,8 +413,8 @@ void InSituMPIReader::SendReadSchedule(
     TAU_SCOPED_TIMER("InSituMPIReader::SendReadSchedule");
     // Serialized schedules, one per-writer
     std::map<int, std::vector<char>> serializedSchedules =
-        insitumpi::SerializeLocalReadSchedule(m_RankAllPeers.size(),
-                                              variablesSubFileInfo);
+        insitumpi::SerializeLocalReadSchedule(
+            static_cast<int>(m_RankAllPeers.size()), variablesSubFileInfo);
 
     // Writer ID -> number of peer readers
     std::vector<int> nReaderPerWriter(m_RankAllPeers.size());
@@ -422,18 +430,20 @@ void InSituMPIReader::SendReadSchedule(
     if (m_ReaderRootRank == m_ReaderRank)
     {
         m_Comm.ReduceInPlace(nReaderPerWriter.data(), nReaderPerWriter.size(),
-                             MPI_SUM, m_ReaderRootRank);
+                             helper::Comm::Op::Sum, m_ReaderRootRank);
     }
     else
     {
         m_Comm.Reduce(nReaderPerWriter.data(), nReaderPerWriter.data(),
-                      nReaderPerWriter.size(), MPI_SUM, m_ReaderRootRank);
+                      nReaderPerWriter.size(), helper::Comm::Op::Sum,
+                      m_ReaderRootRank);
     }
 
     // Reader root sends nReaderPerWriter to writer root
     if (m_ReaderRootRank == m_ReaderRank)
     {
-        MPI_Send(nReaderPerWriter.data(), nReaderPerWriter.size(), MPI_INT,
+        MPI_Send(nReaderPerWriter.data(),
+                 static_cast<int>(nReaderPerWriter.size()), MPI_INT,
                  m_WriteRootGlobalRank, insitumpi::MpiTags::NumReaderPerWriter,
                  m_CommWorld);
     }
@@ -448,7 +458,7 @@ void InSituMPIReader::SendReadSchedule(
     {
         const auto peerID = schedulePair.first;
         const auto &schedule = schedulePair.second;
-        rsLengths[i] = schedule.size();
+        rsLengths[i] = static_cast<int>(schedule.size());
 
         if (m_Verbosity == 5)
         {
@@ -489,7 +499,7 @@ void InSituMPIReader::AsyncRecvAllVariables()
     {                                                                          \
         core::Variable<T> *variable =                                          \
             m_IO.InquireVariable<T>(variablePair.first);                       \
-        if (m_DebugMode && variable == nullptr)                                \
+        if (variable == nullptr)                                               \
         {                                                                      \
             throw std::invalid_argument(                                       \
                 "ERROR: variable " + variablePair.first +                      \
@@ -506,7 +516,7 @@ void InSituMPIReader::AsyncRecvAllVariables()
 void InSituMPIReader::ProcessReceives()
 {
     TAU_SCOPED_TIMER("InSituMPIReader::ProcessReceives");
-    const int nRequests = m_OngoingReceives.size();
+    const int nRequests = static_cast<int>(m_OngoingReceives.size());
 
     TAU_START("InSituMPIReader::CompleteRequests");
     insitumpi::CompleteRequests(m_MPIRequests, false, m_ReaderRank);
@@ -565,14 +575,11 @@ void InSituMPIReader::InitParameters()
     if (itVerbosity != m_IO.m_Parameters.end())
     {
         m_Verbosity = std::stoi(itVerbosity->second);
-        if (m_DebugMode)
-        {
-            if (m_Verbosity < 0 || m_Verbosity > 5)
-                throw std::invalid_argument(
-                    "ERROR: Method verbose argument must be an "
-                    "integer in the range [0,5], in call to "
-                    "Open or Engine constructor\n");
-        }
+        if (m_Verbosity < 0 || m_Verbosity > 5)
+            throw std::invalid_argument(
+                "ERROR: Method verbose argument must be an "
+                "integer in the range [0,5], in call to "
+                "Open or Engine constructor\n");
     }
 }
 
@@ -592,8 +599,10 @@ void InSituMPIReader::DoClose(const int transportIndex)
     if (m_Verbosity > 2)
     {
         uint64_t inPlaceBytes, inTempBytes;
-        m_Comm.Reduce(&m_BytesReceivedInPlace, &inPlaceBytes, 1, MPI_SUM, 0);
-        m_Comm.Reduce(&m_BytesReceivedInTemporary, &inTempBytes, 1, MPI_SUM, 0);
+        m_Comm.Reduce(&m_BytesReceivedInPlace, &inPlaceBytes, 1,
+                      helper::Comm::Op::Sum, 0);
+        m_Comm.Reduce(&m_BytesReceivedInTemporary, &inTempBytes, 1,
+                      helper::Comm::Op::Sum, 0);
         if (m_ReaderRank == 0)
         {
             std::cout << "ADIOS InSituMPI Reader for " << m_Name << " received "

@@ -19,6 +19,7 @@
 #include "adios2/common/ADIOSTypes.h"
 #include "adios2/core/IO.h" // for CreateVar
 #include "adios2/core/Variable.h"
+#include "adios2/helper/adiosComm.h"
 
 #include <stdexcept> // for Intel Compiler
 
@@ -33,6 +34,7 @@ typedef enum
     E_H5_DATATYPE = 1,
     E_H5_GROUP = 2,
     E_H5_SPACE = 3,
+    E_H5_ATTRIBUTE = 4
 } ADIOS_ENUM_H5;
 
 class HDF5DatasetGuard
@@ -89,6 +91,10 @@ public:
         {
             H5Tclose(m_Key);
         }
+        else if (m_Type == E_H5_ATTRIBUTE)
+        {
+            H5Aclose(m_Key);
+        }
         else
         {
             printf(" UNABLE to close \n");
@@ -106,9 +112,9 @@ class HDF5Common
 public:
     /**
      * Unique constructor for HDF5 file
-     * @param debugMode true: extra exception checks
      */
-    HDF5Common(const bool debugMode);
+    HDF5Common();
+    ~HDF5Common();
 
     static const std::string ATTRNAME_NUM_STEPS;
     static const std::string ATTRNAME_GIVEN_ADIOSNAME;
@@ -120,10 +126,19 @@ public:
     static const std::string PARAMETER_CHUNK_VARS;
 
     void ParseParameters(core::IO &io);
-    void Init(const std::string &name, MPI_Comm comm, bool toWrite);
+    void Init(const std::string &name, helper::Comm const &comm, bool toWrite);
 
     template <class T>
     void Write(core::Variable<T> &variable, const T *values);
+
+    /*
+     * This function will define a non string variable to HDF5
+     * note that define a dataset in HDF5 means allocate space and place an
+     * entry to the HDF5 file. (By default we define variable when a PUT is
+     * called from adios client)
+     */
+    template <class T>
+    void DefineDataset(core::Variable<T> &variable);
 
     void CreateDataset(const std::string &varName, hid_t h5Type,
                        hid_t filespaceID, std::vector<hid_t> &chain);
@@ -138,6 +153,15 @@ public:
 
     void Close();
     void Advance();
+
+    /*
+     * This function will browse all (non-string) variables in io and define
+     * them in HDF5 This is a back up mode compare to the default behaviour that
+     * defines a variable in HDF5 when the PUT is called on that variable. This
+     * function is expected to be called by BeginStep(), for collectiveness,
+     * required by HDF5
+     */
+    void CreateVarsFromIO(core::IO &io);
 
     void WriteAttrFromIO(core::IO &io);
     void ReadAttrToIO(core::IO &io);
@@ -175,6 +199,7 @@ public:
     hid_t m_FileId = -1;
     hid_t m_GroupId = -1;
 
+    hid_t m_DefH5TypeComplexLongDouble;
     hid_t m_DefH5TypeComplexDouble;
     hid_t m_DefH5TypeComplexFloat;
     hid_t m_DefH5TypeBlockStat;
@@ -191,6 +216,12 @@ public:
 
     bool m_IsGeneratedByAdios = false;
 
+    struct MPI_API
+    {
+        bool (*init)(helper::Comm const &comm, hid_t id, int *rank, int *size);
+        herr_t (*set_dxpl_mpio)(hid_t dxpl_id, H5FD_mpio_xfer_t xfer_mode);
+    };
+
 private:
     void ReadInStringAttr(core::IO &io, const std::string &attrName,
                           hid_t attrId, hid_t h5Type, hid_t sid);
@@ -203,10 +234,15 @@ private:
     void WriteNonStringAttr(core::IO &io, core::Attribute<T> *adiosAttr,
                             hid_t parentID, const char *h5Name);
 
-    const bool m_DebugMode;
+    template <class T>
+    void GetHDF5SpaceSpec(const core::Variable<T> &variable,
+                          std::vector<hsize_t> &, std::vector<hsize_t> &,
+                          std::vector<hsize_t> &);
+
     bool m_WriteMode = false;
     unsigned int m_NumAdiosSteps = 0;
 
+    MPI_API const *m_MPI = nullptr;
     int m_CommRank = 0;
     int m_CommSize = 1;
 

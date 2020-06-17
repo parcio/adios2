@@ -44,9 +44,8 @@ public:
     /**
      * Unique base constructor
      * @param comm
-     * @param debugMode
      */
-    TransportMan(helper::Comm const &comm, const bool debugMode);
+    TransportMan(helper::Comm &comm);
 
     virtual ~TransportMan() = default;
 
@@ -70,18 +69,6 @@ public:
                    const Mode openMode,
                    const std::vector<Params> &parametersVector,
                    const bool profile);
-
-    /**
-     * Async version of OpenFiles
-     * @param fileNames
-     * @param openMode
-     * @param parametersVector
-     * @param profile
-     * @return
-     */
-    std::future<void> OpenFilesAsync(
-        const std::vector<std::string> &fileNames, const Mode openMode,
-        const std::vector<Params> &parametersVector, const bool profile);
 
     /**
      * Used for sub-files defined by index
@@ -165,6 +152,12 @@ public:
      */
     void CloseFiles(const int transportIndex = -1);
 
+    /**
+     * Delete file or files depending on transport index. The files
+     * must be open for this function to have an effect.
+     */
+    void DeleteFiles(const int transportIndex = -1);
+
     /** Checks if all transports are closed */
     bool AllTransportsClosed() const noexcept;
 
@@ -172,9 +165,17 @@ public:
 
     void SeekToFileBegin(const int transportIndex = 0);
 
+    /**
+     * Check if a file exists.
+     * @param name
+     * @param parameters
+     * @param profile
+     */
+    bool FileExists(const std::string &name, const Params &parameters,
+                    const bool profile);
+
 protected:
     helper::Comm const &m_Comm;
-    const bool m_DebugMode = false;
 
     std::shared_ptr<Transport> OpenFileTransport(const std::string &fileName,
                                                  const Mode openMode,
@@ -185,6 +186,8 @@ protected:
         std::unordered_map<size_t, std::shared_ptr<Transport>>::const_iterator
             itTransport,
         const std::string hint) const;
+
+    void WaitForAsync() const;
 };
 
 } // end namespace transport

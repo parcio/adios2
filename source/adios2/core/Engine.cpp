@@ -24,7 +24,7 @@ namespace core
 Engine::Engine(const std::string engineType, IO &io, const std::string &name,
                const Mode openMode, helper::Comm comm)
 : m_EngineType(engineType), m_IO(io), m_Name(name), m_OpenMode(openMode),
-  m_Comm(std::move(comm)), m_DebugMode(io.m_DebugMode)
+  m_Comm(std::move(comm))
 {
 }
 
@@ -122,6 +122,10 @@ ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
         ThrowUp("DoGetDeferred");                                              \
     }                                                                          \
     typename Variable<T>::Info *Engine::DoGetBlockSync(Variable<T> &v)         \
+    {                                                                          \
+        return nullptr;                                                        \
+    }                                                                          \
+    typename Variable<T>::Info *Engine::DoGetBlockDeferred(Variable<T> &v)     \
     {                                                                          \
         return nullptr;                                                        \
     }

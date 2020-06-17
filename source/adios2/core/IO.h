@@ -53,11 +53,29 @@ public:
     /** unique identifier */
     const std::string m_Name;
 
-    /** true: extra exceptions checks */
-    const bool m_DebugMode = false;
-
     /** from ADIOS class passed to Engine created with Open */
     const std::string m_HostLanguage = "C++";
+
+    /**
+     * Map holding variable identifiers
+     * <pre>
+     * key: unique variable name,
+     * value: pair.first = type as string GetType<T> from adiosTemplates.h
+     *        pair.second = index in fixed size map (e.g. m_Int8, m_Double)
+     * </pre>
+     */
+    DataMap m_Variables;
+
+    /**
+     * Map holding attribute identifiers
+     * <pre>
+     * key: unique attribute name,
+     * value: pair.first = type as string GetType<T> from
+     *                     helper/adiosTemplates.h
+     *        pair.second = index in fixed size map (e.g. m_Int8, m_Double)
+     * </pre>
+     */
+    DataMap m_Attributes;
 
     /** From SetParameter, parameters for a particular engine from m_Type */
     Params m_Parameters;
@@ -90,6 +108,10 @@ public:
      * DefineVariable in code */
     std::map<std::string, std::vector<Operation>> m_VarOpsPlaceholder;
 
+    /** true: prefix variables/attributes are cached per variable
+     *   when function m_IsPrefixedNames called */
+    bool m_IsPrefixedNames = false;
+
     /**
      * @brief Constructor called from ADIOS factory class DeclareIO function.
      * Not to be used direclty in applications.
@@ -97,10 +119,9 @@ public:
      * @param name unique identifier for this IO object
      * @param inConfigFile IO defined in config file (XML)
      * @param hostLanguage current language using the adios2 library
-     * @param debugMode true: extra exception checks (recommended)
      */
     IO(ADIOS &adios, const std::string name, const bool inConfigFile,
-       const std::string hostLanguage, const bool debugMode);
+       const std::string hostLanguage);
 
     ~IO() = default;
 
@@ -175,7 +196,7 @@ public:
      * change over time
      * @return reference to Variable object
      * @exception std::invalid_argument if Variable with unique name is already
-     * defined, in debug mode only
+     * defined
      */
     template <class T>
     Variable<T> &
@@ -191,7 +212,7 @@ public:
      * @param variableName optionally associates the attribute to a Variable
      * @return reference to internal Attribute
      * @exception std::invalid_argument if Attribute with unique name is already
-     * defined, in debug mode only
+     * defined
      */
     template <class T>
     Attribute<T> &DefineAttribute(const std::string &name, const T *array,
@@ -205,7 +226,7 @@ public:
      * @param value single data value
      * @return reference to internal Attribute
      * @exception std::invalid_argument if Attribute with unique name is already
-     * defined, in debug mode only
+     * defined
      */
     template <class T>
     Attribute<T> &DefineAttribute(const std::string &name, const T &value,
@@ -248,11 +269,16 @@ public:
 
     /**
      * @brief Retrieve map with variables info. Use when reading.
+     * @param keys list of variable information keys to be extracted (case
+     * insensitive). Leave empty to return all possible keys.
+     * Possible values:
+     * keys=['AvailableStepsCount','Type','Max','Min','SingleValue','Shape']
      * @return map with current variables and info
      * keys: Type, Min, Max, Value, AvailableStepsStart,
      * AvailableStepsCount, Shape, Start, Count, SingleValue
      */
-    std::map<std::string, Params> GetAvailableVariables() noexcept;
+    std::map<std::string, Params> GetAvailableVariables(
+        const std::set<std::string> &keys = std::set<std::string>()) noexcept;
 
     /**
      * @brief Gets an existing variable of primitive type by name
@@ -269,6 +295,15 @@ public:
      * @return type primitive type
      */
     std::string InquireVariableType(const std::string &name) const noexcept;
+
+    /**
+     * Overload that accepts a const iterator into the m_Variables map if found
+     * @param itVariable
+     * @return type primitive type
+     */
+    std::string
+    InquireVariableType(const DataMap::const_iterator itVariable) const
+        noexcept;
 
     /**
      * Retrieves hash holding internal variable identifiers
@@ -320,7 +355,8 @@ public:
      */
     std::map<std::string, Params>
     GetAvailableAttributes(const std::string &variableName = std::string(),
-                           const std::string separator = "/") noexcept;
+                           const std::string separator = "/",
+                           const bool fullNamesKeys = false) noexcept;
 
     /**
      * @brief Check existence in config file passed to ADIOS class constructor
@@ -358,9 +394,9 @@ public:
      * @param mpiComm assigns a new communicator to the Engine
      * @return a reference to a derived object of the Engine class
      * @exception std::invalid_argument if Engine with unique name is already
-     * created with another Open, in debug mode only
+     * created with another Open
      */
-    Engine &Open(const std::string &name, const Mode mode, MPI_Comm mpiComm);
+    Engine &Open(const std::string &name, const Mode mode, helper::Comm comm);
 
     /**
      * Overloaded version that reuses the MPI_Comm object passed
@@ -370,7 +406,7 @@ public:
      * @param mode write, read, append from ADIOSTypes.h OpenMode
      * @return a reference to a derived object of the Engine class
      * @exception std::invalid_argument if Engine with unique name is already
-     * created with another Open, in debug mode only
+     * created with another Open
      */
     Engine &Open(const std::string &name, const Mode mode);
 
@@ -378,6 +414,14 @@ public:
      * Retrieve an engine by name
      */
     Engine &GetEngine(const std::string &name);
+
+    /**
+     * Called from bindings Close function, not exposed in APIs.
+     * Thin wrapper around map erase. Expected to call destructor on Engine in
+     * map value.
+     * @param name Engine name to be erased, must be created with Open
+     */
+    void RemoveEngine(const std::string &name);
 
     /**
      * Flushes all engines created with the current IO object using Open.
@@ -406,6 +450,57 @@ public:
     void ResetVariablesStepSelection(const bool zeroStart = false,
                                      const std::string hint = "");
 
+    void SetPrefixedNames(const bool isStep) noexcept;
+
+    /** Gets the internal reference to a variable map for type T */
+    template <class T>
+    std::map<unsigned int, Variable<T>> &GetVariableMap() noexcept;
+
+    /** Gets the internal reference to an attribute map for type T */
+    template <class T>
+    std::map<unsigned int, Attribute<T>> &GetAttributeMap() noexcept;
+
+    using MakeEngineFunc = std::function<std::shared_ptr<Engine>(
+        IO &, const std::string &, const Mode, helper::Comm)>;
+    struct EngineFactoryEntry
+    {
+        MakeEngineFunc MakeReader;
+        MakeEngineFunc MakeWriter;
+    };
+
+    /**
+     * Create a MakeEngineFunc that throws a std::invalid_argument
+     * exception with the given error string.  This is useful when
+     * an engine lacks support for either reading or writing.
+     */
+    static MakeEngineFunc NoEngine(std::string e);
+
+    /**
+     * Create an EngineFactoryEntry that throws a std::invalid_argument
+     * exception with the given error string for both reader and writer.
+     * This is useful when compiling without support for some engines.
+     */
+    static EngineFactoryEntry NoEngineEntry(std::string e);
+
+    /**
+     * Create an engine of type T.  This is intended to be used when
+     * creating instances of EngineFactoryEntry for RegisterEngine.
+     */
+    template <typename T>
+    static std::shared_ptr<Engine> MakeEngine(IO &io, const std::string &name,
+                                              const Mode mode,
+                                              helper::Comm comm)
+    {
+        return std::make_shared<T>(io, name, mode, std::move(comm));
+    }
+
+    /**
+     * Register an engine factory entry to create a reader or writer
+     * for an engine of the given engine type (named in lower case).
+     */
+    static void RegisterEngine(const std::string &engineType,
+                               EngineFactoryEntry entry);
+
 private:
     /** true: exist in config file (XML) */
     const bool m_InConfigFile = false;
@@ -415,46 +510,16 @@ private:
     /** Independent (default) or Collective */
     adios2::IOMode m_IOMode = adios2::IOMode::Independent;
 
-    // Variables
-    /**
-     * Map holding variable identifiers
-     * <pre>
-     * key: unique variable name,
-     * value: pair.first = type as string GetType<T> from adiosTemplates.h
-     *        pair.second = index in fixed size map (e.g. m_Int8, m_Double)
-     * </pre>
-     */
-    DataMap m_Variables;
-
 /** Variable containers based on fixed-size type */
 #define declare_map(T, NAME) std::map<unsigned int, Variable<T>> m_##NAME;
     ADIOS2_FOREACH_STDTYPE_2ARGS(declare_map)
 #undef declare_map
 
-    std::map<unsigned int, VariableCompound> m_Compound;
-
-    /** Gets the internal reference to a variable map for type T
-     *  This function is specialized in IO.tcc */
-    template <class T>
-    std::map<unsigned int, Variable<T>> &GetVariableMap() noexcept;
-
-    /**
-     * Map holding attribute identifiers
-     * <pre>
-     * key: unique attribute name,
-     * value: pair.first = type as string GetType<T> from
-     *                     helper/adiosTemplates.h
-     *        pair.second = index in fixed size map (e.g. m_Int8, m_Double)
-     * </pre>
-     */
-    DataMap m_Attributes;
-
 #define declare_map(T, NAME) std::map<unsigned int, Attribute<T>> m_##NAME##A;
     ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_2ARGS(declare_map)
 #undef declare_map
 
-    template <class T>
-    std::map<unsigned int, Attribute<T>> &GetAttributeMap() noexcept;
+    std::map<unsigned int, VariableCompound> m_Compound;
 
     std::map<std::string, std::shared_ptr<Engine>> m_Engines;
 
@@ -484,6 +549,10 @@ private:
     template <class T>
     bool IsAvailableStep(const size_t step,
                          const unsigned int variableIndex) noexcept;
+
+    template <class T>
+    Params GetVariableInfo(const std::string &variableName,
+                           const std::set<std::string> &keys);
 };
 
 // Explicit declaration of the public template methods

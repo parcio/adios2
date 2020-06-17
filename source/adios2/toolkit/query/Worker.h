@@ -8,14 +8,18 @@
 #include <string>
 #include <vector>
 
-#include "adios2/common/ADIOSMPI.h"
 #include "adios2/common/ADIOSTypes.h"
 #include <fstream>
 
 #include "Index.h"
 #include "Query.h"
 #include "Util.h"
-#include <pugixml.hpp>
+
+// forward declaring to make pugixml a private dependency
+namespace pugi
+{
+class xml_node;
+}
 
 namespace adios2
 {
@@ -24,31 +28,22 @@ namespace query
 class Worker
 {
 public:
-    // maybe useful?
-    // Worker(const pugi::xml_node queryNode, MPI_Comm comm);
-    // will add Worker(jsonNode&, MPI_Comm comm);
+    Worker(const Worker &other) = delete;
+
+    Worker(Worker &&other)
+    {
+        this->m_QueryFile = other.m_QueryFile;
+        this->m_SourceReader = other.m_SourceReader;
+        this->m_Query = other.m_Query;
+        other.m_Query = nullptr;
+    }
 
     virtual ~Worker();
 
     adios2::core::Engine *GetSourceReader() { return m_SourceReader; }
 
-    // unsigned long Estimate();
     void GetResultCoverage(const adios2::Box<adios2::Dims> &,
                            std::vector<Box<adios2::Dims>> &);
-
-    /*
-     */
-
-    // bool BuildIdxFile(bool overwrite, size_t recommendedSize)
-    //{
-    // adios2::IO idxWriteIO =
-    // m_adios2.DeclareIO(std::string("BLOCKINDEX-Write-")+m_DataReader->Name());
-    // adios2::BlockIndexBuilder builder(m_IdxFileName, m_Comm, overwrite);
-    // builder.GenerateIndexFrom(*m_DataIO, idxWriteIO, *m_DataReader,
-    // recommendedSize);
-    //}
-
-    // bool HasMoreSteps() { return false; /*tbd*/ }
 
 protected:
     Worker(const std::string &configFile, adios2::core::Engine *adiosEngine);
@@ -56,7 +51,6 @@ protected:
     QueryVar *GetBasicVarQuery(adios2::core::IO &currentIO,
                                const std::string &variableName);
 
-    // MPI_Comm m_Comm;
     std::string m_QueryFile; // e.g. xml file
 
     adios2::core::Engine *m_SourceReader = nullptr;
@@ -65,7 +59,6 @@ protected:
 private:
 }; // worker
 
-//#ifndef ADIOS2_HAVE_JSON // so json is included
 #ifdef ADIOS2_HAVE_DATAMAN
 class JsonWorker : public Worker
 {
@@ -74,11 +67,6 @@ public:
     : Worker(configFile, adiosEngine)
     {
         ParseJson();
-    }
-    ~JsonWorker()
-    {
-        if (m_Query != nullptr)
-            delete m_Query;
     }
 
 private:
@@ -95,11 +83,6 @@ public:
         ParseMe();
     }
 
-    ~XmlWorker()
-    {
-        if (m_Query != nullptr)
-            delete m_Query;
-    }
     void ParseMe();
     void Close() { std::cout << " .. closing in xml " << std::endl; }
 
@@ -120,16 +103,16 @@ static Worker *GetWorker(const std::string &configFile,
     std::ifstream fileStream(configFile);
 
     if (!fileStream)
+    {
         throw std::ios_base::failure("ERROR: file " + configFile +
                                      " not found. ");
+    }
 
     if (adios2::query::IsFileNameXML(configFile))
     {
-        // return new XmlWorker<double> (configFile, comm);
         return new XmlWorker(configFile, adiosEngine);
     }
 
-///#ifndef ADIOS2_HAVE_JSON // so json is included
 #ifdef ADIOS2_HAVE_DATAMAN // so json is included
     if (adios2::query::IsFileNameJSON(configFile))
     {
@@ -140,14 +123,7 @@ static Worker *GetWorker(const std::string &configFile,
     // return nullptr;
 }
 
-/*
-template<class T>
-  void  XmlWorker<T>::Parse()
-{
-  std::cout<<"Parsing xml"<<m_QueryFile<<std::endl;
-}
-*/
-}; // namespace query
-}; // name space adios2
+} // namespace query
+} // name space adios2
 
 #endif // QUERY_WORKER_H

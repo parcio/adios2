@@ -4,11 +4,13 @@
 #------------------------------------------------------------------------------#
 
 if(ADIOS2_HAVE_MPI)
-  gtest_add_tests_helper(P2P2DMemSelect NOEXEC DataMan Engine.DataMan. "")
-  gtest_add_tests_helper(P2P3DMemSelect NOEXEC DataMan Engine.DataMan. "")
-  gtest_add_tests_helper(P2P1D NOEXEC DataMan Engine.DataMan. "")
-  gtest_add_tests_helper(P2PZfp2D NOEXEC DataMan Engine.DataMan. "")
-  gtest_add_tests_helper(P2PSz2D NOEXEC DataMan Engine.DataMan. "")
-  gtest_add_tests_helper(Subscribe1D NOEXEC DataMan Engine.DataMan. "")
-  gtest_add_tests_helper(MpiBase TRUE DataMan Engine.DataMan. "")
+  gtest_add_tests_helper(1D MPI_NOEXEC DataMan Engine.DataMan. "")
+  gtest_add_tests_helper(2DMemSelect MPI_NOEXEC DataMan Engine.DataMan. "")
+  gtest_add_tests_helper(3DMemSelect MPI_NOEXEC DataMan Engine.DataMan. "")
+  gtest_add_tests_helper(WriterDoubleBuffer MPI_NOEXEC DataMan Engine.DataMan. "")
+  gtest_add_tests_helper(WriterSingleBuffer MPI_NOEXEC DataMan Engine.DataMan. "")
+  gtest_add_tests_helper(ReaderDoubleBuffer MPI_NOEXEC DataMan Engine.DataMan. "")
+  gtest_add_tests_helper(ReaderSingleBuffer MPI_NOEXEC DataMan Engine.DataMan. "")
+# Turning off DataMan.Reliable test as unstable - May 27, 2020
+#  gtest_add_tests_helper(Reliable MPI_NOEXEC DataMan Engine.DataMan. "")
 endif()

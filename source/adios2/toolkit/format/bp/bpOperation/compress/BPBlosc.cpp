@@ -67,14 +67,14 @@ void BPBlosc::GetData(const char *input,
                       char *dataOutput) const
 {
 #ifdef ADIOS2_HAVE_BLOSC
-    core::compress::CompressBlosc op(Params(), true);
+    core::compress::CompressBlosc op((Params()));
     const size_t sizeOut = (sizeof(size_t) == 8)
                                ? static_cast<size_t>(helper::StringTo<uint64_t>(
                                      blockOperationInfo.Info.at("InputSize"),
-                                     true, "when reading Blosc input size"))
+                                     "when reading Blosc input size"))
                                : static_cast<size_t>(helper::StringTo<uint32_t>(
                                      blockOperationInfo.Info.at("InputSize"),
-                                     true, "when reading Blosc input size"));
+                                     "when reading Blosc input size"));
 
     Params &info = const_cast<Params &>(blockOperationInfo.Info);
     op.Decompress(input, blockOperationInfo.PayloadSize, dataOutput, sizeOut,

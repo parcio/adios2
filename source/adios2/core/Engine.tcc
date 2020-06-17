@@ -26,12 +26,8 @@ template <class T>
 typename Variable<T>::Span &Engine::Put(Variable<T> &variable,
                                         const size_t bufferID, const T &value)
 {
-    if (m_DebugMode)
-    {
-        CheckOpenModes({{Mode::Write}},
-                       " for variable " + variable.m_Name +
-                           ", in call to Variable<T>::Span Put");
-    }
+    CheckOpenModes({{Mode::Write}}, " for variable " + variable.m_Name +
+                                        ", in call to Variable<T>::Span Put");
 
     auto itSpan = variable.m_BlocksSpan.emplace(
         variable.m_BlocksInfo.size(),
@@ -43,11 +39,8 @@ typename Variable<T>::Span &Engine::Put(Variable<T> &variable,
 template <class T>
 void Engine::Put(Variable<T> &variable, const T *data, const Mode launch)
 {
-    if (m_DebugMode)
-    {
-        CommonChecks(variable, data, {{Mode::Write, Mode::Append}},
-                     "in call to Put");
-    }
+    CommonChecks(variable, data, {{Mode::Write, Mode::Append}},
+                 "in call to Put");
 
     switch (launch)
     {
@@ -58,13 +51,10 @@ void Engine::Put(Variable<T> &variable, const T *data, const Mode launch)
         DoPutSync(variable, data);
         break;
     default:
-        if (m_DebugMode)
-        {
-            throw std::invalid_argument(
-                "ERROR: invalid launch Mode for variable " + variable.m_Name +
-                ", only Mode::Deferred and Mode::Sync are valid, in call to "
-                "Put\n");
-        }
+        throw std::invalid_argument(
+            "ERROR: invalid launch Mode for variable " + variable.m_Name +
+            ", only Mode::Deferred and Mode::Sync are valid, in call to "
+            "Put\n");
     }
 }
 
@@ -95,10 +85,7 @@ void Engine::Put(const std::string &variableName, const T &datum,
 template <class T>
 void Engine::Get(Variable<T> &variable, T *data, const Mode launch)
 {
-    if (m_DebugMode)
-    {
-        CommonChecks(variable, data, {{Mode::Read}}, "in call to Get");
-    }
+    CommonChecks(variable, data, {{Mode::Read}}, "in call to Get");
 
     switch (launch)
     {
@@ -109,13 +96,10 @@ void Engine::Get(Variable<T> &variable, T *data, const Mode launch)
         DoGetSync(variable, data);
         break;
     default:
-        if (m_DebugMode)
-        {
-            throw std::invalid_argument(
-                "ERROR: invalid launch Mode for variable " + variable.m_Name +
-                ", only Mode::Deferred and Mode::Sync are valid, in call to "
-                "Get\n");
-        }
+        throw std::invalid_argument(
+            "ERROR: invalid launch Mode for variable " + variable.m_Name +
+            ", only Mode::Deferred and Mode::Sync are valid, in call to "
+            "Get\n");
     }
 }
 
@@ -142,8 +126,7 @@ void Engine::Get(Variable<T> &variable, std::vector<T> &dataV,
                  const Mode launch)
 {
     const size_t dataSize = variable.SelectionSize();
-    helper::Resize(dataV, dataSize, m_DebugMode,
-                   "in call to Get with std::vector argument");
+    helper::Resize(dataV, dataSize, "in call to Get with std::vector argument");
     Get(variable, dataV.data(), launch);
 }
 
@@ -160,29 +143,25 @@ template <class T>
 typename Variable<T>::Info *Engine::Get(Variable<T> &variable,
                                         const Mode launch)
 {
-    if (m_DebugMode)
-    {
-        // CommonChecks<T>(variable, nullptr, {{Mode::Read}}, "in call to Get");
-    }
-
+    typename Variable<T>::Info *info = nullptr;
     switch (launch)
     {
     case Mode::Deferred:
-        // TODO different? Should use DoGetDeferred?
-        return DoGetBlockSync(variable);
+        info = DoGetBlockDeferred(variable);
+        break;
     case Mode::Sync:
-        // TODO should use DoGetSync()?
-        return DoGetBlockSync(variable);
+        info = DoGetBlockSync(variable);
+        break;
     default:
-        if (m_DebugMode)
-        {
-            throw std::invalid_argument(
-                "ERROR: invalid launch Mode for variable " + variable.m_Name +
-                ", only Mode::Deferred and Mode::Sync are valid, in call to "
-                "GetBlock\n");
-        }
+        throw std::invalid_argument(
+            "ERROR: invalid launch Mode for variable " + variable.m_Name +
+            ", only Mode::Deferred and Mode::Sync are valid, in call to "
+            "GetBlock\n");
     }
-    return nullptr;
+
+    CommonChecks<T>(variable, info->Data, {{Mode::Read}}, "in call to Get");
+
+    return info;
 }
 
 template <class T>
@@ -229,14 +208,11 @@ Variable<T> &Engine::FindVariable(const std::string &variableName,
                                   const std::string hint)
 {
     Variable<T> *variable = m_IO.InquireVariable<T>(variableName);
-    if (m_DebugMode)
+    if (variable == nullptr)
     {
-        if (variable == nullptr)
-        {
-            throw std::invalid_argument("ERROR: variable " + variableName +
-                                        " not found in IO " + m_IO.m_Name +
-                                        ", " + hint + "\n");
-        }
+        throw std::invalid_argument("ERROR: variable " + variableName +
+                                    " not found in IO " + m_IO.m_Name + ", " +
+                                    hint + "\n");
     }
     return *variable;
 }
@@ -247,14 +223,12 @@ void Engine::CommonChecks(Variable<T> &variable, const T *data,
                           const std::set<Mode> &modes,
                           const std::string hint) const
 {
-    helper::CheckForNullptr(&variable, "for variable argument, " + hint);
     variable.CheckDimensions(hint);
     CheckOpenModes(modes, " for variable " + variable.m_Name + ", " + hint);
 
-    const bool zeros =
-        std::all_of(variable.m_Count.begin(), variable.m_Count.end(),
-                    [](const size_t d) { return d == 0; });
-    if (!zeros)
+    // If no dimension has a zero count then there must be data to write.
+    if (std::find(variable.m_Count.begin(), variable.m_Count.end(), 0) ==
+        variable.m_Count.end())
     {
         helper::CheckForNullptr(
             data, "for data argument in non-zero count block, " + hint);

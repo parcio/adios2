@@ -12,6 +12,7 @@
 
 #include "DataSpacesReader.h"
 #include "DataSpacesReader.tcc"
+#include "adios2/helper/adiosCommMPI.h"
 #include "adios2/helper/adiosFunctions.h" //CSVToVector
 #include "adios2/toolkit/dataspaces/ds_data.h"
 #include "dataspaces.h"
@@ -52,7 +53,7 @@ DataSpacesReader::DataSpacesReader(IO &io, const std::string &name,
     {
         m_ProvideLatest = false;
     }
-    MPI_Comm mpiComm = m_Comm.AsMPI();
+    MPI_Comm mpiComm = CommAsMPI(m_Comm);
     ret = adios_read_dataspaces_init(&mpiComm, &m_data);
     if (ret < 0)
     {
@@ -81,27 +82,24 @@ StepStatus DataSpacesReader::BeginStep(StepMode mode, const float timeout_sec)
     meta_lk = new char[lk_name.length() + 1];
     strcpy(meta_lk, lk_name.c_str());
 
-    MPI_Comm lock_comm = MPI_COMM_SELF;
+    MPI_Comm lock_comm = m_data.mpi_comm;
+    dspaces_lock_on_read(meta_lk, &lock_comm);
 
     int nVars = 0;
     if (!m_ProvideLatest)
     {
         if (rank == 0)
         {
-            dspaces_lock_on_read(meta_lk, &lock_comm);
             buffer = dspaces_get_next_meta(m_CurrentStep, fstr, &bcast_array[0],
                                            &bcast_array[1]);
-            dspaces_unlock_on_read(meta_lk, &lock_comm);
         }
     }
     else
     {
         if (rank == 0)
         {
-            dspaces_lock_on_read(meta_lk, &lock_comm);
             buffer = dspaces_get_latest_meta(m_CurrentStep, fstr,
                                              &bcast_array[0], &bcast_array[1]);
-            dspaces_unlock_on_read(meta_lk, &lock_comm);
         }
     }
     MPI_Bcast(bcast_array, 2, MPI_INT, 0, m_data.mpi_comm);
@@ -223,28 +221,27 @@ size_t DataSpacesReader::CurrentStep() const { return m_CurrentStep; }
 void DataSpacesReader::EndStep()
 {
 
-    MPI_Barrier(m_data.mpi_comm);
     PerformGets();
+    char *meta_lk;
+    std::string lk_name = f_Name + std::to_string(m_CurrentStep);
+    meta_lk = new char[lk_name.length() + 1];
+    strcpy(meta_lk, lk_name.c_str());
+
+    MPI_Comm lock_comm = m_data.mpi_comm;
+    dspaces_unlock_on_read(meta_lk, &lock_comm);
 }
 
 void DataSpacesReader::DoClose(const int transportIndex)
 {
 
-    if (globals_adios_is_dataspaces_connected_from_reader() &&
-        !globals_adios_is_dataspaces_connected_from_both())
-    {
-        // fprintf(stderr, "Disconnecting reader via finalize \n");
-        MPI_Barrier(m_data.mpi_comm);
-        dspaces_finalize();
-    }
-    globals_adios_set_dataspaces_disconnected_from_writer();
+    globals_adios_set_dataspaces_disconnected_from_reader();
 }
 
 void DataSpacesReader::Flush(const int transportIndex) {}
 
 void DataSpacesReader::PerformGets()
 {
-    if (m_DeferredStack.size() > 0 && m_CurrentStep <= latestStep)
+    if (m_DeferredStack.size() > 0)
     {
 #define declare_type(T)                                                        \
     for (std::string variableName : m_DeferredStack)                           \

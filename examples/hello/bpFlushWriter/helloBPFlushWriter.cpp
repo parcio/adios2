@@ -31,8 +31,8 @@ int main(int argc, char *argv[])
 
     try
     {
-        /** ADIOS class factory of IO class objects, DebugON is recommended */
-        adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
+        /** ADIOS class factory of IO class objects */
+        adios2::ADIOS adios(MPI_COMM_WORLD);
 
         /*** IO class object: settings and factory of Settings: Variables,
          * Parameters, Transports, and Execution: Engines */
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
         for (unsigned int t = 0; t < 100; ++t)
         {
             /** values to time step */
-            myFloats.assign(myFloats.size(), t);
+            myFloats.assign(myFloats.size(), static_cast<float>(t));
             /** Write variable for buffering */
             bpWriter.Put<float>(bpFloats, myFloats.data());
         }

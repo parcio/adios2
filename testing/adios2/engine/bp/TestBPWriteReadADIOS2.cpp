@@ -43,17 +43,17 @@ TEST_F(BPWriteReadTestADIOS2, ADIOS2BPWriteRead1D8)
     // Number of steps
     const size_t NSteps = 3;
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 #endif
 
     // Write test data using BP
 
-#ifdef ADIOS2_HAVE_MPI
-    adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
+#if ADIOS2_USE_MPI
+    adios2::ADIOS adios(MPI_COMM_WORLD);
 #else
-    adios2::ADIOS adios(true);
+    adios2::ADIOS adios;
 #endif
     {
         adios2::IO io = adios.DeclareIO("TestIO");
@@ -385,17 +385,17 @@ TEST_F(BPWriteReadTestADIOS2, ADIOS2BPWriteRead2D2x4)
     // Number of steps
     const std::size_t NSteps = 3;
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 #endif
 
     // Write test data using ADIOS2
 
-#ifdef ADIOS2_HAVE_MPI
-    adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
+#if ADIOS2_USE_MPI
+    adios2::ADIOS adios(MPI_COMM_WORLD);
 #else
-    adios2::ADIOS adios(true);
+    adios2::ADIOS adios;
 #endif
     {
         adios2::IO io = adios.DeclareIO("TestIO");
@@ -694,17 +694,17 @@ TEST_F(BPWriteReadTestADIOS2, ADIOS2BPWriteRead2D4x2)
     // Number of steps
     const std::size_t NSteps = 3;
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 #endif
 
     // Write test data using ADIOS2
 
-#ifdef ADIOS2_HAVE_MPI
-    adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
+#if ADIOS2_USE_MPI
+    adios2::ADIOS adios(MPI_COMM_WORLD);
 #else
-    adios2::ADIOS adios(true);
+    adios2::ADIOS adios;
 #endif
     {
         adios2::IO io = adios.DeclareIO("TestIO");
@@ -976,6 +976,182 @@ TEST_F(BPWriteReadTestADIOS2, ADIOS2BPWriteRead2D4x2)
     }
 }
 
+TEST_F(BPWriteReadTestADIOS2, ADIOS2BPWriteRead10D2x2)
+{
+    // Each process would write a 2x2x...x2 9D array and all processes would
+    // form a 10D NumberOfProcess x 2 x ... x 2) array
+    const std::string fname("ADIOS2BPWriteRead10D2x2Test.bp");
+
+    int mpiRank = 0, mpiSize = 1;
+    // Number of steps
+    const std::size_t NSteps = 3;
+
+#if ADIOS2_USE_MPI
+    MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
+    MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
+#endif
+
+    size_t NX = static_cast<unsigned int>(mpiSize);
+    size_t OX = static_cast<unsigned int>(mpiRank);
+    const adios2::Dims shape{NX, 2, 2, 2, 2, 2, 2, 2, 2, 2};
+    const adios2::Dims start{OX, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    const adios2::Dims count{1, 2, 2, 2, 2, 2, 2, 2, 2, 2};
+
+    std::array<double, 512> R64w, R64r;
+    std::array<std::complex<double>, 512> CR64w, CR64r;
+
+    // Write test data using ADIOS2
+
+#if ADIOS2_USE_MPI
+    adios2::ADIOS adios(MPI_COMM_WORLD);
+#else
+    adios2::ADIOS adios;
+#endif
+    {
+        adios2::IO io = adios.DeclareIO("TestIO");
+
+        // Declare 10D variables
+        {
+            auto var_r64 =
+                io.DefineVariable<double>("r64", shape, start, count);
+            auto var_c64 = io.DefineVariable<std::complex<double>>(
+                "cr64", shape, start, count);
+        }
+
+        if (!engineName.empty())
+        {
+            io.SetEngine(engineName);
+        }
+        else
+        {
+            // Create the BP Engine
+            io.SetEngine("BPFile");
+        }
+
+        io.AddTransport("file");
+
+        adios2::Engine bpWriter = io.Open(fname, adios2::Mode::Write);
+
+        for (size_t step = 0; step < NSteps; ++step)
+        {
+            double d = mpiRank + 1 + step / 10.0;
+            // Generate test data for each process uniquely
+            std::for_each(R64w.begin(), R64w.end(), [&](double &v) {
+                v = d;
+                d += 0.0001;
+            });
+            std::for_each(CR64w.begin(), CR64w.end(),
+                          [&](std::complex<double> &v) {
+                              v.real(d);
+                              v.imag(d);
+                          });
+
+            // Retrieve the variables that previously went out of scope
+            auto var_r64 = io.InquireVariable<double>("r64");
+            auto var_cr64 = io.InquireVariable<std::complex<double>>("cr64");
+
+            // Make a 2D selection to describe the local dimensions of the
+            // variable we write and its offsets in the global spaces
+            adios2::Box<adios2::Dims> sel({start, count});
+            var_r64.SetSelection(sel);
+            var_cr64.SetSelection(sel);
+
+            // Write each one
+            // fill in the variable with values from starting index to
+            // starting index + count
+            bpWriter.BeginStep();
+            bpWriter.Put(var_r64, R64w.data());
+            bpWriter.Put(var_cr64, CR64w.data());
+            bpWriter.EndStep();
+        }
+
+        // Close the file
+        bpWriter.Close();
+    }
+
+    {
+        adios2::IO io = adios.DeclareIO("ReadIO");
+
+        if (!engineName.empty())
+        {
+            io.SetEngine(engineName);
+        }
+
+        adios2::Engine bpReader = io.Open(fname, adios2::Mode::Read);
+
+        EXPECT_EQ(bpReader.Steps(), NSteps);
+
+        auto var_r64 = io.InquireVariable<double>("r64");
+        EXPECT_TRUE(var_r64);
+        ASSERT_EQ(var_r64.ShapeID(), adios2::ShapeID::GlobalArray);
+        ASSERT_EQ(var_r64.Steps(), NSteps);
+        ASSERT_EQ(var_r64.Shape().size(), 10);
+        ASSERT_EQ(var_r64.Shape()[0], NX);
+        ASSERT_EQ(var_r64.Shape()[1], 2);
+        ASSERT_EQ(var_r64.Shape()[2], 2);
+        ASSERT_EQ(var_r64.Shape()[3], 2);
+        ASSERT_EQ(var_r64.Shape()[4], 2);
+        ASSERT_EQ(var_r64.Shape()[5], 2);
+        ASSERT_EQ(var_r64.Shape()[6], 2);
+        ASSERT_EQ(var_r64.Shape()[7], 2);
+        ASSERT_EQ(var_r64.Shape()[8], 2);
+        ASSERT_EQ(var_r64.Shape()[9], 2);
+
+        auto var_cr64 = io.InquireVariable<std::complex<double>>("cr64");
+        EXPECT_TRUE(var_cr64);
+        ASSERT_EQ(var_cr64.ShapeID(), adios2::ShapeID::GlobalArray);
+        ASSERT_EQ(var_cr64.Steps(), NSteps);
+        ASSERT_EQ(var_cr64.Shape().size(), 10);
+        ASSERT_EQ(var_cr64.Shape()[0], NX);
+        ASSERT_EQ(var_cr64.Shape()[1], 2);
+        ASSERT_EQ(var_cr64.Shape()[2], 2);
+        ASSERT_EQ(var_cr64.Shape()[3], 2);
+        ASSERT_EQ(var_cr64.Shape()[4], 2);
+        ASSERT_EQ(var_cr64.Shape()[5], 2);
+        ASSERT_EQ(var_cr64.Shape()[6], 2);
+        ASSERT_EQ(var_cr64.Shape()[7], 2);
+        ASSERT_EQ(var_cr64.Shape()[8], 2);
+        ASSERT_EQ(var_cr64.Shape()[9], 2);
+
+        const adios2::Box<adios2::Dims> sel(start, count);
+
+        var_r64.SetSelection(sel);
+        var_cr64.SetSelection(sel);
+
+        for (size_t step = 0; step < NSteps; ++step)
+        {
+            var_r64.SetStepSelection({step, 1});
+            var_cr64.SetStepSelection({step, 1});
+            bpReader.Get(var_r64, R64r.data());
+            bpReader.Get(var_cr64, CR64r.data());
+            bpReader.PerformGets();
+
+            double d = mpiRank + 1 + step / 10.0;
+            // Re-generate test data for each process uniquely that was written
+            std::for_each(R64w.begin(), R64w.end(), [&](double &v) {
+                v = d;
+                d += 0.0001;
+            });
+            std::for_each(CR64w.begin(), CR64w.end(),
+                          [&](std::complex<double> &v) {
+                              v.real(d);
+                              v.imag(d);
+                          });
+
+            for (size_t i = 0; i < 512; ++i)
+            {
+                std::stringstream ss;
+                ss << "t=" << step << " i=" << i << " rank=" << mpiRank;
+                std::string msg = ss.str();
+
+                EXPECT_EQ(R64r[i], R64w[i]) << msg;
+                EXPECT_EQ(CR64r[i], CR64w[i]) << msg;
+            }
+        }
+        bpReader.Close();
+    }
+}
+
 TEST_F(BPWriteReadTestADIOS2, ADIOS2BPWriteRead2D4x2_ReadMultiSteps)
 {
     // Each process would write a 4x2 array and all processes would
@@ -992,24 +1168,24 @@ TEST_F(BPWriteReadTestADIOS2, ADIOS2BPWriteRead2D4x2_ReadMultiSteps)
     const std::size_t NSteps = 5;
     const std::size_t tInitial = 2;
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 #endif
 
     // Write test data using ADIOS2
 
-#ifdef ADIOS2_HAVE_MPI
-    adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
+#if ADIOS2_USE_MPI
+    adios2::ADIOS adios(MPI_COMM_WORLD);
 #else
-    adios2::ADIOS adios(true);
+    adios2::ADIOS adios;
 #endif
     {
         adios2::IO io = adios.DeclareIO("TestIO");
 
         // Declare 2D variables (4 * (NumberOfProcess * Nx))
-        // The local process' part (start, count) can be defined now or later
-        // before Write().
+        // The local process' part (start, count) can be defined now or
+        // later before Write().
         {
             adios2::Dims shape{Ny, static_cast<size_t>(mpiSize * Nx)};
             adios2::Dims start{0, static_cast<size_t>(mpiRank * Nx)};
@@ -1289,24 +1465,24 @@ TEST_F(BPWriteReadTestADIOS2, ADIOS2BPWriteRead2D4x2_MultiStepsOverflow)
     const std::size_t NSteps = 5;
     const std::size_t tInitial = 2;
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 #endif
 
     // Write test data using ADIOS2
 
-#ifdef ADIOS2_HAVE_MPI
-    adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
+#if ADIOS2_USE_MPI
+    adios2::ADIOS adios(MPI_COMM_WORLD);
 #else
-    adios2::ADIOS adios(true);
+    adios2::ADIOS adios;
 #endif
     {
         adios2::IO io = adios.DeclareIO("TestIO");
 
         // Declare 2D variables (4 * (NumberOfProcess * Nx))
-        // The local process' part (start, count) can be defined now or later
-        // before Write().
+        // The local process' part (start, count) can be defined now or
+        // later before Write().
         {
             adios2::Dims shape{Ny, static_cast<size_t>(mpiSize * Nx)};
             adios2::Dims start{0, static_cast<size_t>(mpiRank * Nx)};
@@ -1486,10 +1662,10 @@ TEST_F(BPWriteReadTestADIOS2, OpenEngineTwice)
     // form a 2D 4 * (NumberOfProcess * Nx) matrix where Nx is 2 here
     const std::string fname("OpenTwice.bp");
 
-#ifdef ADIOS2_HAVE_MPI
-    adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
+#if ADIOS2_USE_MPI
+    adios2::ADIOS adios(MPI_COMM_WORLD);
 #else
-    adios2::ADIOS adios(true);
+    adios2::ADIOS adios;
 #endif
     {
         adios2::IO io = adios.DeclareIO("TwoOpens");
@@ -1526,7 +1702,7 @@ TEST_F(BPWriteReadTestADIOS2, ReadStartCount)
 
     const std::size_t Nx = 10;
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 #endif
@@ -1534,10 +1710,10 @@ TEST_F(BPWriteReadTestADIOS2, ReadStartCount)
     std::vector<int64_t> localData(Nx);
     std::iota(localData.begin(), localData.end(), mpiRank * Nx);
 
-#ifdef ADIOS2_HAVE_MPI
-    adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
+#if ADIOS2_USE_MPI
+    adios2::ADIOS adios(MPI_COMM_WORLD);
 #else
-    adios2::ADIOS adios(true);
+    adios2::ADIOS adios;
 #endif
     {
         adios2::IO io = adios.DeclareIO("StartCountWrite");
@@ -1597,7 +1773,7 @@ TEST_F(BPWriteReadTestADIOS2, ReadStartCount)
 
 int main(int argc, char **argv)
 {
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Init(nullptr, nullptr);
 #endif
 
@@ -1610,7 +1786,7 @@ int main(int argc, char **argv)
     }
     result = RUN_ALL_TESTS();
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Finalize();
 #endif
 

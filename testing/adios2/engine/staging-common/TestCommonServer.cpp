@@ -28,9 +28,6 @@ public:
     CommonServerTest() = default;
 };
 
-static int MyCloseNow = 0;
-static int GlobalCloseNow = 0;
-
 inline bool file_exists(const std::string &name)
 {
     struct stat buffer;
@@ -41,19 +38,20 @@ inline bool file_exists(const std::string &name)
 TEST_F(CommonServerTest, ADIOS2CommonServer)
 {
     int mpiRank = 0, mpiSize = 1;
+    int GlobalCloseNow = 0;
 
     std::remove(shutdown_name.c_str());
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 #endif
 
     // Server test data using ADIOS2
 
-#ifdef ADIOS2_HAVE_MPI
-    adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
+#if ADIOS2_USE_MPI
+    adios2::ADIOS adios(MPI_COMM_WORLD);
 #else
-    adios2::ADIOS adios(true);
+    adios2::ADIOS adios;
 #endif
     adios2::IO io = adios.DeclareIO("TestIO");
 
@@ -164,28 +162,33 @@ TEST_F(CommonServerTest, ADIOS2CommonServer)
         std::this_thread::sleep_for(std::chrono::milliseconds(
             DelayMS)); /* sleep for DelayMS milliseconds */
         step++;
-#ifdef ADIOS2_HAVE_MPI
-        MPI_Allreduce(&MyCloseNow, &GlobalCloseNow, 1, MPI_INT, MPI_LOR,
-                      MPI_COMM_WORLD);
-        if (file_exists(shutdown_name))
         {
-            MyCloseNow = GlobalCloseNow = 1;
-        }
+            int MyCloseNow = 0;
+            if (file_exists(shutdown_name))
+            {
+                MyCloseNow = 1;
+            }
+#if ADIOS2_USE_MPI
+            MPI_Allreduce(&MyCloseNow, &GlobalCloseNow, 1, MPI_INT, MPI_LOR,
+                          MPI_COMM_WORLD);
 #else
-        GlobalCloseNow = MyCloseNow;
-        if (file_exists(shutdown_name))
-        {
-            MyCloseNow = GlobalCloseNow = 1;
-        }
+            GlobalCloseNow = MyCloseNow;
 #endif
+        }
+        if (GlobalCloseNow)
+        {
+            std::cout << "Writer closing stream because file \""
+                      << shutdown_name << "\" was noticed" << std::endl;
+        }
     }
+    std::cout << "Writer closing stream normally" << std::endl;
     // Close the file
     engine.Close();
 }
 
 int main(int argc, char **argv)
 {
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Init(nullptr, nullptr);
 #endif
 
@@ -196,7 +199,7 @@ int main(int argc, char **argv)
 
     result = RUN_ALL_TESTS();
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Finalize();
 #endif
 

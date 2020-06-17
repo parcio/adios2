@@ -5,8 +5,10 @@
 #include <cstdint>
 #include <cstring>
 
+#include <chrono>
 #include <iostream>
 #include <stdexcept>
+#include <thread>
 
 #include <adios2.h>
 
@@ -22,7 +24,9 @@ public:
     CommonReadTest() = default;
 };
 
-#ifdef ADIOS2_HAVE_MPI
+typedef std::chrono::duration<double> Seconds;
+
+#if ADIOS2_USE_MPI
 MPI_Comm testComm;
 #endif
 
@@ -34,17 +38,17 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
     int mpiRank = 0, mpiSize = 1;
 
     int TimeGapDetected = 0;
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Comm_rank(testComm, &mpiRank);
     MPI_Comm_size(testComm, &mpiSize);
 #endif
 
     // Write test data using ADIOS2
 
-#ifdef ADIOS2_HAVE_MPI
-    adios2::ADIOS adios(testComm, adios2::DebugON);
+#if ADIOS2_USE_MPI
+    adios2::ADIOS adios(testComm);
 #else
-    adios2::ADIOS adios(true);
+    adios2::ADIOS adios;
 #endif
     adios2::IO io = adios.DeclareIO("TestIO");
 
@@ -52,7 +56,10 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
     io.SetEngine(engine);
     io.SetParameters(engineParams);
 
+    auto ts = std::chrono::steady_clock::now();
     adios2::Engine engine = io.Open(fname, adios2::Mode::Read);
+    Seconds timeOpen = std::chrono::steady_clock::now() - ts;
+    EXPECT_TRUE(engine);
 
     const std::string zero = std::to_string(0);
     const std::string s1_Single = std::string("s1_Single_") + zero;
@@ -71,9 +78,21 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
     unsigned int t = 0;
 
     std::vector<std::time_t> write_times;
+    std::vector<Seconds> begin_times;
+    std::vector<adios2::StepStatus> begin_statuses;
 
-    while (engine.BeginStep() == adios2::StepStatus::OK)
+    while (true)
     {
+        ts = std::chrono::steady_clock::now();
+        adios2::StepStatus status = engine.BeginStep();
+        Seconds timeBeginStep = std::chrono::steady_clock::now() - ts;
+        begin_statuses.push_back(status);
+        begin_times.push_back(timeBeginStep);
+
+        if (status != adios2::StepStatus::OK)
+        {
+            break;
+        }
         const size_t currentStep = engine.CurrentStep();
         EXPECT_EQ(currentStep, static_cast<size_t>(t));
 
@@ -288,21 +307,37 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
         ++t;
     }
 
-    if ((write_times.back() - write_times.front()) > 1)
+    if (!mpiRank)
+    {
+        std::cout << "Reader Open took " << std::fixed << std::setprecision(9)
+                  << timeOpen.count() << " seconds" << std::endl;
+        for (int i = 0; i < begin_times.size(); ++i)
+        {
+            std::cout << "Reader BeginStep t = " << i
+                      << " had status = " << begin_statuses[i] << " after "
+                      << std::fixed << std::setprecision(9)
+                      << begin_times[i].count() << " seconds" << std::endl;
+        }
+    }
+
+    if ((write_times.size() > 1) &&
+        ((write_times.back() - write_times.front()) > 1))
     {
         TimeGapDetected++;
     }
 
-    if (TimeGapExpected)
+    if (!IgnoreTimeGap)
     {
-        EXPECT_TRUE(TimeGapDetected);
+        if (TimeGapExpected)
+        {
+            EXPECT_TRUE(TimeGapDetected);
+        }
+        else
+        {
+            EXPECT_FALSE(TimeGapDetected);
+        }
     }
-    else
-    {
-        EXPECT_EQ(t, NSteps);
 
-        EXPECT_FALSE(TimeGapDetected);
-    }
     // Close the file
     engine.Close();
 }
@@ -313,7 +348,7 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
 
 int main(int argc, char **argv)
 {
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Init(nullptr, nullptr);
 
     int key;
@@ -330,7 +365,7 @@ int main(int argc, char **argv)
 
     result = RUN_ALL_TESTS();
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Finalize();
 #endif
 

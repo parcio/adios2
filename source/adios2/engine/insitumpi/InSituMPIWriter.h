@@ -37,7 +37,6 @@ public:
      * @param accessMode
      * @param comm
      * @param method
-     * @param debugMode
      */
     InSituMPIWriter(IO &adios, const std::string &name, const Mode openMode,
                     helper::Comm comm);
@@ -89,6 +88,7 @@ private:
     void Init() final;
     void InitParameters() final;
     void InitTransports() final;
+    size_t CurrentStep() const final;
 
 #define declare_type(T)                                                        \
     void DoPutSync(Variable<T> &, const T *) final;                            \
@@ -100,7 +100,7 @@ private:
      * Closes a single transport or all transports
      * @param transportIndex, if -1 (default) closes all transports,
      * otherwise it closes a transport in m_Transport[transportIndex].
-     * In debug mode the latter is bounds-checked.
+     * transportIndex is bounds-checked.
      */
     void DoClose(const int transportIndex = -1) final;
 

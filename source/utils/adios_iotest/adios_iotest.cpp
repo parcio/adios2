@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
         {
             std::cout << "Use ADIOS without XML configuration " << std::endl;
         }
-        adios = adios2::ADIOS(settings.appComm, adios2::DebugON);
+        adios = adios2::ADIOS(settings.appComm);
     }
     else
     {
@@ -46,8 +46,7 @@ int main(int argc, char *argv[])
             std::cout << "Use ADIOS xml file " << settings.adiosConfigFileName
                       << std::endl;
         }
-        adios = adios2::ADIOS(settings.adiosConfigFileName, settings.appComm,
-                              adios2::DebugON);
+        adios = adios2::ADIOS(settings.adiosConfigFileName, settings.appComm);
     }
     Config cfg;
     size_t currentConfigLineNumber = 0;
@@ -77,11 +76,20 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    double timeStart, timeEnd;
+    MPI_Barrier(settings.appComm);
+    timeStart = MPI_Wtime();
+
     try
     {
         /* writing to one stream using two groups is not supported.
          * FIXME: we need to check for this condition and raise error
          */
+        if (!settings.myRank && settings.verbose)
+        {
+            std::cout << "Start App " + std::to_string(settings.appId) + ": "
+                      << std::endl;
+        }
         /* 1. Assign stream names with group names that appear in
            commands */
         // map of <streamName, groupName>
@@ -134,6 +142,11 @@ int main(int argc, char *argv[])
                 auto it = writeStreamMap.find(streamName);
                 if (it == writeStreamMap.end())
                 {
+                    if (!settings.myRank && settings.verbose)
+                    {
+                        std::cout << "    Create Output Stream " << streamName
+                                  << "... " << std::endl;
+                    }
                     std::shared_ptr<Stream> writer =
                         openStream(streamName, io, adios2::Mode::Write,
                                    settings.iolib, settings.appComm);
@@ -145,6 +158,8 @@ int main(int argc, char *argv[])
                 auto it = readStreamMap.find(streamName);
                 if (it == readStreamMap.end())
                 {
+                    std::cout << "    Open Input Stream " << streamName
+                              << "... " << std::endl;
                     std::shared_ptr<Stream> reader =
                         openStream(streamName, io, adios2::Mode::Read,
                                    settings.iolib, settings.appComm);
@@ -160,7 +175,8 @@ int main(int argc, char *argv[])
         {
             if (!settings.myRank)
             {
-                std::cout << "Step " << step << ": " << std::endl;
+                std::cout << "App " + std::to_string(settings.appId) + " Step "
+                          << step << ": " << std::endl;
             }
             for (const auto cmd : cfg.commands)
             {
@@ -305,6 +321,14 @@ int main(int argc, char *argv[])
 
         /* Yell and quit */
         MPI_Abort(settings.appComm, -1);
+    }
+
+    MPI_Barrier(settings.appComm);
+    timeEnd = MPI_Wtime();
+    if (!settings.myRank)
+    {
+        std::cout << "ADIOS IOTEST test time " << timeEnd - timeStart
+                  << "  seconds " << std::endl;
     }
 
     MPI_Finalize();

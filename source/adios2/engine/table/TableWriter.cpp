@@ -27,8 +27,7 @@ TableWriter::TableWriter(IO &io, const std::string &name, const Mode mode,
                          helper::Comm comm)
 : Engine("TableWriter", io, name, mode, std::move(comm)),
   m_IsRowMajor(helper::IsRowMajor(m_IO.m_HostLanguage)),
-  m_Deserializer(m_Comm, m_IsRowMajor),
-  m_SubAdios(MPI_COMM_WORLD, adios2::DebugOFF),
+  m_Deserializer(m_Comm, m_IsRowMajor), m_SubAdios(m_Comm.World(), "C++"),
   m_SubIO(m_SubAdios.DeclareIO("SubIO"))
 {
     m_MpiRank = m_Comm.Rank();
@@ -88,7 +87,7 @@ void TableWriter::EndStep()
         else
         {
             auto localPack = serializer->GetLocalPack();
-            m_Deserializer.PutPack(localPack);
+            m_Deserializer.PutPack(localPack, false);
             PutAggregatorBuffer();
         }
     }
@@ -126,7 +125,7 @@ void TableWriter::ReplyThread()
             }
             continue;
         }
-        m_Deserializer.PutPack(request);
+        m_Deserializer.PutPack(request, false);
         format::VecPtr reply = std::make_shared<std::vector<char>>(1, 'K');
         replier.SendReply(reply);
         if (m_Verbosity >= 1)
@@ -252,8 +251,7 @@ void TableWriter::InitTransports()
     }
 
     m_SubIO.SetEngine("bp4");
-    m_SubEngine = std::make_shared<adios2::Engine>(
-        m_SubIO.Open(m_Name, adios2::Mode::Write));
+    m_SubEngine = &m_SubIO.Open(m_Name, adios2::Mode::Write);
 }
 
 void TableWriter::PutAggregatorBuffer()
@@ -388,12 +386,12 @@ void TableWriter::PutSubEngine(bool finalPut)
         auto variable = m_SubIO.InquireVariable<T>(varPair.first);             \
         if (not variable)                                                      \
         {                                                                      \
-            variable =                                                         \
-                m_SubIO.DefineVariable<T>(varPair.first, shape, start, count); \
+            variable = &m_SubIO.DefineVariable<T>(varPair.first, shape, start, \
+                                                  count);                      \
         }                                                                      \
-        variable.SetSelection({start, count});                                 \
+        variable->SetSelection({start, count});                                \
         m_SubEngine->Put(                                                      \
-            variable,                                                          \
+            *variable,                                                         \
             reinterpret_cast<T *>(                                             \
                 m_AggregatorBuffers[indexPair.first][varPair.first].data()),   \
             Mode::Sync);                                                       \
@@ -436,6 +434,7 @@ void TableWriter::DoClose(const int transportIndex)
         std::cout << "TableWriter::DoClose " << m_MpiRank << std::endl;
     }
     m_SubEngine->Close();
+    m_SubEngine = nullptr;
 }
 
 std::vector<size_t> TableWriter::WhatBufferIndices(const Dims &start,

@@ -12,6 +12,7 @@
 #define ADIOS2_TOOLKIT_TRANSPORT_FILE_FILEPOINTER_H_
 
 #include <cstdio> // FILE*
+#include <future> //std::async, std::future
 
 #include "adios2/toolkit/transport/Transport.h"
 
@@ -29,11 +30,12 @@ class FileStdio : public Transport
 {
 
 public:
-    FileStdio(helper::Comm const &comm, const bool debugMode);
+    FileStdio(helper::Comm const &comm);
 
     ~FileStdio();
 
-    void Open(const std::string &name, const Mode openMode) final;
+    void Open(const std::string &name, const Mode openMode,
+              const bool async = false) final;
 
     void SetBuffer(char *buffer, size_t size) final;
 
@@ -47,6 +49,8 @@ public:
 
     void Close() final;
 
+    void Delete() final;
+
     void SeekToEnd() final;
 
     void SeekToBegin() final;
@@ -54,12 +58,20 @@ public:
 private:
     /** C File pointer */
     FILE *m_File = nullptr;
+    bool m_IsOpening = false;
+    std::future<FILE *> m_OpenFuture;
+
+    /** Buffer settings need to be delayed until after opening */
+    bool m_DelayedBufferSet = false;
+    char *m_DelayedBuffer = nullptr;
+    size_t m_DelayedBufferSize = 0;
 
     /**
      * Check for std::ferror and throw an exception if true
      * @param hint exception message
      */
     void CheckFile(const std::string hint) const;
+    void WaitForOpen();
 };
 
 } // end namespace transport

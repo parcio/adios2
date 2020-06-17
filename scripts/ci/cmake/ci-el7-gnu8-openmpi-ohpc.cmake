@@ -8,9 +8,10 @@ find_package(EnvModules REQUIRED)
 
 env_module(purge)
 env_module(load gnu8)
-env_module(load py3-numpy)
+env_module(load py2-numpy)
 env_module(load openmpi3)
-env_module(load py3-mpi4py)
+env_module(load phdf5)
+env_module(load py2-mpi4py)
 
 set(ENV{CC}  gcc)
 set(ENV{CXX} g++)
@@ -18,8 +19,6 @@ set(ENV{FC}  gfortran)
 set(ENV{CFLAGS} "-Werror -Wno-error=builtin-declaration-mismatch")
 set(ENV{CXXFLAGS} "-Werror -Wno-error=builtin-declaration-mismatch")
 set(ENV{FFLAGS} "-Werror -Wno-error=builtin-declaration-mismatch")
-
-set(ENV{CMAKE_PREFIX_PATH} "/opt/libfabric/1.6.0:/opt/hdf5/1.10.4:$ENV{CMAKE_PREFIX_PATH}")
 
 set(dashboard_cache "
 ADIOS2_USE_BZip2:BOOL=ON
@@ -33,8 +32,9 @@ ADIOS2_USE_SZ:BOOL=ON
 ADIOS2_USE_ZeroMQ:STRING=ON
 ADIOS2_USE_ZFP:BOOL=ON
 
+MPIEXEC_EXTRA_FLAGS:STRING=--allow-run-as-root --oversubscribe
 MPIEXEC_MAX_NUMPROCS:STRING=${N2CPUS}
-PYTHON_EXECUTABLE:FILEPATH=/usr/bin/python3.4
+PYTHON_EXECUTABLE:FILEPATH=/usr/bin/python2.7
 ")
 
 set(CTEST_TEST_ARGS PARALLEL_LEVEL 1)

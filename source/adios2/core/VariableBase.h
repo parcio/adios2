@@ -13,6 +13,7 @@
 #define ADIOS2_CORE_VARIABLEBASE_H_
 
 /// \cond EXCLUDE_FROM_DOXYGEN
+#include <set>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -28,6 +29,7 @@ namespace core
 {
 
 // forward declaration for reading streaming mode
+class IO;
 class Engine;
 
 /** Base class for Variable<T> (primitives) and VariableCompound classes */
@@ -107,10 +109,12 @@ public:
 
     std::map<size_t, Dims> m_AvailableShapes;
 
+    std::set<std::string> m_PrefixedVariables;
+    std::set<std::string> m_PrefixedAttributes;
+
     VariableBase(const std::string &name, const std::string type,
                  const size_t elementSize, const Dims &shape, const Dims &start,
-                 const Dims &count, const bool constantShape,
-                 const bool debugMode);
+                 const Dims &count, const bool constantShape);
 
     virtual ~VariableBase() = default;
 
@@ -197,8 +201,18 @@ public:
 
     Dims GetShape(const size_t step = adios2::EngineCurrentStep);
 
+    /**
+     * Get info for attributes associated with this variable. Attribute name
+     * must start with variable.m_Name + separator
+     * @param io
+     * @param separator
+     * @return attributes info
+     */
+    std::map<std::string, Params>
+    GetAttributesInfo(core::IO &io, const std::string separator,
+                      const bool fullNameKeys) const noexcept;
+
 protected:
-    const bool m_DebugMode = false;
     bool m_ConstantDims = false; ///< true: fix m_Shape, m_Start, m_Count
 
     unsigned int m_DeferredCounter = 0;

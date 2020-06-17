@@ -10,7 +10,6 @@
 
 #include "HDF5WriterP.h"
 
-#include "adios2/common/ADIOSMPI.h"
 #include "adios2/helper/adiosFunctions.h" //CSVToVector
 
 namespace adios2
@@ -22,8 +21,7 @@ namespace engine
 
 HDF5WriterP::HDF5WriterP(IO &io, const std::string &name, const Mode mode,
                          helper::Comm comm)
-: Engine("HDF5Writer", io, name, mode, std::move(comm)),
-  m_H5File(io.m_DebugMode)
+: Engine("HDF5Writer", io, name, mode, std::move(comm))
 {
     m_IO.m_ReadStreaming = false;
     m_EndMessage = ", in call to IO HDF5Writer Open " + m_Name + "\n";
@@ -35,6 +33,11 @@ HDF5WriterP::~HDF5WriterP() { DoClose(); }
 StepStatus HDF5WriterP::BeginStep(StepMode mode, const float timeoutSeconds)
 {
     m_IO.m_ReadStreaming = false;
+#ifndef RELAY_DEFINE_TO_HDF5 // RELAY_DEFINE_TO_HDF5 = variables in io are
+                             // created at begin_step
+#else
+    m_H5File.CreateVarsFromIO(m_IO);
+#endif
     return StepStatus::OK;
 }
 
@@ -58,7 +61,7 @@ void HDF5WriterP::Init()
     }
 
 #ifdef NEVER
-    m_H5File.Init(m_Name, m_Comm.AsMPI(), true);
+    m_H5File.Init(m_Name, m_Comm, true);
 #else
     // enforce .h5 ending
     std::string suffix = ".h5";
@@ -71,11 +74,11 @@ void HDF5WriterP::Init()
     {
         // is a file with .bp ending
         std::string updatedName = m_Name.substr(0, wpos) + suffix;
-        m_H5File.Init(updatedName, m_Comm.AsMPI(), true);
+        m_H5File.Init(updatedName, m_Comm, true);
     }
     else
     {
-        m_H5File.Init(m_Name, m_Comm.AsMPI(), true);
+        m_H5File.Init(m_Name, m_Comm, true);
     }
     m_H5File.ParseParameters(m_IO);
 #endif
@@ -113,9 +116,8 @@ void HDF5WriterP::DoPutSyncCommon(Variable<T> &variable, const T *values)
                 c_count[i] = variable.m_Count[ndims - i - 1];
             }
 
-            Variable<T> dup =
-                Variable<T>(variable.m_Name, c_shape, c_offset, c_count,
-                            variable.IsConstantDims(), false);
+            Variable<T> dup = Variable<T>(variable.m_Name, c_shape, c_offset,
+                                          c_count, variable.IsConstantDims());
 
             /*
              * duplicate var attributes and convert to c order before saving.

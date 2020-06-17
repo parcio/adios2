@@ -8,15 +8,10 @@
  *      Author: Jason Wang
  */
 
-#include "SscWriter.h"
 #include "SscWriter.tcc"
-
-#include "adios2/helper/adiosFunctions.h"
-#include "adios2/toolkit/transport/file/FileFStream.h"
-
-#include <iostream>
-
-#include <zmq.h>
+#include "adios2/helper/adiosComm.h"
+#include "adios2/helper/adiosCommMPI.h"
+#include "adios2/helper/adiosString.h"
 
 namespace adios2
 {
@@ -27,77 +22,353 @@ namespace engine
 
 SscWriter::SscWriter(IO &io, const std::string &name, const Mode mode,
                      helper::Comm comm)
-: Engine("SscWriter", io, name, mode, std::move(comm)),
-  m_DataManSerializer(m_Comm, helper::IsRowMajor(io.m_HostLanguage))
+: Engine("SscWriter", io, name, mode, std::move(comm))
 {
     TAU_SCOPED_TIMER_FUNC();
-    Init();
-    Log(5, "SscWriter::SscWriter()", true, true);
+
+    helper::GetParameter(m_IO.m_Parameters, "MpiMode", m_MpiMode);
+    helper::GetParameter(m_IO.m_Parameters, "Verbose", m_Verbosity);
+    helper::GetParameter(m_IO.m_Parameters, "MaxFilenameLength",
+                         m_MaxFilenameLength);
+    helper::GetParameter(m_IO.m_Parameters, "RendezvousAppCount",
+                         m_RendezvousAppCount);
+    helper::GetParameter(m_IO.m_Parameters, "MaxStreamsPerApp",
+                         m_MaxStreamsPerApp);
+    helper::GetParameter(m_IO.m_Parameters, "OpenTimeoutSecs",
+                         m_OpenTimeoutSecs);
+
+    m_Buffer.resize(1);
+
+    SyncMpiPattern();
+    m_WriterRank = m_Comm.Rank();
+    m_WriterSize = m_Comm.Size();
+    MPI_Comm_rank(m_StreamComm, &m_StreamRank);
+    MPI_Comm_size(m_StreamComm, &m_StreamSize);
+
+    m_GlobalWritePattern.resize(m_StreamSize);
+    m_GlobalReadPattern.resize(m_StreamSize);
 }
 
 StepStatus SscWriter::BeginStep(StepMode mode, const float timeoutSeconds)
 {
     TAU_SCOPED_TIMER_FUNC();
-    Log(5,
-        "SscWriter::BeginStep() begin. Last step " +
-            std::to_string(m_CurrentStep),
-        true, true);
 
-    ++m_CurrentStep;
-    if (m_CurrentStep % m_StepsPerAggregation == 0)
+    if (m_InitialStep)
     {
-        m_CurrentStepActive = true;
-        m_DataManSerializer.NewWriterBuffer(m_SerializationBufferSize);
-        if (not m_AttributesSet)
-        {
-            m_DataManSerializer.PutAttributes(m_IO);
-            m_AttributesSet = true;
-        }
+        m_InitialStep = false;
     }
     else
     {
-        m_CurrentStepActive = false;
+        ++m_CurrentStep;
     }
 
-    Log(5,
-        "SscWriter::BeginStep() end. New step " + std::to_string(m_CurrentStep),
-        true, true);
+    if (m_Verbosity >= 5)
+    {
+        std::cout << "SscWriter::BeginStep, World Rank " << m_StreamRank
+                  << ", Writer Rank " << m_WriterRank << ", Step "
+                  << m_CurrentStep << std::endl;
+    }
+
     return StepStatus::OK;
 }
 
-size_t SscWriter::CurrentStep() const { return m_CurrentStep; }
+size_t SscWriter::CurrentStep() const
+{
+    TAU_SCOPED_TIMER_FUNC();
+    return m_CurrentStep;
+}
 
-void SscWriter::PerformPuts() {}
+void SscWriter::PerformPuts() { TAU_SCOPED_TIMER_FUNC(); }
+
+void SscWriter::PutOneSidedPostPush()
+{
+    TAU_SCOPED_TIMER_FUNC();
+    MPI_Win_start(m_MpiAllReadersGroup, 0, m_MpiWin);
+    for (const auto &i : m_AllSendingReaderRanks)
+    {
+        MPI_Put(m_Buffer.data(), m_Buffer.size(), MPI_CHAR, i.first,
+                i.second.first, m_Buffer.size(), MPI_CHAR, m_MpiWin);
+    }
+    MPI_Win_complete(m_MpiWin);
+}
+
+void SscWriter::PutOneSidedFencePush()
+{
+    TAU_SCOPED_TIMER_FUNC();
+    MPI_Win_fence(0, m_MpiWin);
+    for (const auto &i : m_AllSendingReaderRanks)
+    {
+        MPI_Put(m_Buffer.data(), m_Buffer.size(), MPI_CHAR, i.first,
+                i.second.first, m_Buffer.size(), MPI_CHAR, m_MpiWin);
+    }
+    MPI_Win_fence(0, m_MpiWin);
+}
+
+void SscWriter::PutOneSidedPostPull()
+{
+    TAU_SCOPED_TIMER_FUNC();
+    MPI_Win_post(m_MpiAllReadersGroup, 0, m_MpiWin);
+    MPI_Win_wait(m_MpiWin);
+}
+
+void SscWriter::PutOneSidedFencePull()
+{
+    TAU_SCOPED_TIMER_FUNC();
+    MPI_Win_fence(0, m_MpiWin);
+    MPI_Win_fence(0, m_MpiWin);
+}
+
+void SscWriter::PutTwoSided()
+{
+    TAU_SCOPED_TIMER_FUNC();
+    std::vector<MPI_Request> requests;
+    for (const auto &i : m_AllSendingReaderRanks)
+    {
+        requests.emplace_back();
+        MPI_Isend(m_Buffer.data(), m_Buffer.size(), MPI_CHAR, i.first, 0,
+                  m_StreamComm, &requests.back());
+    }
+    MPI_Status statuses[requests.size()];
+    MPI_Waitall(requests.size(), requests.data(), statuses);
+}
 
 void SscWriter::EndStep()
 {
     TAU_SCOPED_TIMER_FUNC();
-    Log(5, "SscWriter::EndStep() begin. Step " + std::to_string(m_CurrentStep),
-        true, false);
-
-    if (m_CurrentStepActive)
+    if (m_Verbosity >= 5)
     {
-        m_DataManSerializer.PutPack(m_DataManSerializer.GetLocalPack());
-        m_DataManSerializer.AggregateMetadata();
+        std::cout << "SscWriter::EndStep, World Rank " << m_StreamRank
+                  << ", Writer Rank " << m_WriterRank << ", Step "
+                  << m_CurrentStep << std::endl;
     }
 
-    if (m_CurrentStep > 5)
+    if (m_CurrentStep == 0)
     {
-        m_DataManSerializer.Erase(m_CurrentStep - 5, true);
+        SyncWritePattern();
+        MPI_Win_create(m_Buffer.data(), m_Buffer.size(), 1, MPI_INFO_NULL,
+                       m_StreamComm, &m_MpiWin);
+        PutOneSidedPostPull();
+        MPI_Win_free(&m_MpiWin);
+        SyncReadPattern();
+        MPI_Win_create(m_Buffer.data(), m_Buffer.size(), 1, MPI_INFO_NULL,
+                       m_StreamComm, &m_MpiWin);
     }
-
-    Log(5, "SscWriter::EndStep() end. Step " + std::to_string(m_CurrentStep),
-        true, true);
+    else
+    {
+        if (m_MpiMode == "twosided")
+        {
+            PutTwoSided();
+        }
+        else if (m_MpiMode == "onesidedfencepush")
+        {
+            PutOneSidedFencePush();
+        }
+        else if (m_MpiMode == "onesidedpostpush")
+        {
+            PutOneSidedPostPush();
+        }
+        else if (m_MpiMode == "onesidedfencepull")
+        {
+            PutOneSidedFencePull();
+        }
+        else if (m_MpiMode == "onesidedpostpull")
+        {
+            PutOneSidedPostPull();
+        }
+    }
 }
 
-void SscWriter::Flush(const int transportIndex) {}
+void SscWriter::Flush(const int transportIndex) { TAU_SCOPED_TIMER_FUNC(); }
 
 // PRIVATE
+
+void SscWriter::SyncMpiPattern()
+{
+    TAU_SCOPED_TIMER_FUNC();
+
+    if (m_Verbosity >= 5)
+    {
+        std::cout << "SscWriter::SyncMpiPattern, World Rank " << m_StreamRank
+                  << ", Writer Rank " << m_WriterRank << std::endl;
+    }
+
+    m_MpiHandshake.Handshake(m_Name, 'w', m_OpenTimeoutSecs, m_MaxStreamsPerApp,
+                             m_MaxFilenameLength, m_RendezvousAppCount,
+                             CommAsMPI(m_Comm));
+
+    std::vector<int> allStreamRanks;
+    std::vector<int> allReaderRanks;
+
+    for (const auto &app : m_MpiHandshake.GetWriterMap(m_Name))
+    {
+        for (int rank : app.second)
+        {
+            allStreamRanks.push_back(rank);
+        }
+    }
+
+    for (const auto &app : m_MpiHandshake.GetReaderMap(m_Name))
+    {
+        for (int rank : app.second)
+        {
+            allStreamRanks.push_back(rank);
+            allReaderRanks.push_back(rank);
+        }
+    }
+    MPI_Group worldGroup;
+    MPI_Group allReadersGroup;
+    MPI_Comm_group(MPI_COMM_WORLD, &worldGroup);
+    MPI_Group_incl(worldGroup, allReaderRanks.size(), allReaderRanks.data(),
+                   &m_MpiAllReadersGroup);
+
+    MPI_Comm_group(MPI_COMM_WORLD, &worldGroup);
+    std::sort(allStreamRanks.begin(), allStreamRanks.end());
+    MPI_Group allWorkersGroup;
+    MPI_Group_incl(worldGroup, allStreamRanks.size(), allStreamRanks.data(),
+                   &allWorkersGroup);
+    MPI_Comm_create_group(MPI_COMM_WORLD, allWorkersGroup, 0, &m_StreamComm);
+}
+
+void SscWriter::SyncWritePattern()
+{
+    TAU_SCOPED_TIMER_FUNC();
+    if (m_Verbosity >= 5)
+    {
+        std::cout << "SscWriter::SyncWritePattern, World Rank " << m_StreamRank
+                  << ", Writer Rank " << m_WriterRank << std::endl;
+    }
+
+    nlohmann::json localRankMetaJ;
+
+    ssc::BlockVecToJson(m_GlobalWritePattern[m_StreamRank], localRankMetaJ);
+
+    if (m_WriterRank == 0)
+    {
+        ssc::AttributeMapToJson(m_IO, localRankMetaJ);
+    }
+
+    std::string localStr = localRankMetaJ.dump();
+
+    // aggregate global write pattern
+    size_t localSize = localStr.size();
+    size_t maxLocalSize;
+    MPI_Allreduce(&localSize, &maxLocalSize, 1, MPI_UNSIGNED_LONG_LONG, MPI_MAX,
+                  m_StreamComm);
+    std::vector<char> localVec(maxLocalSize, '\0');
+    std::memcpy(localVec.data(), localStr.data(), localStr.size());
+    std::vector<char> globalVec(maxLocalSize * m_StreamSize, '\0');
+    MPI_Allgather(localVec.data(), maxLocalSize, MPI_CHAR, globalVec.data(),
+                  maxLocalSize, MPI_CHAR, m_StreamComm);
+
+    // deserialize global metadata Json
+    nlohmann::json globalJson;
+    ssc::LocalJsonToGlobalJson(globalVec, maxLocalSize, m_StreamSize,
+                               globalJson);
+
+    // deserialize variables metadata
+    ssc::JsonToBlockVecVec(globalJson, m_GlobalWritePattern);
+}
+
+void SscWriter::SyncReadPattern()
+{
+    TAU_SCOPED_TIMER_FUNC();
+    if (m_Verbosity >= 5)
+    {
+        std::cout << "SscWriter::SyncReadPattern, World Rank " << m_StreamRank
+                  << ", Writer Rank " << m_WriterRank << std::endl;
+    }
+
+    size_t localSize = 0;
+    size_t maxLocalSize;
+    MPI_Allreduce(&localSize, &maxLocalSize, 1, MPI_UNSIGNED_LONG_LONG, MPI_MAX,
+                  m_StreamComm);
+    std::vector<char> localVec(maxLocalSize, '\0');
+    std::vector<char> globalVec(maxLocalSize * m_StreamSize);
+    MPI_Allgather(localVec.data(), maxLocalSize, MPI_CHAR, globalVec.data(),
+                  maxLocalSize, MPI_CHAR, m_StreamComm);
+
+    // deserialize global metadata Json
+    nlohmann::json globalJson;
+    try
+    {
+        for (size_t i = 0; i < m_StreamSize; ++i)
+        {
+            if (globalVec[i * maxLocalSize] == '\0')
+            {
+                globalJson[i] = nullptr;
+            }
+            else
+            {
+                globalJson[i] = nlohmann::json::parse(
+                    globalVec.begin() + i * maxLocalSize,
+                    globalVec.begin() + (i + 1) * maxLocalSize);
+            }
+        }
+    }
+    catch (std::exception &e)
+    {
+        throw(std::runtime_error(
+            std::string("corrupted global read pattern metadata, ") +
+            std::string(e.what())));
+    }
+
+    ssc::JsonToBlockVecVec(globalJson, m_GlobalReadPattern);
+    m_AllSendingReaderRanks = ssc::CalculateOverlap(
+        m_GlobalReadPattern, m_GlobalWritePattern[m_StreamRank]);
+    CalculatePosition(m_GlobalWritePattern, m_GlobalReadPattern, m_WriterRank,
+                      m_AllSendingReaderRanks);
+
+    if (m_Verbosity >= 10)
+    {
+        ssc::PrintBlockVecVec(m_GlobalWritePattern, "Global Write Pattern");
+        ssc::PrintBlockVec(m_GlobalWritePattern[m_WriterRank],
+                           "Local Write Pattern");
+    }
+}
+
+void SscWriter::CalculatePosition(ssc::BlockVecVec &writerVecVec,
+                                  ssc::BlockVecVec &readerVecVec,
+                                  const int writerRank,
+                                  ssc::RankPosMap &allOverlapRanks)
+{
+    TAU_SCOPED_TIMER_FUNC();
+    for (auto &overlapRank : allOverlapRanks)
+    {
+        auto &readerRankMap = readerVecVec[overlapRank.first];
+        auto currentReaderOverlapWriterRanks =
+            CalculateOverlap(writerVecVec, readerRankMap);
+        size_t bufferPosition = 0;
+        for (size_t rank = 0; rank < writerVecVec.size(); ++rank)
+        {
+            bool hasOverlap = false;
+            for (const auto r : currentReaderOverlapWriterRanks)
+            {
+                if (r.first == rank)
+                {
+                    hasOverlap = true;
+                    break;
+                }
+            }
+            if (hasOverlap)
+            {
+                currentReaderOverlapWriterRanks[rank].first = bufferPosition;
+                auto &bv = writerVecVec[rank];
+                size_t currentRankTotalSize = TotalDataSize(bv) + 1;
+                currentReaderOverlapWriterRanks[rank].second =
+                    currentRankTotalSize;
+                bufferPosition += currentRankTotalSize;
+            }
+        }
+        allOverlapRanks[overlapRank.first] =
+            currentReaderOverlapWriterRanks[writerRank];
+    }
+}
 
 #define declare_type(T)                                                        \
     void SscWriter::DoPutSync(Variable<T> &variable, const T *data)            \
     {                                                                          \
-        PutSyncCommon(variable, data);                                         \
+        PutDeferredCommon(variable, data);                                     \
+        PerformPuts();                                                         \
     }                                                                          \
     void SscWriter::DoPutDeferred(Variable<T> &variable, const T *data)        \
     {                                                                          \
@@ -106,167 +377,61 @@ void SscWriter::Flush(const int transportIndex) {}
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
 
-void SscWriter::Init()
-{
-    TAU_SCOPED_TIMER_FUNC();
-    m_MpiRank = m_Comm.Rank();
-    m_MpiSize = m_Comm.Size();
-    srand(time(NULL));
-    InitParameters();
-    helper::HandshakeWriter(m_Comm, m_AppID, m_FullAddresses, m_Name, "ssc",
-                            m_Port, m_Channels, m_MaxRanksPerNode,
-                            m_MaxAppsPerNode);
-    InitTransports();
-}
-
-void SscWriter::InitParameters()
-{
-    TAU_SCOPED_TIMER_FUNC();
-    for (const auto &pair : m_IO.m_Parameters)
-    {
-        std::string key(pair.first);
-        std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-        std::string value(pair.second);
-        std::transform(value.begin(), value.end(), value.begin(), ::tolower);
-        if (key == "verbose")
-        {
-            m_Verbosity = std::stoi(value);
-        }
-        else if (key == "port")
-        {
-            m_Port = std::stoi(value);
-        }
-        else if (key == "stepsperaggregation")
-        {
-            m_StepsPerAggregation = std::stoi(value);
-        }
-        else if (key == "timeout")
-        {
-            m_Timeout = std::stoi(value);
-        }
-    }
-}
-
-void SscWriter::InitTransports()
-{
-    TAU_SCOPED_TIMER_FUNC();
-    m_Listening = true;
-    for (const auto &address : m_FullAddresses)
-    {
-        m_ReplyThreads.emplace_back(
-            std::thread(&SscWriter::ReplyThread, this, address));
-    }
-}
-
-void SscWriter::ReplyThread(const std::string &address)
-{
-    adios2::zmq::ZmqReqRep replier;
-    replier.OpenReplier(address, m_Timeout, m_ReceiverBufferSize);
-    while (m_Listening)
-    {
-        auto request = replier.ReceiveRequest();
-        if (request == nullptr)
-        {
-            continue;
-        }
-        if (request->size() == 2 * sizeof(int64_t))
-        {
-            int64_t reader_id = reinterpret_cast<int64_t *>(request->data())[0];
-            int64_t stepRequested =
-                reinterpret_cast<int64_t *>(request->data())[1];
-            std::shared_ptr<std::vector<char>> aggMetadata = nullptr;
-            int64_t stepProvided = -1;
-            while (aggMetadata == nullptr)
-            {
-                if (stepRequested == -5) // let writer decide what to send
-                {
-                    aggMetadata = m_DataManSerializer.GetAggregatedMetadataPack(
-                        -2, stepProvided, m_AppID);
-                }
-                else
-                {
-                    aggMetadata = m_DataManSerializer.GetAggregatedMetadataPack(
-                        stepRequested, stepProvided, m_AppID);
-                }
-            }
-            replier.SendReply(aggMetadata);
-
-            if (m_Verbosity >= 100)
-            {
-                Log(100,
-                    "SscWriter::MetadataRepThread() sending metadata "
-                    "pack, size =  " +
-                        std::to_string(aggMetadata->size()),
-                    true, true);
-                std::cout << nlohmann::json::parse(*aggMetadata).dump(4)
-                          << std::endl;
-            }
-        }
-        else if (request->size() > 16)
-        {
-            size_t step;
-            m_CompressionParamsMutex.lock();
-            std::unordered_map<std::string, Params> p = m_CompressionParams;
-            m_CompressionParamsMutex.unlock();
-            auto reply = m_DataManSerializer.GenerateReply(*request, step, p);
-            replier.SendReply(reply);
-            if (reply->size() <= 16)
-            {
-                if (m_Tolerance)
-                {
-                    Log(1,
-                        "SscWriter::ReplyThread received data request but "
-                        "the step is already removed from buffer. Increase the"
-                        "buffer size to prevent this from happening again.",
-                        true, true);
-                }
-                else
-                {
-                    throw(std::runtime_error(
-                        "SscWriter::ReplyThread received data request but the "
-                        "step is already removed from buffer. Increase the "
-                        "buffer "
-                        "size to prevent this from happening again."));
-                }
-            }
-        }
-    }
-}
-
 void SscWriter::DoClose(const int transportIndex)
 {
-    std::this_thread::sleep_for(std::chrono::seconds(m_Timeout));
-    m_Comm.Barrier();
-    m_Listening = false;
-    for (auto &i : m_ReplyThreads)
-    {
-        if (i.joinable())
-        {
-            i.join();
-        }
-    }
-
-    remove(".staging");
-    remove(std::string(m_Name + ".staging").c_str());
-
-    Log(5, "SscWriter::DoClose(" + m_Name + ")", true, true);
-}
-void SscWriter::Log(const int level, const std::string &message, const bool mpi,
-                    const bool endline)
-{
     TAU_SCOPED_TIMER_FUNC();
-    if (m_Verbosity >= level)
+    if (m_Verbosity >= 5)
     {
-        if (mpi)
-        {
-            std::cout << "[Rank " << m_MpiRank << "] ";
-        }
-        std::cout << message;
-        if (endline)
-        {
-            std::cout << std::endl;
-        }
+        std::cout << "SscWriter::DoClose, World Rank " << m_StreamRank
+                  << ", Writer Rank " << m_WriterRank << std::endl;
     }
+
+    m_Buffer[0] = 1;
+
+    if (m_MpiMode == "twosided")
+    {
+        std::vector<MPI_Request> requests;
+        for (const auto &i : m_AllSendingReaderRanks)
+        {
+            requests.emplace_back();
+            MPI_Isend(m_Buffer.data(), 1, MPI_CHAR, i.first, 0, m_StreamComm,
+                      &requests.back());
+        }
+        MPI_Status statuses[requests.size()];
+        MPI_Waitall(requests.size(), requests.data(), statuses);
+    }
+    else if (m_MpiMode == "onesidedfencepush")
+    {
+        MPI_Win_fence(0, m_MpiWin);
+        for (const auto &i : m_AllSendingReaderRanks)
+        {
+            MPI_Put(m_Buffer.data(), 1, MPI_CHAR, i.first, 0, 1, MPI_CHAR,
+                    m_MpiWin);
+        }
+        MPI_Win_fence(0, m_MpiWin);
+    }
+    else if (m_MpiMode == "onesidedpostpush")
+    {
+        MPI_Win_start(m_MpiAllReadersGroup, 0, m_MpiWin);
+        for (const auto &i : m_AllSendingReaderRanks)
+        {
+            MPI_Put(m_Buffer.data(), 1, MPI_CHAR, i.first, 0, 1, MPI_CHAR,
+                    m_MpiWin);
+        }
+        MPI_Win_complete(m_MpiWin);
+    }
+    else if (m_MpiMode == "onesidedfencepull")
+    {
+        MPI_Win_fence(0, m_MpiWin);
+        MPI_Win_fence(0, m_MpiWin);
+    }
+    else if (m_MpiMode == "onesidedpostpull")
+    {
+        MPI_Win_post(m_MpiAllReadersGroup, 0, m_MpiWin);
+        MPI_Win_wait(m_MpiWin);
+    }
+
+    MPI_Win_free(&m_MpiWin);
 }
 
 } // end namespace engine

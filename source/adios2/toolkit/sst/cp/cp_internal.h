@@ -51,14 +51,15 @@ typedef struct _CP_PeerConnection
 enum StreamStatus
 {
     NotOpen = 0,
+    Opening,
     Established,
     PeerClosed,
     PeerFailed,
-    Closed
+    Closed,
+    Destroyed
 };
 
-static char *SSTStreamStatusStr[] = {"NotOpen", "Established", "PeerClosed",
-                                     "PeerFailed", "Closed"};
+extern char *SSTStreamStatusStr[];
 
 struct _SentTimestepRec
 {
@@ -73,14 +74,15 @@ typedef struct _WS_ReaderInfo
     void *RankZeroID;
     long StartingTimestep;
     long LastSentTimestep;
+    int LocalReaderDefinitionsLocked;
     int LastReleasedTimestep;
-    int ReaderDefinitionsLocked;
-    int ReaderSelectionLockTimestep;
+    int FullCommPatternLocked;
+    int CommPatternLockTimestep;
     SstPreloadModeType PreloadMode;
+    long PreloadModeActiveTimestep;
     long OldestUnreleasedTimestep;
     struct _SentTimestepRec *SentTimestepList;
     void *DP_WSR_Stream;
-    void *RS_StreamID;
     int ReaderCohortSize;
     int *Peers;
     CP_PeerConnection *Connections;
@@ -121,7 +123,7 @@ struct _SstStream
 {
     CP_GlobalInfo CPInfo;
 
-    MPI_Comm mpiComm;
+    SMPI_Comm mpiComm;
     enum StreamRole Role;
 
     /* params */
@@ -144,6 +146,7 @@ struct _SstStream
 
     pthread_mutex_t DataLock;
     pthread_cond_t DataCondition;
+    int Locked;
     SstParams ConfigParams;
 
     /* WRITER-SIDE FIELDS */
@@ -199,6 +202,7 @@ struct _SstStream
     long DiscardPriorTimestep; /* timesteps numerically less than this will be
                                   discarded with prejudice */
     long LastDPNotifiedTimestep;
+    int FailureContactRank;
 
     /* reader side marshal info */
     FFSContext ReaderFFSContext;

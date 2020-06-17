@@ -17,7 +17,7 @@
 
 size_t Nx = 10;
 size_t Ny = 10;
-size_t steps = 100000;
+size_t steps = 10000;
 adios2::Dims shape;
 adios2::Dims start;
 adios2::Dims count;
@@ -61,11 +61,13 @@ int main(int argc, char *argv[])
     shape = {mpiSize * Nx, Ny};
 
     // initialize adios2
-    adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
+    adios2::ADIOS adios(MPI_COMM_WORLD);
     adios2::IO dataManIO = adios.DeclareIO("whatever");
     dataManIO.SetEngine("DataMan");
-    dataManIO.SetParameters(
-        {{"IPAddress", "127.0.0.1"}, {"Port", "12306"}, {"Timeout", "5"}});
+    dataManIO.SetParameters({{"IPAddress", "127.0.0.1"},
+                             {"Port", "12306"},
+                             {"Timeout", "5"},
+                             {"RendezvousReaderCount", "1"}});
 
     // open stream
     adios2::Engine dataManWriter =

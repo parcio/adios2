@@ -21,6 +21,8 @@
 #include "adios2/helper/adiosFunctions.h"
 #include "adios2/toolkit/format/bp/bp3/BP3Deserializer.h"
 
+#include <mpi.h>
+
 namespace adios2
 {
 namespace core
@@ -39,7 +41,6 @@ public:
      * @param accessMode
      * @param comm
      * @param method
-     * @param debugMode
      * @param hostLanguage
      */
     InSituMPIReader(IO &adios, const std::string &name, const Mode mode,

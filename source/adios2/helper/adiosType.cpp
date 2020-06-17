@@ -103,7 +103,7 @@ Uint64VectorToSizetVector(const std::vector<uint64_t> &in) noexcept
 }
 
 TimeUnit StringToTimeUnit(const std::string timeUnitString,
-                          const bool debugMode, const std::string hint)
+                          const std::string hint)
 {
     TimeUnit timeUnit = TimeUnit::Microseconds; // default
 
@@ -130,20 +130,16 @@ TimeUnit StringToTimeUnit(const std::string timeUnitString,
     }
     else
     {
-        if (debugMode)
-        {
-            throw std::invalid_argument("ERROR: invalid value " +
-                                        timeUnitString +
-                                        " in Parameter key=ProfileUnits, "
-                                        " must be Microseconds, Milliseconds, "
-                                        "Seconds, Minutes or Hours " +
-                                        hint + "\n");
-        }
+        throw std::invalid_argument("ERROR: invalid value " + timeUnitString +
+                                    " in Parameter key=ProfileUnits, "
+                                    " must be Microseconds, Milliseconds, "
+                                    "Seconds, Minutes or Hours " +
+                                    hint + "\n");
     }
     return timeUnit;
 }
 
-size_t BytesFactor(const std::string units, const bool debugMode)
+size_t BytesFactor(const std::string units)
 {
     size_t factor = 1; // bytes
     if (units == "Gb" || units == "gb")
@@ -164,12 +160,8 @@ size_t BytesFactor(const std::string units, const bool debugMode)
     }
     else
     {
-        if (debugMode)
-        {
-            throw std::invalid_argument(
-                "ERROR: units " + units +
-                " not supported in call to BytesFactor\n");
-        }
+        throw std::invalid_argument("ERROR: units " + units +
+                                    " not supported in call to BytesFactor\n");
     }
     return factor;
 }

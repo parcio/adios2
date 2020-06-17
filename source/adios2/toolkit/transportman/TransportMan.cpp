@@ -10,6 +10,7 @@
 
 #include "TransportMan.h"
 
+#include <ios>
 #include <set>
 
 #include "adios2/helper/adiosFunctions.h" //CreateDirectory
@@ -17,6 +18,9 @@
 /// transports
 #ifndef _WIN32
 #include "adios2/toolkit/transport/file/FilePOSIX.h"
+#endif
+#ifdef ADIOS2_HAVE_IME
+#include "adios2/toolkit/transport/file/FileIME.h"
 #endif
 
 #ifdef _WIN32
@@ -32,10 +36,7 @@ namespace adios2
 namespace transportman
 {
 
-TransportMan::TransportMan(helper::Comm const &comm, const bool debugMode)
-: m_Comm(comm), m_DebugMode(debugMode)
-{
-}
+TransportMan::TransportMan(helper::Comm &comm) : m_Comm(comm) {}
 
 void TransportMan::MkDirsBarrier(const std::vector<std::string> &fileNames,
                                  const bool nodeLocal)
@@ -89,32 +90,6 @@ void TransportMan::OpenFiles(const std::vector<std::string> &fileNames,
     }
 }
 
-std::future<void> TransportMan::OpenFilesAsync(
-    const std::vector<std::string> &fileNames, const Mode openMode,
-    const std::vector<Params> &parametersVector, const bool profile)
-{
-    auto lf_OpenFiles =
-        [&](const std::vector<std::string> &fileNames, const Mode openMode,
-            const std::vector<Params> &parametersVector, const bool profile) {
-            for (size_t i = 0; i < fileNames.size(); ++i)
-            {
-                const Params &parameters = parametersVector[i];
-                const std::string type = parameters.at("transport");
-
-                if (type == "File" || type == "file")
-                {
-                    std::shared_ptr<Transport> file = OpenFileTransport(
-                        fileNames[i], openMode, parameters, profile);
-                    // TODO might need mutex for multiple files
-                    m_Transports.insert({i, file});
-                }
-            }
-        };
-
-    return std::async(std::launch::async, lf_OpenFiles, std::move(fileNames),
-                      openMode, std::cref(parametersVector), profile);
-}
-
 void TransportMan::OpenFileID(const std::string &name, const size_t id,
                               const Mode mode, const Params &parameters,
                               const bool profile)
@@ -145,21 +120,18 @@ std::vector<std::string> TransportMan::GetFilesBaseNames(
 
         const std::string type(parameters.at("transport"));
 
-        if (m_DebugMode)
+        auto itType = typeTransportNames.find(type);
+        // check if name exists for this transport type
+        if (itType != typeTransportNames.end())
         {
-            auto itType = typeTransportNames.find(type);
-            // check if name exists for this transport type
-            if (itType != typeTransportNames.end())
+            if (itType->second.count(name) == 1)
             {
-                if (itType->second.count(name) == 1)
-                {
-                    throw std::invalid_argument(
-                        "ERROR: two IO AddTransport of the same type can't "
-                        "have the same name : " +
-                        name +
-                        ", use Name=value parameter, in "
-                        "call to Open");
-                }
+                throw std::invalid_argument(
+                    "ERROR: two IO AddTransport of the same type can't "
+                    "have the same name : " +
+                    name +
+                    ", use Name=value parameter, in "
+                    "call to Open");
             }
         }
         typeTransportNames[type].insert(name);
@@ -222,7 +194,6 @@ void TransportMan::WriteFiles(const char *buffer, const size_t size,
 void TransportMan::WriteFileAt(const char *buffer, const size_t size,
                                const size_t start, const int transportIndex)
 {
-
     auto itTransport = m_Transports.find(transportIndex);
     CheckFile(itTransport, ", in call to WriteFileAt with index " +
                                std::to_string(transportIndex));
@@ -231,7 +202,6 @@ void TransportMan::WriteFileAt(const char *buffer, const size_t size,
 
 void TransportMan::SeekToFileEnd(const int transportIndex)
 {
-
     auto itTransport = m_Transports.find(transportIndex);
     CheckFile(itTransport, ", in call to SeekToFileEnd with index " +
                                std::to_string(transportIndex));
@@ -240,7 +210,6 @@ void TransportMan::SeekToFileEnd(const int transportIndex)
 
 void TransportMan::SeekToFileBegin(const int transportIndex)
 {
-
     auto itTransport = m_Transports.find(transportIndex);
     CheckFile(itTransport, ", in call to SeekToFileBegin with index " +
                                std::to_string(transportIndex));
@@ -310,6 +279,29 @@ void TransportMan::CloseFiles(const int transportIndex)
     }
 }
 
+void TransportMan::DeleteFiles(const int transportIndex)
+{
+    if (transportIndex == -1)
+    {
+        for (auto &transportPair : m_Transports)
+        {
+            auto &transport = transportPair.second;
+
+            if (transport->m_Type == "File")
+            {
+                transport->Delete();
+            }
+        }
+    }
+    else
+    {
+        auto itTransport = m_Transports.find(transportIndex);
+        CheckFile(itTransport, ", in call to CloseFiles with index " +
+                                   std::to_string(transportIndex));
+        itTransport->second->Delete();
+    }
+}
+
 bool TransportMan::AllTransportsClosed() const noexcept
 {
     bool allClose = true;
@@ -326,44 +318,97 @@ bool TransportMan::AllTransportsClosed() const noexcept
     return allClose;
 }
 
+bool TransportMan::FileExists(const std::string &name, const Params &parameters,
+                              const bool profile)
+{
+    bool exists = false;
+    try
+    {
+        std::shared_ptr<Transport> file =
+            OpenFileTransport(name, Mode::Read, parameters, profile);
+        exists = true;
+        file->Close();
+    }
+    catch (std::ios_base::failure &)
+    {
+    }
+    return exists;
+}
+
 // PRIVATE
 std::shared_ptr<Transport>
 TransportMan::OpenFileTransport(const std::string &fileName,
                                 const Mode openMode, const Params &parameters,
                                 const bool profile)
 {
+    auto lf_GetBuffered = [&](const std::string bufferedDefault) -> bool {
+        bool bufferedValue;
+        std::string bufferedValueStr(bufferedDefault);
+        helper::SetParameterValue("Buffered", parameters, bufferedValueStr);
+        helper::SetParameterValue("buffered", parameters, bufferedValueStr);
+        {
+            std::stringstream ss(bufferedValueStr);
+            if (!(ss >> std::boolalpha >> bufferedValue))
+            {
+                throw std::invalid_argument(
+                    "ERROR: invalid value for \"buffered\" transport "
+                    "parameter: " +
+                    bufferedValueStr);
+            }
+        }
+        return bufferedValue;
+    };
+
     auto lf_SetFileTransport = [&](const std::string library,
                                    std::shared_ptr<Transport> &transport) {
         if (library == "stdio")
         {
-            transport =
-                std::make_shared<transport::FileStdio>(m_Comm, m_DebugMode);
+            transport = std::make_shared<transport::FileStdio>(m_Comm);
+            if (!lf_GetBuffered("true"))
+            {
+                transport->SetBuffer(nullptr, 0);
+            }
         }
         else if (library == "fstream")
         {
-            transport =
-                std::make_shared<transport::FileFStream>(m_Comm, m_DebugMode);
+            transport = std::make_shared<transport::FileFStream>(m_Comm);
+            if (!lf_GetBuffered("true"))
+            {
+                transport->SetBuffer(nullptr, 0);
+            }
         }
 #ifndef _WIN32
         else if (library == "POSIX" || library == "posix")
         {
-            transport =
-                std::make_shared<transport::FilePOSIX>(m_Comm, m_DebugMode);
+            transport = std::make_shared<transport::FilePOSIX>(m_Comm);
+            if (lf_GetBuffered("false"))
+            {
+                throw std::invalid_argument(
+                    "ERROR: " + library +
+                    " transport does not support buffered I/O.");
+            }
+        }
+#endif
+#ifdef ADIOS2_HAVE_IME
+        else if (library == "IME" || library == "ime")
+        {
+            transport = std::make_shared<transport::FileIME>(m_Comm);
         }
 #endif
         else if (library == "NULL" || library == "null")
         {
-            transport =
-                std::make_shared<transport::NullTransport>(m_Comm, m_DebugMode);
+            transport = std::make_shared<transport::NullTransport>(m_Comm);
+            if (lf_GetBuffered("false"))
+            {
+                throw std::invalid_argument(
+                    "ERROR: " + library +
+                    " transport does not support buffered I/O.");
+            }
         }
         else
         {
-            if (m_DebugMode)
-            {
-                throw std::invalid_argument(
-                    "ERROR: invalid IO AddTransport library " + library +
-                    ", only POSIX, stdio, fstream are supported\n");
-            }
+            throw std::invalid_argument(
+                "ERROR: invalid IO AddTransport library " + library);
         }
     };
 
@@ -380,7 +425,15 @@ TransportMan::OpenFileTransport(const std::string &fileName,
         std::string profileUnits(defaultTimeUnit);
         helper::SetParameterValue("ProfileUnits", parameters, profileUnits);
         helper::SetParameterValue("profileunits", parameters, profileUnits);
-        return helper::StringToTimeUnit(profileUnits, m_DebugMode);
+        return helper::StringToTimeUnit(profileUnits);
+    };
+
+    auto lf_GetAsync = [&](const std::string defaultAsync,
+                           const Params &parameters) -> bool {
+        std::string Async = defaultAsync;
+        helper::SetParameterValue("AsyncTasks", parameters, Async);
+        helper::SetParameterValue("asynctasks", parameters, Async);
+        return helper::StringTo<bool>(Async, "");
     };
 
     // BODY OF FUNCTION starts here
@@ -395,8 +448,10 @@ TransportMan::OpenFileTransport(const std::string &fileName,
                                 lf_GetTimeUnits(DefaultTimeUnit, parameters));
     }
 
+    transport->SetParameters(parameters);
+
     // open
-    transport->Open(fileName, openMode);
+    transport->Open(fileName, openMode, lf_GetAsync("false", parameters));
     return transport;
 }
 
@@ -405,20 +460,16 @@ void TransportMan::CheckFile(
         itTransport,
     const std::string hint) const
 {
-    if (m_DebugMode)
+    if (itTransport == m_Transports.end())
     {
-        if (itTransport == m_Transports.end())
-        {
-            throw std::invalid_argument("ERROR: invalid transport " + hint +
-                                        "\n");
-        }
+        throw std::invalid_argument("ERROR: invalid transport " + hint + "\n");
+    }
 
-        if (itTransport->second->m_Type != "File")
-        {
-            throw std::invalid_argument("ERROR: invalid type " +
-                                        itTransport->second->m_Library +
-                                        ", must be file " + hint + "\n");
-        }
+    if (itTransport->second->m_Type != "File")
+    {
+        throw std::invalid_argument("ERROR: invalid type " +
+                                    itTransport->second->m_Library +
+                                    ", must be file " + hint + "\n");
     }
 }
 

@@ -77,31 +77,32 @@ void DataManSerializer::CalculateMinMax(const T *data, const Dims &count,
 }
 
 template <class T>
-void DataManSerializer::PutVar(const core::Variable<T> &variable,
-                               const std::string &doid, const size_t step,
-                               const int rank, const std::string &address,
-                               const Params &params, VecPtr localBuffer,
-                               JsonPtr metadataJson)
+void DataManSerializer::PutData(const core::Variable<T> &variable,
+                                const std::string &doid, const size_t step,
+                                const int rank, const std::string &address,
+                                const Params &params, VecPtr localBuffer,
+                                JsonPtr metadataJson)
 {
     TAU_SCOPED_TIMER_FUNC();
-    PutVar(variable.GetData(), variable.m_Name, variable.m_Shape,
-           variable.m_Start, variable.m_Count, variable.m_MemoryStart,
-           variable.m_MemoryCount, doid, step, rank, address, params,
-           localBuffer, metadataJson);
+    PutData(variable.GetData(), variable.m_Name, variable.m_Shape,
+            variable.m_Start, variable.m_Count, variable.m_MemoryStart,
+            variable.m_MemoryCount, doid, step, rank, address, params,
+            localBuffer, metadataJson);
 }
 
 template <class T>
-void DataManSerializer::PutVar(const T *inputData, const std::string &varName,
-                               const Dims &varShape, const Dims &varStart,
-                               const Dims &varCount, const Dims &varMemStart,
-                               const Dims &varMemCount, const std::string &doid,
-                               const size_t step, const int rank,
-                               const std::string &address, const Params &params,
-                               VecPtr localBuffer, JsonPtr metadataJson)
+void DataManSerializer::PutData(const T *inputData, const std::string &varName,
+                                const Dims &varShape, const Dims &varStart,
+                                const Dims &varCount, const Dims &varMemStart,
+                                const Dims &varMemCount,
+                                const std::string &doid, const size_t step,
+                                const int rank, const std::string &address,
+                                const Params &params, VecPtr localBuffer,
+                                JsonPtr metadataJson)
 {
     TAU_SCOPED_TIMER_FUNC();
     Log(1,
-        "DataManSerializer::PutVar begin with Step " + std::to_string(step) +
+        "DataManSerializer::PutData begin with Step " + std::to_string(step) +
             " Var " + varName,
         true, true);
 
@@ -232,7 +233,7 @@ void DataManSerializer::PutVar(const T *inputData, const std::string &varName,
     }
 
     Log(1,
-        "DataManSerializer::PutVar end with Step " + std::to_string(step) +
+        "DataManSerializer::PutData end with Step " + std::to_string(step) +
             " Var " + varName,
         true, true);
 }
@@ -255,7 +256,7 @@ bool DataManSerializer::PutZfp(nlohmann::json &metaj, size_t &datasize,
             p[key] = i.second;
         }
     }
-    core::compress::CompressZFP compressor(p, false);
+    core::compress::CompressZFP compressor(p);
     m_CompressBuffer.reserve(std::accumulate(varCount.begin(), varCount.end(),
                                              sizeof(T),
                                              std::multiplies<size_t>()));
@@ -300,7 +301,7 @@ bool DataManSerializer::PutSz(nlohmann::json &metaj, size_t &datasize,
     m_CompressBuffer.reserve(std::accumulate(varCount.begin(), varCount.end(),
                                              sizeof(T),
                                              std::multiplies<size_t>()));
-    core::compress::CompressSZ compressor(p, false);
+    core::compress::CompressSZ compressor(p);
     try
     {
         Params info;
@@ -343,7 +344,7 @@ bool DataManSerializer::PutBZip2(nlohmann::json &metaj, size_t &datasize,
     m_CompressBuffer.reserve(std::accumulate(varCount.begin(), varCount.end(),
                                              sizeof(T),
                                              std::multiplies<size_t>()));
-    core::compress::CompressBZIP2 compressor(p, false);
+    core::compress::CompressBZIP2 compressor(p);
     try
     {
         Params info;
@@ -387,10 +388,10 @@ void DataManSerializer::PutAttribute(const core::Attribute<T> &attribute)
 }
 
 template <class T>
-int DataManSerializer::GetVar(T *outputData, const std::string &varName,
-                              const Dims &varStart, const Dims &varCount,
-                              const size_t step, const Dims &varMemStart,
-                              const Dims &varMemCount)
+int DataManSerializer::GetData(T *outputData, const std::string &varName,
+                               const Dims &varStart, const Dims &varCount,
+                               const size_t step, const Dims &varMemStart,
+                               const Dims &varMemCount)
 {
     TAU_SCOPED_TIMER_FUNC();
 
@@ -433,7 +434,7 @@ int DataManSerializer::GetVar(T *outputData, const std::string &varName,
             if (j.compression == "zfp")
             {
 #ifdef ADIOS2_HAVE_ZFP
-                core::compress::CompressZFP decompressor(j.params, true);
+                core::compress::CompressZFP decompressor(j.params);
                 size_t datasize =
                     std::accumulate(j.count.begin(), j.count.end(), sizeof(T),
                                     std::multiplies<size_t>());
@@ -466,7 +467,7 @@ int DataManSerializer::GetVar(T *outputData, const std::string &varName,
             else if (j.compression == "sz")
             {
 #ifdef ADIOS2_HAVE_SZ
-                core::compress::CompressSZ decompressor(j.params, true);
+                core::compress::CompressSZ decompressor(j.params);
                 size_t datasize =
                     std::accumulate(j.count.begin(), j.count.end(), sizeof(T),
                                     std::multiplies<size_t>());
@@ -498,7 +499,7 @@ int DataManSerializer::GetVar(T *outputData, const std::string &varName,
             else if (j.compression == "bzip2")
             {
 #ifdef ADIOS2_HAVE_BZIP2
-                core::compress::CompressBZIP2 decompressor(j.params, true);
+                core::compress::CompressBZIP2 decompressor(j.params);
                 size_t datasize =
                     std::accumulate(j.count.begin(), j.count.end(), sizeof(T),
                                     std::multiplies<size_t>());

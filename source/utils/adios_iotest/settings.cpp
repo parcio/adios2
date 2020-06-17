@@ -24,12 +24,13 @@ struct option options[] = {{"help", no_argument, NULL, 'h'},
                            {"strong-scaling", no_argument, NULL, 's'},
                            {"weak-scaling", no_argument, NULL, 'w'},
                            {"timer", no_argument, NULL, 't'},
-#ifdef ADIOS2_HAVE_HDF5
+                           {"fixed", no_argument, NULL, 'F'},
+#ifdef ADIOS2_HAVE_HDF5_PARALLEL
                            {"hdf5", no_argument, NULL, 'H'},
 #endif
                            {NULL, 0, NULL, 0}};
 
-static const char *optstring = "-hvswtHa:c:d:x:";
+static const char *optstring = "-hvswtFHa:c:d:x:";
 
 size_t Settings::ndigits(size_t n) const
 {
@@ -53,11 +54,12 @@ void Settings::displayHelp()
         << "  -s OR -w:  strong or weak scaling. \n"
         << "             Dimensions in config are treated accordingly\n"
         << "  -x file    ADIOS configuration XML file\n"
-#ifdef ADIOS2_HAVE_HDF5
+#ifdef ADIOS2_HAVE_HDF5_PARALLEL
         << "  --hdf5     Use native Parallel HDF5 instead of ADIOS for I/O\n"
 #endif
         << "  -v         increase verbosity\n"
         << "  -h         display this help\n"
+        << "  -F         turn on fixed I/O pattern explicitly\n"
         << "  -t         print and dump the timing measured by the I/O "
            "timer\n\n";
 }
@@ -99,13 +101,16 @@ int Settings::processArgs(int argc, char *argv[])
                 stringToNumber("decomposition in dimension 1", optarg);
             ++nDecomp;
             break;
+        case 'F':
+            fixedPattern = true;
+            break;
         case 'h':
             if (!myRank)
             {
                 displayHelp();
             }
             return 1;
-#ifdef ADIOS2_HAVE_HDF5
+#ifdef ADIOS2_HAVE_HDF5_PARALLEL
         case 'H':
             iolib = IOLib::HDF5;
             break;
@@ -208,7 +213,7 @@ int Settings::processArguments(int argc, char *argv[], MPI_Comm worldComm)
 
         int wrank;
         MPI_Comm_rank(worldComm, &wrank);
-        MPI_Comm_split(worldComm, appId, wrank, &appComm);
+        MPI_Comm_split(worldComm, static_cast<int>(appId), wrank, &appComm);
 
         int rank, nproc;
         MPI_Comm_rank(appComm, &rank);

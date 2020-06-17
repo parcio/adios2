@@ -4,6 +4,12 @@ else()
   set(ADIOS2_CONFIG_FORTRAN 0)
 endif()
 
+if(ADIOS2_HAVE_MPI)
+  set(ADIOS2_CONFIG_MPI 1)
+else()
+  set(ADIOS2_CONFIG_MPI 0)
+endif()
+
 if(ADIOS2_HAVE_MPI AND MPI_C_COMPILER)
   set(ADIOS2_CONFIG_MPICC 1)
 else()
@@ -44,5 +50,6 @@ if(NOT WIN32)
       message(FATAL_ERROR \"generate-adios2-config.sh returned \${result}, should be 0\")
     endif()
   "
+    COMPONENT adios2_core-config
   )
 endif()

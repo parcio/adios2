@@ -28,10 +28,10 @@ void TableWriter::PutSyncCommon<std::string>(Variable<std::string> &variable,
     auto var = m_SubIO.InquireVariable<std::string>(variable.m_Name);
     if (not var)
     {
-        var = m_SubIO.DefineVariable<std::string>(variable.m_Name,
-                                                  {LocalValueDim});
+        var = &m_SubIO.DefineVariable<std::string>(variable.m_Name,
+                                                   {LocalValueDim});
     }
-    m_SubEngine->Put(var, data, Mode::Sync);
+    m_SubEngine->Put(*var, data, Mode::Sync);
 }
 
 template <>
@@ -41,10 +41,10 @@ void TableWriter::PutDeferredCommon<std::string>(
     auto var = m_SubIO.InquireVariable<std::string>(variable.m_Name);
     if (not var)
     {
-        var = m_SubIO.DefineVariable<std::string>(variable.m_Name,
-                                                  {LocalValueDim});
+        var = &m_SubIO.DefineVariable<std::string>(variable.m_Name,
+                                                   {LocalValueDim});
     }
-    m_SubEngine->Put(var, data, Mode::Deferred);
+    m_SubEngine->Put(*var, data, Mode::Deferred);
 }
 
 template <class T>
@@ -89,8 +89,8 @@ void TableWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
     for (auto i : aggregatorIndices)
     {
         auto serializer = m_Serializers[i];
-        serializer->PutVar(variable, m_Name, CurrentStep(), m_MpiRank, "",
-                           Params());
+        serializer->PutData(variable, m_Name, CurrentStep(), m_MpiRank, "",
+                            Params());
         if (serializer->LocalBufferSize() > m_SerializerBufferSize / 2)
         {
             if (m_MpiSize > 1)
@@ -113,7 +113,7 @@ void TableWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
             else
             {
                 auto localPack = serializer->GetLocalPack();
-                m_Deserializer.PutPack(localPack);
+                m_Deserializer.PutPack(localPack, false);
                 serializer->NewWriterBuffer(m_SerializerBufferSize);
                 PutAggregatorBuffer();
                 PutSubEngine();

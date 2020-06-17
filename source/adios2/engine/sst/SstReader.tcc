@@ -13,7 +13,6 @@
 
 #include "SstReader.h"
 
-#include "adios2/common/ADIOSMPI.h"
 #include "adios2/helper/adiosFunctions.h" //GetType<T>
 #include "adios2/toolkit/profiling/taustubs/tautimer.hpp"
 
@@ -25,11 +24,11 @@ namespace engine
 {
 
 template <class T>
-void SstReader::ReadVariableBlocks(Variable<T> &variable)
+void SstReader::ReadVariableBlocksRequests(
+    Variable<T> &variable, std::vector<void *> &sstReadHandlers,
+    std::vector<std::vector<char>> &buffers)
 {
     TAU_SCOPED_TIMER_FUNC();
-    std::vector<void *> sstReadHandlers;
-    std::vector<std::vector<char>> buffers;
 
 #ifdef ADIOS2_HAVE_ENDIAN_REVERSE
     const bool endianReverse = helper::IsLittleEndian() !=
@@ -37,8 +36,8 @@ void SstReader::ReadVariableBlocks(Variable<T> &variable)
 #else
     constexpr bool endianReverse = false;
 #endif
-
     size_t threadID = 0;
+
     for (typename Variable<T>::Info &blockInfo : variable.m_BlocksInfo)
     {
         T *originalBlockData = blockInfo.Data;
@@ -120,18 +119,23 @@ void SstReader::ReadVariableBlocks(Variable<T> &variable)
         // move back to original position
         blockInfo.Data = originalBlockData;
     }
+}
 
-    // wait for all SstRead requests to finish
-    for (const auto &i : sstReadHandlers)
-    {
-        if (SstWaitForCompletion(m_Input, i) != SstSuccess)
-        {
-            throw std::runtime_error(
-                "ERROR:  Writer failed before returning data");
-        }
-    }
+template <class T>
+void SstReader::ReadVariableBlocksFill(Variable<T> &variable,
+                                       std::vector<std::vector<char>> &buffers,
+                                       size_t &iter)
+{
+    TAU_SCOPED_TIMER_FUNC();
 
-    size_t iter = 0;
+#ifdef ADIOS2_HAVE_ENDIAN_REVERSE
+    const bool endianReverse = helper::IsLittleEndian() !=
+                               m_BP3Deserializer->m_Minifooter.IsLittleEndian;
+#else
+    constexpr bool endianReverse = false;
+#endif
+    size_t threadID = 0;
+
     threadID = 0;
     for (typename Variable<T>::Info &blockInfo : variable.m_BlocksInfo)
     {

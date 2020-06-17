@@ -6,8 +6,14 @@
 /* Define to 1 if you have the <enet/enet.h> header file. */
 #cmakedefine HAVE_ENET_ENET_H
 
+/* Define to desired port range Low:High */
+#define EVPATH_DEFAULT_PORT_RANGE "@EVPATH_DEFAULT_PORT_RANGE@"
+
 /* Define to 1 if you have the enet header and libraries */
 #cmakedefine ENET_FOUND
+
+/* Define to 1 to if ZPL ENET transport was built */
+#cmakedefine ZPL_ENET_AVAILABLE
 
 /* Define to 1 if you have the udt4 header and libraries */
 #cmakedefine UDT4_FOUND
@@ -21,11 +27,8 @@
 /* Define to 1 if you have the df_shm header and libraries */
 #cmakedefine DF_SHM_FOUND
 
-/* Place where evpath transport libraries are built */
-#cmakedefine EVPATH_LIBRARY_BUILD_DIR "@EVPATH_LIBRARY_BUILD_DIR@"
-
-/* Place where evpath transport libraries are installed */
-#cmakedefine EVPATH_LIBRARY_INSTALL_DIR "@EVPATH_LIBRARY_INSTALL_DIR@"
+/* Place where evpath transport modules are installed */
+#cmakedefine EVPATH_MODULE_INSTALL_DIR "@EVPATH_MODULE_INSTALL_DIR@"
 
 /* Place where evpath tests are to be installed */
 #cmakedefine EVPATH_TEST_INSTALL_DIR "@EVPATH_TEST_INSTALL_DIR@"

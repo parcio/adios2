@@ -33,7 +33,6 @@ public:
      * @param accessMode
      * @param comm
      * @param method
-     * @param debugMode
      */
     SkeletonWriter(IO &adios, const std::string &name, const Mode mode,
                    helper::Comm comm);
@@ -69,7 +68,7 @@ private:
      * Closes a single transport or all transports
      * @param transportIndex, if -1 (default) closes all transports,
      * otherwise it closes a transport in m_Transport[transportIndex].
-     * In debug mode the latter is bounds-checked.
+     * transportIndex is bounds-checked.
      */
     void DoClose(const int transportIndex = -1) final;
 

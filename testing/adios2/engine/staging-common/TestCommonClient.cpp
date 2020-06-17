@@ -36,17 +36,17 @@ TEST_F(SstReadTest, ADIOS2SstRead)
     int mpiRank = 0, mpiSize = 1;
 
     int TimeGapDetected = 0;
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 #endif
 
     // Write test data using ADIOS2
 
-#ifdef ADIOS2_HAVE_MPI
-    adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
+#if ADIOS2_USE_MPI
+    adios2::ADIOS adios(MPI_COMM_WORLD);
 #else
-    adios2::ADIOS adios(true);
+    adios2::ADIOS adios;
 #endif
     adios2::IO io = adios.DeclareIO("TestIO");
 
@@ -313,7 +313,8 @@ TEST_F(SstReadTest, ADIOS2SstRead)
         }
     }
 
-    if ((write_times.back() - write_times.front()) > 1)
+    if ((write_times.size() > 1) &&
+        ((write_times.back() - write_times.front()) > 1))
     {
         TimeGapDetected++;
     }
@@ -360,7 +361,7 @@ TEST_F(SstReadTest, ADIOS2SstRead)
 
 int main(int argc, char **argv)
 {
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Init(nullptr, nullptr);
 #endif
 
@@ -370,7 +371,7 @@ int main(int argc, char **argv)
     ParseArgs(argc, argv);
     result = RUN_ALL_TESTS();
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Finalize();
 #endif
 

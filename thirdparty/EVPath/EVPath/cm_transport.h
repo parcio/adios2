@@ -32,6 +32,7 @@ typedef void *(*CMTransport_malloc_func)(int);
 typedef void *(*CMTransport_realloc_func)(void*, int);
 typedef void (*CMTransport_free_func)(void*);
 typedef void (*CMTransport_wake_comm_thread_func)(CManager cm);
+typedef void (*CMTransport_condition_signal_func)(CManager cm, int condition);
 
 typedef void (*select_list_func)(void *, void*);
 
@@ -54,6 +55,7 @@ typedef CMTaskHandle (*CMTransport_add_period_task)(CManager cm,
 						    int period_usec,
 						    CMPollFunc func,
 						    void *client_data);
+typedef void (*CMTransport_remove_periodic)(CMTaskHandle cmt);
 typedef void (*CMTransport_add_poll)(CManager cm, CMPollFunc func,
 				     void *client_data);
 typedef CMbuffer (*CMTransport_get_data_buffer)(CManager cm, int length);
@@ -89,6 +91,7 @@ typedef struct CMtrans_services_s {
     CMTransport_conn_create connection_create;
     CMTransport_add_shut_task add_shutdown_task;
     CMTransport_add_period_task add_periodic_task;
+    CMTransport_remove_periodic remove_periodic;
     CMTransport_add_poll add_poll;
     CMTransport_get_data_buffer get_data_buffer;
     CMTransport_return_data_buffer return_data_buffer;
@@ -107,6 +110,7 @@ typedef struct CMtrans_services_s {
     CMTransport_connection_close connection_addref;
     CMTransport_connection_close connection_fail;
     CMTransport_wake_comm_thread_func wake_comm_thread;
+    CMTransport_condition_signal_func condition_signal;
 } *CMtrans_services;
 #define DROP_CM_LOCK(svc, cm) (svc)->drop_CM_lock((cm), __FILE__, __LINE__)
 #define ACQUIRE_CM_LOCK(svc, cm) (svc)->acquire_CM_lock((cm), __FILE__, __LINE__)
@@ -142,6 +146,18 @@ typedef CMConnection (*CMTransport_conn_func)(CManager cm,
 					      CMtrans_services svc,
 					      transport_entry trans, 
 					      attr_list attrs);
+
+typedef CMConnection (*CMTransport_NBconn_func)(CManager cm, 
+					        CMtrans_services svc,
+					        transport_entry trans, 
+                                                attr_list attrs,
+                                                int condition);
+
+typedef CMConnection (*CMTransport_NBconn_final_func)(CManager cm, 
+                                                      CMtrans_services svc,
+                                                      transport_entry trans, 
+                                                      void *client_data,
+                                                      int result);
 
 typedef int (*CMTransport_self_check_func)(CManager cm,
 					   CMtrans_services svc,
@@ -180,6 +196,8 @@ struct _transport_item {
     CMTransport_func  transport_init;
     CMTransport_listen_func  listen;
     CMTransport_conn_func  initiate_conn;
+    CMTransport_NBconn_func  initiate_conn_nonblocking;
+    CMTransport_NBconn_final_func  finalize_conn_nonblocking;
     CMTransport_self_check_func  self_check;
     CMTransport_connection_eq_func  connection_eq;
     CMTransport_shutdown_conn_func  shutdown_conn;
@@ -265,6 +283,18 @@ IP_get_diagnostics(CManager cm, CMTransport_trace trace_out);
  *      successful. 
  *  - CMConnection initiate_conn(CManager cm, CMtrans_services svc,
  *                               transport_entry trans, attr_list attrs);
+ *      This routine should initiate a connection to the host/process
+ *      specified by the attrs parameters.  The return value is a
+ *      CMConnection whose private data will be specific to this
+ *      particular connection (which will be provided to routines
+ *      below as 'conn_data').  The routine should also perform
+ *      whatever tasks are necessary for servicing this connection
+ *      (e.g. adding the appropriate FD to the select() list,
+ *      establishing a periodic task that will check for data, etc.)
+ *      Generally, when data is available on a connection, a call to
+ *      trans->data_available() should be performed.
+ *  - CMConnection initiate_conn_nonblocking(CManager cm, CMtrans_services svc,
+ *                               transport_entry trans, attr_list attrs, int condition);
  *      This routine should initiate a connection to the host/process
  *      specified by the attrs parameters.  The return value is a
  *      CMConnection whose private data will be specific to this

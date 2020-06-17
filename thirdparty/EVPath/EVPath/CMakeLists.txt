@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.2)
-project(EVPath VERSION 4.4.0 LANGUAGES C CXX)
+project(EVPath VERSION 4.5.0 LANGUAGES C CXX)
 
 # Enable <PackageName>_ROOT variables for dependency searching
 # CMake v3.12
@@ -20,6 +20,10 @@ set(CMAKE_INSTALL_CMAKEDIR ${CMAKE_INSTALL_LIBDIR}/cmake/EVPath
   CACHE STRING "Installation CMake subdirectory")
 mark_as_advanced(CMAKE_INSTALL_CMAKEDIR)
 
+set(EVPATH_INSTALL_MODULE_DIR "${CMAKE_INSTALL_LIBDIR}"
+  CACHE STRING "Directory in which to install EVPath transport modules")
+mark_as_advanced(EVPATH_INSTALL_MODULE_DIR)
+
 if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
     ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
@@ -34,13 +38,32 @@ if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
 endif()
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+if(NOT DEFINED EVPATH_RUNTIME_COMPONENT)
+  set(EVPATH_RUNTIME_COMPONENT bin)
+endif()
+if(NOT DEFINED EVPATH_LIBRARY_COMPONENT)
+  set(EVPATH_LIBRARY_COMPONENT shlib)
+endif()
+if(NOT DEFINED EVPATH_ARCHIVE_COMPONENT)
+  set(EVPATH_ARCHIVE_COMPONENT lib)
+endif()
+if(NOT DEFINED EVPATH_HEADER_COMPONENT)
+  set(EVPATH_HEADER_COMPONENT dev)
+endif()
+if(NOT DEFINED EVPATH_MODULE_COMPONENT_PREFIX)
+  set(EVPATH_MODULE_COMPONENT_PREFIX "")
+endif()
+
 # Default to a RelWithDebInfo build if not specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY VALUE RelWithDebugInfo)
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY VALUE RelWithDebInfo)
 endif()
 
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "dill, atl, ffs")
 set(CPACK_RPM_PACKAGE_REQUIRES "dill, atl, ffs")
+set(ENABLE_SOMETHING AUTO CACHE STRING "Enable SOMETHING support")  #
+set(EVPATH_DEFAULT_PORT_RANGE  "26000:26100" CACHE STRING "Default port range for IP communication")
+mark_as_advanced(EVPATH_DEFAULT_PORT_RANGE)
 
 include(CheckFunctionExists)
 include(CheckIncludeFiles)
@@ -213,6 +236,15 @@ if (HAVE_SYS_EPOLL_H)
    set(CM_DEFAULT_SELECT "epoll")
 endif()
 set(CM_DEFAULT_TRANSPORT "sockets")
+
+# This is a dummy interace library to allow the transport modules to depend on
+# the EVPath headers without causing an unnecessary link dependency
+add_library(evpath_headers INTERFACE)
+set_target_properties(evpath_headers PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES
+    "${CMAKE_CURRENT_SOURCE_DIR};${CMAKE_CURRENT_BINARY_DIR};$<TARGET_PROPERTY:ffs::ffs,INTERFACE_INCLUDE_DIRECTORIES>;$<TARGET_PROPERTY:atl::atl,INTERACE_INCLUDE_DIRECTORIES>"
+)
+
 set(EVPATH_TRANSPORT_TARGETS)
 if(EVPATH_TRANSPORT_MODULES)
   target_link_libraries(EVPath PRIVATE ${CMAKE_DL_LIBS})
@@ -224,22 +256,26 @@ if(EVPATH_TRANSPORT_MODULES)
 
   foreach(M cmselect cmsockets cmudp cmmulticast)
     set_target_properties(${M} PROPERTIES
-      OUTPUT_NAME ${EVPATH_LIBRARY_PREFIX}${M})
+      OUTPUT_NAME ${EVPATH_LIBRARY_PREFIX}${M}
+      LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${EVPATH_INSTALL_MODULE_DIR})
+    install(TARGETS ${M} DESTINATION ${EVPATH_INSTALL_MODULE_DIR} COMPONENT ${EVPATH_MODULE_COMPONENT_PREFIX}${M})
   endforeach()
 
-  target_link_libraries(cmselect evpath atl::atl)
-  target_link_libraries(cmsockets evpath atl::atl)
-  target_link_libraries(cmudp evpath atl::atl)
-  target_link_libraries(cmmulticast evpath atl::atl)
+  target_link_libraries(cmselect PRIVATE evpath_headers atl::atl)
+  target_link_libraries(cmsockets PRIVATE evpath_headers atl::atl)
+  target_link_libraries(cmudp PRIVATE evpath_headers atl::atl)
+  target_link_libraries(cmmulticast PRIVATE evpath_headers atl::atl)
 
   list(APPEND EVPATH_TRANSPORT_TARGETS cmselect cmsockets cmudp cmmulticast)
 
   if (HAVE_SYS_EPOLL_H)
      add_library(cmepoll MODULE cmepoll.c)
      set_target_properties(cmepoll PROPERTIES
-     	  OUTPUT_NAME ${EVPATH_LIBRARY_PREFIX}cmepoll)
-     target_link_libraries(cmepoll evpath atl::atl)
+          OUTPUT_NAME ${EVPATH_LIBRARY_PREFIX}cmepoll
+          LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${EVPATH_INSTALL_MODULE_DIR})
+     target_link_libraries(cmepoll PRIVATE evpath_headers atl::atl)
      list(APPEND EVPATH_TRANSPORT_TARGETS cmepoll)
+     install(TARGETS cmepoll DESTINATION ${EVPATH_INSTALL_MODULE_DIR} COMPONENT ${EVPATH_MODULE_COMPONENT_PREFIX}cmepoll)
   endif()
 else()
   # dummy dyn linking in cm.c and cm_transport.c
@@ -272,10 +308,12 @@ if(ENET_FOUND)
   if(EVPATH_TRANSPORT_MODULES)
     add_library(cmenet MODULE cmenet.c ip_config.c)
     set_target_properties(cmenet PROPERTIES
-      OUTPUT_NAME ${EVPATH_LIBRARY_PREFIX}cmenet)
+      OUTPUT_NAME ${EVPATH_LIBRARY_PREFIX}cmenet
+      LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${EVPATH_INSTALL_MODULE_DIR})
 
-    target_link_libraries(cmenet evpath enet::enet)
+    target_link_libraries(cmenet PRIVATE evpath_headers atl::atl enet::enet)
     list(APPEND EVPATH_TRANSPORT_TARGETS cmenet)
+    install(TARGETS cmenet DESTINATION ${EVPATH_INSTALL_MODULE_DIR} COMPONENT ${EVPATH_MODULE_COMPONENT_PREFIX}cmenet)
   else()
     target_sources(EVPath PRIVATE cmenet.c)
     target_link_libraries(EVPath PRIVATE enet::enet)
@@ -285,6 +323,28 @@ if(ENET_FOUND)
   endif()
 else()
   message(STATUS " - Enet library was not found.  This is not a fatal error, just that the Enet transport will not be built.")
+endif()
+
+if(NOT (DEFINED EVPATH_USE_ZPL_ENET))
+  option(EVPATH_USE_ZPL_ENET "Build the enet transport" "ON")
+endif()
+if(EVPATH_USE_ZPL_ENET)
+  set(RUN_ZPL_ENET_TESTS TRUE)
+  set(ZPL_ENET_AVAILABLE TRUE)
+  CONFIGURE_FILE(cmenet.c cmzplenet.c COPYONLY)
+  SET_SOURCE_FILES_PROPERTIES(cmzplenet.c PROPERTIES COMPILE_FLAGS "-DUSE_ZPL_ENET=1 -DENET_API=static")
+  if(EVPATH_TRANSPORT_MODULES)
+    add_library(cmzplenet MODULE cmzplenet.c ip_config.c)
+    set_target_properties(cmzplenet PROPERTIES
+      OUTPUT_NAME ${EVPATH_LIBRARY_PREFIX}cmzplenet
+      LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${EVPATH_INSTALL_MODULE_DIR})
+
+    target_link_libraries(cmzplenet PRIVATE evpath_headers atl::atl)
+    list(APPEND EVPATH_TRANSPORT_TARGETS cmzplenet)
+    install(TARGETS cmzplenet DESTINATION ${EVPATH_INSTALL_MODULE_DIR} COMPONENT ${EVPATH_MODULE_COMPONENT_PREFIX}cmzplenet)
+  else()
+    target_sources(EVPath PRIVATE cmzplenet.c)
+  endif()
 endif()
 
 # udt4 transport
@@ -310,10 +370,12 @@ if(UDT4_FOUND)
   if(EVPATH_TRANSPORT_MODULES)
     add_library(cmudt4 MODULE cmudt4.cpp ip_config.c)
     set_target_properties(cmudt4 PROPERTIES
-      OUTPUT_NAME ${EVPATH_LIBRARY_PREFIX}cmudt4)
+      OUTPUT_NAME ${EVPATH_LIBRARY_PREFIX}cmudt4
+      LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${EVPATH_INSTALL_MODULE_DIR})
 
-    target_link_libraries(cmudt4 evpath udt4::udt4)
+    target_link_libraries(cmudt4 PRIVATE evpath_headers atl::atl udt4::udt4)
     list(APPEND EVPATH_TRANSPORT_TARGETS cmudt4)
+    install(TARGETS cmudt4 DESTINATION ${EVPATH_INSTALL_MODULE_DIR} COMPONENT ${EVPATH_MODULE_COMPONENT_PREFIX}cmudt4)
   else()
     target_sources(EVPath PRIVATE cmudt4.cpp)
     target_link_libraries(EVPath PRIVATE udt4::udt4)
@@ -339,9 +401,12 @@ if(LIBFABRIC_FOUND)
   if(EVPATH_TRANSPORT_MODULES)
     add_library(cmfabric MODULE cmfabric.c ip_config.c)
     set_target_properties(cmfabric PROPERTIES
-      OUTPUT_NAME ${EVPATH_LIBRARY_PREFIX}cmfabric)
-    target_link_libraries(cmfabric evpath atl::atl libfabric::libfabric)
+      OUTPUT_NAME ${EVPATH_LIBRARY_PREFIX}cmfabric
+      LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${EVPATH_INSTALL_MODULE_DIR})
+    target_link_libraries(cmfabric PRIVATE
+      evpath_headers atl::atl libfabric::libfabric)
     list(APPEND EVPATH_TRANSPORT_TARGETS cmfabric)
+    install(TARGETS cmfabric DESTINATION ${EVPATH_INSTALL_MODULE_DIR} COMPONENT ${EVPATH_MODULE_COMPONENT_PREFIX}cmfabric)
   else()
     if(NOT BUILD_SHARED_LIBS)
       list(APPEND EXTRA_INSTALL_PACKAGES LIBFABRIC)
@@ -395,9 +460,12 @@ if(IBVERBS_FOUND)
   if(EVPATH_TRANSPORT_MODULES)
     add_library(cmib MODULE cmib.c)
     set_target_properties(cmib PROPERTIES
-      OUTPUT_NAME ${EVPATH_LIBRARY_PREFIX}cmib)
-    target_link_libraries(cmib evpath ${IBVERBS_LIBRARIES})
+      OUTPUT_NAME ${EVPATH_LIBRARY_PREFIX}cmib
+      LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${EVPATH_INSTALL_MODULE_DIR})
+    target_link_libraries(cmib PRIVATE
+      evpath_headers atl::atl ${IBVERBS_LIBRARIES})
     list(APPEND EVPATH_TRANSPORT_TARGETS cmib)
+    install(TARGETS cmib DESTINATION ${EVPATH_INSTALL_MODULE_DIR} COMPONENT ${EVPATH_MODULE_COMPONENT_PREFIX}cmib)
   else()
     target_sources(EVPath PRIVATE cmib.c)
     target_link_libraries(EVPath PRIVATE ${IBVERBS_LIBRARIES})
@@ -433,9 +501,12 @@ if(IBVERBS_FOUND)
     if(EVPATH_TRANSPORT_MODULES)
       add_library(cmnnti MODULE cmnnti.c)
       set_target_properties(cmnnti PROPERTIES
-        OUTPUT_NAME ${EVPATH_LIBRARY_PREFIX}cmnnti)
-      target_link_libraries(cmnnti evpath nnti::nnti enet::enet atl::atl)
+        OUTPUT_NAME ${EVPATH_LIBRARY_PREFIX}cmnnti
+        LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${EVPATH_INSTALL_MODULE_DIR})
+      target_link_libraries(cmnnti PRIVATE
+        evpath_headers atl::atl nnti::nnti enet::enet)
       list(APPEND EVPATH_TRANSPORT_TARGETS cmnnti)
+    install(TARGETS cmnnti DESTINATION ${EVPATH_INSTALL_MODULE_DIR} COMPONENT ${EVPATH_MODULE_COMPONENT_PREFIX}cmnnti)
     else()
       if(NOT BUILD_SHARED_LIBS)
         list(APPEND EXTRA_INSTALL_PACKAGES NNTI)
@@ -451,7 +522,7 @@ endif()
 
 # Install extra find module dependencies
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/cmake/
-  DESTINATION ${CMAKE_INSTALL_CMAKEDIR}
+  DESTINATION ${CMAKE_INSTALL_CMAKEDIR} COMPONENT ${EVPATH_HEADER_COMPONENT}
   FILES_MATCHING PATTERN "Find*.cmake" PATTERN "CMake*.cmake"
 )
 
@@ -557,13 +628,15 @@ if(EVPATH_INSTALL_PKGCONFIG)
     ${CMAKE_CURRENT_BINARY_DIR}/evpath.pc
     @ONLY)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/evpath.pc
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
+    COMPONENT ${EVPATH_HEADER_COMPONENT})
   configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/evpath_config.in
     ${CMAKE_CURRENT_BINARY_DIR}/evpath_config
     @ONLY)
   install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/evpath_config
-    DESTINATION "${CMAKE_INSTALL_BINDIR}")
+    DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    COMPONENT ${EVPATH_HEADER_COMPONENT})
 endif()
 
 option(EVPATH_INSTALL_HEADERS "Install EVPath header files" ON)
@@ -577,17 +650,31 @@ if(EVPATH_INSTALL_HEADERS)
       cm_transport.h
       ${CMAKE_CURRENT_BINARY_DIR}/revpath.h
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    COMPONENT ${EVPATH_HEADER_COMPONENT}
   )
 endif()
 
-install(TARGETS EVPath ${EVPATH_TRANSPORT_TARGETS} EXPORT EVPathTargets
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+set(namelink_component_args)
+if(NOT CMAKE_VERSION VERSION_LESS 3.12)
+  set(namelink_component_args NAMELINK_COMPONENT ${EVPATH_HEADER_COMPONENT})
+endif()
+install(TARGETS EVPath EXPORT EVPathTargets
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${EVPATH_RUNTIME_COMPONENT}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT ${EVPATH_LIBRARY_COMPONENT} ${namelink_component_args}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT ${EVPATH_ARCHIVE_COMPONENT}
 )
 
-set(EVPATH_LIBRARY_BUILD_DIR ${PROJECT_BINARY_DIR}/lib)
-set(EVPATH_LIBRARY_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/lib)
+FOREACH(tgt ${EVPATH_TRANSPORT_TARGETS})
+   TARGET_COMPILE_DEFINITIONS(${tgt} PRIVATE EVPATH_MODULE_BUILD_DIR="$<TARGET_FILE_DIR:${tgt}>")
+ENDFOREACH()
+
+set(config_suffix)
+get_property(multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if(multi_config)
+  set(config_suffix "/$<CONFIG>")
+endif()
+TARGET_COMPILE_DEFINITIONS(EVPath PRIVATE EVPATH_MODULE_BUILD_DIR="${PROJECT_BINARY_DIR}/${EVPATH_INSTALL_MODULE_DIR}${config_suffix}")
+set(EVPATH_MODULE_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/${EVPATH_INSTALL_MODULE_DIR})
 
 if(CMAKE_C_COMPILER_ID MATCHES "Intel") 
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -shared-intel")
@@ -628,7 +715,8 @@ export(EXPORT EVPathTargets NAMESPACE EVPath::
 # targets from these, which can be used in many ways in the same way as a
 # normal library target created via a normal add_library().
 install(EXPORT EVPathTargets NAMESPACE EVPath::
-  DESTINATION ${CMAKE_INSTALL_CMAKEDIR})
+  DESTINATION ${CMAKE_INSTALL_CMAKEDIR}
+  COMPONENT ${EVPATH_HEADER_COMPONENT})
 
 # Create a EVPathConfig.cmake file. <name>Config.cmake files are searched by
 # find_package() automatically. We configure that file so that we can put any
@@ -660,10 +748,12 @@ install(
     ${CMAKE_CURRENT_BINARY_DIR}/EVPathConfigCommon.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/EVPathConfigVersion.cmake
   DESTINATION ${CMAKE_INSTALL_CMAKEDIR}
+  COMPONENT ${EVPATH_HEADER_COMPONENT}
 )
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/EVPathConfigInstall.cmake
   RENAME EVPathConfig.cmake
   DESTINATION ${CMAKE_INSTALL_CMAKEDIR}
+  COMPONENT ${EVPATH_HEADER_COMPONENT}
 )
 
 
@@ -687,6 +777,7 @@ if(NOT EVPATH_QUIET)
   message(STATUS "BUILD_SHARED_LIBS = ${BUILD_SHARED_LIBS}  (options are: ON, OFF, default OFF)")
   message(STATUS "EVPATH_USE_NVML = ${EVPATH_USE_NVML}")
   message(STATUS "EVPATH_USE_ENET = ${EVPATH_USE_ENET}")
+  message(STATUS "EVPATH_USE_ZPL_ENET = ${EVPATH_USE_ZPL_ENET}")
   message(STATUS "EVPATH_USE_UDT4 = ${EVPATH_USE_UDT4}")
   message(STATUS "EVPATH_USE_LIBFABRIC = ${EVPATH_USE_LIBFABRIC}")
   message(STATUS "EVPATH_USE_IBVERBS = ${EVPATH_USE_IBVERBS}")

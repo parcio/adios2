@@ -7,4 +7,3 @@ target_sources(pugixml INTERFACE
 target_include_directories(pugixml INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
-install(TARGETS pugixml EXPORT adios2Exports)

@@ -25,162 +25,100 @@ ZmqPubSub::ZmqPubSub() {}
 
 ZmqPubSub::~ZmqPubSub()
 {
-    auto start_time = std::chrono::system_clock::now();
-    while (true)
+    if (m_ZmqSocket)
     {
-        m_BufferQueueMutex.lock();
-        size_t s = m_BufferQueue.size();
-        m_BufferQueueMutex.unlock();
-        if (s == 0)
-        {
-            break;
-        }
-        auto now_time = std::chrono::system_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::seconds>(
-            now_time - start_time);
-        if (duration.count() > m_Timeout)
-        {
-            break;
-        }
+        zmq_close(m_ZmqSocket);
     }
-
-    m_ThreadActive = false;
-    if (m_Thread.joinable())
+    if (m_ZmqContext)
     {
-        m_Thread.join();
+        zmq_ctx_destroy(m_ZmqContext);
     }
 }
 
-void ZmqPubSub::OpenPublisher(const std::string &address, const int timeout)
+void ZmqPubSub::OpenPublisher(const std::string &address)
 {
-    m_Timeout = timeout;
-    m_Thread = std::thread(&ZmqPubSub::WriterThread, this, address);
-}
-
-void ZmqPubSub::OpenSubscriber(const std::string &address, const int timeout,
-                               const size_t bufferSize)
-{
-    m_Timeout = timeout;
-    m_Thread = std::thread(&ZmqPubSub::ReaderThread, this, address, timeout,
-                           bufferSize);
-}
-
-void ZmqPubSub::PushBufferQueue(std::shared_ptr<std::vector<char>> buffer)
-{
-    std::lock_guard<std::mutex> l(m_BufferQueueMutex);
-    m_BufferQueue.push(buffer);
-}
-
-std::shared_ptr<std::vector<char>> ZmqPubSub::PopBufferQueue()
-{
-    std::lock_guard<std::mutex> l(m_BufferQueueMutex);
-    if (m_BufferQueue.empty())
-    {
-        return nullptr;
-    }
-    else
-    {
-        auto ret = m_BufferQueue.front();
-        m_BufferQueue.pop();
-        return ret;
-    }
-}
-
-void ZmqPubSub::WriterThread(const std::string &address)
-{
-    void *context = zmq_ctx_new();
-    if (not context)
+    m_ZmqContext = zmq_ctx_new();
+    if (not m_ZmqContext)
     {
         throw std::runtime_error("creating zmq context failed");
     }
 
-    void *socket = zmq_socket(context, ZMQ_PUB);
-    if (not socket)
+    m_ZmqSocket = zmq_socket(m_ZmqContext, ZMQ_PUB);
+    if (not m_ZmqSocket)
     {
         throw std::runtime_error("creating zmq socket failed");
     }
 
-    int error = zmq_bind(socket, address.c_str());
+    int error = zmq_bind(m_ZmqSocket, address.c_str());
     if (error)
     {
         throw std::runtime_error("binding zmq socket failed");
     }
-
-    while (m_ThreadActive)
-    {
-        auto buffer = PopBufferQueue();
-        if (buffer != nullptr and buffer->size() > 0)
-        {
-            zmq_send(socket, buffer->data(), buffer->size(), ZMQ_DONTWAIT);
-            if (m_Verbosity >= 5)
-            {
-                std::cout << "ZmqPubSub::WriterThread sent package size "
-                          << buffer->size() << std::endl;
-            }
-        }
-    }
-
-    if (socket)
-    {
-        zmq_close(socket);
-    }
-    if (context)
-    {
-        zmq_ctx_destroy(context);
-    }
 }
 
-void ZmqPubSub::ReaderThread(const std::string &address, const int timeout,
-                             const size_t receiverBufferSize)
+void ZmqPubSub::OpenSubscriber(const std::string &address,
+                               const size_t bufferSize)
 {
-    void *context = zmq_ctx_new();
-    if (not context)
+    m_ZmqContext = zmq_ctx_new();
+    if (not m_ZmqContext)
     {
         throw std::runtime_error("creating zmq context failed");
     }
 
-    void *socket = zmq_socket(context, ZMQ_SUB);
-    if (not socket)
+    m_ZmqSocket = zmq_socket(m_ZmqContext, ZMQ_SUB);
+    if (not m_ZmqSocket)
     {
         throw std::runtime_error("creating zmq socket failed");
     }
 
-    int error = zmq_connect(socket, address.c_str());
+    int error = zmq_connect(m_ZmqSocket, address.c_str());
     if (error)
     {
         throw std::runtime_error("connecting zmq socket failed");
     }
 
-    zmq_setsockopt(socket, ZMQ_SUBSCRIBE, "", 0);
+    zmq_setsockopt(m_ZmqSocket, ZMQ_SUBSCRIBE, "", 0);
 
-    std::vector<char> receiverBuffer(receiverBufferSize);
+    m_ReceiverBuffer.resize(bufferSize);
+}
 
+void ZmqPubSub::Send(std::shared_ptr<std::vector<char>> buffer)
+{
+    if (buffer != nullptr and buffer->size() > 0)
+    {
+        zmq_send(m_ZmqSocket, buffer->data(), buffer->size(), ZMQ_DONTWAIT);
+    }
+}
+
+std::shared_ptr<std::vector<char>> ZmqPubSub::Receive()
+{
+    int ret = zmq_recv(m_ZmqSocket, m_ReceiverBuffer.data(),
+                       m_ReceiverBuffer.size(), ZMQ_DONTWAIT);
+    if (ret > 0)
+    {
+        auto buff = std::make_shared<std::vector<char>>(ret);
+        std::memcpy(buff->data(), m_ReceiverBuffer.data(), ret);
+        return buff;
+    }
+    return nullptr;
+}
+
+/*
+void ZmqPubSub::ReceiveThread()
+{
     while (m_ThreadActive)
     {
-        int ret = zmq_recv(socket, receiverBuffer.data(), receiverBufferSize,
-                           ZMQ_DONTWAIT);
+        int ret = zmq_recv(m_ZmqSocket, m_ReceiverBuffer.data(),
+                           m_ReceiverBuffer.size(), ZMQ_DONTWAIT);
         if (ret > 0)
         {
             auto buff = std::make_shared<std::vector<char>>(ret);
-            std::memcpy(buff->data(), receiverBuffer.data(), ret);
+            std::memcpy(buff->data(), m_ReceiverBuffer.data(), ret);
             PushBufferQueue(buff);
-            if (m_Verbosity >= 5)
-            {
-                std::cout << "ZmqPubSub::ReaderThread received package size "
-                          << buff->size() << std::endl;
-            }
         }
     }
-
-    if (socket)
-    {
-        zmq_close(socket);
-    }
-    if (context)
-    {
-        zmq_ctx_destroy(context);
-    }
 }
+*/
 
 } // end namespace zmq
 } // end namespace adios2

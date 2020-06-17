@@ -30,9 +30,8 @@ namespace adios2
 namespace format
 {
 
-BP4Serializer::BP4Serializer(helper::Comm const &comm, const bool debugMode)
-: BPSerializer(comm, debugMode, 4), BP4Base(comm, debugMode),
-  BPBase(comm, debugMode)
+BP4Serializer::BP4Serializer(helper::Comm const &comm)
+: BPSerializer(comm, 4), BP4Base(comm), BPBase(comm)
 {
 }
 
@@ -402,13 +401,13 @@ void BP4Serializer::SerializeDataBuffer(core::IO &io) noexcept
     if (attributesSizeInData)
     {
         attributesSizeInData += 12; // count + length + end ID
-        ResizeBuffer(position + attributesSizeInData + 4,
-                     "when writing Attributes in rank=0\n ");
+        m_Data.Resize(position + attributesSizeInData + 4,
+                      "when writing Attributes in rank=0\n");
         PutAttributes(io);
     }
     else
     {
-        ResizeBuffer(position + 12 + 4, "for empty Attributes\n");
+        m_Data.Resize(position + 12 + 4, "for empty Attributes\n");
         // Attribute index header for zero attributes: 0, 0LL
         // Resize() already takes care of this
         position += 12;
@@ -1419,7 +1418,7 @@ void BP4Serializer::AggregateCollectiveMetadataIndices(helper::Comm const &comm,
     lf_SerializeAllIndices(comm, rank); // Set m_SerializedIndices
 
     comm.GathervVectors(m_SerializedIndices, inBufferSTL.m_Buffer,
-                        inBufferSTL.m_Position, 0, 0);
+                        inBufferSTL.m_Position, 0);
 
     // deserialize, it's all local inside rank 0
     if (rank == 0)
@@ -1548,14 +1547,11 @@ void BP4Serializer::MergeSerializeIndicesPerStep(
                 break;
             }
 
-            if (m_DebugMode)
+            if (header.DataType == std::numeric_limits<uint8_t>::max() - 1)
             {
-                if (header.DataType == std::numeric_limits<uint8_t>::max() - 1)
-                {
-                    throw std::runtime_error(
-                        "ERROR: invalid data type for variable " + header.Name +
-                        "when writing metadata index\n");
-                }
+                throw std::runtime_error(
+                    "ERROR: invalid data type for variable " + header.Name +
+                    "when writing metadata index\n");
             }
 
             // move all positions to headerSize
@@ -1648,14 +1644,11 @@ void BP4Serializer::MergeSerializeIndicesPerStep(
             break;
         }
 
-        if (m_DebugMode)
+        if (header.DataType == std::numeric_limits<uint8_t>::max() - 1)
         {
-            if (header.DataType == std::numeric_limits<uint8_t>::max() - 1)
-            {
-                throw std::runtime_error(
-                    "ERROR: invalid data type for variable " + header.Name +
-                    "when writing collective metadata\n");
-            }
+            throw std::runtime_error("ERROR: invalid data type for variable " +
+                                     header.Name +
+                                     "when writing collective metadata\n");
         }
 
         // move all positions to headerSize

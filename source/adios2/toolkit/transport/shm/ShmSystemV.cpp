@@ -22,12 +22,11 @@ namespace transport
 {
 
 ShmSystemV::ShmSystemV(const unsigned int projectID, const size_t size,
-                       helper::Comm const &comm, const bool debugMode,
-                       const bool removeAtClose)
-: Transport("Shm", "SystemV", comm, debugMode), m_ProjectID(projectID),
-  m_Size(size), m_RemoveAtClose(removeAtClose)
+                       helper::Comm const &comm, const bool removeAtClose)
+: Transport("Shm", "SystemV", comm), m_ProjectID(projectID), m_Size(size),
+  m_RemoveAtClose(removeAtClose)
 {
-    if (m_DebugMode && projectID == 0)
+    if (projectID == 0)
     {
         throw std::invalid_argument(
             "ERROR: projectID can't be zero, in shared memory segment\n");
@@ -47,7 +46,8 @@ ShmSystemV::~ShmSystemV() // this might not be correct
     }
 }
 
-void ShmSystemV::Open(const std::string &name, const Mode openMode)
+void ShmSystemV::Open(const std::string &name, const Mode openMode,
+                      const bool async)
 {
     m_Name = name;
     CheckName();
@@ -170,7 +170,7 @@ void ShmSystemV::CheckBuffer(const std::string hint) const
 void ShmSystemV::CheckSizes(const size_t start, const size_t size,
                             const std::string hint) const
 {
-    if (m_DebugMode && start + size > m_Size)
+    if (start + size > m_Size)
     {
         throw std::invalid_argument(
             "ERROR: final position (start + size) = (" + std::to_string(start) +

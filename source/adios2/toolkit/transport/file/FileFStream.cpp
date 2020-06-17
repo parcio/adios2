@@ -8,6 +8,7 @@
  *      Author: William F Godoy godoywf@ornl.gov
  */
 #include "FileFStream.h"
+#include <cstdio> // remove
 
 /// \cond EXCLUDE_FROM_DOXYGEN
 #include <ios> // std::ios_base::failure
@@ -18,13 +19,36 @@ namespace adios2
 namespace transport
 {
 
-FileFStream::FileFStream(helper::Comm const &comm, const bool debugMode)
-: Transport("File", "fstream", comm, debugMode)
+FileFStream::FileFStream(helper::Comm const &comm)
+: Transport("File", "fstream", comm)
 {
 }
 
-void FileFStream::Open(const std::string &name, const Mode openMode)
+void FileFStream::WaitForOpen()
 {
+    if (m_IsOpening)
+    {
+        if (m_OpenFuture.valid())
+        {
+            m_OpenFuture.get();
+        }
+        m_IsOpening = false;
+        CheckFile(
+            "couldn't open file " + m_Name +
+            ", check permissions or path existence, in call to POSIX open");
+        m_IsOpen = true;
+    }
+}
+
+void FileFStream::Open(const std::string &name, const Mode openMode,
+                       const bool async)
+{
+    auto lf_AsyncOpenWrite = [&](const std::string &name) -> void {
+        ProfilerStart("open");
+        m_FileStream.open(name, std::fstream::out | std::fstream::binary |
+                                    std::fstream::trunc);
+        ProfilerStop("open");
+    };
     m_Name = name;
     CheckName();
     m_OpenMode = openMode;
@@ -32,10 +56,19 @@ void FileFStream::Open(const std::string &name, const Mode openMode)
     switch (m_OpenMode)
     {
     case (Mode::Write):
-        ProfilerStart("open");
-        m_FileStream.open(name, std::fstream::out | std::fstream::binary |
-                                    std::fstream::trunc);
-        ProfilerStop("open");
+        if (async)
+        {
+            m_IsOpening = true;
+            m_OpenFuture =
+                std::async(std::launch::async, lf_AsyncOpenWrite, name);
+        }
+        else
+        {
+            ProfilerStart("open");
+            m_FileStream.open(name, std::fstream::out | std::fstream::binary |
+                                        std::fstream::trunc);
+            ProfilerStop("open");
+        }
         break;
 
     case (Mode::Append):
@@ -59,13 +92,22 @@ void FileFStream::Open(const std::string &name, const Mode openMode)
                   ", in call to stream open");
     }
 
-    CheckFile("couldn't open file " + m_Name +
-              ", check permissions or path existence, in call to fstream open");
-    m_IsOpen = true;
+    if (!m_IsOpening)
+    {
+        CheckFile(
+            "couldn't open file " + m_Name +
+            ", check permissions or path existence, in call to fstream open");
+        m_IsOpen = true;
+    }
 }
 
 void FileFStream::SetBuffer(char *buffer, size_t size)
 {
+    if (!buffer && size != 0)
+    {
+        throw std::invalid_argument(
+            "buffer size must be 0 when using a NULL buffer");
+    }
     m_FileStream.rdbuf()->pubsetbuf(buffer, size);
     CheckFile("couldn't set buffer in file " + m_Name +
               ", in call to fstream rdbuf()->pubsetbuf");
@@ -81,6 +123,7 @@ void FileFStream::Write(const char *buffer, size_t size, size_t start)
                   ", in call to fstream write");
     };
 
+    WaitForOpen();
     if (start != MaxSizeT)
     {
         m_FileStream.seekp(start);
@@ -117,6 +160,7 @@ void FileFStream::Read(char *buffer, size_t size, size_t start)
                   ", in call to fstream read");
     };
 
+    WaitForOpen();
     if (start != MaxSizeT)
     {
         m_FileStream.seekg(start);
@@ -145,6 +189,7 @@ void FileFStream::Read(char *buffer, size_t size, size_t start)
 
 size_t FileFStream::GetSize()
 {
+    WaitForOpen();
     const auto currentPosition = m_FileStream.tellg();
     m_FileStream.seekg(0, std::ios_base::end);
     const std::streampos size = m_FileStream.tellg();
@@ -159,6 +204,7 @@ size_t FileFStream::GetSize()
 
 void FileFStream::Flush()
 {
+    WaitForOpen();
     ProfilerStart("write");
     m_FileStream.flush();
     ProfilerStart("write");
@@ -168,12 +214,23 @@ void FileFStream::Flush()
 
 void FileFStream::Close()
 {
+    WaitForOpen();
     ProfilerStart("close");
     m_FileStream.close();
     ProfilerStop("close");
 
     CheckFile("couldn't close file " + m_Name + ", in call to fstream close");
     m_IsOpen = false;
+}
+
+void FileFStream::Delete()
+{
+    WaitForOpen();
+    if (m_IsOpen)
+    {
+        Close();
+    }
+    std::remove(m_Name.c_str());
 }
 
 void FileFStream::CheckFile(const std::string hint) const
@@ -186,6 +243,7 @@ void FileFStream::CheckFile(const std::string hint) const
 
 void FileFStream::SeekToEnd()
 {
+    WaitForOpen();
     m_FileStream.seekp(0, std::ios_base::end);
     CheckFile("couldn't move to the end of file " + m_Name +
               ", in call to fstream seekp");
@@ -193,6 +251,7 @@ void FileFStream::SeekToEnd()
 
 void FileFStream::SeekToBegin()
 {
+    WaitForOpen();
     m_FileStream.seekp(0, std::ios_base::beg);
     CheckFile("couldn't move to the beginning of file " + m_Name +
               ", in call to fstream seekp");

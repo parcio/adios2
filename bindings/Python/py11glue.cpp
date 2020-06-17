@@ -16,7 +16,7 @@
 
 #include <adios2.h>
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
 #include <mpi4py/mpi4py.h>
 #endif
 
@@ -28,7 +28,7 @@
 #include "py11Operator.h"
 #include "py11Variable.h"
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
 
 namespace pybind11
 {
@@ -78,39 +78,39 @@ public:
 
 #endif
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
 
-adios2::py11::File Open(const std::string &name, const std::string mode,
-                        adios2::py11::MPI4PY_Comm comm,
-                        const std::string enginetype)
+adios2::py11::File OpenMPI(const std::string &name, const std::string mode,
+                           adios2::py11::MPI4PY_Comm comm,
+                           const std::string enginetype)
 {
     return adios2::py11::File(name, mode, comm, enginetype);
 }
 
-adios2::py11::File OpenConfig(const std::string &name, const std::string mode,
-                              adios2::py11::MPI4PY_Comm comm,
-                              const std::string &configfile,
-                              const std::string ioinconfigfile)
+adios2::py11::File OpenConfigMPI(const std::string &name,
+                                 const std::string mode,
+                                 adios2::py11::MPI4PY_Comm comm,
+                                 const std::string &configfile,
+                                 const std::string ioinconfigfile)
 {
     return adios2::py11::File(name, mode, comm, configfile, ioinconfigfile);
 }
 
 #endif
-adios2::py11::File OpenNoComm(const std::string &name, const std::string mode,
-                              const std::string enginetype)
+adios2::py11::File Open(const std::string &name, const std::string mode,
+                        const std::string enginetype)
 {
     return adios2::py11::File(name, mode, enginetype);
 }
 
-adios2::py11::File OpenConfigNoComm(const std::string &name,
-                                    const std::string mode,
-                                    const std::string configfile,
-                                    const std::string ioinconfigfile)
+adios2::py11::File OpenConfig(const std::string &name, const std::string mode,
+                              const std::string configfile,
+                              const std::string ioinconfigfile)
 {
     return adios2::py11::File(name, mode, configfile, ioinconfigfile);
 }
 
-PYBIND11_MODULE(adios2, m)
+PYBIND11_MODULE(ADIOS2_PYTHON_MODULE_NAME, m)
 {
     m.attr("DebugON") = true;
     m.attr("DebugOFF") = false;
@@ -152,8 +152,8 @@ PYBIND11_MODULE(adios2, m)
         .value("OtherError", adios2::StepStatus::OtherError)
         .export_values();
 
-#ifdef ADIOS2_HAVE_MPI
-    m.def("open", &Open, pybind11::arg("name"), pybind11::arg("mode"),
+#if ADIOS2_USE_MPI
+    m.def("open", &OpenMPI, pybind11::arg("name"), pybind11::arg("mode"),
           pybind11::arg("comm"), pybind11::arg("engine_type") = "BPFile", R"md(
           Simple API MPI open, based on python IO. 
           Allows for passing parameters in source code.
@@ -177,7 +177,7 @@ PYBIND11_MODULE(adios2, m)
                   handler to adios File for the simple Python API
     )md");
 
-    m.def("open", &OpenConfig, pybind11::arg("name"), pybind11::arg("mode"),
+    m.def("open", &OpenConfigMPI, pybind11::arg("name"), pybind11::arg("mode"),
           pybind11::arg("comm"), pybind11::arg("config_file"),
           pybind11::arg("io_in_config_file"), R"md(
           Simple API MPI open, based on python IO. 
@@ -207,11 +207,11 @@ PYBIND11_MODULE(adios2, m)
     )md");
 
 #endif
-    m.def("open", &OpenNoComm, "High-level API, file object open",
+    m.def("open", &Open, "High-level API, file object open",
           pybind11::arg("name"), pybind11::arg("mode"),
           pybind11::arg("engine_type") = "BPFile");
 
-    m.def("open", &OpenConfigNoComm,
+    m.def("open", &OpenConfig,
           "High-level API, file object open with a runtime config file",
           pybind11::arg("name"), pybind11::arg("mode"),
           pybind11::arg("config_file"), pybind11::arg("io_in_config_file"));
@@ -229,16 +229,6 @@ PYBIND11_MODULE(adios2, m)
                  const bool opBool = adios ? true : false;
                  return opBool;
              })
-#ifdef ADIOS2_HAVE_MPI
-        .def(pybind11::init<const adios2::py11::MPI4PY_Comm, const bool>(),
-             "adios2 module starting point, constructs an ADIOS class object",
-             pybind11::arg("comm"), pybind11::arg("debugMode") = true)
-        .def(pybind11::init<const std::string &,
-                            const adios2::py11::MPI4PY_Comm, const bool>(),
-             "adios2 module starting point, constructs an ADIOS class object",
-             pybind11::arg("configFile"), pybind11::arg("comm"),
-             pybind11::arg("debugMode") = true)
-#endif
         .def(pybind11::init<const bool>(),
              "adios2 module starting point "
              "non-MPI, constructs an ADIOS class "
@@ -248,6 +238,16 @@ PYBIND11_MODULE(adios2, m)
              "adios2 module starting point non-MPI, constructs an ADIOS class "
              "object",
              pybind11::arg("configFile"), pybind11::arg("debugMode") = true)
+#if ADIOS2_USE_MPI
+        .def(pybind11::init<const adios2::py11::MPI4PY_Comm, const bool>(),
+             "adios2 module starting point, constructs an ADIOS class object",
+             pybind11::arg("comm"), pybind11::arg("debugMode") = true)
+        .def(pybind11::init<const std::string &,
+                            const adios2::py11::MPI4PY_Comm, const bool>(),
+             "adios2 module starting point, constructs an ADIOS class object",
+             pybind11::arg("configFile"), pybind11::arg("comm"),
+             pybind11::arg("debugMode") = true)
+#endif
         .def("DeclareIO", &adios2::py11::ADIOS::DeclareIO,
              "spawn IO object component returning a IO object with a unique "
              "name, throws an exception if IO with the same name is declared "
@@ -349,7 +349,7 @@ PYBIND11_MODULE(adios2, m)
         .def("Open", (adios2::py11::Engine(adios2::py11::IO::*)(
                          const std::string &, const int)) &
                          adios2::py11::IO::Open)
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
         .def("Open", (adios2::py11::Engine(adios2::py11::IO::*)(
                          const std::string &, const int,
                          adios2::py11::MPI4PY_Comm comm)) &
@@ -490,7 +490,9 @@ PYBIND11_MODULE(adios2, m)
              &adios2::py11::Engine::LockWriterDefinitions)
 
         .def("LockReaderSelections",
-             &adios2::py11::Engine::LockReaderSelections);
+             &adios2::py11::Engine::LockReaderSelections)
+
+        .def("BlocksInfo", &adios2::py11::Engine::BlocksInfo);
 
     pybind11::class_<adios2::py11::Operator>(m, "Operator")
         // Python 2
@@ -578,10 +580,18 @@ PYBIND11_MODULE(adios2, m)
         )md")
 
         .def("available_variables", &adios2::py11::File::AvailableVariables,
-             pybind11::return_value_policy::move, R"md(
+             pybind11::return_value_policy::move,
+             pybind11::arg("keys") = std::vector<std::string>(), R"md(
              Returns a 2-level dictionary with variable information. 
              Read mode only.
              
+             Parameters
+                 keys
+                    list of variable information keys to be extracted (case insensitive)
+                    keys=['AvailableStepsCount','Type','Max','Min','SingleValue','Shape']
+                    keys=['Name'] returns only the variable names as 1st-level keys
+                    leave empty to return all possible keys
+
              Returns
                  variables dictionary
                      key 

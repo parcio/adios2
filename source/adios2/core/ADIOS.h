@@ -19,7 +19,6 @@
 /// \endcond
 
 #include "adios2/common/ADIOSConfig.h"
-#include "adios2/common/ADIOSMPI.h"
 #include "adios2/common/ADIOSTypes.h"
 #include "adios2/core/Operator.h"
 #include "adios2/helper/adiosComm.h"
@@ -36,9 +35,6 @@ class IO;
 class ADIOS
 {
 public:
-    /** if true will do more checks, exceptions, warnings, expect slower code */
-    const bool m_DebugMode = true;
-
     /** Get the communicator passed to constructor for parallel case.  */
     helper::Comm const &GetComm() const { return m_Comm; }
 
@@ -51,11 +47,8 @@ public:
      * future (json)?)
      * @param mpiComm MPI communicator from application, make sure is valid
      * through the scope of adios2 calls
-     * @param debugMode true (default): extra exception checks (recommended),
-     * false: optional feature to turn off checks on user input data,
-     * recommended in stable flows
      */
-    ADIOS(const std::string configFile, MPI_Comm mpiComm, const bool debugMode,
+    ADIOS(const std::string configFile, helper::Comm comm,
           const std::string hostLanguage);
 
     /**
@@ -63,30 +56,19 @@ public:
      * must end with extension .xml)
      * @param configFile XML format (maybe support different formats in the
      * future (json)?)
-     * @param debugMode true (default): extra exception checks (recommended),
-     * false: optional feature to turn off checks on user input data,
-     * recommended in stable flows
      */
-    ADIOS(const std::string configFile, const bool debugMode,
-          const std::string hostLanguage);
+    ADIOS(const std::string configFile, const std::string hostLanguage);
 
     /**
      * @brief Constructor for MPI apps WITHOUT a XML config file
      * @param mpiComm MPI communicator from application
-     * @param debugMode true (default): extra exception checks (recommended),
-     * false: optional feature to turn off checks on user input data,
-     * recommended in stable flows
      */
-    ADIOS(MPI_Comm mpiComm, const bool debugMode,
-          const std::string hostLanguage);
+    ADIOS(helper::Comm comm, const std::string hostLanguage);
 
     /**
      *  @brief ADIOS no-MPI default empty constructor
-     * @param debugMode true (default): extra exception checks (recommended),
-     * false: optional feature to turn off checks on user input data,
-     * recommended in stable flows
      */
-    ADIOS(const bool debugMode, const std::string hostLanguage);
+    ADIOS(const std::string hostLanguage);
 
     /**
      * Delete copy constructor explicitly. Objects shouldn't be allowed to be
@@ -102,7 +84,7 @@ public:
      * @param ioName must be unique
      * @return reference to newly created IO object inside current ADIOS object
      * @exception std::invalid_argument if IO with unique name is already
-     * declared, in debug mode only
+     * declared
      */
     IO &DeclareIO(const std::string name);
 
@@ -112,8 +94,7 @@ public:
      * @param name of IO to look for
      * @return if IO exists returns a reference to existing IO object inside
      * ADIOS
-     * @exception std::invalid_argument if IO was not created with DeclareIO, in
-     * debug mode only
+     * @exception std::invalid_argument if IO was not created with DeclareIO
      */
     IO &AtIO(const std::string name);
 
@@ -135,9 +116,9 @@ public:
      * @param parameters optional parameters
      * @return reference to Operator object
      * @exception std::invalid_argument if Operator with unique name is already
-     * defined, in debug mode only
+     * defined
      */
-    Operator &DefineOperator(const std::string name, const std::string type,
+    Operator &DefineOperator(const std::string &name, const std::string type,
                              const Params &parameters = Params());
     /**
      * Retrieve a reference pointer to an existing Operator object
@@ -145,7 +126,7 @@ public:
      * @return if IO exists returns a reference to existing IO object inside
      * ADIOS, otherwise a nullptr
      */
-    Operator *InquireOperator(const std::string name) noexcept;
+    Operator *InquireOperator(const std::string &name) noexcept;
 
 /** define CallBack1 */
 #define declare_type(T)                                                        \
@@ -208,6 +189,8 @@ private:
     void CheckOperator(const std::string name) const;
 
     void XMLInit(const std::string &configFileXML);
+
+    void YAMLInit(const std::string &configFileYAML);
 };
 
 } // end namespace core

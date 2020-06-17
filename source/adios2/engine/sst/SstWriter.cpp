@@ -8,7 +8,7 @@
  *      Author: Greg Eisenhauer
  */
 
-#include <adios2/common/ADIOSMPI.h>
+#include "adios2/helper/adiosComm.h"
 #include <memory>
 
 #include "SstParamParser.h"
@@ -109,7 +109,7 @@ SstWriter::SstWriter(IO &io, const std::string &name, const Mode mode,
 
     Init();
 
-    m_Output = SstWriterOpen(name.c_str(), &Params, m_Comm.AsMPI());
+    m_Output = SstWriterOpen(name.c_str(), &Params, &m_Comm);
 
     if (m_MarshalMethod == SstMarshalBP)
     {
@@ -140,9 +140,10 @@ StepStatus SstWriter::BeginStep(StepMode mode, const float timeout_sec)
     {
         // initialize BP serializer, deleted in
         // SstWriter::EndStep()::lf_FreeBlocks()
-        m_BP3Serializer = new format::BP3Serializer(m_Comm, m_DebugMode);
+        m_BP3Serializer = std::unique_ptr<format::BP3Serializer>(
+            new format::BP3Serializer(m_Comm));
         m_BP3Serializer->Init(m_IO.m_Parameters,
-                              "in call to BP3::Open for writing");
+                              "in call to BP3::Open for writing", "sst");
         m_BP3Serializer->m_MetadataSet.TimeStep = 1;
         m_BP3Serializer->m_MetadataSet.CurrentStep = m_WriterStep;
     }
@@ -211,6 +212,11 @@ void SstWriter::FFSMarshalAttributes()
 void SstWriter::EndStep()
 {
     TAU_SCOPED_TIMER_FUNC();
+    if (!m_BetweenStepPairs)
+    {
+        throw std::logic_error(
+            "ERROR: EndStep() is called without a successful BeginStep()");
+    }
     m_BetweenStepPairs = false;
     if (m_WriterDefinitionsLocked && !m_DefinitionsNotified)
     {
@@ -256,7 +262,7 @@ void SstWriter::EndStep()
         newblock->metadata.block = m_BP3Serializer->m_Metadata.m_Buffer.data();
         newblock->data.DataSize = m_BP3Serializer->m_Data.m_Position;
         newblock->data.block = m_BP3Serializer->m_Data.m_Buffer.data();
-        newblock->serializer = m_BP3Serializer;
+        newblock->serializer = m_BP3Serializer.release();
         TAU_STOP("Marshaling overhead");
         SstProvideTimestep(m_Output, &newblock->metadata, &newblock->data,
                            m_WriterStep, lf_FreeBlocks, newblock, NULL, NULL,

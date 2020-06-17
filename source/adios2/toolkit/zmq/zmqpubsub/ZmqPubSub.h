@@ -27,28 +27,17 @@ public:
     ZmqPubSub();
     ~ZmqPubSub();
 
-    void OpenPublisher(const std::string &address, const int timeout);
-    void OpenSubscriber(const std::string &address, const int timeout,
+    void OpenPublisher(const std::string &address);
+    void OpenSubscriber(const std::string &address,
                         const size_t receiveBufferSize);
 
-    void PushBufferQueue(std::shared_ptr<std::vector<char>> buffer);
-    std::shared_ptr<std::vector<char>> PopBufferQueue();
+    void Send(std::shared_ptr<std::vector<char>> buffer);
+    std::shared_ptr<std::vector<char>> Receive();
 
 private:
-    // For buffer queue
-    std::queue<std::shared_ptr<std::vector<char>>> m_BufferQueue;
-    std::mutex m_BufferQueueMutex;
-
-    // For threads
-    void WriterThread(const std::string &address);
-    void ReaderThread(const std::string &address, const int timeout,
-                      const size_t receiveBufferSize);
-    std::thread m_Thread;
-    bool m_ThreadActive = true;
-
-    // parameters
-    int m_Timeout = 10;
-    int m_Verbosity = 0;
+    void *m_ZmqContext = nullptr;
+    void *m_ZmqSocket = nullptr;
+    std::vector<char> m_ReceiverBuffer;
 };
 
 } // end namespace zmq

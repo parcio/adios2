@@ -18,7 +18,7 @@ namespace adios2
 namespace py11
 {
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
 
 /**
  * MPI4PY_Comm provides automatic conversion of Python mpi4py communicators to
@@ -43,7 +43,7 @@ struct MPI4PY_Comm
     ADIOS2_FOREACH_PRIMITIVE_STDTYPE_1ARG(MACRO)
 
 #define ADIOS2_FOREACH_NUMPY_ATTRIBUTE_TYPE_1ARG(MACRO)                        \
-    ADIOS2_FOREACH_ATTRIBUTE_PRIMITIVE_STDTYPE_1ARG(MACRO)
+    ADIOS2_FOREACH_PRIMITIVE_STDTYPE_1ARG(MACRO)
 
 } // end namespace py11
 } // end namespace adios2

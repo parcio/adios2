@@ -23,7 +23,7 @@ IO::IO(const Settings &s, MPI_Comm comm)
 {
     m_outputfilename = s.outputfile;
 
-    ad = adios2::ADIOS(s.configfile, comm, adios2::DebugON);
+    ad = adios2::ADIOS(s.configfile, comm);
 
     adios2::IO bpio = ad.DeclareIO("writer");
     if (!bpio.InConfigFile())
@@ -35,7 +35,11 @@ IO::IO(const Settings &s, MPI_Comm comm)
 
         // ISO-POSIX file output is the default transport (called "File")
         // Passing parameters to the transport
-        bpio.AddTransport("File", {{"Library", "POSIX"}});
+#ifdef _WIN32
+        bpio.AddTransport("File", {{"Library", "stdio"}});
+#else
+        bpio.AddTransport("File", {{"Library", "posix"}});
+#endif
     }
 
     // define T as 2D global array

@@ -22,7 +22,7 @@
 enum class IOLib
 {
     ADIOS
-#ifdef ADIOS2_HAVE_HDF5
+#ifdef ADIOS2_HAVE_HDF5_PARALLEL
     ,
     HDF5
 #endif
@@ -39,6 +39,7 @@ public:
     size_t appId = 0;
     bool isStrongScaling = true; // strong or weak scaling
     bool ioTimer = false;        // used to measure io time
+    bool fixedPattern = false;   // should Lock definitions?
     IOLib iolib = IOLib::ADIOS;
     //   process decomposition
     std::vector<size_t> processDecomp = {1, 1, 1, 1, 1, 1, 1, 1,

@@ -12,6 +12,7 @@
 #define ADIOS2_ENGINE_DATAMAN_DATAMANWRITER_TCC_
 
 #include "DataManWriter.h"
+#include "adios2/helper/adiosSystem.h"
 
 namespace adios2
 {
@@ -31,10 +32,10 @@ template <class T>
 void DataManWriter::PutDeferredCommon(Variable<T> &variable, const T *values)
 {
     variable.SetData(values);
-    if (m_IsRowMajor)
+    if (helper::IsRowMajor(m_IO.m_HostLanguage))
     {
-        m_FastSerializer.PutVar(variable, m_Name, CurrentStep(), m_MpiRank, "",
-                                Params());
+        m_Serializer.PutData(variable, m_Name, CurrentStep(), m_MpiRank, "",
+                             Params());
     }
     else
     {
@@ -48,9 +49,9 @@ void DataManWriter::PutDeferredCommon(Variable<T> &variable, const T *values)
         std::reverse(shape.begin(), shape.end());
         std::reverse(memstart.begin(), memstart.end());
         std::reverse(memcount.begin(), memcount.end());
-        m_FastSerializer.PutVar(variable.m_Data, variable.m_Name, shape, start,
-                                count, memstart, memcount, m_Name,
-                                CurrentStep(), m_MpiRank, "", Params());
+        m_Serializer.PutData(variable.m_Data, variable.m_Name, shape, start,
+                             count, memstart, memcount, m_Name, CurrentStep(),
+                             m_MpiRank, "", Params());
     }
 }
 

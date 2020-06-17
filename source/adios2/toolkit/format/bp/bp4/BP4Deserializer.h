@@ -41,15 +41,14 @@ public:
     /**
      * Unique constructor
      * @param comm multi-process communicator
-     * @param debug true: extra checks
      */
-    BP4Deserializer(helper::Comm const &comm, const bool debugMode);
+    BP4Deserializer(helper::Comm const &comm);
 
     ~BP4Deserializer() = default;
 
     void ParseMetadataIndex(const BufferSTL &bufferSTL,
-                            const size_t absoluteStartPos = 0,
-                            const bool hasHeader = true);
+                            const size_t absoluteStartPos,
+                            const bool hasHeader);
 
     /* Return the position in the buffer where processing ends. The processing
      * is controlled by the number of records in the Index, which may be less
@@ -155,12 +154,6 @@ public:
     std::vector<typename core::Variable<T>::Info>
     BlocksInfo(const core::Variable<T> &variable, const size_t step) const;
 
-    /** Parse active flag in index table header (64 bytes).
-     *  Header must be read by caller into a vector of 64 characters.
-     *  It sets m_WriterIsActive and returns the same value
-     */
-    bool ReadActiveFlag(std::vector<char> &buffer);
-
     // TODO : Will deprecate all function below
     std::map<std::string, helper::SubFileInfoMap>
     PerformGetsVariablesSubFileInfo(core::IO &io);
@@ -184,6 +177,8 @@ public:
                     const std::vector<char> &contiguousMemory,
                     const Box<Dims> &blockBox,
                     const Box<Dims> &intersectionBox) const;
+
+    bool ReadActiveFlag(std::vector<char> &buffer);
 
     // TODO: will deprecate
     bool m_PerformedGets = false;

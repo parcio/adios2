@@ -39,19 +39,18 @@ void ZfpRate1D(const std::string configFile)
     std::iota(r32s.begin(), r32s.end(), 0.f);
     std::iota(r64s.begin(), r64s.end(), 0.);
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 #endif
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     adios2::ADIOS adios(std::string(mystr(XML_CONFIG_DIR)) +
                             adios2::PathSeparator + configFile,
-                        MPI_COMM_WORLD, adios2::DebugON);
+                        MPI_COMM_WORLD);
 #else
     adios2::ADIOS adios(std::string(mystr(XML_CONFIG_DIR)) +
-                            adios2::PathSeparator + configFile,
-                        true);
+                        adios2::PathSeparator + configFile);
 #endif
     {
         adios2::IO io = adios.DeclareIO("TestIO");
@@ -78,7 +77,7 @@ void ZfpRate1D(const std::string configFile)
         bpWriter.Close();
     }
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
     {
@@ -156,19 +155,18 @@ void ZfpRate2D(const std::string configFile)
     std::iota(r32s.begin(), r32s.end(), 0.f);
     std::iota(r64s.begin(), r64s.end(), 0.);
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 #endif
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     adios2::ADIOS adios(std::string(mystr(XML_CONFIG_DIR)) +
                             adios2::PathSeparator + configFile,
-                        MPI_COMM_WORLD, adios2::DebugON);
+                        MPI_COMM_WORLD);
 #else
     adios2::ADIOS adios(std::string(mystr(XML_CONFIG_DIR)) +
-                            adios2::PathSeparator + configFile,
-                        true);
+                        adios2::PathSeparator + configFile);
 #endif
     {
         adios2::IO io = adios.DeclareIO("TestIO");
@@ -273,19 +271,18 @@ void ZfpRate3D(const std::string configFile)
     std::iota(r32s.begin(), r32s.end(), 0.f);
     std::iota(r64s.begin(), r64s.end(), 0.);
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 #endif
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     adios2::ADIOS adios(std::string(mystr(XML_CONFIG_DIR)) +
                             adios2::PathSeparator + configFile,
-                        MPI_COMM_WORLD, adios2::DebugON);
+                        MPI_COMM_WORLD);
 #else
     adios2::ADIOS adios(std::string(mystr(XML_CONFIG_DIR)) +
-                            adios2::PathSeparator + configFile,
-                        true);
+                        adios2::PathSeparator + configFile);
 #endif
     {
         adios2::IO io = adios.DeclareIO("TestIO");
@@ -390,19 +387,18 @@ void ZfpRate1DSel(const std::string configFile)
     std::iota(r32s.begin(), r32s.end(), 0.f);
     std::iota(r64s.begin(), r64s.end(), 0.);
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 #endif
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     adios2::ADIOS adios(std::string(mystr(XML_CONFIG_DIR)) +
                             adios2::PathSeparator + configFile,
-                        MPI_COMM_WORLD, adios2::DebugON);
+                        MPI_COMM_WORLD);
 #else
     adios2::ADIOS adios(std::string(mystr(XML_CONFIG_DIR)) +
-                            adios2::PathSeparator + configFile,
-                        true);
+                        adios2::PathSeparator + configFile);
 #endif
     {
         adios2::IO io = adios.DeclareIO("TestIO");
@@ -429,7 +425,7 @@ void ZfpRate1DSel(const std::string configFile)
         bpWriter.Close();
     }
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
     {
@@ -512,19 +508,18 @@ void ZfpRate2DSel(const std::string configFile)
     std::iota(r32s.begin(), r32s.end(), 0.f);
     std::iota(r64s.begin(), r64s.end(), 0.);
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 #endif
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     adios2::ADIOS adios(std::string(mystr(XML_CONFIG_DIR)) +
                             adios2::PathSeparator + configFile,
-                        MPI_COMM_WORLD, adios2::DebugON);
+                        MPI_COMM_WORLD);
 #else
     adios2::ADIOS adios(std::string(mystr(XML_CONFIG_DIR)) +
-                            adios2::PathSeparator + configFile,
-                        true);
+                        adios2::PathSeparator + configFile);
 #endif
     {
         adios2::IO io = adios.DeclareIO("TestIO");
@@ -633,19 +628,18 @@ void ZfpRate3DSel(const std::string configFile)
     std::iota(r32s.begin(), r32s.end(), 0.f);
     std::iota(r64s.begin(), r64s.end(), 0.);
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 #endif
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     adios2::ADIOS adios(std::string(mystr(XML_CONFIG_DIR)) +
                             adios2::PathSeparator + configFile,
-                        MPI_COMM_WORLD, adios2::DebugON);
+                        MPI_COMM_WORLD);
 #else
     adios2::ADIOS adios(std::string(mystr(XML_CONFIG_DIR)) +
-                            adios2::PathSeparator + configFile,
-                        true);
+                        adios2::PathSeparator + configFile);
 #endif
     {
         adios2::IO io = adios.DeclareIO("TestIO");
@@ -759,19 +753,18 @@ void ZfpRate2DSmallSel(const std::string configFile)
                                 0.07, 0.08, 0.09, 0.10, 0.11, 0.12, 0.13,
                                 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20,
                                 0.21, 0.22, 0.23, 0.24};
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 #endif
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     adios2::ADIOS adios(std::string(mystr(XML_CONFIG_DIR)) +
                             adios2::PathSeparator + configFile,
-                        MPI_COMM_WORLD, adios2::DebugON);
+                        MPI_COMM_WORLD);
 #else
     adios2::ADIOS adios(std::string(mystr(XML_CONFIG_DIR)) +
-                            adios2::PathSeparator + configFile,
-                        true);
+                        adios2::PathSeparator + configFile);
 #endif
     {
         adios2::IO io = adios.DeclareIO("TestIO");
@@ -887,11 +880,13 @@ INSTANTIATE_TEST_CASE_P(
     ZfpConfigFile, BPWriteReadZfpConfig,
     ::testing::Values("configZfp_rate8.xml", "configZfp_rate8Simple.xml",
                       "configZfp_rate9.xml", "configZfp_rate9Simple.xml",
-                      "configZfp_rate10.xml", "configZfp_rate10Simple.xml"));
+                      "configZfp_rate10.xml", "configZfp_rate10Simple.xml",
+                      "configZfp_rate8.yaml", "configZfp_rate9.yaml",
+                      "configZfp_rate10.yaml"));
 
 int main(int argc, char **argv)
 {
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Init(nullptr, nullptr);
 #endif
 
@@ -899,7 +894,7 @@ int main(int argc, char **argv)
     ::testing::InitGoogleTest(&argc, argv);
     result = RUN_ALL_TESTS();
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Finalize();
 #endif
 

@@ -2,7 +2,7 @@
  * Distributed under the OSI-approved Apache License, Version 2.0.  See
  * accompanying file Copyright.txt for details.
  *
- * IO.cpp
+ * py11IO.cpp
  *
  *  Created on: Mar 14, 2017
  *      Author: William F Godoy godoywf@ornl.gov
@@ -12,10 +12,6 @@
 
 #include "adios2/common/ADIOSMacros.h"
 #include "adios2/helper/adiosFunctions.h" //GetType<T>
-
-#ifdef ADIOS2_HAVE_MPI
-#include <mpi4py/mpi4py.h>
-#endif
 
 #include "py11types.h"
 
@@ -245,16 +241,6 @@ Engine IO::Open(const std::string &name, const int mode)
                             "for engine " + name + ", in call to IO::Open");
     return Engine(&m_IO->Open(name, static_cast<adios2::Mode>(mode)));
 }
-
-#ifdef ADIOS2_HAVE_MPI
-Engine IO::Open(const std::string &name, const int mode, MPI4PY_Comm comm)
-{
-    helper::CheckForNullptr(m_IO,
-                            "for engine " + name + ", in call to IO::Open");
-
-    return Engine(&m_IO->Open(name, static_cast<adios2::Mode>(mode), comm));
-}
-#endif
 
 void IO::FlushAll()
 {

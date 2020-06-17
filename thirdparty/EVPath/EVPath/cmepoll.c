@@ -15,9 +15,6 @@
 #include <sys/times.h>
 #endif
 #include <sys/socket.h>
-#ifdef HAVE_SYS_SELECT_H
-#include <sys/select.h>
-#endif
 #ifdef HAVE_SYS_UN_H
 #include <sys/un.h>
 #endif
@@ -55,6 +52,7 @@
 #include <atl.h>
 #include "evpath.h"
 #include "cm_transport.h"
+#include "ev_select.h"
 #include <pthread.h>
 #include <sched.h>
 #define thr_thread_t pthread_t
@@ -80,8 +78,6 @@ typedef struct func_list_item {
     void *arg1;
     void *arg2;
 } FunctionListElement;
-
-typedef struct _periodic_task *periodic_task_handle;
 
 typedef struct select_data {
     thr_thread_t server_thread;
@@ -520,6 +516,7 @@ void *arg2;
 	}
 	sd->sel_item_max = fd;
     }
+    memset(&ep_event, 0, sizeof(ep_event));
     ep_event.events = EPOLLIN;
     ep_event.data.fd = fd;
     if(epoll_ctl(sd->epfd, EPOLL_CTL_ADD, fd, &ep_event) < 0) {
@@ -561,6 +558,7 @@ void *arg2;
 	/* assert CM is locked */
 	assert(CM_LOCKED(svc, sd->cm));
     }
+    memset(&ep_event, 0, sizeof(ep_event));
     sd->select_consistency_number++;
     if (fd > sd->sel_item_max) {
 	int i;
@@ -966,8 +964,8 @@ int filedes[2];
 	struct timeval stTimeOut;	/* for select() timeout (none) */
 	int wRet;
 
-	FD_ZERO((fd_set FAR*)&(stXcptFDS));
-	FD_ZERO((fd_set FAR*)&(stWriteFDS));
+	EVPATH_FD_ZERO((fd_set FAR*)&(stXcptFDS));
+	EVPATH_FD_ZERO((fd_set FAR*)&(stWriteFDS));
 	FD_SET(sock1, (fd_set FAR*)&(stWriteFDS));
 	FD_SET(sock1, (fd_set FAR*)&(stXcptFDS));
 	stTimeOut.tv_sec  = 10;

@@ -9,6 +9,64 @@
 # them, otherwise we disable it.  If explicitly ON then a failure to find
 # dependencies is an error,
 
+# Helper function to extract a common prefix from two strings
+function(string_get_prefix in0 in1 outVar)
+  string(LENGTH "${in0}" len0)
+  string(LENGTH "${in1}" len1)
+  set(lenMax ${len0})
+  if(len1 LESS len0)
+    set(lenMax ${len1})
+  endif()
+  set(lenPfx 0)
+  if(lenMax GREATER 0)
+    foreach(len RANGE 1 ${lenMax})
+      string(SUBSTRING "${in0}" 0 ${len} sub0)
+      string(SUBSTRING "${in1}" 0 ${len} sub1)
+      if(NOT (sub0 STREQUAL sub1))
+        break()
+      endif()
+      set(lenPfx ${len})
+    endforeach()
+  endif()
+  string(SUBSTRING "${in0}" 0 ${lenPfx} outTmp)
+  set(${outVar} "${outTmp}" PARENT_SCOPE)
+endfunction()
+
+# Helper function to strip a common prefix off an input string
+function(string_strip_prefix pfx in outVar)
+  string(LENGTH "${pfx}" lenPfx)
+  string(LENGTH "${in}" lenIn)
+  if(lenPfx GREATER lenIn)
+    set(${outVar} "" PARENT_SCOPE)
+    return()
+  endif()
+  string(SUBSTRING "${in}" 0 ${lenPfx} inPfx)
+  if(NOT pfx STREQUAL inPfx)
+    set(${outVar} "" PARENT_SCOPE)
+    return()
+  endif()
+  string(SUBSTRING "${in}" ${lenPfx} -1 outTmp)
+  set(${outVar} "${outTmp}" PARENT_SCOPE)
+endfunction()
+
+# Extract the common prefix from a collection of variables
+function(lists_get_prefix listVars outVar)
+  foreach(l IN LISTS listVars)
+    foreach(d IN LISTS ${l})
+      if(NOT prefix)
+        set(prefix "${d}")
+        continue()
+      endif()
+      string_get_prefix("${prefix}" "${d}" prefix)
+      if(NOT prefix)
+        set(${outVar} "" PARENT_SCOPE)
+        return()
+      endif()
+    endforeach()
+  endforeach()
+  set(${outVar} "${prefix}" PARENT_SCOPE)
+endfunction()
+
 # Blosc
 if(ADIOS2_USE_Blosc STREQUAL AUTO)
   find_package(Blosc 1.7)
@@ -31,11 +89,11 @@ endif()
 
 # ZFP
 if(ADIOS2_USE_ZFP STREQUAL AUTO)
-  find_package(zfp 0.5.1 CONFIG)
+  find_package(ZFP 0.5.1 CONFIG)
 elseif(ADIOS2_USE_ZFP)
-  find_package(zfp 0.5.1 REQUIRED CONFIG)
+  find_package(ZFP 0.5.1 REQUIRED CONFIG)
 endif()
-if(zfp_FOUND)
+if(ZFP_FOUND)
   set(ADIOS2_HAVE_ZFP TRUE)
 endif()
 
@@ -157,7 +215,7 @@ endif()
 # SSC
 # SSC currently breaks the PGI compiler
 if(NOT (CMAKE_CXX_COMPILER_ID STREQUAL "PGI") AND NOT MSVC)
-    if(ZeroMQ_FOUND)
+    if(ADIOS2_HAVE_MPI)
         if(ADIOS2_USE_SSC STREQUAL AUTO)
             set(ADIOS2_HAVE_SSC TRUE)
         elseif(ADIOS2_USE_SSC)
@@ -168,7 +226,7 @@ endif()
 
 # Table
 if(NOT (CMAKE_CXX_COMPILER_ID STREQUAL "PGI") AND NOT MSVC)
-    if(ZeroMQ_FOUND AND ADIOS2_HAVE_MPI)
+    if(ZeroMQ_FOUND)
         if(ADIOS2_USE_Table STREQUAL AUTO)
             set(ADIOS2_HAVE_Table TRUE)
         elseif(ADIOS2_USE_Table)
@@ -190,26 +248,31 @@ endif()
 # HDF5
 if(ADIOS2_USE_HDF5 STREQUAL AUTO)
   find_package(HDF5 COMPONENTS C)
-  if(HDF5_FOUND AND
-     ((ADIOS2_HAVE_MPI AND HDF5_IS_PARALLEL) OR
-      (NOT ADIOS2_HAVE_MPI AND NOT HDF5_IS_PARALLEL)))
+  if(HDF5_FOUND AND (NOT HDF5_IS_PARALLEL OR ADIOS2_HAVE_MPI))
     set(ADIOS2_HAVE_HDF5 TRUE)
   endif()
 elseif(ADIOS2_USE_HDF5)
   find_package(HDF5 REQUIRED COMPONENTS C)
-  if(ADIOS2_HAVE_MPI)
-    if(NOT HDF5_IS_PARALLEL)
-      message(FATAL_ERROR "MPI is enabled but serial HDF5 is detected.")
-    endif()
-  else()
-    if(HDF5_IS_PARALLEL)
-      message(FATAL_ERROR "MPI is disabled but parallel HDF5 is detected.")
-    endif()
+  if(HDF5_IS_PARALLEL AND NOT ADIOS2_HAVE_MPI)
+    message(FATAL_ERROR "MPI is disabled but parallel HDF5 is detected.")
   endif()
   set(ADIOS2_HAVE_HDF5 TRUE)
 endif()
 
+# IME
+if(ADIOS2_USE_IME STREQUAL AUTO)
+  find_package(IME)
+elseif(ADIOS2_USE_IME)
+  find_package(IME REQUIRED)
+endif()
+if(IME_FOUND)
+  set(ADIOS2_HAVE_IME TRUE)
+endif()
+
+
 # Python
+
+# Not supported on PGI
 if(CMAKE_CXX_COMPILER_ID STREQUAL PGI)
   if(ADIOS2_USE_Python STREQUAL ON)
     message(FATAL_ERROR "Python bindings are not supported with the PGI compiler")
@@ -218,24 +281,60 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL PGI)
     set(ADIOS2_USE_Python OFF)
   endif()
 endif()
-if(ADIOS2_USE_Python)
-  if(NOT (ADIOS2_USE_Python STREQUAL AUTO))
-    set(python_find_args REQUIRED)
-  endif()
-  if(BUILD_SHARED_LIBS)
-    set(Python_ADDITIONAL_VERSIONS "3;2.7"
-      CACHE STRING "Python versions to search for"
-    )
-    mark_as_advanced(Python_ADDITIONAL_VERSIONS)
-    list(APPEND python_find_args COMPONENTS Interp Libs numpy)
-    if(ADIOS2_HAVE_MPI)
-      list(APPEND python_find_args "mpi4py\\\;mpi4py/mpi4py.h")
-    endif()
-    find_package(PythonFull ${python_find_args})
+
+# Not supported without shared libs
+if(NOT SHARED_LIBS_SUPPORTED)
+  if(ADIOS2_USE_Python STREQUAL ON)
+    message(FATAL_ERROR "Python bindings are not supported without shared library support")
+  elseif(ADIOS2_USE_Python STREQUAL AUTO)
+    message(WARNING "Disabling python bindings since no shared library support was detected.")
+    set(ADIOS2_USE_Python OFF)
   endif()
 endif()
-if(PythonFull_FOUND)
-  set(ADIOS2_HAVE_Python ON)
+
+if(ADIOS2_USE_Python STREQUAL AUTO)
+  find_package(Python COMPONENTS Interpreter Development NumPy)
+  if(Python_FOUND AND ADIOS2_HAVE_MPI)
+    find_package(PythonModule COMPONENTS mpi4py mpi4py/mpi4py.h)
+  endif()
+elseif(ADIOS2_USE_Python)
+  find_package(Python REQUIRED COMPONENTS Interpreter Development NumPy)
+  if(ADIOS2_HAVE_MPI)
+    find_package(PythonModule REQUIRED COMPONENTS mpi4py mpi4py/mpi4py.h)
+  endif()
+endif()
+if(Python_FOUND)
+  if(ADIOS2_HAVE_MPI)
+    if(PythonModule_mpi4py_FOUND)
+      set(ADIOS2_HAVE_Python ON)
+    endif()
+  else()
+    set(ADIOS2_HAVE_Python ON)
+  endif()
+endif()
+
+# Even if no python support, we still want the interpreter for tests
+if(NOT Python_Interpreter_FOUND)
+  find_package(Python REQUIRED COMPONENTS Interpreter)
+endif()
+
+if(Python_Interpreter_FOUND)
+  # Setup output directories
+  if(Python_Development_FOUND)
+    lists_get_prefix("Python_INCLUDE_DIRS;Python_LIBRARIES;Python_SITEARCH" _Python_DEVPREFIX)
+  else()
+    lists_get_prefix("Python_EXECUTABLE;Python_SITEARCH" _Python_DEVPREFIX)
+  endif()
+  string_strip_prefix(
+    "${_Python_DEVPREFIX}" "${Python_SITEARCH}" CMAKE_INSTALL_PYTHONDIR_DEFAULT
+  )
+  set(CMAKE_INSTALL_PYTHONDIR "${CMAKE_INSTALL_PYTHONDIR_DEFAULT}"
+    CACHE PATH "Install directory for python modules"
+  )
+  mark_as_advanced(CMAKE_INSTALL_PYTHONDIR)
+  set(CMAKE_PYTHON_OUTPUT_DIRECTORY
+    ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_PYTHONDIR}
+  )
 endif()
 
 # Sst
@@ -249,10 +348,10 @@ if(ADIOS2_USE_SST AND NOT MSVC)
       set(ADIOS2_SST_HAVE_CRAY_DRC TRUE)
     endif()
   endif()
-  find_package(NVSTREAM)
-  if(NVSTREAM_FOUND)
+  find_package(NVStream)
+  if(NVStream_FOUND)
     find_package(Boost OPTIONAL_COMPONENTS thread log filesystem system)
-    set(ADIOS2_SST_HAVE_NVSTREAM TRUE)
+    set(ADIOS2_SST_HAVE_NVStream TRUE)
   endif()
 endif()
 
@@ -286,3 +385,20 @@ endif()
 
 # Multithreading
 find_package(Threads REQUIRED)
+
+# Floating point detection
+include(CheckTypeRepresentation)
+
+#check_float_type_representation(float FLOAT_TYPE_C)
+#check_float_type_representation(double DOUBLE_TYPE_C)
+#check_float_type_representation("long double" LONG_DOUBLE_TYPE_C)
+
+if(ADIOS2_USE_Fortran)
+  #check_float_type_representation(real REAL_TYPE_Fortran LANGUAGE Fortran)
+  #check_float_type_representation("real(kind=4)" REAL4_TYPE_Fortran LANGUAGE Fortran)
+  #check_float_type_representation("real(kind=8)" REAL8_TYPE_Fortran LANGUAGE Fortran)
+  #check_float_type_representation("real(kind=16)" REAL16_TYPE_Fortran LANGUAGE Fortran)
+
+  include(CheckFortranCompilerFlag)
+  check_fortran_compiler_flag("-fallow-argument-mismatch" ADIOS2_USE_Fortran_flag_argument_mismatch)
+endif()

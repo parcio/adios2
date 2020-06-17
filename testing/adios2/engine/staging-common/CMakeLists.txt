@@ -5,118 +5,71 @@
 
 find_package(Threads REQUIRED)
 
-if(ADIOS2_HAVE_MPI)
-  set(extra_test_args EXEC_WRAPPER ${MPIEXEC_COMMAND})
+gtest_add_tests_helper(StagingMPMD MPI_ONLY "" Engine.Staging. ".InSituMPI" EXTRA_ARGS "InSituMPI")
+if(ADIOS2_HAVE_SST)
+  gtest_add_tests_helper(StagingMPMD MPI_ONLY "" Engine.Staging. ".SST.FFS" EXTRA_ARGS "SST" "MarshalMethod=FFS")
+  gtest_add_tests_helper(StagingMPMD MPI_ONLY "" Engine.Staging. ".SST.BP" EXTRA_ARGS "SST" "MarshalMethod=BP")
+endif()
 
-  add_executable(TestStagingMPMD  TestStagingMPMD.cpp)
-  target_link_libraries(TestStagingMPMD
-    ${CMAKE_THREAD_LIBS_INIT}
-    adios2 gtest gtest_interface MPI::MPI_C
-  )
-  if(ADIOS2_HAVE_SST)
-    gtest_add_tests(TARGET TestStagingMPMD ${extra_test_args} 
-      EXTRA_ARGS "SST" "MarshalMethod=FFS"
-      TEST_SUFFIX _SST_FFS
-      TEST_LIST _gtest_added_tests
+foreach(helper
+    TestCommonWrite
+    TestCommonWriteModes
+    TestCommonWriteAttrs
+    TestCommonWriteLocal
+    TestCommonWriteShared
+    TestCommonRead
+    TestCommonReadR64
+    TestCommonReadLocal
+    TestCommonReadShared
+    TestCommonReadAttrs
+    TestCommonServer
+    TestCommonClient
     )
-    set_tests_properties(${_gtest_added_tests} PROPERTIES
-      PROCESSORS ${NUM_TEST_PROCS}
-    )
-    gtest_add_tests(TARGET TestStagingMPMD ${extra_test_args} 
-      EXTRA_ARGS "SST" "MarshalMethod=BP"
-      TEST_SUFFIX _SST_BP
-      TEST_LIST _gtest_added_tests
-    )
-    set_tests_properties(${_gtest_added_tests} PROPERTIES
-      PROCESSORS ${NUM_TEST_PROCS}
-    )
+  add_executable(${helper} ${helper}.cpp)
+
+  # Workaround for multiple versions of FindSst
+  if(SST_INCLUDE_DIRS)
+    target_include_directories(${helper} PRIVATE ${SST_INCLUDE_DIRS})
   endif()
 
-  gtest_add_tests(TARGET TestStagingMPMD ${extra_test_args} 
-    EXTRA_ARGS "InSituMPI"
-    TEST_SUFFIX _InSituMPI
-    TEST_LIST _gtest_added_tests
-  )
-  set_tests_properties(${_gtest_added_tests} PROPERTIES
-    PROCESSORS ${NUM_TEST_PROCS}
-  )
-endif()
+  target_link_libraries(${helper} adios2::thirdparty::gtest ${Sst_LIBRARY})
+  if(ADIOS2_HAVE_MPI)
+    target_link_libraries(${helper} adios2::cxx11_mpi adios2_core_mpi MPI::MPI_C)
+  else()
+    target_link_libraries(${helper} adios2::cxx11 adios2_core)
+  endif()
+endforeach()
 
-add_executable(TestCommonWrite TestCommonWrite.cpp)
-add_executable(TestCommonWriteAttrs TestCommonWriteAttrs.cpp)
-add_executable(TestCommonWriteModes TestCommonWriteModes.cpp)
-add_executable(TestCommonWriteLocal TestCommonWriteLocal.cpp)
-add_executable(TestCommonWriteShared TestCommonWriteShared.cpp)
-add_executable(TestCommonRead TestCommonRead.cpp)
-add_executable(TestCommonReadR64 TestCommonReadR64.cpp)
-add_executable(TestCommonReadAttrs TestCommonReadAttrs.cpp)
-add_executable(TestCommonReadLocal TestCommonReadLocal.cpp)
-add_executable(TestCommonReadShared TestCommonReadShared.cpp)
-add_executable(TestCommonServer TestCommonServer.cpp)
-add_executable(TestCommonClient TestCommonClient.cpp)
 if(ADIOS2_HAVE_Fortran)
   add_library(TestCommonData_f OBJECT TestData_mod.F90)
-
-  add_executable(TestCommonWrite_f TestCommonWriteF.F90 $<TARGET_OBJECTS:TestCommonData_f>)
-  add_executable(TestCommonRead_f TestCommonReadF.F90 $<TARGET_OBJECTS:TestCommonData_f>)
-  target_link_libraries(TestCommonWrite_f adios2_f)
-  target_link_libraries(TestCommonRead_f adios2_f)
-endif()
-
-# Workaround for multiple versions of FindSst
-if(SST_INCLUDE_DIRS)
-  target_include_directories(TestCommonWrite PRIVATE ${SST_INCLUDE_DIRS})
-  target_include_directories(TestCommonWriteModes PRIVATE ${SST_INCLUDE_DIRS})
-  target_include_directories(TestCommonWriteAttrs PRIVATE ${SST_INCLUDE_DIRS})
-  target_include_directories(TestCommonWriteLocal PRIVATE ${SST_INCLUDE_DIRS})
-  target_include_directories(TestCommonWriteShared PRIVATE ${SST_INCLUDE_DIRS})
-  target_include_directories(TestCommonRead PRIVATE ${SST_INCLUDE_DIRS})
-  target_include_directories(TestCommonReadR64 PRIVATE ${SST_INCLUDE_DIRS})
-  target_include_directories(TestCommonReadLocal PRIVATE ${SST_INCLUDE_DIRS})
-  target_include_directories(TestCommonReadShared PRIVATE ${SST_INCLUDE_DIRS})
-  target_include_directories(TestCommonServer PRIVATE ${SST_INCLUDE_DIRS})
-  target_include_directories(TestCommonClient PRIVATE ${SST_INCLUDE_DIRS})
-endif()
-target_link_libraries(TestCommonWrite adios2 gtest_interface ${Sst_LIBRARY})
-target_link_libraries(TestCommonWriteModes adios2 gtest_interface ${Sst_LIBRARY})
-target_link_libraries(TestCommonWriteAttrs adios2 gtest_interface ${Sst_LIBRARY})
-target_link_libraries(TestCommonWriteLocal adios2 gtest_interface ${Sst_LIBRARY})
-target_link_libraries(TestCommonWriteShared adios2 gtest_interface ${Sst_LIBRARY})
-target_link_libraries(TestCommonRead adios2 gtest_interface ${Sst_LIBRARY})
-target_link_libraries(TestCommonReadR64 adios2 gtest_interface ${Sst_LIBRARY})
-target_link_libraries(TestCommonReadLocal adios2 gtest_interface ${Sst_LIBRARY})
-target_link_libraries(TestCommonReadShared adios2 gtest_interface ${Sst_LIBRARY})
-target_link_libraries(TestCommonReadAttrs adios2 gtest_interface ${Sst_LIBRARY})
-target_link_libraries(TestCommonServer adios2 gtest_interface ${Sst_LIBRARY})
-target_link_libraries(TestCommonClient adios2 gtest_interface ${Sst_LIBRARY})
-
-if(ADIOS2_HAVE_MPI)
-  target_link_libraries(TestCommonWrite MPI::MPI_C)
-  target_link_libraries(TestCommonWriteModes MPI::MPI_C)
-  target_link_libraries(TestCommonWriteAttrs MPI::MPI_C)
-  target_link_libraries(TestCommonWriteLocal MPI::MPI_C)
-  target_link_libraries(TestCommonWriteShared MPI::MPI_C)
-  target_link_libraries(TestCommonRead MPI::MPI_C)
-  target_link_libraries(TestCommonReadR64 MPI::MPI_C)
-  target_link_libraries(TestCommonReadLocal MPI::MPI_C)
-  target_link_libraries(TestCommonReadShared MPI::MPI_C)
-  target_link_libraries(TestCommonReadAttrs MPI::MPI_C)
-  target_link_libraries(TestCommonServer MPI::MPI_C)
-  target_link_libraries(TestCommonClient MPI::MPI_C)
-  set(extra_test_args EXEC_WRAPPER ${MPIEXEC_COMMAND})
-  if(ADIOS2_HAVE_Fortran)
-    target_compile_definitions(TestCommonWrite_f PRIVATE ADIOS2_HAVE_MPI_F=1)
-    target_compile_definitions(TestCommonRead_f PRIVATE ADIOS2_HAVE_MPI_F=1)
-    target_link_libraries(TestCommonWrite_f MPI::MPI_Fortran)
-    target_link_libraries(TestCommonRead_f MPI::MPI_Fortran)
+  add_executable(TestCommonWrite_f
+    TestCommonWriteF.F90
+    $<TARGET_OBJECTS:TestCommonData_f>
+  )
+  add_executable(TestCommonRead_f
+    TestCommonReadF.F90
+    $<TARGET_OBJECTS:TestCommonData_f>
+  )
+  set_target_properties(TestCommonWrite_f TestCommonRead_f PROPERTIES
+    LINKER_LANGUAGE Fortran
+  )
+  if(ADIOS2_HAVE_MPI)
+    target_link_libraries(TestCommonWrite_f adios2_fortran_mpi MPI::MPI_Fortran)
+    target_link_libraries(TestCommonRead_f adios2_fortran_mpi MPI::MPI_Fortran)
+  else()
+    target_link_libraries(TestCommonWrite_f adios2_fortran)
+    target_link_libraries(TestCommonRead_f adios2_fortran)
   endif()
 endif()
 
 configure_file(
-  run_test.in
-  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/run_test.py
+  run_test.py.gen.in
+  ${CMAKE_CURRENT_BINARY_DIR}/run_test.py.gen
   @ONLY
 )
+file(GENERATE
+  OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/run_test.py.$<CONFIG>
+  INPUT ${CMAKE_CURRENT_BINARY_DIR}/run_test.py.gen)
 
 include (TestSupp.cmake )
 
@@ -138,13 +91,14 @@ if(ADIOS2_HAVE_MPI AND MPIEXEC_EXECUTABLE)
    endforeach()
 endif()
 
-set (SIMPLE_TESTS "1x1;NoReaderNoWait;TimeoutOnOpen;1x1.Modes;1x1.Attrs;1x1.Local;1x1.SharedNothing;1x1.SharedIO;1x1.SharedVar;1x1.SharedNothingSync;1x1.SharedIOSync;1x1.SharedVarSync;2x1.SharedNothing;2x1.SharedIO;2x1.SharedVar;2x1.SharedNothingSync;2x1.SharedIOSync;2x1.SharedVarSync")
+set (SIMPLE_TESTS "1x1;NoReaderNoWait;TimeoutOnOpen;1x1.NoData;1x1.Modes;1x1.Attrs;1x1.Local;1x1.SharedNothing;1x1.SharedIO;1x1.SharedVar;1x1.SharedNothingSync;1x1.SharedIOSync;1x1.SharedVarSync;1x1EarlyExit")
+
 set (SIMPLE_FORTRAN_TESTS "")
 if(ADIOS2_HAVE_Fortran)
   set (SIMPLE_FORTRAN_TESTS "FtoC.1x1;CtoF.1x1;FtoF.1x1")
 endif()
 
-set (SPECIAL_TESTS "TimeoutReader.1x1;LatestReader.1x1;LatestReaderHold.1x1;DiscardWriter.1x1;PreciousTimestep.3x2;PreciousTimestepDiscard.3x2;1x1.NoPreload;1x1.ForcePreload")
+set (SPECIAL_TESTS "TimeoutReader.1x1;LatestReader.1x1;LatestReaderHold.1x1;DiscardWriter.1x1;1x1.NoPreload;1x1.ForcePreload;1x1LockGeometry")
 if (MPIEXEC_IS_BINARY)
     # run_test.py can only kill readers/writers if mpiexec is not a shell script
     list(APPEND SPECIAL_TESTS "KillReadersSerialized.3x2;KillReaders3Max.3x6;KillWriter_2x2;KillWriterTimeout_2x2")
@@ -153,9 +107,9 @@ endif()
 set (SIMPLE_MPI_TESTS "")
 set (SIMPLE_MPI_FORTRAN_TESTS "")
 if (ADIOS2_HAVE_MPI)
-  set (SIMPLE_MPI_TESTS "2x1;1x2;3x5;5x3;DelayedReader_3x5;3x5LockGeometry;2x1.Local;1x2.Local;3x5.Local;5x3.Local;2x1ZeroDataVar;2x1ZeroDataR64")
-  list (APPEND SPECIAL_TESTS "2x1.NoPreload;2x3.ForcePreload")
-  if (ADIOS_HAVE_Fortran)
+  set (SIMPLE_MPI_TESTS "2x1;1x2;3x5;5x3;DelayedReader_3x5;3x5LockGeometry;2x1.Local;1x2.Local;3x5.Local;5x3.Local;1x1.LocalVarying;5x3.LocalVarying;2x1ZeroDataVar;2x1ZeroDataR64;2x2.NoData;2x2.HalfNoData;2x1.SharedNothing;2x1.SharedIO;2x1.SharedVar;2x1.SharedNothingSync;2x1.SharedIOSync;2x1.SharedVarSync;3x5EarlyExit")
+  list (APPEND SPECIAL_TESTS "2x1.NoPreload;2x3.ForcePreload;PreciousTimestep.3x2;PreciousTimestepDiscard.3x2")
+  if (ADIOS2_HAVE_Fortran)
     set (SIMPLE_MPI_FORTRAN_TESTS "FtoC.3x5;CtoF.3x5;FtoF.3x5")
   endif()
 endif()
@@ -181,6 +135,9 @@ endif()
 MutateTestSet( COMM_MIN_SST_TESTS "CommMin" writer "CPCommPattern=Min" "${BASIC_SST_TESTS}" )
 MutateTestSet( COMM_PEER_SST_TESTS "CommPeer" writer "CPCommPattern=Peer" "${BASIC_SST_TESTS}" )
 
+# temporarily remove PreciousTimestep CommPeer tests
+list (REMOVE_ITEM COMM_PEER_SST_TESTS "PreciousTimestep")
+
 MutateTestSet( FFS_SST_TESTS "FFS" writer "MarshalMethod=FFS" "${COMM_MIN_SST_TESTS};${COMM_PEER_SST_TESTS}" )
 MutateTestSet( BP_SST_TESTS "BP" writer "MarshalMethod=BP" "${COMM_MIN_SST_TESTS};${COMM_PEER_SST_TESTS}" )
 
@@ -197,12 +154,15 @@ endforeach()
 #
 #   Setup tests for InSituMPI engine
 #
-if(ADIOS2_HAVE_MPI)
-    set (INSITU_TESTS ${ALL_SIMPLE_TESTS})
+if(ADIOS2_HAVE_MPI AND ADIOS2_RUN_MPMD_TESTS)
+    set (SIMPLE_IMPI_TESTS "1x1;TimeoutOnOpen;1x1.Modes;1x1.Attrs;1x1.Local;1x1.SharedNothing;1x1.SharedIO;1x1.SharedVar;1x1.SharedNothingSync;1x1.SharedIOSync;1x1.SharedVarSync;2x1.SharedNothing;2x1.SharedIO;2x1.SharedVar;2x1.SharedNothingSync;2x1.SharedIOSync;2x1.SharedVarSync")
+    set (INSITU_TESTS ${SIMPLE_IMPI_TESTS} ${SIMPLE_FORTRAN_TESTS} ${SIMPLE_MPI_TESTS} ${SIMPLE_ZFP_TESTS})
     # Tests that don't work for InSitu
     list (REMOVE_ITEM INSITU_TESTS "TimeoutOnOpen" "1x1.Modes" "1x1.Attrs")
     # Local Vars don't work for InSitu
     list (FILTER INSITU_TESTS EXCLUDE REGEX ".*Local$")
+    # Local Vars don't work for InSitu
+    list (FILTER INSITU_TESTS EXCLUDE REGEX ".*LocalVarying$")
     # Multiple streams don't work for InSitu
     list (FILTER INSITU_TESTS EXCLUDE REGEX "x1.Shared")
     # Fortran Destination doesn't work for InSitu
@@ -215,8 +175,20 @@ if(ADIOS2_HAVE_MPI)
     list (FILTER INSITU_TESTS EXCLUDE REGEX "(FtoF|CtoF).*")
     # No locking geometry
     list (FILTER INSITU_TESTS EXCLUDE REGEX "LockGeometry")
+    # The nobody-writes-data-in-a-timestep tests don't work for InSitu
+    list (FILTER INSITU_TESTS EXCLUDE REGEX ".*NoData$")
+    # Readers can't exit early in INSITU
+    list (FILTER INSITU_TESTS EXCLUDE REGEX ".*EarlyExit$")
     foreach(test ${INSITU_TESTS})
         add_common_test(${test} InSituMPI)
+    endforeach()
+endif()
+
+if(ADIOS2_HAVE_SSC AND ADIOS2_RUN_MPMD_TESTS)
+    set (SSC_BASE_TESTS "1x1;1x1.Attrs;2x1;1x2;2x1ZeroDataVar;2x1ZeroDataR64;3x5;5x3;3x5LockGeometry;TimeoutOnOpen")
+    set (SSC_TESTS  ${SIMPLE_FORTRAN_TESTS} ${SIMPLE_MPI_FORTRAN_TESTS} ${SSC_BASE_TESTS})
+    foreach(test ${SSC_TESTS})
+        add_common_test(${test} SSC)
     endforeach()
 endif()
 
@@ -230,6 +202,8 @@ if(NOT MSVC)    # not on windows
     list (FILTER BP_TESTS EXCLUDE REGEX "DelayedReader")
     # SharedVars fail with BP*
     list (FILTER BP_TESTS EXCLUDE REGEX ".*SharedVar$")
+    # The nobody-writes-data-in-a-timestep tests don't work for any BP file engine
+    list (FILTER BP_TESTS EXCLUDE REGEX ".*NoData$")
     foreach(test ${BP_TESTS})
         add_common_test(${test} BP4)
     endforeach()
@@ -268,15 +242,27 @@ if(NOT MSVC)    # not on windows
     list (FILTER BP4_STREAM_TESTS EXCLUDE REGEX ".*Local.BPS$")
     # Fortran scalar reads don't work for BP4 streaming
     list (FILTER BP4_STREAM_TESTS EXCLUDE REGEX "(FtoF|CtoF).*")
+    # Local Vars have a heisen failure for BP4 streaming
+    list (FILTER BP4_STREAM_TESTS EXCLUDE REGEX ".*LocalVarying.BPS$")
+    # The nobody-writes-data-in-a-timestep tests don't work for any BP file engine
+    list (FILTER BP4_STREAM_TESTS EXCLUDE REGEX ".*NoData.BPS$")
+    
     foreach(test ${BP4_STREAM_TESTS})
         add_common_test(${test} BP4_stream)
     endforeach()
+
+    # add burst buffer tests
+    MutateTestSet( BP4_BBSTREAM_TESTS "BB" writer "BurstBufferPath=bb,BurstBufferVerbose=2" "${BP4_STREAM_TESTS}")
+    foreach(test ${BP4_BBSTREAM_TESTS})
+        add_common_test(${test} BP4_stream)
+    endforeach()
+    
 endif()
 
 #
 #   Setup tests for HDF5 engine
 #
-if(NOT MSVC AND ADIOS2_HAVE_HDF5)    # not on windows and only if we have HDF5
+if(NOT MSVC AND ADIOS2_HAVE_HDF5 AND (NOT ADIOS2_HAVE_MPI OR HDF5_IS_PARALLEL))    # not on windows and only if we have HDF5
     set (HDF5_TESTS ${ALL_SIMPLE_TESTS})
     # Delayed reader not worth testing on file engines
     list (FILTER HDF5_TESTS EXCLUDE REGEX "DelayedReader")
@@ -284,20 +270,9 @@ if(NOT MSVC AND ADIOS2_HAVE_HDF5)    # not on windows and only if we have HDF5
     list (FILTER HDF5_TESTS EXCLUDE REGEX ".*Local")
     # Oddly, some multi-writer tests fail
     list (FILTER HDF5_TESTS EXCLUDE REGEX "[2345]x")
+    # The nobody-writes-data-in-a-timestep tests don't work with HDF5
+    list (FILTER HDF5_TESTS EXCLUDE REGEX ".*HalfNoData$")
     foreach(test ${HDF5_TESTS})
         add_common_test(${test} HDF5)
     endforeach()
 endif()
-
-
-#
-#   Setup tests for SSC engine
-#
-if(ADIOS2_HAVE_SSC AND ADIOS2_HAVE_MPI)
-    set(SSC_TESTS "NoReaderNoWait")
-    foreach(test ${SSC_TESTS})
-        add_common_test(${test} SSC)
-    endforeach()
-endif()
-
-

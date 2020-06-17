@@ -8,30 +8,18 @@
 
 #include "ADIOS.h"
 
-#include "adios2/common/ADIOSMPI.h"
 #include "adios2/core/ADIOS.h"
 #include "adios2/core/IO.h"
 #include "adios2/helper/adiosFunctions.h" //CheckForNullptr
 
 namespace adios2
 {
-#ifdef ADIOS2_HAVE_MPI
-ADIOS::ADIOS(const std::string &configFile, MPI_Comm comm, const bool debugMode)
-: m_ADIOS(std::make_shared<core::ADIOS>(configFile, comm, debugMode, "C++"))
-{
-}
-
-ADIOS::ADIOS(MPI_Comm comm, const bool debugMode) : ADIOS("", comm, debugMode)
-{
-}
-
-#endif
 ADIOS::ADIOS(const std::string &configFile, const bool debugMode)
-: m_ADIOS(std::make_shared<core::ADIOS>(configFile, debugMode, "C++"))
+: m_ADIOS(std::make_shared<core::ADIOS>(configFile, "C++"))
 {
 }
 
-ADIOS::ADIOS(const bool debugMode) : ADIOS("", debugMode) {}
+ADIOS::ADIOS(const bool debugMode) : ADIOS("", "C++") {}
 
 ADIOS::operator bool() const noexcept { return m_ADIOS ? true : false; }
 

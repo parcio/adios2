@@ -28,8 +28,8 @@ namespace format
 
 std::mutex BP3Deserializer::m_Mutex;
 
-BP3Deserializer::BP3Deserializer(helper::Comm const &comm, const bool debugMode)
-: BP3Base(comm, debugMode), BPBase(comm, debugMode), m_Minifooter(3)
+BP3Deserializer::BP3Deserializer(helper::Comm const &comm)
+: BP3Base(comm), BPBase(comm), m_Minifooter(3)
 {
 }
 
@@ -73,18 +73,24 @@ void BP3Deserializer::ParseMinifooter(const BufferSTL &bufferSTL)
     const size_t bufferSize = buffer.size();
     size_t position = bufferSize - 4;
     const uint8_t endianness = helper::ReadValue<uint8_t>(buffer, position);
+    if (endianness > 1)
+    {
+        std::string err =
+            "The endianness flag in the .bp file was neither zero nor one (" +
+            std::to_string(endianness) +
+            "), this indicates the the file is either corrupted, or not a .bp "
+            "file.";
+        throw std::runtime_error(err);
+    }
     m_Minifooter.IsLittleEndian = (endianness == 0) ? true : false;
 #ifndef ADIOS2_HAVE_ENDIAN_REVERSE
-    if (m_DebugMode)
+    if (helper::IsLittleEndian() != m_Minifooter.IsLittleEndian)
     {
-        if (helper::IsLittleEndian() != m_Minifooter.IsLittleEndian)
-        {
-            throw std::runtime_error(
-                "ERROR: reader found BigEndian bp file, "
-                "this version of ADIOS2 wasn't compiled "
-                "with the cmake flag -DADIOS2_USE_Endian_Reverse=ON "
-                "explicitly, in call to Open\n");
-        }
+        throw std::runtime_error(
+            "ERROR: reader found BigEndian bp file, "
+            "this version of ADIOS2 wasn't compiled "
+            "with the cmake flag -DADIOS2_USE_Endian_Reverse=ON "
+            "explicitly, in call to Open\n");
     }
 #endif
 
@@ -141,7 +147,15 @@ void BP3Deserializer::ParsePGIndex(const BufferSTL &bufferSTL,
     std::unordered_set<uint32_t> stepsFound;
     m_MetadataSet.StepsCount = 0;
 
-    while (localPosition < length)
+    /* Note: In ADIOS 1.x BP3 files, length is unreliable and is
+     * probably smaller than the actual length of the PG index. Let's use
+     * here the more reliable limit: the start of variable index - start of
+     * PG index (- the already parsed 16 bytes)
+     */
+    const size_t pgIndexLength =
+        m_Minifooter.VarsIndexStart - m_Minifooter.PGIndexStart - 16;
+
+    while (localPosition < pgIndexLength)
     {
         ProcessGroupIndex index = ReadProcessGroupIndexHeader(
             buffer, position, m_Minifooter.IsLittleEndian);
@@ -193,7 +207,7 @@ void BP3Deserializer::ParseVariablesIndex(const BufferSTL &bufferSTL,
 
     const auto &buffer = bufferSTL.m_Buffer;
     size_t position = helper::GetDistance(
-        m_Minifooter.VarsIndexStart, m_Minifooter.PGIndexStart, m_DebugMode,
+        m_Minifooter.VarsIndexStart, m_Minifooter.PGIndexStart,
         " BP3 variable index start < pg index start, in call to Open");
 
     const uint32_t count = helper::ReadValue<uint32_t>(
@@ -204,9 +218,17 @@ void BP3Deserializer::ParseVariablesIndex(const BufferSTL &bufferSTL,
     const size_t startPosition = position;
     size_t localPosition = 0;
 
+    /* Note: In ADIOS 1.x BP3 files, length is unreliable and is
+     * probably smaller than the actual length of the variable index. Let's use
+     * here the more reliable limit: the start of attribute index - start of
+     * variable index (- the already parsed 12 bytes)
+     */
+    const size_t varIndexLength =
+        m_Minifooter.AttributesIndexStart - m_Minifooter.VarsIndexStart - 12;
+
     if (m_Parameters.Threads == 1)
     {
-        while (localPosition < length)
+        while (localPosition < varIndexLength)
         {
             lf_ReadElementIndex(engine, buffer, position);
 
@@ -225,7 +247,7 @@ void BP3Deserializer::ParseVariablesIndex(const BufferSTL &bufferSTL,
 
     bool launched = false;
 
-    while (localPosition < length)
+    while (localPosition < varIndexLength)
     {
         // extract async positions
         for (unsigned int t = 0; t < m_Parameters.Threads; ++t)
@@ -242,7 +264,7 @@ void BP3Deserializer::ParseVariablesIndex(const BufferSTL &bufferSTL,
                 asyncs[t].get();
             }
 
-            if (localPosition <= length)
+            if (localPosition <= varIndexLength)
             {
                 asyncs[t] = std::async(std::launch::async, lf_ReadElementIndex,
                                        std::ref(engine), std::ref(buffer),
@@ -295,7 +317,6 @@ void BP3Deserializer::ParseAttributesIndex(const BufferSTL &bufferSTL,
 
     size_t position = helper::GetDistance(
         m_Minifooter.AttributesIndexStart, m_Minifooter.PGIndexStart,
-        m_DebugMode,
         " BP3 attributes index start < pg index start, in call to Open");
 
     const uint32_t count = helper::ReadValue<uint32_t>(
@@ -306,8 +327,16 @@ void BP3Deserializer::ParseAttributesIndex(const BufferSTL &bufferSTL,
     const size_t startPosition = position;
     size_t localPosition = 0;
 
+    /* Note: In ADIOS 1.x BP3 files, length is unreliable and is
+     * probably smaller than the actual length of the attribute index. Let's use
+     * here the more reliable limit: the end of index buffer - the size of the
+     * minifooter
+     */
+    const size_t attrIndexLength =
+        buffer.size() - m_MetadataSet.MiniFooterSize - startPosition;
+
     // Read sequentially
-    while (localPosition < length)
+    while (localPosition < attrIndexLength)
     {
         lf_ReadElementIndex(engine, buffer, position);
         const size_t elementIndexSize =

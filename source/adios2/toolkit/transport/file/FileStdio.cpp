@@ -11,6 +11,8 @@
 #include "FileStdio.h"
 
 /// \cond EXCLUDE_FROM_DOXYGEN
+#include <cerrno>
+#include <cstring>
 #include <ios> //std::ios_base::failure
 /// \endcond
 
@@ -24,8 +26,8 @@ namespace adios2
 namespace transport
 {
 
-FileStdio::FileStdio(helper::Comm const &comm, const bool debugMode)
-: Transport("File", "stdio", comm, debugMode)
+FileStdio::FileStdio(helper::Comm const &comm)
+: Transport("File", "stdio", comm)
 {
 }
 
@@ -37,8 +39,33 @@ FileStdio::~FileStdio()
     }
 }
 
-void FileStdio::Open(const std::string &name, const Mode openMode)
+void FileStdio::WaitForOpen()
 {
+    if (m_IsOpening)
+    {
+        if (m_OpenFuture.valid())
+        {
+            m_File = m_OpenFuture.get();
+        }
+        m_IsOpening = false;
+        CheckFile(
+            "couldn't open file " + m_Name +
+            ", check permissions or path existence, in call to POSIX open");
+        m_IsOpen = true;
+        if (m_DelayedBufferSet)
+        {
+            SetBuffer(m_DelayedBuffer, m_DelayedBufferSize);
+        }
+    }
+}
+
+void FileStdio::Open(const std::string &name, const Mode openMode,
+                     const bool async)
+{
+    auto lf_AsyncOpenWrite = [&](const std::string &name) -> FILE * {
+        errno = 0;
+        return std::fopen(name.c_str(), "wb");
+    };
     m_Name = name;
     CheckName();
     m_OpenMode = openMode;
@@ -46,31 +73,71 @@ void FileStdio::Open(const std::string &name, const Mode openMode)
     switch (m_OpenMode)
     {
     case (Mode::Write):
-        m_File = std::fopen(name.c_str(), "wb");
+        if (async)
+        {
+            m_IsOpening = true;
+            m_OpenFuture =
+                std::async(std::launch::async, lf_AsyncOpenWrite, name);
+        }
+        else
+        {
+            errno = 0;
+            m_File = std::fopen(name.c_str(), "wb");
+        }
         break;
     case (Mode::Append):
+        errno = 0;
         m_File = std::fopen(name.c_str(), "rwb");
         // m_File = std::fopen(name.c_str(), "a+b");
         std::fseek(m_File, 0, SEEK_END);
         break;
     case (Mode::Read):
+        errno = 0;
         m_File = std::fopen(name.c_str(), "rb");
         break;
     default:
-        CheckFile("unknown open mode for file " + m_Name +
-                  ", in call to stdio fopen");
+        throw std::ios_base::failure("ERROR: unknown open mode for file " +
+                                     m_Name + ", in call to stdio fopen");
     }
 
-    CheckFile("couldn't open file " + m_Name +
-              ", check permissions or path existence, in call to stdio open");
-    m_IsOpen = true;
+    if (!m_IsOpening)
+    {
+        CheckFile(
+            "couldn't open file " + m_Name +
+            ", check permissions or path existence, in call to stdio open");
+        m_IsOpen = true;
+    }
 }
 
 void FileStdio::SetBuffer(char *buffer, size_t size)
 {
-    const int status = std::setvbuf(m_File, buffer, _IOFBF, size);
+    if (!m_File)
+    {
+        m_DelayedBufferSet = true;
+        m_DelayedBuffer = buffer;
+        m_DelayedBufferSize = size;
+        return;
+    }
+    m_DelayedBufferSet = false;
+    m_DelayedBuffer = nullptr;
+    m_DelayedBufferSize = 0;
 
-    if (!status)
+    int status;
+    if (buffer)
+    {
+        status = std::setvbuf(m_File, buffer, _IOFBF, size);
+    }
+    else
+    {
+        if (size != 0)
+        {
+            throw std::invalid_argument(
+                "buffer size must be 0 when using a NULL buffer");
+        }
+        status = std::setvbuf(m_File, NULL, _IONBF, 0);
+    }
+
+    if (status)
     {
         throw std::ios_base::failure(
             "ERROR: could not set FILE* buffer in file " + m_Name +
@@ -98,6 +165,7 @@ void FileStdio::Write(const char *buffer, size_t size, size_t start)
         }
     };
 
+    WaitForOpen();
     if (start != MaxSizeT)
     {
         const auto status =
@@ -151,6 +219,7 @@ void FileStdio::Read(char *buffer, size_t size, size_t start)
         }
     };
 
+    WaitForOpen();
     if (start != MaxSizeT)
     {
         const auto status =
@@ -182,6 +251,7 @@ void FileStdio::Read(char *buffer, size_t size, size_t start)
 
 size_t FileStdio::GetSize()
 {
+    WaitForOpen();
     const auto currentPosition = ftell(m_File);
     if (currentPosition == -1L)
     {
@@ -204,6 +274,7 @@ size_t FileStdio::GetSize()
 
 void FileStdio::Flush()
 {
+    WaitForOpen();
     ProfilerStart("write");
     const int status = std::fflush(m_File);
     ProfilerStop("write");
@@ -217,6 +288,7 @@ void FileStdio::Flush()
 
 void FileStdio::Close()
 {
+    WaitForOpen();
     ProfilerStart("close");
     const int status = std::fclose(m_File);
     ProfilerStop("close");
@@ -230,9 +302,28 @@ void FileStdio::Close()
     m_IsOpen = false;
 }
 
+void FileStdio::Delete()
+{
+    WaitForOpen();
+    if (m_IsOpen)
+    {
+        Close();
+    };
+    std::remove(m_Name.c_str());
+}
+
 void FileStdio::CheckFile(const std::string hint) const
 {
-    if (std::ferror(m_File))
+    if (!m_File)
+    {
+        std::string errmsg;
+        if (errno)
+        {
+            errmsg = std::strerror(errno);
+        }
+        throw std::ios_base::failure("ERROR: " + hint + ":" + errmsg + "\n");
+    }
+    else if (std::ferror(m_File))
     {
         throw std::ios_base::failure("ERROR: " + hint + "\n");
     }
@@ -240,6 +331,7 @@ void FileStdio::CheckFile(const std::string hint) const
 
 void FileStdio::SeekToEnd()
 {
+    WaitForOpen();
     const auto status = std::fseek(m_File, 0, SEEK_END);
     if (status == -1)
     {
@@ -251,6 +343,7 @@ void FileStdio::SeekToEnd()
 
 void FileStdio::SeekToBegin()
 {
+    WaitForOpen();
     const auto status = std::fseek(m_File, 0, SEEK_SET);
     if (status == -1)
     {

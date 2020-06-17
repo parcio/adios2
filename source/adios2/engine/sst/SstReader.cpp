@@ -15,6 +15,7 @@
 #include <cstring>
 #include <string>
 
+#include "adios2/helper/adiosComm.h"
 #include "adios2/helper/adiosFunctions.h"
 #include "adios2/toolkit/profiling/taustubs/tautimer.hpp"
 
@@ -34,9 +35,10 @@ SstReader::SstReader(IO &io, const std::string &name, const Mode mode,
 
     Init();
 
-    m_Input = SstReaderOpen(cstr, &Params, m_Comm.AsMPI());
+    m_Input = SstReaderOpen(cstr, &Params, &m_Comm);
     if (!m_Input)
     {
+        delete[] cstr;
         throw std::runtime_error(
             "ERROR: SstReader did not find active "
             "Writer contact info in file \"" +
@@ -253,7 +255,6 @@ StepStatus SstReader::BeginStep(StepMode Mode, const float timeout_sec)
         break;
     }
     m_IO.RemoveAllVariables();
-    m_IO.RemoveAllAttributes();
     result = SstAdvanceStep(m_Input, timeout_sec);
     if (result == SstEndOfStream)
     {
@@ -310,9 +311,9 @@ StepStatus SstReader::BeginStep(StepMode Mode, const float timeout_sec)
         //   whatever transport it is using.  But it is opaque to the Engine
         //   (and to the control plane).)
 
-        m_BP3Deserializer = new format::BP3Deserializer(m_Comm, m_DebugMode);
+        m_BP3Deserializer = new format::BP3Deserializer(m_Comm);
         m_BP3Deserializer->Init(m_IO.m_Parameters,
-                                "in call to BP3::Open for reading");
+                                "in call to BP3::Open for reading", "sst");
 
         m_BP3Deserializer->m_Metadata.Resize(
             (*m_CurrentStepMetaData->WriterMetadata)->DataSize,
@@ -346,6 +347,11 @@ size_t SstReader::CurrentStep() const { return SstCurrentStep(m_Input); }
 
 void SstReader::EndStep()
 {
+    if (!m_BetweenStepPairs)
+    {
+        throw std::logic_error(
+            "ERROR: EndStep() is called without a successful BeginStep()");
+    }
     m_BetweenStepPairs = false;
     TAU_SCOPED_TIMER_FUNC();
     if (m_ReaderSelectionsLocked && !m_DefinitionsNotified)
@@ -422,6 +428,7 @@ void SstReader::Init()
             size_t *Start = NULL;                                              \
             size_t *Count = NULL;                                              \
             size_t DimCount = 0;                                               \
+            int NeedSync;                                                      \
                                                                                \
             if (variable.m_SelectionType ==                                    \
                 adios2::SelectionType::BoundingBox)                            \
@@ -429,20 +436,23 @@ void SstReader::Init()
                 DimCount = variable.m_Shape.size();                            \
                 Start = variable.m_Start.data();                               \
                 Count = variable.m_Count.data();                               \
-                SstFFSGetDeferred(m_Input, (void *)&variable,                  \
-                                  variable.m_Name.c_str(), DimCount, Start,    \
-                                  Count, data);                                \
+                NeedSync = SstFFSGetDeferred(m_Input, (void *)&variable,       \
+                                             variable.m_Name.c_str(),          \
+                                             DimCount, Start, Count, data);    \
             }                                                                  \
             else if (variable.m_SelectionType ==                               \
                      adios2::SelectionType::WriteBlock)                        \
             {                                                                  \
                 DimCount = variable.m_Count.size();                            \
                 Count = variable.m_Count.data();                               \
-                SstFFSGetLocalDeferred(m_Input, (void *)&variable,             \
-                                       variable.m_Name.c_str(), DimCount,      \
-                                       variable.m_BlockID, Count, data);       \
+                NeedSync = SstFFSGetLocalDeferred(                             \
+                    m_Input, (void *)&variable, variable.m_Name.c_str(),       \
+                    DimCount, variable.m_BlockID, Count, data);                \
             }                                                                  \
-            SstFFSPerformGets(m_Input);                                        \
+            if (NeedSync)                                                      \
+            {                                                                  \
+                SstFFSPerformGets(m_Input);                                    \
+            }                                                                  \
         }                                                                      \
         if (m_WriterMarshalMethod == SstMarshalBP)                             \
         {                                                                      \
@@ -450,7 +460,12 @@ void SstReader::Init()
             /*  it's a bad idea in an SST-like environment.  But do */         \
             /*  whatever you do forDoGetDeferred() and then PerformGets() */   \
             DoGetDeferred(variable, data);                                     \
-            PerformGets();                                                     \
+            if (!variable.m_SingleValue)                                       \
+            {                                                                  \
+                /* Don't need to do gets if this was a SingleValue (in         \
+                 * metadata) */                                                \
+                PerformGets();                                                 \
+            }                                                                  \
         }                                                                      \
     }                                                                          \
                                                                                \
@@ -522,6 +537,10 @@ void SstReader::PerformGets()
     }
     else if (m_WriterMarshalMethod == SstMarshalBP)
     {
+        std::vector<void *> sstReadHandlers;
+        std::vector<std::vector<char>> buffers;
+        size_t iter = 0;
+
         if (m_BP3Deserializer->m_DeferredVariables.empty())
         {
             return;
@@ -543,7 +562,34 @@ void SstReader::PerformGets()
         {                                                                      \
             m_BP3Deserializer->SetVariableBlockInfo(variable, blockInfo);      \
         }                                                                      \
-        ReadVariableBlocks(variable);                                          \
+        ReadVariableBlocksRequests(variable, sstReadHandlers, buffers);        \
+    }
+            ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
+#undef declare_type
+        }
+        // wait for all SstRead requests to finish
+        for (const auto &i : sstReadHandlers)
+        {
+            if (SstWaitForCompletion(m_Input, i) != SstSuccess)
+            {
+                throw std::runtime_error(
+                    "ERROR:  Writer failed before returning data");
+            }
+        }
+
+        for (const std::string &name : m_BP3Deserializer->m_DeferredVariables)
+        {
+            const std::string type = m_IO.InquireVariableType(name);
+
+            if (type == "compound")
+            {
+            }
+#define declare_type(T)                                                        \
+    else if (type == helper::GetType<T>())                                     \
+    {                                                                          \
+        Variable<T> &variable =                                                \
+            FindVariable<T>(name, "in call to PerformGets, EndStep or Close"); \
+        ReadVariableBlocksFill(variable, buffers, iter);                       \
         variable.m_BlocksInfo.clear();                                         \
     }
             ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)

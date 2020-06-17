@@ -23,55 +23,49 @@ namespace interop
 {
 
 template <class T>
-void HDF5Common::Write(core::Variable<T> &variable, const T *values)
+void HDF5Common::DefineDataset(core::Variable<T> &variable)
 {
-    CheckWriteGroup();
     int dimSize = std::max(variable.m_Shape.size(), variable.m_Count.size());
     hid_t h5Type = GetHDF5Type<T>();
-
-    if (std::is_same<T, std::string>::value)
-    {
-        h5Type = GetTypeStringScalar(*(std::string *)values);
-    }
 
     if (dimSize == 0)
     {
         // write scalar
         hid_t filespaceID = H5Screate(H5S_SCALAR);
-        // hid_t dsetID = CreateDataset(variable.m_Name, h5Type, filespaceID);
+        HDF5TypeGuard g0(filespaceID, E_H5_SPACE);
+
         std::vector<hid_t> chain;
         CreateDataset(variable.m_Name, h5Type, filespaceID, chain);
         HDF5DatasetGuard g(chain);
-        hid_t dsetID = chain.back();
-        /*
-        hid_t dsetID =
-            H5Dcreate(m_GroupId, variable.m_Name.c_str(), h5Type, filespaceID,
-                      H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-                      */
-        /*
-                hid_t plistID = H5Pcreate(H5P_DATASET_XFER);
-        #ifdef ADIOS2_HAVE_MPI
-                H5Pset_dxpl_mpio(plistID, H5FD_MPIO_COLLECTIVE);
-        #endif
-        */
-        if (std::is_same<T, std::string>::value)
-        {
-            H5Dwrite(dsetID, h5Type, H5S_ALL, H5S_ALL, m_PropertyTxfID,
-                     ((std::string *)values)->data());
-            H5Tclose(h5Type);
-        }
-        else
-        {
-            H5Dwrite(dsetID, h5Type, H5S_ALL, H5S_ALL, m_PropertyTxfID, values);
-        }
-        H5Sclose(filespaceID);
-        //	CloseDataset(dsetID);
-
         return;
     }
-
+    // dimSize > 0
     std::vector<hsize_t> dimsf, count, offset;
+    GetHDF5SpaceSpec(variable, dimsf, count, offset);
 
+    hid_t fileSpace = H5Screate_simple(dimSize, dimsf.data(), NULL);
+    HDF5TypeGuard fs(fileSpace, E_H5_SPACE);
+
+    std::vector<hid_t> chain;
+    CreateDataset(variable.m_Name, h5Type, fileSpace, chain);
+    HDF5DatasetGuard g(chain);
+}
+
+template <>
+void HDF5Common::DefineDataset<std::string>(
+    core::Variable<std::string> &variable)
+{
+    std::cout << "...Needs actual string size, so defer to later? var name="
+              << variable.m_Name << std::endl;
+}
+
+template <class T>
+void HDF5Common::GetHDF5SpaceSpec(const core::Variable<T> &variable,
+                                  std::vector<hsize_t> &dimsf,
+                                  std::vector<hsize_t> &count,
+                                  std::vector<hsize_t> &offset)
+{
+    int dimSize = std::max(variable.m_Shape.size(), variable.m_Count.size());
     for (int i = 0; i < dimSize; ++i)
     {
         if (variable.m_Shape.size() == dimSize)
@@ -101,19 +95,90 @@ void HDF5Common::Write(core::Variable<T> &variable, const T *values)
             offset.push_back(0);
         }
     }
+}
+
+template <class T>
+void HDF5Common::Write(core::Variable<T> &variable, const T *values)
+{
+    CheckWriteGroup();
+    int dimSize = std::max(variable.m_Shape.size(), variable.m_Count.size());
+    hid_t h5Type = GetHDF5Type<T>();
+
+    if (std::is_same<T, std::string>::value)
+    {
+        h5Type = GetTypeStringScalar(*(std::string *)values);
+    }
+
+    if (dimSize == 0)
+    {
+#ifndef RELAY_DEFINE_TO_HDF5 // RELAY_DEFINE_TO_HDF5 = variables in io are
+                             // created at begin_step
+        // write scalar
+        hid_t filespaceID = H5Screate(H5S_SCALAR);
+
+        std::vector<hid_t> chain;
+        CreateDataset(variable.m_Name, h5Type, filespaceID, chain);
+        HDF5DatasetGuard g(chain);
+        hid_t dsetID = chain.back();
+
+        if (std::is_same<T, std::string>::value)
+        {
+            H5Dwrite(dsetID, h5Type, H5S_ALL, H5S_ALL, m_PropertyTxfID,
+                     ((std::string *)values)->data());
+            H5Tclose(h5Type);
+        }
+        else
+        {
+            H5Dwrite(dsetID, h5Type, H5S_ALL, H5S_ALL, m_PropertyTxfID, values);
+        }
+        H5Sclose(filespaceID);
+#else
+
+        if (std::is_same<T, std::string>::value)
+        {
+            hid_t filespaceID = H5Screate(H5S_SCALAR);
+            std::vector<hid_t> chain;
+            CreateDataset(variable.m_Name, h5Type, filespaceID, chain);
+            HDF5DatasetGuard g(chain);
+            H5Sclose(filespaceID);
+        }
+        hid_t dsetID = H5Dopen(m_GroupId, variable.m_Name.c_str(), H5P_DEFAULT);
+        if (-1 != dsetID)
+        { // exists
+            if (std::is_same<T, std::string>::value)
+            {
+                H5Dwrite(dsetID, h5Type, H5S_ALL, H5S_ALL, m_PropertyTxfID,
+                         ((std::string *)values)->data());
+                H5Tclose(h5Type);
+            }
+            else
+            {
+                H5Dwrite(dsetID, h5Type, H5S_ALL, H5S_ALL, m_PropertyTxfID,
+                         values);
+            }
+        }
+#endif
+
+        return;
+    }
+
+    std::vector<hsize_t> dimsf, count, offset;
+    GetHDF5SpaceSpec(variable, dimsf, count, offset);
 
     hid_t fileSpace = H5Screate_simple(dimSize, dimsf.data(), NULL);
-
+#ifndef RELAY_DEFINE_TO_HDF5 // RELAY_DEFINE_TO_HDF5 = variables in io are
+                             // created at begin_step
     std::vector<hid_t> chain;
-    /*hid_t dsetID =*/CreateDataset(variable.m_Name, h5Type, fileSpace, chain);
+    CreateDataset(variable.m_Name, h5Type, fileSpace, chain);
     hid_t dsetID = chain.back();
     HDF5DatasetGuard g(chain);
-    /*
-    hid_t dsetID = H5Dcreate(m_GroupId, variable.m_Name.c_str(), h5Type,
-                             fileSpace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-                             */
-    // H5Sclose(fileSpace);
-
+#else
+    hid_t dsetID = H5Dopen(m_GroupId, variable.m_Name.c_str(), H5P_DEFAULT);
+    HDF5TypeGuard k(dsetID, E_H5_DATASET);
+    if (-1 == dsetID)
+    {
+    }
+#endif
     hid_t memSpace = H5Screate_simple(dimSize, count.data(), NULL);
 
     // Select hyperslab
@@ -121,32 +186,40 @@ void HDF5Common::Write(core::Variable<T> &variable, const T *values)
     H5Sselect_hyperslab(fileSpace, H5S_SELECT_SET, offset.data(), NULL,
                         count.data(), NULL);
 
-    /*
-        //  Create property list for collective dataset write.
-
-        hid_t plistID = H5Pcreate(H5P_DATASET_XFER);
-    #ifdef ADIOS2_HAVE_MPI
-        H5Pset_dxpl_mpio(plistID, H5FD_MPIO_COLLECTIVE);
-    #endif
-    */
     herr_t status;
 
-    status =
-        H5Dwrite(dsetID, h5Type, memSpace, fileSpace, m_PropertyTxfID, values);
-    if (status < 0)
+    if (!variable.m_MemoryStart.empty())
     {
-        if (m_DebugMode)
-        {
-            throw std::ios_base::failure(
-                "ERROR: HDF5 file Write failed, in call to Write\n");
-        }
+        auto blockSize = helper::GetTotalSize(variable.m_Count);
+        T *k = reinterpret_cast<T *>(calloc(blockSize, sizeof(T)));
+
+        adios2::Dims zero(variable.m_Start.size(), 0);
+        helper::CopyMemoryBlock(k, zero, variable.m_Count, true, values,
+                                zero, // variable.m_Start,
+                                variable.m_Count, true, false, Dims(), Dims(),
+                                variable.m_MemoryStart, variable.m_MemoryCount);
+
+        status =
+            H5Dwrite(dsetID, h5Type, memSpace, fileSpace, m_PropertyTxfID, k);
+        free(k);
+    }
+    else
+    {
+        status = H5Dwrite(dsetID, h5Type, memSpace, fileSpace, m_PropertyTxfID,
+                          values);
     }
 
+    if (status < 0)
+    {
+        throw std::ios_base::failure(
+            "ERROR: HDF5 file Write failed, in call to Write\n");
+    }
+
+#ifdef NO_STAT
     size_t valuesSize = adios2::helper::GetTotalSize(variable.m_Count);
     T min, max;
     adios2::helper::GetMinMaxThreads(values, valuesSize, min, max, 1);
 
-#ifdef NO_STAT
     int chainSize = chain.size();
     hid_t parentId = m_GroupId;
     if (chainSize > 1)
@@ -158,10 +231,8 @@ void HDF5Common::Write(core::Variable<T> &variable, const T *values)
     std::vector<T> stats = {min, max};
     AddStats(variable, parentId, stats);
 #endif
-    //    CloseDataset(dsetID);
     H5Sclose(fileSpace);
     H5Sclose(memSpace);
-    //    H5Pclose(plistID);
 }
 
 template <class T>
@@ -305,6 +376,11 @@ template <>
 hid_t HDF5Common::GetHDF5Type<std::complex<double>>()
 {
     return m_DefH5TypeComplexDouble;
+}
+template <>
+hid_t HDF5Common::GetHDF5Type<std::complex<long double>>()
+{
+    return m_DefH5TypeComplexLongDouble;
 }
 
 } // end namespace interop

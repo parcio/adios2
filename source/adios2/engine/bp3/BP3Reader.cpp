@@ -23,9 +23,8 @@ namespace engine
 
 BP3Reader::BP3Reader(IO &io, const std::string &name, const Mode mode,
                      helper::Comm comm)
-: Engine("BP3", io, name, mode, std::move(comm)),
-  m_BP3Deserializer(m_Comm, m_DebugMode), m_FileManager(m_Comm, m_DebugMode),
-  m_SubFileManager(m_Comm, m_DebugMode)
+: Engine("BP3", io, name, mode, std::move(comm)), m_BP3Deserializer(m_Comm),
+  m_FileManager(m_Comm), m_SubFileManager(m_Comm)
 {
     TAU_SCOPED_TIMER("BP3Reader::Open");
     Init();
@@ -34,24 +33,21 @@ BP3Reader::BP3Reader(IO &io, const std::string &name, const Mode mode,
 StepStatus BP3Reader::BeginStep(StepMode mode, const float timeoutSeconds)
 {
     TAU_SCOPED_TIMER("BP3Reader::BeginStep");
-    if (m_DebugMode)
+    if (mode != StepMode::Read)
     {
-        if (mode != StepMode::Read)
-        {
-            throw std::invalid_argument(
-                "ERROR: mode is not supported yet, "
-                "only Read is valid for "
-                "engine BP3 with adios2::Mode::Read, in call to "
-                "BeginStep\n");
-        }
+        throw std::invalid_argument(
+            "ERROR: mode is not supported yet, "
+            "only Read is valid for "
+            "engine BP3 with adios2::Mode::Read, in call to "
+            "BeginStep\n");
+    }
 
-        if (!m_BP3Deserializer.m_DeferredVariables.empty())
-        {
-            throw std::invalid_argument(
-                "ERROR: existing variables subscribed with "
-                "GetDeferred, did you forget to call "
-                "PerformGets() or EndStep()?, in call to BeginStep\n");
-        }
+    if (!m_BP3Deserializer.m_DeferredVariables.empty())
+    {
+        throw std::invalid_argument(
+            "ERROR: existing variables subscribed with "
+            "GetDeferred, did you forget to call "
+            "PerformGets() or EndStep()?, in call to BeginStep\n");
     }
 
     if (m_FirstStep)
@@ -123,14 +119,11 @@ void BP3Reader::PerformGets()
 // PRIVATE
 void BP3Reader::Init()
 {
-    if (m_DebugMode)
+    if (m_OpenMode != Mode::Read)
     {
-        if (m_OpenMode != Mode::Read)
-        {
-            throw std::invalid_argument(
-                "ERROR: BPFileReader only supports OpenMode::Read from" +
-                m_Name + " " + m_EndMessage);
-        }
+        throw std::invalid_argument(
+            "ERROR: BPFileReader only supports OpenMode::Read from" + m_Name +
+            " " + m_EndMessage);
     }
 
     InitTransports();
@@ -175,8 +168,18 @@ void BP3Reader::InitBuffer()
         // Load/Read Minifooter
         const size_t miniFooterSize =
             m_BP3Deserializer.m_MetadataSet.MiniFooterSize;
+        if (fileSize < miniFooterSize)
+        {
+            std::string err = "The size of the input file " + m_Name + "(" +
+                              std::to_string(fileSize) +
+                              " bytes) is less than the minimum BP3 header "
+                              "size, which is " +
+                              std::to_string(miniFooterSize) + " bytes." +
+                              " It is unlikely that this is a .bp file.";
+            throw std::logic_error(err);
+        }
         const size_t miniFooterStart =
-            helper::GetDistance(fileSize, miniFooterSize, m_DebugMode,
+            helper::GetDistance(fileSize, miniFooterSize,
                                 " fileSize < miniFooterSize, in call to Open");
 
         m_BP3Deserializer.m_Metadata.Resize(
@@ -191,7 +194,7 @@ void BP3Reader::InitBuffer()
         const size_t metadataStart =
             m_BP3Deserializer.MetadataStart(m_BP3Deserializer.m_Metadata);
         const size_t metadataSize =
-            helper::GetDistance(fileSize, metadataStart, m_DebugMode,
+            helper::GetDistance(fileSize, metadataStart,
                                 " fileSize < miniFooterSize, in call to Open");
 
         m_BP3Deserializer.m_Metadata.Resize(
@@ -206,6 +209,8 @@ void BP3Reader::InitBuffer()
 
     // fills IO with available Variables and Attributes
     m_BP3Deserializer.ParseMetadata(m_BP3Deserializer.m_Metadata, *this);
+    // caches attributes associated with variables
+    m_IO.SetPrefixedNames(false);
 }
 
 #define declare_type(T)                                                        \

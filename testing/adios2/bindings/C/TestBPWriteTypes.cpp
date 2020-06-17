@@ -10,7 +10,7 @@
 
 #include <adios2_c.h>
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
 #include <mpi.h>
 #endif
 
@@ -24,7 +24,7 @@ class ADIOS2_C_API : public ::testing::Test
 public:
     ADIOS2_C_API()
     {
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
         adiosH = adios2_init(MPI_COMM_WORLD, adios2_debug_mode_on);
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -179,7 +179,7 @@ TEST_F(ADIOS2_C_API, ADIOS2BPWriteTypes)
 
         delete[] engineType;
     }
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
     {
@@ -239,7 +239,7 @@ TEST_F(ADIOS2_C_API, ADIOS2BPWriteTypes)
         EXPECT_EQ(typeStrArray, "string");
 
         char **dataArray = new char *[4];
-        for (auto i = 0; i < 4; ++i)
+        for (int i = 0; i < 4; ++i)
         {
             dataArray[i] = new char[30]();
         }
@@ -344,6 +344,10 @@ TEST_F(ADIOS2_C_API, ADIOS2BPWriteTypes)
 
         adios2_close(engineH);
 
+        for (size_t i = 0; i < 4; ++i)
+        {
+            delete[] dataArray[i];
+        }
         delete[] dataArray;
     }
 }
@@ -501,7 +505,7 @@ TEST_F(ADIOS2_C_API_IO, ReturnedStrings)
 
 int main(int argc, char **argv)
 {
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Init(nullptr, nullptr);
 #endif
 
@@ -509,7 +513,7 @@ int main(int argc, char **argv)
     ::testing::InitGoogleTest(&argc, argv);
     result = RUN_ALL_TESTS();
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Finalize();
 #endif
 

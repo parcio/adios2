@@ -17,7 +17,6 @@
 /// \endcond
 
 #include "adios2/common/ADIOSConfig.h"
-#include "adios2/common/ADIOSMPI.h"
 #include "adios2/common/ADIOSTypes.h"
 #include "adios2/helper/adiosComm.h"
 #include "adios2/toolkit/profiling/iochrono/IOChrono.h"
@@ -49,21 +48,23 @@ public:
      * Base constructor that all derived classes pass
      * @param type from derived class
      * @param comm passed to m_Comm
-     * @param debugMode passed to m_DebugMode
      */
     Transport(const std::string type, const std::string library,
-              helper::Comm const &comm, const bool debugMode);
+              helper::Comm const &comm);
 
     virtual ~Transport() = default;
 
     void InitProfiler(const Mode openMode, const TimeUnit timeUnit);
 
     /**
-     * Opens transport, required before SetBuffer, Write, Read, Flush, Close
+     * Opens transport, possibly asynchronously, required before SetBuffer,
+     * Write, Read, Flush, Close
      * @param name
      * @param openMode
+     * @param async
      */
-    virtual void Open(const std::string &name, const Mode openMode) = 0;
+    virtual void Open(const std::string &name, const Mode openMode,
+                      const bool async = false) = 0;
 
     /**
      * If OS buffered (FILE* or fstream), sets the buffer size
@@ -71,6 +72,12 @@ public:
      * @param size of OS buffer
      */
     virtual void SetBuffer(char *buffer, size_t size);
+
+    /**
+     * Set transport parameters
+     * @param parameters transport parameters to set
+     */
+    virtual void SetParameters(const Params &parameters);
 
     /**
      * Writes to transport. Note that size is non-const due to the nature of
@@ -113,14 +120,14 @@ public:
     /** closes current file, after this file becomes unreachable */
     virtual void Close() = 0;
 
+    /** deletes current file, after this file becomes unreachable */
+    virtual void Delete() = 0;
+
     virtual void SeekToEnd() = 0;
 
     virtual void SeekToBegin() = 0;
 
 protected:
-    /** true: turn on exceptions */
-    const bool m_DebugMode = false;
-
     virtual void MkDir(const std::string &fileName);
 
     void ProfilerStart(const std::string process) noexcept;

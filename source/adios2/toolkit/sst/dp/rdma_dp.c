@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "adios2/common/ADIOSConfig.h"
 #include <atl.h>
@@ -20,6 +21,10 @@
 #include <rdma/fi_ext_gni.h>
 #ifdef SST_HAVE_CRAY_DRC
 #include <rdmacred.h>
+
+#define DP_DRC_MAX_TRY 60
+#define DP_DRC_WAIT_USEC 1000000
+
 #endif /* SST_HAVE_CRAY_DRC */
 #endif /* SST_HAVE_FI_GNI */
 
@@ -332,7 +337,7 @@ static DP_RS_Stream RdmaInitReader(CP_Services Svcs, void *CP_Stream,
 {
     Rdma_RS_Stream Stream = malloc(sizeof(struct _Rdma_RS_Stream));
     CManager cm = Svcs->getCManager(CP_Stream);
-    MPI_Comm comm = Svcs->getMPIComm(CP_Stream);
+    SMPI_Comm comm = Svcs->getMPIComm(CP_Stream);
     FabricState Fabric;
 
     memset(Stream, 0, sizeof(*Stream));
@@ -342,7 +347,7 @@ static DP_RS_Stream RdmaInitReader(CP_Services Svcs, void *CP_Stream,
      */
     Stream->CP_Stream = CP_Stream;
 
-    MPI_Comm_rank(comm, &Stream->Rank);
+    SMPI_Comm_rank(comm, &Stream->Rank);
 
     *ReaderContactInfoPtr = NULL;
 
@@ -373,7 +378,6 @@ typedef struct _RdmaCompletionHandle
     size_t Length;
     int Rank;
     int Pending;
-    double StartWTime;
 } * RdmaCompletionHandle;
 
 static DP_WS_Stream RdmaInitWriter(CP_Services Svcs, void *CP_Stream,
@@ -381,13 +385,14 @@ static DP_WS_Stream RdmaInitWriter(CP_Services Svcs, void *CP_Stream,
 {
     Rdma_WS_Stream Stream = malloc(sizeof(struct _Rdma_WS_Stream));
     CManager cm = Svcs->getCManager(CP_Stream);
-    MPI_Comm comm = Svcs->getMPIComm(CP_Stream);
+    SMPI_Comm comm = Svcs->getMPIComm(CP_Stream);
     FabricState Fabric;
     int rc;
+    int try_left;
 
     memset(Stream, 0, sizeof(struct _Rdma_WS_Stream));
 
-    MPI_Comm_rank(comm, &Stream->Rank);
+    SMPI_Comm_rank(comm, &Stream->Rank);
 
     Stream->Fabric = calloc(1, sizeof(struct fabric_state));
     Fabric = Stream->Fabric;
@@ -409,13 +414,21 @@ static DP_WS_Stream RdmaInitWriter(CP_Services Svcs, void *CP_Stream,
         }
     }
 
-    MPI_Bcast(&Fabric->credential, sizeof(Fabric->credential), MPI_BYTE, 0,
-              comm);
+    SMPI_Bcast(&Fabric->credential, sizeof(Fabric->credential), SMPI_BYTE, 0,
+               comm);
+
+    try_left = DP_DRC_MAX_TRY;
     rc = drc_access(Fabric->credential, 0, &Fabric->drc_info);
+    while (rc != DRC_SUCCESS && try_left--)
+    {
+        usleep(DP_DRC_WAIT_USEC);
+        rc = drc_access(Fabric->credential, 0, &Fabric->drc_info);
+    }
     if (rc != DRC_SUCCESS)
     {
         Svcs->verbose(CP_Stream,
-                      "Could not access DRC credential. Failed with %d.\n", rc);
+                      "Could not access DRC credential. Last failed with %d.\n",
+                      rc);
         goto err_out;
     }
 
@@ -472,10 +485,10 @@ static DP_WSR_Stream RdmaInitWriterPerReader(CP_Services Svcs,
     Rdma_WSR_Stream WSR_Stream = malloc(sizeof(*WSR_Stream));
     FabricState Fabric = WS_Stream->Fabric;
     RdmaWriterContactInfo ContactInfo;
-    MPI_Comm comm = Svcs->getMPIComm(WS_Stream->CP_Stream);
+    SMPI_Comm comm = Svcs->getMPIComm(WS_Stream->CP_Stream);
     int Rank;
 
-    MPI_Comm_rank(comm, &Rank);
+    SMPI_Comm_rank(comm, &Rank);
 
     WSR_Stream->WS_Stream = WS_Stream; /* pointer to writer struct */
     WSR_Stream->PeerCohort = PeerCohort;
@@ -521,6 +534,7 @@ static void RdmaProvideWriterDataToReader(CP_Services Svcs,
     RdmaWriterContactInfo *providedWriterInfo =
         (RdmaWriterContactInfo *)providedWriterInfo_v;
     void *CP_Stream = RS_Stream->CP_Stream;
+    int try_left;
     int rc;
 
     RS_Stream->PeerCohort = PeerCohort;
@@ -543,11 +557,22 @@ static void RdmaProvideWriterDataToReader(CP_Services Svcs,
                       rc);
     }
 
+    // at large scale the servers backing drc can become overwhelmed and
+    // timeout. The return value is -22 (EINVAL). a work around is to wait
+    // and try again.
+
+    try_left = DP_DRC_MAX_TRY;
     rc = drc_access(Fabric->credential, 0, &Fabric->drc_info);
+    while (rc != DRC_SUCCESS && try_left--)
+    {
+        usleep(DP_DRC_WAIT_USEC);
+        rc = drc_access(Fabric->credential, 0, &Fabric->drc_info);
+    }
     if (rc != DRC_SUCCESS)
     {
         Svcs->verbose(CP_Stream,
-                      "Could not access DRC credential. Failed with %d.\n", rc);
+                      "Could not access DRC credential. Last failed with %d.\n",
+                      rc);
     }
 
     Fabric->auth_key = malloc(sizeof(*Fabric->auth_key));
@@ -637,7 +662,6 @@ static void *RdmaReadRemoteMemory(CP_Services Svcs, DP_RS_Stream Stream_v,
 
     do
     {
-        ret->StartWTime = MPI_Wtime();
         rc = fi_read(Fabric->signal, Buffer, Length, LocalDesc, SrcAddress,
                      (uint64_t)Addr, Info->Key, ret);
     } while (rc == -EAGAIN);
@@ -845,7 +869,7 @@ static FMStructDescRec RdmaReaderContactStructs[] = {
 static void RdmaDestroyWriter(CP_Services Svcs, DP_WS_Stream WS_Stream_v)
 {
     Rdma_WS_Stream WS_Stream = (Rdma_WS_Stream)WS_Stream_v;
-    TimestepList List;
+    long Timestep;
 #ifdef SST_HAVE_CRAY_DRC
     uint32_t Credential;
 
@@ -870,8 +894,10 @@ static void RdmaDestroyWriter(CP_Services Svcs, DP_WS_Stream WS_Stream_v)
     pthread_mutex_lock(&ts_mutex);
     while (WS_Stream->Timesteps)
     {
-        List = WS_Stream->Timesteps;
-        RdmaReleaseTimestep(Svcs, WS_Stream, List->Timestep);
+        Timestep = WS_Stream->Timesteps->Timestep;
+        pthread_mutex_unlock(&ts_mutex);
+        RdmaReleaseTimestep(Svcs, WS_Stream, Timestep);
+        pthread_mutex_lock(&ts_mutex);
     }
     pthread_mutex_unlock(&ts_mutex);
 
@@ -925,6 +951,7 @@ static int RdmaGetPriority(CP_Services Svcs, void *CP_Stream,
 {
     struct fi_info *hints, *info, *originfo, *useinfo;
     char *ifname;
+    char *forkunsafe;
     int Ret = -1;
 
     (void)attr_atom_from_string(
@@ -947,6 +974,12 @@ static int RdmaGetPriority(CP_Services Svcs, void *CP_Stream,
     else
     {
         ifname = getenv("FABRIC_IFACE");
+    }
+
+    forkunsafe = getenv("FI_FORK_UNSAFE");
+    if (!forkunsafe)
+    {
+        putenv("FI_FORK_UNSAFE=Yes");
     }
 
     fi_getinfo(FI_VERSION(1, 5), NULL, NULL, 0, hints, &info);

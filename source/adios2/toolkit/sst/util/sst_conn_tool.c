@@ -52,6 +52,10 @@ to any interfaces.
 
 #include "cp_internal.h"
 
+extern int SMPI_Init(int *argc, char ***argv);
+
+extern SMPI_Comm SMPI_COMM_WORLD;
+
 static atom_t TRANSPORT = -1;
 static atom_t IP_PORT = -1;
 static atom_t IP_HOSTNAME = -1;
@@ -93,15 +97,19 @@ void displayHelp()
 static char *envHelp =
     "\tThe following environment variables can impact ADIOS2_IP_CONFIG "
     "operation:\n"
-    "\t\tADIOS2_IP  		-  Publish the specified IP address for "
+    "\t\tADIOS2_IP  		-  Publish the specified IP address "
+    "for "
     "contact\n"
     "\t\tADIOS2_HOSTNAME  	-  Publish the specified hostname for contact\n"
-    "\t\tADIOS2_USE_HOSTNAME 	-  Publish a hostname preferentially over IP "
+    "\t\tADIOS2_USE_HOSTNAME 	-  Publish a hostname preferentially "
+    "over IP "
     "address\n"
     "\t\tADIOS2_INTERFACE  	-  Use the IP address associated with the "
     "specified network interface\n"
-    "\t\tADIOS2_PORT_RANGE  	-  Use a port within the specified range "
-    "\"low:high\"\n";
+    "\t\tADIOS2_PORT_RANGE  	-  Use a port within the specified "
+    "range \"low:high\",\n"
+    "\t\t                 	   or specify \"any\" to let the OS "
+    "choose\n";
 
 static void do_listen();
 static void do_connect();
@@ -165,7 +173,7 @@ int main(int argc, char **argv)
         displayHelp();
         return 1;
     }
-    MPI_Init(&argc, &argv);
+    SMPI_Init(&argc, &argv);
     init_atoms();
     if (connect)
     {
@@ -309,7 +317,7 @@ static void do_connect()
         Params.RegistrationMethod = SstRegisterFile;
     }
 
-    reader = SstReaderOpen("SstConnToolTemp", &Params, MPI_COMM_WORLD);
+    reader = SstReaderOpen("SstConnToolTemp", &Params, SMPI_COMM_WORLD);
     if (reader)
     {
         printf("Connection success, all is well!\n");
@@ -339,7 +347,7 @@ static void do_listen()
     SSTSetNetworkCallback(ConnToolCallback);
     Params.RendezvousReaderCount = 1;
     //    Params.ControlTransport = "enet";
-    writer = SstWriterOpen("SstConnToolTemp", &Params, MPI_COMM_WORLD);
+    writer = SstWriterOpen("SstConnToolTemp", &Params, SMPI_COMM_WORLD);
     printf("Connection success, all is well!\n");
     SstWriterClose(writer);
 }

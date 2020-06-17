@@ -19,8 +19,6 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    const std::size_t Nx = 10;
-
     try
     {
         std::string configFileName = "query.xml";
@@ -46,8 +44,7 @@ int main(int argc, char *argv[])
             std::cout << "        data file  = " << dataFileName << std::endl;
         }
 
-        adios2::ADIOS ad =
-            adios2::ADIOS(configFileName, MPI_COMM_WORLD, adios2::DebugON);
+        adios2::ADIOS ad = adios2::ADIOS(configFileName, MPI_COMM_WORLD);
 
         adios2::IO queryIO = ad.DeclareIO("query");
         adios2::Engine reader =
@@ -104,7 +101,7 @@ int main(int argc, char *argv[])
 bool testMe(std::string &queryConfigFile, std::string const &doubleVarName,
             MPI_Comm comm)
 {
-    adios2::ADIOS ad(queryConfigFile, comm, adios2::DebugON);
+    adios2::ADIOS ad(queryConfigFile, comm);
     std::string dataFileName = "test.file";
 
     // adios2::query::Worker w(queryConfigFile, comm);

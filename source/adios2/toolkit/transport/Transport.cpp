@@ -10,15 +10,14 @@
 
 #include "Transport.h"
 
-#include "adios2/common/ADIOSMPI.h"
 #include "adios2/helper/adiosFunctions.h" //CreateDirectory
 
 namespace adios2
 {
 
 Transport::Transport(const std::string type, const std::string library,
-                     helper::Comm const &comm, const bool debugMode)
-: m_Type(type), m_Library(library), m_Comm(comm), m_DebugMode(debugMode)
+                     helper::Comm const &comm)
+: m_Type(type), m_Library(library), m_Comm(comm)
 {
 }
 
@@ -38,12 +37,12 @@ void Transport::InitProfiler(const Mode openMode, const TimeUnit timeUnit)
     m_Profiler.m_IsActive = true;
 
     m_Profiler.m_Timers.emplace(std::make_pair(
-        "open", profiling::Timer("open", TimeUnit::Microseconds, m_DebugMode)));
+        "open", profiling::Timer("open", TimeUnit::Microseconds)));
 
     if (openMode == Mode::Write)
     {
-        m_Profiler.m_Timers.emplace(
-            "write", profiling::Timer("write", timeUnit, m_DebugMode));
+        m_Profiler.m_Timers.emplace("write",
+                                    profiling::Timer("write", timeUnit));
 
         m_Profiler.m_Bytes.emplace("write", 0);
     }
@@ -51,49 +50,42 @@ void Transport::InitProfiler(const Mode openMode, const TimeUnit timeUnit)
     {
         /*
         m_Profiler.Timers.emplace(
-            "append", profiling::Timer("append", timeUnit, m_DebugMode));
+            "append", profiling::Timer("append", timeUnit));
         m_Profiler.Bytes.emplace("append", 0);
         */
-        m_Profiler.m_Timers.emplace(
-            "write", profiling::Timer("write", timeUnit, m_DebugMode));
+        m_Profiler.m_Timers.emplace("write",
+                                    profiling::Timer("write", timeUnit));
 
         m_Profiler.m_Bytes.emplace("write", 0);
 
-        m_Profiler.m_Timers.emplace(
-            "read", profiling::Timer("read", timeUnit, m_DebugMode));
+        m_Profiler.m_Timers.emplace("read", profiling::Timer("read", timeUnit));
 
         m_Profiler.m_Bytes.emplace("read", 0);
     }
     else if (openMode == Mode::Read)
     {
-        m_Profiler.m_Timers.emplace(
-            "read", profiling::Timer("read", timeUnit, m_DebugMode));
+        m_Profiler.m_Timers.emplace("read", profiling::Timer("read", timeUnit));
         m_Profiler.m_Bytes.emplace("read", 0);
     }
 
     m_Profiler.m_Timers.emplace(
-        "close",
-        profiling::Timer("close", TimeUnit::Microseconds, m_DebugMode));
+        "close", profiling::Timer("close", TimeUnit::Microseconds));
 }
+
+void Transport::SetParameters(const Params &parameters) {}
 
 void Transport::SetBuffer(char * /*buffer*/, size_t /*size*/)
 {
-    if (m_DebugMode)
-    {
-        std::invalid_argument("ERROR: " + m_Name + " transport type " + m_Type +
-                              " using library " + m_Library +
-                              " doesn't implement the SetBuffer function\n");
-    }
+    std::invalid_argument("ERROR: " + m_Name + " transport type " + m_Type +
+                          " using library " + m_Library +
+                          " doesn't implement the SetBuffer function\n");
 }
 
 void Transport::Flush()
 {
-    if (m_DebugMode)
-    {
-        std::invalid_argument("ERROR: " + m_Name + " transport type " + m_Type +
-                              " using library " + m_Library +
-                              " doesn't implement the Flush function\n");
-    }
+    std::invalid_argument("ERROR: " + m_Name + " transport type " + m_Type +
+                          " using library " + m_Library +
+                          " doesn't implement the Flush function\n");
 }
 
 size_t Transport::GetSize() { return 0; }
@@ -116,7 +108,7 @@ void Transport::ProfilerStop(const std::string process) noexcept
 
 void Transport::CheckName() const
 {
-    if (m_DebugMode && m_Name.empty())
+    if (m_Name.empty())
     {
         throw std::invalid_argument("ERROR: name can't be empty for " +
                                     m_Library + " transport \n");

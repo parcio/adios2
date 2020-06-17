@@ -18,16 +18,25 @@ function(setup_version BASE)
         OUTPUT_VARIABLE out
         ERROR_QUIET
       )
-      if(res EQUAL 0 AND out MATCHES "[^-]*-([^-]*)-g[a-f0-9]*")
+      if(res EQUAL 0 AND out MATCHES "[^-]*-([^-]*)-g([a-f0-9]*)")
         set(ver_tweak ${CMAKE_MATCH_1})
+        set(ver_gitsha ${CMAKE_MATCH_2})
       endif()  
     endif()
   endif()
+
   if(ver_tweak)
     set(ADIOS2_VERSION ${BASE}.${ver_tweak} PARENT_SCOPE)
   else()
     set(ADIOS2_VERSION ${BASE} PARENT_SCOPE)
   endif()
+
+  if(ver_gitsha)
+    set(ADIOS2_VERSION_GIT_SHA ${ver_gitsha} PARENT_SCOPE)
+  else()
+    unset(ADIOS2_VERSION_GIT_SHA PARENT_SCOPE)
+  endif()
+
   set(ADIOS2_LIBRARY_VERSION ${BASE} PARENT_SCOPE)
 endfunction()
 
@@ -62,11 +71,21 @@ function(python_add_test)
   set(multiValueArgs EXEC_WRAPPER SCRIPT)
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" "${ARGN}")
   add_test(NAME ${ARGS_NAME}
-    COMMAND ${ARGS_EXEC_WRAPPER} ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${ARGS_SCRIPT}
+    COMMAND ${ARGS_EXEC_WRAPPER} $<TARGET_FILE:Python::Interpreter> ${CMAKE_CURRENT_SOURCE_DIR}/${ARGS_SCRIPT}
   )
-  set_property(TEST ${ARGS_NAME} PROPERTY
-    ENVIRONMENT "PYTHONPATH=${ADIOS2_BINARY_DIR}/${CMAKE_INSTALL_PYTHONDIR}:$ENV{PYTHONPATH}"
-  )
+
+  if(UNIX)
+    set_property(TEST ${ARGS_NAME} PROPERTY
+      ENVIRONMENT
+        "PYTHONPATH=${ADIOS2_BINARY_DIR}/${CMAKE_INSTALL_PYTHONDIR}:$ENV{PYTHONPATH}"
+    )
+  else()
+    set_property(TEST ${ARGS_NAME} PROPERTY
+      ENVIRONMENT
+        "PYTHONPATH=${ADIOS2_BINARY_DIR}/${CMAKE_INSTALL_PYTHONDIR};$ENV{PYTHONPATH}"
+        "PATH=$<TARGET_FILE_DIR:adios2>;$ENV{PATH}"
+    )
+  endif()
 endfunction()
 
 
@@ -128,7 +147,6 @@ endfunction()
 
 
 function(adios2_add_thirdparty_target PackageName TargetName)
-  find_package(${PackageName} REQUIRED)
   add_library(adios2::thirdparty::${PackageName} INTERFACE IMPORTED GLOBAL)
   target_link_libraries(adios2::thirdparty::${PackageName}
     INTERFACE ${TargetName}
@@ -180,3 +198,29 @@ function(SetupTestPipeline basename pipeline do_setup)
   endforeach()
 endfunction()
 
+macro(adios2_check_fortran_submodules var)
+  include(CheckFortranSourceCompiles)
+  CHECK_Fortran_SOURCE_COMPILES([[
+module foo
+  interface bar
+    module subroutine bar_integer(x)
+      integer, intent(in) :: x
+    end subroutine
+    module subroutine bar_real(x)
+      real, intent(in) :: x
+    end subroutine
+  end interface
+end module
+submodule ( foo ) sub
+contains
+  module subroutine bar_integer(x)
+    integer, intent(in) :: x
+  end subroutine
+  module subroutine bar_real(x)
+    real, intent(in) :: x
+  end subroutine
+end submodule
+program main
+end program
+]] ${var} SRC_EXT F90)
+endmacro()

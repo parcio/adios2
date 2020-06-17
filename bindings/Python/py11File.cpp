@@ -14,7 +14,6 @@
 #include <algorithm>
 #include <iostream>
 
-#include "adios2/common/ADIOSMPI.h"
 #include "adios2/common/ADIOSMacros.h"
 #include "adios2/helper/adiosFunctions.h"
 
@@ -25,31 +24,18 @@ namespace adios2
 namespace py11
 {
 
-File::File(const std::string &name, const std::string mode, MPI_Comm comm,
+File::File(const std::string &name, const std::string mode,
            const std::string engineType)
-: m_Name(name), m_Mode(mode),
-  m_Stream(std::make_shared<core::Stream>(name, ToMode(mode), comm, engineType,
-                                          "Python"))
+: m_Name(name), m_Mode(mode), m_Stream(std::make_shared<core::Stream>(
+                                  name, ToMode(mode), engineType, "Python"))
 {
 }
 
-File::File(const std::string &name, const std::string mode, MPI_Comm comm,
+File::File(const std::string &name, const std::string mode,
            const std::string &configFile, const std::string ioInConfigFile)
 : m_Name(name), m_Mode(mode),
-  m_Stream(std::make_shared<core::Stream>(name, ToMode(mode), comm, configFile,
+  m_Stream(std::make_shared<core::Stream>(name, ToMode(mode), configFile,
                                           ioInConfigFile, "Python"))
-{
-}
-
-File::File(const std::string &name, const std::string mode,
-           const std::string engineType)
-: File(name, mode, MPI_COMM_NULL, engineType)
-{
-}
-
-File::File(const std::string &name, const std::string mode,
-           const std::string &configFile, const std::string ioInConfigFile)
-: File(name, mode, MPI_COMM_NULL, configFile, ioInConfigFile)
 {
 }
 
@@ -68,9 +54,11 @@ size_t File::AddTransport(const std::string type, const Params &parameters)
     return m_Stream->m_IO->AddTransport(type, parameters);
 }
 
-std::map<std::string, adios2::Params> File::AvailableVariables() noexcept
+std::map<std::string, adios2::Params>
+File::AvailableVariables(const std::vector<std::string> &keys) noexcept
 {
-    return m_Stream->m_IO->GetAvailableVariables();
+    const std::set<std::string> keysSet = helper::VectorToSet(keys);
+    return m_Stream->m_IO->GetAvailableVariables(keysSet);
 }
 
 std::map<std::string, adios2::Params> File::AvailableAttributes() noexcept

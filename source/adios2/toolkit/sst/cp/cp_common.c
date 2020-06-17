@@ -13,6 +13,9 @@
 
 #include "cp_internal.h"
 
+char *SSTStreamStatusStr[] = {"NotOpen",    "Opening",    "Established",
+                              "PeerClosed", "PeerFailed", "Closed"};
+
 void CP_validateParams(SstStream Stream, SstParams Params, int Writer)
 {
     if (Params->RendezvousReaderCount >= 0)
@@ -464,6 +467,11 @@ static FMField ReleaseTimestepList[] = {
      FMOffset(struct _ReleaseTimestepMsg *, Timestep)},
     {NULL, NULL, 0, 0}};
 
+static FMStructDescRec ReleaseTimestepStructs[] = {
+    {"ReleaseTimestep", ReleaseTimestepList, sizeof(struct _ReleaseTimestepMsg),
+     NULL},
+    {NULL, NULL, 0, NULL}};
+
 static FMField LockReaderDefinitionsList[] = {
     {"WSR_Stream", "integer", sizeof(void *),
      FMOffset(struct _LockReaderDefinitionsMsg *, WSR_Stream)},
@@ -471,12 +479,22 @@ static FMField LockReaderDefinitionsList[] = {
      FMOffset(struct _LockReaderDefinitionsMsg *, Timestep)},
     {NULL, NULL, 0, 0}};
 
+static FMStructDescRec LockReaderDefinitionsStructs[] = {
+    {"LockReaderDefinitions", LockReaderDefinitionsList,
+     sizeof(struct _LockReaderDefinitionsMsg), NULL},
+    {NULL, NULL, 0, NULL}};
+
 static FMField CommPatternLockedList[] = {
     {"RS_Stream", "integer", sizeof(void *),
      FMOffset(struct _CommPatternLockedMsg *, RS_Stream)},
     {"Timestep", "integer", sizeof(int),
      FMOffset(struct _CommPatternLockedMsg *, Timestep)},
     {NULL, NULL, 0, 0}};
+
+static FMStructDescRec CommPatternLockedStructs[] = {
+    {"CommPatternLocked", CommPatternLockedList,
+     sizeof(struct _CommPatternLockedMsg), NULL},
+    {NULL, NULL, 0, NULL}};
 
 static FMField PeerSetupList[] = {
     {"RS_Stream", "integer", sizeof(void *),
@@ -487,10 +505,19 @@ static FMField PeerSetupList[] = {
      FMOffset(struct _PeerSetupMsg *, WriterCohortSize)},
     {NULL, NULL, 0, 0}};
 
+static FMStructDescRec PeerSetupStructs[] = {
+    {"PeerSetup", PeerSetupList, sizeof(struct _PeerSetupMsg), NULL},
+    {NULL, NULL, 0, NULL}};
+
 static FMField ReaderActivateList[] = {
     {"WSR_Stream", "integer", sizeof(void *),
      FMOffset(struct _ReaderActivateMsg *, WSR_Stream)},
     {NULL, NULL, 0, 0}};
+
+static FMStructDescRec ReaderActivateStructs[] = {
+    {"ReaderActivate", ReaderActivateList, sizeof(struct _ReaderActivateMsg),
+     NULL},
+    {NULL, NULL, 0, NULL}};
 
 static FMField WriterCloseList[] = {
     {"RS_Stream", "integer", sizeof(void *),
@@ -499,10 +526,18 @@ static FMField WriterCloseList[] = {
      FMOffset(struct _WriterCloseMsg *, FinalTimestep)},
     {NULL, NULL, 0, 0}};
 
+static FMStructDescRec WriterCloseStructs[] = {
+    {"WriterClose", WriterCloseList, sizeof(struct _WriterCloseMsg), NULL},
+    {NULL, NULL, 0, NULL}};
+
 static FMField ReaderCloseList[] = {
     {"WSR_Stream", "integer", sizeof(void *),
      FMOffset(struct _ReaderCloseMsg *, WSR_Stream)},
     {NULL, NULL, 0, 0}};
+
+static FMStructDescRec ReaderCloseStructs[] = {
+    {"ReaderClose", ReaderCloseList, sizeof(struct _ReaderCloseMsg), NULL},
+    {NULL, NULL, 0, NULL}};
 
 static void replaceFormatNameInFieldList(FMStructDescList l, char *orig,
                                          char *repl, int repl_size)
@@ -617,7 +652,7 @@ void **CP_consolidateDataToRankZero(SstStream Stream, void *LocalInfo,
 {
     FFSBuffer Buf = create_FFSBuffer();
     int DataSize;
-    int *RecvCounts = NULL;
+    size_t *RecvCounts = NULL;
     char *Buffer;
 
     struct _CP_DP_init_info **Pointers = NULL;
@@ -626,9 +661,10 @@ void **CP_consolidateDataToRankZero(SstStream Stream, void *LocalInfo,
 
     if (Stream->Rank == 0)
     {
-        RecvCounts = malloc(Stream->CohortSize * sizeof(int));
+        RecvCounts = malloc(Stream->CohortSize * sizeof(*RecvCounts));
     }
-    SMPI_Gather(&DataSize, 1, MPI_INT, RecvCounts, 1, MPI_INT, 0,
+    size_t DataSz = DataSize;
+    SMPI_Gather(&DataSz, 1, SMPI_SIZE_T, RecvCounts, 1, SMPI_SIZE_T, 0,
                 Stream->mpiComm);
 
     /*
@@ -636,13 +672,13 @@ void **CP_consolidateDataToRankZero(SstStream Stream, void *LocalInfo,
      * and displacements for each rank
      */
 
-    int *Displs = NULL;
+    size_t *Displs = NULL;
     char *RecvBuffer = NULL;
 
     if (Stream->Rank == 0)
     {
         int TotalLen = 0;
-        Displs = malloc(Stream->CohortSize * sizeof(int));
+        Displs = malloc(Stream->CohortSize * sizeof(*Displs));
 
         Displs[0] = 0;
         TotalLen = (RecvCounts[0] + 7) & ~7;
@@ -662,8 +698,8 @@ void **CP_consolidateDataToRankZero(SstStream Stream, void *LocalInfo,
      * can gather the data
      */
 
-    SMPI_Gatherv(Buffer, DataSize, MPI_CHAR, RecvBuffer, RecvCounts, Displs,
-                 MPI_CHAR, 0, Stream->mpiComm);
+    SMPI_Gatherv(Buffer, DataSize, SMPI_CHAR, RecvBuffer, RecvCounts, Displs,
+                 SMPI_CHAR, 0, Stream->mpiComm);
     free_FFSBuffer(Buf);
 
     if (Stream->Rank == 0)
@@ -701,17 +737,17 @@ void *CP_distributeDataFromRankZero(SstStream Stream, void *root_info,
         FFSBuffer Buf = create_FFSBuffer();
         char *tmp =
             FFSencode(Buf, FMFormat_of_original(Type), root_info, &DataSize);
-        SMPI_Bcast(&DataSize, 1, MPI_INT, 0, Stream->mpiComm);
-        SMPI_Bcast(tmp, DataSize, MPI_CHAR, 0, Stream->mpiComm);
+        SMPI_Bcast(&DataSize, 1, SMPI_INT, 0, Stream->mpiComm);
+        SMPI_Bcast(tmp, DataSize, SMPI_CHAR, 0, Stream->mpiComm);
         Buffer = malloc(DataSize);
         memcpy(Buffer, tmp, DataSize);
         free_FFSBuffer(Buf);
     }
     else
     {
-        SMPI_Bcast(&DataSize, 1, MPI_INT, 0, Stream->mpiComm);
+        SMPI_Bcast(&DataSize, 1, SMPI_INT, 0, Stream->mpiComm);
         Buffer = malloc(DataSize);
-        SMPI_Bcast(Buffer, DataSize, MPI_CHAR, 0, Stream->mpiComm);
+        SMPI_Bcast(Buffer, DataSize, SMPI_CHAR, 0, Stream->mpiComm);
     }
 
     FFSContext context = Stream->CPInfo->ffs_c;
@@ -729,16 +765,17 @@ void **CP_consolidateDataToAll(SstStream Stream, void *LocalInfo,
 {
     FFSBuffer Buf = create_FFSBuffer();
     int DataSize;
-    int *RecvCounts;
+    size_t *RecvCounts;
     char *Buffer;
 
     struct _CP_DP_init_info **Pointers = NULL;
 
     Buffer = FFSencode(Buf, FMFormat_of_original(Type), LocalInfo, &DataSize);
 
-    RecvCounts = malloc(Stream->CohortSize * sizeof(int));
+    RecvCounts = malloc(Stream->CohortSize * sizeof(*RecvCounts));
 
-    SMPI_Allgather(&DataSize, 1, MPI_INT, RecvCounts, 1, MPI_INT,
+    size_t DataSz = DataSize;
+    SMPI_Allgather(&DataSz, 1, SMPI_SIZE_T, RecvCounts, 1, SMPI_SIZE_T,
                    Stream->mpiComm);
 
     /*
@@ -746,12 +783,12 @@ void **CP_consolidateDataToAll(SstStream Stream, void *LocalInfo,
      * and displacements for each rank
      */
 
-    int *Displs;
+    size_t *Displs;
     char *RecvBuffer = NULL;
     int i;
 
     int TotalLen = 0;
-    Displs = malloc(Stream->CohortSize * sizeof(int));
+    Displs = malloc(Stream->CohortSize * sizeof(*Displs));
 
     Displs[0] = 0;
     TotalLen = (RecvCounts[0] + 7) & ~7;
@@ -770,8 +807,8 @@ void **CP_consolidateDataToAll(SstStream Stream, void *LocalInfo,
      * can gather the data
      */
 
-    SMPI_Allgatherv(Buffer, DataSize, MPI_CHAR, RecvBuffer, RecvCounts, Displs,
-                    MPI_CHAR, Stream->mpiComm);
+    SMPI_Allgatherv(Buffer, DataSize, SMPI_CHAR, RecvBuffer, RecvCounts, Displs,
+                    SMPI_CHAR, Stream->mpiComm);
     free_FFSBuffer(Buf);
 
     FFSContext context = Stream->CPInfo->ffs_c;
@@ -847,7 +884,7 @@ static void doFormatRegistration(CP_GlobalInfo CPInfo, CP_DP_Interface DPInfo)
                        NULL);
     AddCustomStruct(CPInfo, FullReaderRegisterStructs);
 
-    /*gse*/ CombinedReaderStructs =
+    CombinedReaderStructs =
         combineCpDpFormats(CP_DP_ReaderArrayStructs, CP_ReaderInitStructs,
                            DPInfo->ReaderContactFormats);
     f = FMregister_data_format(CPInfo->fm_c, CombinedReaderStructs);
@@ -856,7 +893,7 @@ static void doFormatRegistration(CP_GlobalInfo CPInfo, CP_DP_Interface DPInfo)
     FFSset_fixed_target(CPInfo->ffs_c, CombinedReaderStructs);
     AddCustomStruct(CPInfo, CombinedReaderStructs);
 
-    /*gse*/ PerRankWriterStructs =
+    PerRankWriterStructs =
         combineCpDpFormats(CP_DP_WriterPairStructs, CP_WriterInitStructs,
                            DPInfo->WriterContactFormats);
     f = FMregister_data_format(CPInfo->fm_c, PerRankWriterStructs);
@@ -865,7 +902,7 @@ static void doFormatRegistration(CP_GlobalInfo CPInfo, CP_DP_Interface DPInfo)
     FFSset_fixed_target(CPInfo->ffs_c, PerRankWriterStructs);
     AddCustomStruct(CPInfo, PerRankWriterStructs);
 
-    /*gse*/ FullWriterResponseStructs =
+    FullWriterResponseStructs =
         combineCpDpFormats(CP_WriterResponseStructs, CP_WriterInitStructs,
                            DPInfo->WriterContactFormats);
     CPInfo->WriterResponseFormat =
@@ -874,7 +911,7 @@ static void doFormatRegistration(CP_GlobalInfo CPInfo, CP_DP_Interface DPInfo)
                        NULL);
     AddCustomStruct(CPInfo, FullWriterResponseStructs);
 
-    /*gse*/ CombinedWriterStructs =
+    CombinedWriterStructs =
         combineCpDpFormats(CP_DP_WriterArrayStructs, CP_WriterInitStructs,
                            DPInfo->WriterContactFormats);
     f = FMregister_data_format(CPInfo->fm_c, CombinedWriterStructs);
@@ -883,7 +920,7 @@ static void doFormatRegistration(CP_GlobalInfo CPInfo, CP_DP_Interface DPInfo)
     FFSset_fixed_target(CPInfo->ffs_c, CombinedWriterStructs);
     AddCustomStruct(CPInfo, CombinedWriterStructs);
 
-    /*gse*/ CombinedMetadataStructs = combineCpDpFormats(
+    CombinedMetadataStructs = combineCpDpFormats(
         MetaDataPlusDPInfoStructs, NULL, DPInfo->TimestepInfoFormats);
     f = FMregister_data_format(CPInfo->fm_c, CombinedMetadataStructs);
     CPInfo->PerRankMetadataFormat =
@@ -891,7 +928,7 @@ static void doFormatRegistration(CP_GlobalInfo CPInfo, CP_DP_Interface DPInfo)
     FFSset_fixed_target(CPInfo->ffs_c, CombinedMetadataStructs);
     AddCustomStruct(CPInfo, CombinedMetadataStructs);
 
-    /*gse*/ CombinedTimestepMetadataStructs = combineCpDpFormats(
+    CombinedTimestepMetadataStructs = combineCpDpFormats(
         TimestepMetadataStructs, NULL, DPInfo->TimestepInfoFormats);
     CPInfo->DeliverTimestepMetadataFormat =
         CMregister_format(CPInfo->cm, CombinedTimestepMetadataStructs);
@@ -899,7 +936,7 @@ static void doFormatRegistration(CP_GlobalInfo CPInfo, CP_DP_Interface DPInfo)
                        CP_TimestepMetadataHandler, NULL);
     AddCustomStruct(CPInfo, CombinedTimestepMetadataStructs);
 
-    /*gse*/ CombinedMetadataStructs = combineCpDpFormats(
+    CombinedMetadataStructs = combineCpDpFormats(
         TimestepMetadataDistributionStructs, NULL, DPInfo->TimestepInfoFormats);
     f = FMregister_data_format(CPInfo->fm_c, CombinedMetadataStructs);
     CPInfo->TimestepDistributionFormat =
@@ -907,7 +944,7 @@ static void doFormatRegistration(CP_GlobalInfo CPInfo, CP_DP_Interface DPInfo)
     FFSset_fixed_target(CPInfo->ffs_c, CombinedMetadataStructs);
     AddCustomStruct(CPInfo, CombinedMetadataStructs);
 
-    /*gse*/ CombinedMetadataStructs = combineCpDpFormats(
+    CombinedMetadataStructs = combineCpDpFormats(
         ReturnMetadataInfoStructs, NULL, DPInfo->TimestepInfoFormats);
     f = FMregister_data_format(CPInfo->fm_c, CombinedMetadataStructs);
     CPInfo->ReturnMetadataInfoFormat =
@@ -915,37 +952,30 @@ static void doFormatRegistration(CP_GlobalInfo CPInfo, CP_DP_Interface DPInfo)
     FFSset_fixed_target(CPInfo->ffs_c, CombinedMetadataStructs);
     AddCustomStruct(CPInfo, CombinedMetadataStructs);
 
-    CPInfo->PeerSetupFormat = CMregister_simple_format(
-        CPInfo->cm, "PeerSetup", PeerSetupList, sizeof(struct _PeerSetupMsg));
+    CPInfo->PeerSetupFormat = CMregister_format(CPInfo->cm, PeerSetupStructs);
     CMregister_handler(CPInfo->PeerSetupFormat, CP_PeerSetupHandler, NULL);
 
-    CPInfo->ReaderActivateFormat = CMregister_simple_format(
-        CPInfo->cm, "ReaderActivate", ReaderActivateList,
-        sizeof(struct _ReaderActivateMsg));
+    CPInfo->ReaderActivateFormat =
+        CMregister_format(CPInfo->cm, ReaderActivateStructs);
     CMregister_handler(CPInfo->ReaderActivateFormat, CP_ReaderActivateHandler,
                        NULL);
-    CPInfo->ReleaseTimestepFormat = CMregister_simple_format(
-        CPInfo->cm, "ReleaseTimestep", ReleaseTimestepList,
-        sizeof(struct _ReleaseTimestepMsg));
+    CPInfo->ReleaseTimestepFormat =
+        CMregister_format(CPInfo->cm, ReleaseTimestepStructs);
     CMregister_handler(CPInfo->ReleaseTimestepFormat, CP_ReleaseTimestepHandler,
                        NULL);
-    CPInfo->LockReaderDefinitionsFormat = CMregister_simple_format(
-        CPInfo->cm, "LockReaderDefinitions", LockReaderDefinitionsList,
-        sizeof(struct _LockReaderDefinitionsMsg));
+    CPInfo->LockReaderDefinitionsFormat =
+        CMregister_format(CPInfo->cm, LockReaderDefinitionsStructs);
     CMregister_handler(CPInfo->LockReaderDefinitionsFormat,
                        CP_LockReaderDefinitionsHandler, NULL);
-    CPInfo->CommPatternLockedFormat = CMregister_simple_format(
-        CPInfo->cm, "CommPatternLocked", CommPatternLockedList,
-        sizeof(struct _CommPatternLockedMsg));
+    CPInfo->CommPatternLockedFormat =
+        CMregister_format(CPInfo->cm, CommPatternLockedStructs);
     CMregister_handler(CPInfo->CommPatternLockedFormat,
                        CP_CommPatternLockedHandler, NULL);
     CPInfo->WriterCloseFormat =
-        CMregister_simple_format(CPInfo->cm, "WriterClose", WriterCloseList,
-                                 sizeof(struct _WriterCloseMsg));
+        CMregister_format(CPInfo->cm, WriterCloseStructs);
     CMregister_handler(CPInfo->WriterCloseFormat, CP_WriterCloseHandler, NULL);
     CPInfo->ReaderCloseFormat =
-        CMregister_simple_format(CPInfo->cm, "ReaderClose", ReaderCloseList,
-                                 sizeof(struct _ReaderCloseMsg));
+        CMregister_format(CPInfo->cm, ReaderCloseStructs);
     CMregister_handler(CPInfo->ReaderCloseFormat, CP_ReaderCloseHandler, NULL);
 }
 
@@ -967,18 +997,31 @@ extern void SstStreamDestroy(SstStream Stream)
      * StackStream is only used to access verbosity info
      * in a safe way after all streams have been destroyed
      */
-    struct _SstStream StackStream = *Stream;
+    struct _SstStream StackStream;
+    pthread_mutex_lock(&Stream->DataLock);
     CP_verbose(Stream, "Destroying stream %p, name %s\n", Stream,
                Stream->Filename);
-    pthread_mutex_lock(&Stream->DataLock);
-    Stream->Status = Closed;
-    if (Stream->Role == ReaderRole)
+    StackStream = *Stream;
+    Stream->Status = Destroyed;
+    struct _TimestepMetadataList *Next = Stream->Timesteps;
+    while (Next)
     {
-        Stream->DP_Interface->destroyReader(&Svcs, Stream->DP_Stream);
+        Next = Next->Next;
+        free(Stream->Timesteps);
+        Stream->Timesteps = Next;
     }
-    else
+    if (Stream->DP_Stream)
     {
-        Stream->DP_Interface->destroyWriter(&Svcs, Stream->DP_Stream);
+        pthread_mutex_unlock(&Stream->DataLock);
+        if (Stream->Role == ReaderRole)
+        {
+            Stream->DP_Interface->destroyReader(&Svcs, Stream->DP_Stream);
+        }
+        else
+        {
+            Stream->DP_Interface->destroyWriter(&Svcs, Stream->DP_Stream);
+        }
+        pthread_mutex_lock(&Stream->DataLock);
     }
     if (Stream->Readers)
     {
@@ -987,11 +1030,21 @@ extern void SstStreamDestroy(SstStream Stream)
             CP_PeerConnection *connections_to_reader =
                 Stream->Readers[i]->Connections;
 
-            for (int j = 0; j < Stream->Readers[i]->ReaderCohortSize; j++)
+            if (connections_to_reader)
             {
-                free_attr_list(connections_to_reader[j].ContactList);
+                for (int j = 0; j < Stream->Readers[i]->ReaderCohortSize; j++)
+                {
+                    if (connections_to_reader[j].CMconn)
+                    {
+                        CMConnection_dereference(
+                            connections_to_reader[j].CMconn);
+                        connections_to_reader[j].CMconn = NULL;
+                    }
+                    free_attr_list(connections_to_reader[j].ContactList);
+                }
+                free(Stream->Readers[i]->Connections);
+                Stream->Readers[i]->Connections = NULL;
             }
-            free(Stream->Readers[i]->Connections);
             if (Stream->Readers[i]->Peers)
             {
                 free(Stream->Readers[i]->Peers);
@@ -1005,6 +1058,8 @@ extern void SstStreamDestroy(SstStream Stream)
 
     FFSFormatList FFSList = Stream->PreviousFormats;
     Stream->PreviousFormats = NULL;
+    free(Stream->ReleaseList);
+    free(Stream->LockDefnsList);
     while (FFSList)
     {
         FFSFormatList Tmp = FFSList->Next;
@@ -1037,11 +1092,15 @@ extern void SstStreamDestroy(SstStream Stream)
             free_attr_list(Stream->ConnectionsToWriter[i].ContactList);
             if (Stream->ConnectionsToWriter[i].CMconn)
             {
-                CMConnection_close(Stream->ConnectionsToWriter[i].CMconn);
+                CMConnection_dereference(Stream->ConnectionsToWriter[i].CMconn);
+                Stream->ConnectionsToWriter[i].CMconn = NULL;
             }
         }
         if (Stream->ConnectionsToWriter)
+        {
             free(Stream->ConnectionsToWriter);
+            Stream->ConnectionsToWriter = NULL;
+        }
         free(Stream->Peers);
     }
     else if (Stream->ConfigParams->MarshalMethod == SstMarshalFFS)
@@ -1052,6 +1111,14 @@ extern void SstStreamDestroy(SstStream Stream)
         free(Stream->ConfigParams->DataTransport);
     if (Stream->ConfigParams->DataTransport)
         free(Stream->ConfigParams->ControlTransport);
+    if (Stream->ConfigParams->NetworkInterface)
+        free(Stream->ConfigParams->NetworkInterface);
+    if (Stream->ConfigParams->ControlInterface)
+        free(Stream->ConfigParams->ControlInterface);
+    if (Stream->ConfigParams->DataInterface)
+        free(Stream->ConfigParams->DataInterface);
+    if (Stream->ConfigParams->ControlModule)
+        free(Stream->ConfigParams->ControlModule);
 
     if (Stream->Filename)
     {
@@ -1078,7 +1145,6 @@ extern void SstStreamDestroy(SstStream Stream)
         CP_verbose(
             Stream,
             "Reference count now zero, Destroying process SST info cache\n");
-        // wait .1 sec for last messages
         CManager_close(CPInfo->cm);
         if (CPInfo->ffs_c)
             free_FFSContext(CPInfo->ffs_c);
@@ -1126,6 +1192,7 @@ extern char *CP_GetContactString(SstStream Stream, attr_list DPAttrs)
     }
     char *ret = attr_list_to_string(ContactList);
     free_attr_list(ListenList);
+    free_attr_list(ContactList);
     return ret;
 }
 
@@ -1241,7 +1308,7 @@ static void DP_verbose(SstStream Stream, char *Format, ...);
 static CManager CP_getCManager(SstStream Stream);
 static int CP_sendToPeer(SstStream Stream, CP_PeerCohort cohort, int rank,
                          CMFormat Format, void *data);
-static MPI_Comm CP_getMPIComm(SstStream Stream);
+static SMPI_Comm CP_getMPIComm(SstStream Stream);
 
 struct _CP_Services Svcs = {
     (CP_VerboseFunc)DP_verbose, (CP_GetCManagerFunc)CP_getCManager,
@@ -1285,7 +1352,8 @@ static int *reversePeerArray(int MySize, int MyRank, int PeerSize,
         {
             if (their_peers[j] == MyRank)
             {
-                ReversePeers = malloc((PeerCount + 2) * sizeof(int));
+                ReversePeers =
+                    realloc(ReversePeers, (PeerCount + 2) * sizeof(int));
                 ReversePeers[PeerCount] = i;
                 PeerCount++;
                 if (j == 0)
@@ -1329,6 +1397,10 @@ extern void getPeerArrays(int MySize, int MyRank, int PeerSize,
         if (reverseArray)
         {
             *reverseArray = reverse;
+        }
+        else
+        {
+            free(reverse);
         }
     }
 }
@@ -1395,7 +1467,7 @@ extern void CP_error(SstStream s, char *Format, ...)
 
 static CManager CP_getCManager(SstStream Stream) { return Stream->CPInfo->cm; }
 
-static MPI_Comm CP_getMPIComm(SstStream Stream) { return Stream->mpiComm; }
+static SMPI_Comm CP_getMPIComm(SstStream Stream) { return Stream->mpiComm; }
 
 extern void WriterConnCloseHandler(CManager cm, CMConnection closed_conn,
                                    void *client_data);

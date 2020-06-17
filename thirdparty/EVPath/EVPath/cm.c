@@ -90,6 +90,7 @@ struct CMtrans_services_s CMstatic_trans_svcs = {INT_CMmalloc, INT_CMrealloc, IN
 						 CMConnection_create,
 						 INT_CMadd_shutdown_task,
 						 INT_CMadd_periodic_task,
+						 INT_CMremove_periodic,
 						 INT_CMadd_poll,
 						 cm_get_data_buf,
 						 cm_return_data_buf,
@@ -107,7 +108,8 @@ struct CMtrans_services_s CMstatic_trans_svcs = {INT_CMmalloc, INT_CMrealloc, IN
 						 INT_CMConnection_dereference,
 						 INT_CMConnection_add_reference,
 						 INT_CMConnection_failed,
-						 CMwake_server_thread
+						 CMwake_server_thread,
+						 INT_CMCondition_signal
 };
 static void INT_CMControlList_close(CMControlList cl, CManager cm);
 static int CMcontrol_list_poll(CMControlList cl);
@@ -756,19 +758,22 @@ INT_CManager_create_control(char *control_module)
     }
 
     if (control_module != NULL) {
-	for (char *c = control_module; *c; ++c) *c = tolower(*c);
+	char *tmp = strdup(control_module);
+	char *c;
+	for (c = tmp; *c; ++c) *c = tolower(*c);
 #ifdef HAVE_SYS_EPOLL_H
-	if (strcmp(control_module, "epoll") == 0) {
+	if (strcmp(tmp, "epoll") == 0) {
 	    cm->control_module_choice = "epoll";
 	} else
 #endif
-	if (strcmp(control_module, "select") == 0) {
+	if (strcmp(tmp, "select") == 0) {
 	    cm->control_module_choice = "select";
 	} else {
 	    fprintf(stderr, "Warning:  Specified CM/EVPath control module \"%s\" unknown or not built.\n", control_module);
 	    /* force to default */
 	    control_module = NULL;
 	}
+	free(tmp);
     }	
     if (control_module == NULL) {
 #ifdef HAVE_SYS_EPOLL_H
@@ -869,7 +874,11 @@ CManager_free(CManager cm)
     while (list != NULL) {
 	CMbuffer next = list->next;
 	CMtrace_out(cm, CMBufferVerbose, "Final buffer disposition buf %d, %p, size %ld, ref_count %d\n", i++, list, list->size, list->ref_count);
-	INT_CMfree(list->buffer);
+	if (list->return_callback) {
+	    (list->return_callback)(list->return_callback_data);
+	} else {
+	    INT_CMfree(list->buffer);
+	}
 	INT_CMfree(list);
 	list = next;
     }
@@ -1436,15 +1445,16 @@ INT_CMget_ip_config_diagnostics(CManager cm)
  transport_is_reliable(CMConnection conn)
  {
      attr_list list;
-     int ret;
+     int ret = 0;
      if (conn->trans->get_transport_characteristics == NULL) {
 	 return 0; /* don't know */
      }
      list = conn->trans->get_transport_characteristics(conn->trans, &CMstatic_trans_svcs, 
 						       conn->trans->trans_data);
-     if (!get_int_attr(list, CM_TRANSPORT_RELIABLE, &ret)) {
-	 return 0; /* don't know */
-     }
+     (void) get_int_attr(list, CM_TRANSPORT_RELIABLE, &ret);
+
+     free_attr_list(list);
+
      return ret;
  }
 
@@ -1489,13 +1499,47 @@ INT_CMget_ip_config_diagnostics(CManager cm)
      }
  }
 
+static
+void
+timeout_conn(CManager cm, void *client_data)
+{
+    INT_CMCondition_fail(cm, (long) client_data);
+}
+
  static
  CMConnection
  try_conn_init(CManager cm, transport_entry trans, attr_list attrs)
  {
-     CMConnection conn;
-     conn = trans->initiate_conn(cm, &CMstatic_trans_svcs,
-				 trans, attrs);
+     CMConnection conn = NULL;
+     if (trans->initiate_conn) {
+	 conn = trans->initiate_conn(cm, &CMstatic_trans_svcs,
+				     trans, attrs);
+     } else if (trans->initiate_conn_nonblocking) {
+	 int result;
+	 long wait_condition = INT_CMCondition_get(cm, NULL);
+	 CMTaskHandle task = INT_CMadd_delayed_task(cm, 5, 0, timeout_conn,
+						    (void*)wait_condition);
+	 if (CMtrace_on(cm, CMConnectionVerbose)) {
+	     char *attr_str = attr_list_to_string(attrs);
+	     CMtrace_out(cm, CMConnectionVerbose, 
+			 "CM - Try to establish connection %p - %s, wait condition %ld\n", (void*)conn,
+			 attr_str, wait_condition);
+	     INT_CMfree(attr_str);
+	 }
+	 void *client_data = trans->initiate_conn_nonblocking(cm, &CMstatic_trans_svcs,
+						 trans, attrs, wait_condition);
+	 // Upon wake, condition will have either been signaled (return 1) or failed (return 0)
+	 result = INT_CMCondition_wait(cm, wait_condition);
+	 CMtrace_out(cm, CMConnectionVerbose, 
+		     "CM - CMConnection wait returned, result %d\n", result);
+	 if (result == 1) {
+	     INT_CMremove_task(task);
+	 }
+	 conn = trans->finalize_conn_nonblocking(cm,  &CMstatic_trans_svcs,
+						 trans, client_data, result);
+     } else {
+	 assert(0);
+     }
      if (conn != NULL) {
 	 if (CMtrace_on(conn->cm, CMConnectionVerbose)) {
 	     char *attr_str = attr_list_to_string(attrs);
@@ -3639,8 +3683,8 @@ CM_init_select(CMControlList cl, CManager cm)
 #if !NO_DYNAMIC_LINKING
     char *libname;
     lt_dlhandle handle;	
-    lt_dladdsearchdir(EVPATH_LIBRARY_BUILD_DIR);
-    lt_dladdsearchdir(EVPATH_LIBRARY_INSTALL_DIR);
+    lt_dladdsearchdir(EVPATH_MODULE_BUILD_DIR);
+    lt_dladdsearchdir(EVPATH_MODULE_INSTALL_DIR);
     libname = malloc(strlen("lib" CM_LIBRARY_PREFIX "cm") + strlen(select_module) + strlen(MODULE_EXT) + 1);
     strcpy(libname, "lib" CM_LIBRARY_PREFIX "cm");
     strcat(libname, select_module);
@@ -3650,8 +3694,8 @@ CM_init_select(CMControlList cl, CManager cm)
     free(libname);
     if (!handle) {
 	fprintf(stderr, "Failed to load requested libcm%s dll.\n", select_module);
-	fprintf(stderr, "Search path includes '.', '%s', '%s' and any default search paths supported by ld.so\n", EVPATH_LIBRARY_BUILD_DIR, 
-		EVPATH_LIBRARY_INSTALL_DIR);
+	fprintf(stderr, "Search path includes '.', '%s', '%s' and any default search paths supported by ld.so\n", EVPATH_MODULE_BUILD_DIR, 
+		EVPATH_MODULE_INSTALL_DIR);
 	fprintf(stderr, "Consider setting LD_LIBRARY_PATH or otherwise modifying module search paths.\n");
 	exit(1);
     }

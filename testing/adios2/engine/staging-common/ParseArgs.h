@@ -32,6 +32,11 @@ int DelayWhileHoldingStep = 0;
 int LongFirstDelay = 0;
 int FirstTimestepMustBeZero = 0;
 int LockGeometry = 0;
+bool VaryingDataSize = false;
+int NoData = 0;
+int NoDataNode = -1;
+int EarlyExit = 0;
+
 std::string shutdown_name = "DieTest";
 adios2::Mode GlobalWriteMode = adios2::Mode::Deferred;
 
@@ -209,6 +214,10 @@ static void ParseArgs(int argc, char **argv)
             IncreasingDelay = 1;
             Latest = 1;
         }
+        else if (std::string(argv[1]) == "--varying_data_size")
+        {
+            VaryingDataSize = true;
+        }
         else if (std::string(argv[1]) == "--long_first_delay")
         {
             LongFirstDelay = 1;
@@ -228,6 +237,23 @@ static void ParseArgs(int argc, char **argv)
         else if (std::string(argv[1]) == "--zero_data_rank")
         {
             ZeroDataRank++;
+        }
+        else if (std::string(argv[1]) == "--no_data")
+        {
+            NoData++;
+        }
+        else if (std::string(argv[1]) == "--no_data_node")
+        {
+            std::istringstream ss(argv[2]);
+            if (!(ss >> NoDataNode))
+                std::cerr << "Invalid number for --no_data_node argument"
+                          << argv[1] << '\n';
+            argv++;
+            argc--;
+        }
+        else if (std::string(argv[1]) == "--early_exit")
+        {
+            EarlyExit++;
         }
         else
         {

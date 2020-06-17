@@ -11,12 +11,17 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "adios2/common/ADIOSMPI.h"
 #include "utils/adios_reorganize/Reorganize.h"
+
+#if ADIOS2_USE_MPI
+#include <mpi.h>
+#endif
 
 int main(int argc, char *argv[])
 {
+#if ADIOS2_USE_MPI
     MPI_Init(&argc, &argv);
+#endif
 
     try
     {
@@ -28,5 +33,7 @@ int main(int argc, char *argv[])
         std::cout << e.what() << "\n";
     }
 
+#if ADIOS2_USE_MPI
     MPI_Finalize();
+#endif
 }

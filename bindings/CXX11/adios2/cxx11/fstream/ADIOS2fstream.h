@@ -15,7 +15,7 @@
 
 #include "adios2/common/ADIOSConfig.h"
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
 #include <mpi.h>
 #endif
 
@@ -50,7 +50,7 @@ public:
         app  //!< append, not yet supported
     };
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     /**
      * High-level API MPI constructor, based on C++11 fstream. Allows for
      * passing parameters in source code.
@@ -81,7 +81,8 @@ public:
     fstream(const std::string &name, const adios2::fstream::openmode mode,
             MPI_Comm comm, const std::string &configFile,
             const std::string ioInConfigFile);
-#else
+#endif
+
     /**
      * High-level API non-MPI constructor, based on C++11 fstream. Allows for
      * passing parameters in source code.
@@ -108,7 +109,7 @@ public:
      */
     fstream(const std::string &name, const adios2::fstream::openmode mode,
             const std::string &configFile, const std::string ioInConfigFile);
-#endif
+
     /** Empty constructor, allows the use of open later in the code */
     fstream() = default;
 
@@ -120,7 +121,7 @@ public:
      */
     explicit operator bool() const noexcept;
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     /**
      * High-level API MPI open, based on C++11 fstream. Allows for
      * passing parameters in source code. Used after empty constructor.
@@ -149,7 +150,8 @@ public:
      */
     void open(const std::string &name, const openmode mode, MPI_Comm comm,
               const std::string configFile, const std::string ioInConfigFile);
-#else
+#endif
+
     /**
      * High-level API non-MPI open, based on C++11 fstream. Allows for
      * passing parameters in source code. Used after empty constructor.
@@ -176,7 +178,6 @@ public:
      */
     void open(const std::string &name, const openmode mode,
               const std::string configFile, const std::string ioInConfigFile);
-#endif
 
     /**
      * Set a single stream parameter based on Engine supported parameters.

@@ -174,8 +174,6 @@ constexpr char PathSeparator =
 #endif
 
 // adios alias values and types
-constexpr bool DebugON = true;
-constexpr bool DebugOFF = false;
 constexpr size_t UnknownDim = 0;
 constexpr uint64_t JoinedDim = MaxU64 - 1;
 constexpr uint64_t LocalValueDim = MaxU64 - 2;
@@ -270,6 +268,7 @@ namespace key
 {
 constexpr char tolerance[] = "tolerance";
 constexpr char accuracy[] = "accuracy";
+constexpr char s[] = "s";
 }
 }
 #endif

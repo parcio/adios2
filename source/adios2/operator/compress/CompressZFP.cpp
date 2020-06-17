@@ -7,10 +7,9 @@
  *  Created on: Jul 25, 2017
  *      Author: William F Godoy godoywf@ornl.gov
  */
-
 #include "CompressZFP.h"
-
 #include "adios2/helper/adiosFunctions.h"
+#include <sstream>
 
 namespace adios2
 {
@@ -19,8 +18,7 @@ namespace core
 namespace compress
 {
 
-CompressZFP::CompressZFP(const Params &parameters, const bool debugMode)
-: Operator("zfp", parameters, debugMode)
+CompressZFP::CompressZFP(const Params &parameters) : Operator("zfp", parameters)
 {
 }
 
@@ -52,17 +50,15 @@ size_t CompressZFP::Compress(const void *dataIn, const Dims &dimensions,
 
     size_t sizeOut = zfp_compress(stream, field);
 
-    if (m_DebugMode == true)
+    if (sizeOut == 0)
     {
-        if (sizeOut == 0)
-        {
-            throw std::invalid_argument("ERROR: zfp failed, compressed buffer "
-                                        "size is 0, in call to Compress");
-        }
+        throw std::invalid_argument("ERROR: zfp failed, compressed buffer "
+                                    "size is 0, in call to Compress");
     }
 
     zfp_field_free(field);
     zfp_stream_close(stream);
+    stream_close(bitstream);
     return sizeOut;
 }
 
@@ -94,14 +90,11 @@ size_t CompressZFP::Decompress(const void *bufferIn, const size_t sizeIn,
 
     int status = zfp_decompress(stream, field);
 
-    if (m_DebugMode)
+    if (!status)
     {
-        if (!status)
-        {
-            throw std::invalid_argument(
-                "ERROR: zfp failed with status " + std::to_string(status) +
-                ", in call to CompressZfp Decompress\n");
-        }
+        throw std::invalid_argument("ERROR: zfp failed with status " +
+                                    std::to_string(status) +
+                                    ", in call to CompressZfp Decompress\n");
     }
 
     zfp_field_free(field);
@@ -138,16 +131,12 @@ zfp_type CompressZFP::GetZfpType(const std::string type) const
     }
     else
     {
-        if (m_DebugMode)
-        {
-
-            throw std::invalid_argument(
-                "ERROR: type " + type +
-                " not supported by zfp, only "
-                "signed int32_t, signed int64_t, float, and "
-                "double types are acceptable, from class "
-                "CompressZfp Transform\n");
-        }
+        throw std::invalid_argument(
+            "ERROR: type " + type +
+            " not supported by zfp, only "
+            "signed int32_t, signed int64_t, float, and "
+            "double types are acceptable, from class "
+            "CompressZfp Transform\n");
     }
 
     return zfpType;
@@ -175,38 +164,26 @@ zfp_field *CompressZFP::GetZFPField(const void *data, const Dims &dimensions,
     if (dimensions.size() == 1)
     {
         field = zfp_field_1d(const_cast<void *>(data), zfpType, dimensions[0]);
-        if (m_DebugMode)
-        {
-            lf_CheckField(field, "zfp_field_1d", type);
-        }
+        lf_CheckField(field, "zfp_field_1d", type);
     }
     else if (dimensions.size() == 2)
     {
         field = zfp_field_2d(const_cast<void *>(data), zfpType, dimensions[0],
                              dimensions[1]);
-        if (m_DebugMode)
-        {
-            lf_CheckField(field, "zfp_field_2d", type);
-        }
+        lf_CheckField(field, "zfp_field_2d", type);
     }
     else if (dimensions.size() == 3)
     {
         field = zfp_field_3d(const_cast<void *>(data), zfpType, dimensions[0],
                              dimensions[1], dimensions[2]);
-        if (m_DebugMode)
-        {
-            lf_CheckField(field, "zfp_field_3d", type);
-        }
+        lf_CheckField(field, "zfp_field_3d", type);
     }
     else
     {
-        if (m_DebugMode)
-        {
-            throw std::invalid_argument(
-                "ERROR: zfp_field* failed for data of type " + type +
-                ", only 1D, 2D and 3D dimensions are supported, from "
-                "class CompressZfp Transform\n");
-        }
+        throw std::invalid_argument(
+            "ERROR: zfp_field* failed for data of type " + type +
+            ", only 1D, 2D and 3D dimensions are supported, from "
+            "class CompressZfp Transform\n");
     }
 
     return field;
@@ -237,33 +214,32 @@ zfp_stream *CompressZFP::GetZFPStream(const Dims &dimensions,
     auto itPrecision = parameters.find("precision");
     const bool hasPrecision = lf_HasKey(itPrecision, parameters);
 
-    if (m_DebugMode)
+    if ((hasAccuracy && hasRate) || (hasAccuracy && hasPrecision) ||
+        (hasRate && hasPrecision) || !(hasAccuracy || hasRate || hasPrecision))
     {
-        if ((hasAccuracy && hasRate) || (hasAccuracy && hasPrecision) ||
-            (hasRate && hasPrecision) ||
-            !(hasAccuracy || hasRate || hasPrecision))
+        std::ostringstream oss;
+        oss << "\nError: Requisite parameters to zfp not found.";
+        oss << " The key must be one and only one of 'accuracy', 'rate', "
+               "or 'precision'.";
+        oss << " The key and value provided are ";
+        for (auto &p : parameters)
         {
-            throw std::invalid_argument("ERROR: zfp parameters accuracy, "
-                                        "rate, and precision are mutually "
-                                        "exclusive, only one of them is "
-                                        "mandatory, from "
-                                        "operator CompressZfp\n");
+            oss << "(" << p.first << ", " << p.second << ").";
         }
+        throw std::invalid_argument(oss.str());
     }
 
     if (hasAccuracy)
     {
         const double accuracy = helper::StringTo<double>(
-            itAccuracy->second, m_DebugMode,
-            "setting accuracy in call to CompressZfp\n");
+            itAccuracy->second, "setting accuracy in call to CompressZfp\n");
 
         zfp_stream_set_accuracy(stream, accuracy);
     }
     else if (hasRate)
     {
-        const double rate =
-            helper::StringTo<double>(itRate->second, m_DebugMode,
-                                     "setting Rate in call to CompressZfp\n");
+        const double rate = helper::StringTo<double>(
+            itRate->second, "setting Rate in call to CompressZfp\n");
         // TODO support last argument write random access?
         zfp_stream_set_rate(stream, rate, GetZfpType(type),
                             static_cast<unsigned int>(dimensions.size()), 0);
@@ -272,7 +248,7 @@ zfp_stream *CompressZFP::GetZFPStream(const Dims &dimensions,
     {
         const unsigned int precision =
             static_cast<unsigned int>(helper::StringTo<uint32_t>(
-                itPrecision->second, m_DebugMode,
+                itPrecision->second,
                 "setting Precision in call to CompressZfp\n"));
         zfp_stream_set_precision(stream, precision);
     }

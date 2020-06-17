@@ -14,6 +14,7 @@
 #include "adios2/common/ADIOSTypes.h"
 #include "adios2/core/IO.h"
 #include "adios2/helper/adiosComm.h"
+#include "adios2/helper/adiosJSONcomplex.h"
 #include "adios2/toolkit/profiling/taustubs/tautimer.hpp"
 
 #include <mutex>
@@ -85,6 +86,7 @@ class DataManSerializer
 {
 public:
     DataManSerializer(helper::Comm const &comm, const bool isRowMajor);
+    ~DataManSerializer();
 
     // ************ serializer functions
 
@@ -96,22 +98,23 @@ public:
 
     // put a variable for writer
     template <class T>
-    void
-    PutVar(const T *inputData, const std::string &varName, const Dims &varShape,
-           const Dims &varStart, const Dims &varCount, const Dims &varMemStart,
-           const Dims &varMemCount, const std::string &doid, const size_t step,
-           const int rank, const std::string &address, const Params &params,
-           VecPtr localBuffer = nullptr, JsonPtr metadataJson = nullptr);
+    void PutData(const T *inputData, const std::string &varName,
+                 const Dims &varShape, const Dims &varStart,
+                 const Dims &varCount, const Dims &varMemStart,
+                 const Dims &varMemCount, const std::string &doid,
+                 const size_t step, const int rank, const std::string &address,
+                 const Params &params, VecPtr localBuffer = nullptr,
+                 JsonPtr metadataJson = nullptr);
 
-    // another wrapper for PutVar which accepts adios2::core::Variable
+    // another wrapper for PutData which accepts adios2::core::Variable
     template <class T>
-    void PutVar(const core::Variable<T> &variable, const std::string &doid,
-                const size_t step, const int rank, const std::string &address,
-                const Params &params, VecPtr localBuffer = nullptr,
-                JsonPtr metadataJson = nullptr);
+    void PutData(const core::Variable<T> &variable, const std::string &doid,
+                 const size_t step, const int rank, const std::string &address,
+                 const Params &params, VecPtr localBuffer = nullptr,
+                 JsonPtr metadataJson = nullptr);
 
     // attach attributes to local pack
-    void AttachAttributes();
+    void AttachAttributesToLocalPack();
 
     // aggregate metadata across all writer ranks and put it into map
     void AggregateMetadata();
@@ -133,20 +136,19 @@ public:
     // ************ deserializer functions
 
     // put binary pack for deserialization
-    int PutPack(const VecPtr data);
+    void PutPack(const VecPtr data, const bool useThread = true);
+    int PutPackThread(const VecPtr data);
 
     // get attributes form m_StaticDataJson and put into IO
     void GetAttributes(core::IO &io);
 
     template <class T>
-    int GetVar(T *output_data, const std::string &varName, const Dims &varStart,
-               const Dims &varCount, const size_t step,
-               const Dims &varMemStart = Dims(),
-               const Dims &varMemCount = Dims());
+    int GetData(T *output_data, const std::string &varName,
+                const Dims &varStart, const Dims &varCount, const size_t step,
+                const Dims &varMemStart = Dims(),
+                const Dims &varMemCount = Dims());
 
     void Erase(const size_t step, const bool allPreviousSteps = false);
-
-    bool IsStepProtected(const int64_t step);
 
     // called after reader side received and put aggregated metadata into
     // deserializer
@@ -188,15 +190,13 @@ private:
     bool PutBZip2(nlohmann::json &metaj, size_t &datasize, const T *inputData,
                   const Dims &varCount, const Params &params);
 
-    void ProtectStep(const int64_t step, const int64_t id);
-
     template <class T>
     void PutAttribute(const core::Attribute<T> &attribute);
 
     bool IsCompressionAvailable(const std::string &method,
                                 const std::string &type, const Dims &count);
 
-    void JsonToDataManVarMap(nlohmann::json &metaJ, VecPtr pack);
+    void JsonToVarMap(nlohmann::json &metaJ, VecPtr pack);
 
     VecPtr SerializeJson(const nlohmann::json &message);
     nlohmann::json DeserializeJson(const char *start, size_t size);
@@ -263,6 +263,7 @@ private:
     int m_MpiRank;
     int m_MpiSize;
     helper::Comm const &m_Comm;
+    std::thread m_PutPackThread;
 
     int m_Verbosity = 0;
 };

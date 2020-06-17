@@ -157,20 +157,18 @@ std::vector<size_t> Uint64ArrayToSizetVector(const size_t nElements,
 /**
  * Converts a recognized time unit string to TimeUnit enum
  * @param timeUnit string with acceptable time unit
- * @param debugMode true: throw exception if timeUnitString not valid
  * @return TimeUnit enum (int) TimeUnit::s, TimeUnit::ms, etc.
  */
 TimeUnit StringToTimeUnit(const std::string timeUnitString,
-                          const bool debugMode, const std::string hint = "");
+                          const std::string hint = "");
 
 /**
  * Returns the conversion factor from input units Tb, Gb, Mb, Kb, to bytes as a
  * factor of 1024
  * @param units input
- * @param debugMode true: check if input units are valid
  * @return conversion factor to bytes, size_t
  */
-size_t BytesFactor(const std::string units, const bool debugMode);
+size_t BytesFactor(const std::string units);
 
 /**
  * Returns open mode as a string
@@ -219,6 +217,32 @@ std::string ValueToString(const T value) noexcept;
  */
 template <class T>
 void CheckForNullptr(T *pointer, const std::string hint);
+
+/**
+ * Converts an unordered map key to a sorted set
+ * @param hash input hash
+ * @return ordered keys
+ */
+template <class T, class U>
+std::set<T> KeysToSet(const std::unordered_map<T, U> &hash) noexcept;
+
+/**
+ * Convert a vector to a set (without duplicate entries)
+ * @param input vector
+ * @return ordered keys content
+ */
+template <class T>
+std::set<T> VectorToSet(const std::vector<T> &input) noexcept;
+
+/**
+ * Calls map.erase(key) returning current value. Throws an exception if Key not
+ * found.
+ * @param key input
+ * @param map input/output
+ * @return value from found key
+ */
+template <class T, class U>
+U EraseKey(const T &key, std::map<T, U> &map);
 
 } // end namespace helper
 } // end namespace adios2

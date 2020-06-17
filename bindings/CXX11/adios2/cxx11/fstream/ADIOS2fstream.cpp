@@ -11,28 +11,9 @@
 #include "ADIOS2fstream.h"
 #include "ADIOS2fstream.tcc"
 
-#include "adios2/common/ADIOSMPI.h"
-
 namespace adios2
 {
 
-#ifdef ADIOS2_HAVE_MPI
-fstream::fstream(const std::string &name, const openmode mode, MPI_Comm comm,
-                 const std::string engineType)
-: m_Stream(std::make_shared<core::Stream>(name, ToMode(mode), comm, engineType,
-                                          "C++"))
-{
-}
-
-fstream::fstream(const std::string &name, const openmode mode, MPI_Comm comm,
-                 const std::string &configFile,
-                 const std::string ioInConfigFile)
-: m_Stream(std::make_shared<core::Stream>(name, ToMode(mode), comm, configFile,
-                                          ioInConfigFile, "C++"))
-{
-}
-
-#else
 fstream::fstream(const std::string &name, const openmode mode,
                  const std::string engineType)
 : m_Stream(
@@ -47,26 +28,7 @@ fstream::fstream(const std::string &name, const openmode mode,
                                           ioInConfigFile, "C++"))
 {
 }
-#endif
 
-#ifdef ADIOS2_HAVE_MPI
-void fstream::open(const std::string &name, const openmode mode, MPI_Comm comm,
-                   const std::string engineType)
-{
-    CheckOpen(name);
-    m_Stream = std::make_shared<core::Stream>(name, ToMode(mode), comm,
-                                              engineType, "C++");
-}
-
-void fstream::open(const std::string &name, const openmode mode, MPI_Comm comm,
-                   const std::string configFile,
-                   const std::string ioInConfigFile)
-{
-    CheckOpen(name);
-    m_Stream = std::make_shared<core::Stream>(
-        name, ToMode(mode), comm, configFile, ioInConfigFile, "C++");
-}
-#else
 void fstream::open(const std::string &name, const openmode mode,
                    const std::string engineType)
 {
@@ -83,7 +45,6 @@ void fstream::open(const std::string &name, const openmode mode,
     m_Stream = std::make_shared<core::Stream>(name, ToMode(mode), configFile,
                                               ioInConfigFile, "C++");
 }
-#endif
 
 fstream::operator bool() const noexcept
 {

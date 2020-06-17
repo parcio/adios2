@@ -11,7 +11,6 @@
 #include "BP3Writer.h"
 #include "BP3Writer.tcc"
 
-#include "adios2/common/ADIOSMPI.h"
 #include "adios2/common/ADIOSMacros.h"
 #include "adios2/core/IO.h"
 #include "adios2/helper/adiosFunctions.h" //CheckIndexRange
@@ -27,9 +26,8 @@ namespace engine
 
 BP3Writer::BP3Writer(IO &io, const std::string &name, const Mode mode,
                      helper::Comm comm)
-: Engine("BP3", io, name, mode, std::move(comm)),
-  m_BP3Serializer(m_Comm, m_DebugMode), m_FileDataManager(m_Comm, m_DebugMode),
-  m_FileMetadataManager(m_Comm, m_DebugMode)
+: Engine("BP3", io, name, mode, std::move(comm)), m_BP3Serializer(m_Comm),
+  m_FileDataManager(m_Comm), m_FileMetadataManager(m_Comm)
 {
     TAU_SCOPED_TIMER("BP3Writer::Open");
     m_IO.m_ReadStreaming = false;
@@ -189,16 +187,14 @@ void BP3Writer::InitTransports()
     {
         if (m_BP3Serializer.m_Parameters.AsyncTasks)
         {
-            m_FutureOpenFiles = m_FileDataManager.OpenFilesAsync(
-                bpSubStreamNames, m_OpenMode, m_IO.m_TransportsParameters,
-                m_BP3Serializer.m_Profiler.m_IsActive);
+            for (size_t i = 0; i < m_IO.m_TransportsParameters.size(); ++i)
+            {
+                m_IO.m_TransportsParameters[i]["asynctasks"] = "true";
+            }
         }
-        else
-        {
-            m_FileDataManager.OpenFiles(bpSubStreamNames, m_OpenMode,
-                                        m_IO.m_TransportsParameters,
-                                        m_BP3Serializer.m_Profiler.m_IsActive);
-        }
+        m_FileDataManager.OpenFiles(bpSubStreamNames, m_OpenMode,
+                                    m_IO.m_TransportsParameters,
+                                    m_BP3Serializer.m_Profiler.m_IsActive);
     }
 }
 
@@ -256,6 +252,8 @@ void BP3Writer::DoClose(const int transportIndex)
     {
         WriteProfilingJSONFile();
     }
+
+    m_BP3Serializer.DeleteBuffers();
 }
 
 void BP3Writer::WriteProfilingJSONFile()
@@ -283,7 +281,7 @@ void BP3Writer::WriteProfilingJSONFile()
 
     if (m_BP3Serializer.m_RankMPI == 0)
     {
-        transport::FileFStream profilingJSONStream(m_Comm, m_DebugMode);
+        transport::FileFStream profilingJSONStream(m_Comm);
         auto bpBaseNames = m_BP3Serializer.GetBPBaseNames({m_Name});
         profilingJSONStream.Open(bpBaseNames[0] + "/profiling.json",
                                  Mode::Write);
@@ -340,11 +338,6 @@ void BP3Writer::WriteData(const bool isFinal, const int transportIndex)
         m_BP3Serializer.CloseStream(m_IO);
     }
 
-    if (m_FutureOpenFiles.valid())
-    {
-        m_FutureOpenFiles.get();
-    }
-
     m_FileDataManager.WriteFiles(m_BP3Serializer.m_Data.m_Buffer.data(),
                                  dataSize, transportIndex);
 
@@ -372,11 +365,6 @@ void BP3Writer::AggregateWriteData(const bool isFinal, const int transportIndex)
             const format::Buffer &bufferSTL =
                 m_BP3Serializer.m_Aggregator.GetConsumerBuffer(
                     m_BP3Serializer.m_Data);
-
-            if (m_FutureOpenFiles.valid())
-            {
-                m_FutureOpenFiles.get();
-            }
 
             m_FileDataManager.WriteFiles(bufferSTL.Data(), bufferSTL.m_Position,
                                          transportIndex);

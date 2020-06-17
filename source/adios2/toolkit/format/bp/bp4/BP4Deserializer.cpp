@@ -32,8 +32,8 @@ namespace format
 
 std::mutex BP4Deserializer::m_Mutex;
 
-BP4Deserializer::BP4Deserializer(helper::Comm const &comm, const bool debugMode)
-: BP4Base(comm, debugMode), BPBase(comm, debugMode), m_Minifooter(4)
+BP4Deserializer::BP4Deserializer(helper::Comm const &comm)
+: BP4Base(comm), BPBase(comm), m_Minifooter(4)
 {
 }
 
@@ -77,16 +77,13 @@ void BP4Deserializer::ParseMetadataIndex(const BufferSTL &bufferSTL,
         const uint8_t endianness = helper::ReadValue<uint8_t>(buffer, position);
         m_Minifooter.IsLittleEndian = (endianness == 0) ? true : false;
 #ifndef ADIOS2_HAVE_ENDIAN_REVERSE
-        if (m_DebugMode)
+        if (helper::IsLittleEndian() != m_Minifooter.IsLittleEndian)
         {
-            if (helper::IsLittleEndian() != m_Minifooter.IsLittleEndian)
-            {
-                throw std::runtime_error(
-                    "ERROR: reader found BigEndian bp file, "
-                    "this version of ADIOS2 wasn't compiled "
-                    "with the cmake flag -DADIOS2_USE_Endian_Reverse=ON "
-                    "explicitly, in call to Open\n");
-            }
+            throw std::runtime_error(
+                "ERROR: reader found BigEndian bp file, "
+                "this version of ADIOS2 wasn't compiled "
+                "with the cmake flag -DADIOS2_USE_Endian_Reverse=ON "
+                "explicitly, in call to Open\n");
         }
 #endif
 
@@ -639,7 +636,7 @@ bool BP4Deserializer::ReadActiveFlag(std::vector<char> &buffer)
 {
     if (buffer.size() < m_ActiveFlagPosition)
     {
-        throw std::runtime_error("BP4Deserializer::CheckActiveFlag() is called "
+        throw std::runtime_error("BP4Deserializer::ReadActiveFlag() is called "
                                  "with a buffer smaller than required");
     }
     // Writer active flag

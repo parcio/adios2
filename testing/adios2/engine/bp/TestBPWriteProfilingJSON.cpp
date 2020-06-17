@@ -52,17 +52,17 @@ TEST_F(BPWriteProfilingJSONTest, DISABLED_ADIOS2BPWriteProfilingJSON)
     // Number of steps
     const std::size_t NSteps = 3;
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 #endif
 
     // Write test data and profiling.json using ADIOS2
     {
-#ifdef ADIOS2_HAVE_MPI
-        adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
+#if ADIOS2_USE_MPI
+        adios2::ADIOS adios(MPI_COMM_WORLD);
 #else
-        adios2::ADIOS adios(true);
+        adios2::ADIOS adios;
 #endif
         adios2::IO io = adios.DeclareIO("TestIO");
 
@@ -198,17 +198,17 @@ TEST_F(BPWriteProfilingJSONTest, ADIOS2BPWriteProfilingJSON_Off)
     // Number of steps
     const std::size_t NSteps = 3;
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 #endif
 
     // Write test data and profiling.json using ADIOS2
     {
-#ifdef ADIOS2_HAVE_MPI
-        adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
+#if ADIOS2_USE_MPI
+        adios2::ADIOS adios(MPI_COMM_WORLD);
 #else
-        adios2::ADIOS adios(true);
+        adios2::ADIOS adios;
 #endif
         adios2::IO io = adios.DeclareIO("TestIO");
 
@@ -318,7 +318,7 @@ TEST_F(BPWriteProfilingJSONTest, ADIOS2BPWriteProfilingJSON_Off)
 
 int main(int argc, char **argv)
 {
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Init(nullptr, nullptr);
 #endif
 
@@ -331,7 +331,7 @@ int main(int argc, char **argv)
     }
     result = RUN_ALL_TESTS();
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Finalize();
 #endif
 

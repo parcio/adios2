@@ -48,13 +48,15 @@ void WriteXmlQuery1D(const std::string &queryFile, const std::string &ioName,
 
 void LoadTestData(QueryTestData &input, int step, int rank, int dataSize)
 {
+    input.m_IntData.clear();
     input.m_IntData.reserve(dataSize);
+    input.m_DoubleData.clear();
     input.m_DoubleData.reserve(dataSize);
 
     for (auto i = 0; i < dataSize; i++)
     {
-        input.m_IntData[i] = step * 1000 + rank * 100 + i;
-        input.m_DoubleData[i] = step * 100 + rank * 10 + i * 0.01;
+        input.m_IntData.push_back(step * 1000 + rank * 100 + i);
+        input.m_DoubleData.push_back(step * 100 + rank * 10 + i * 0.01);
     }
 }
 
@@ -157,7 +159,7 @@ void BPQueryTest::WriteFile(const std::string &fname, adios2::ADIOS &adios,
                             const std::string &engineName)
 {
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 #endif
@@ -245,10 +247,10 @@ TEST_F(BPQueryTest, BP3)
     // form a mpiSize * Nx 1D array
     const std::string fname(engineName + "Query1D.bp");
 
-#ifdef ADIOS2_HAVE_MPI
-    adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
+#if ADIOS2_USE_MPI
+    adios2::ADIOS adios(MPI_COMM_WORLD);
 #else
-    adios2::ADIOS adios(true);
+    adios2::ADIOS adios;
 #endif
 
     WriteFile(fname, adios, engineName);
@@ -271,10 +273,10 @@ TEST_F(BPQueryTest, BP4)
     // form a mpiSize * Nx 1D array
     const std::string fname(engineName + "4Query1D.bp");
 
-#ifdef ADIOS2_HAVE_MPI
-    adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
+#if ADIOS2_USE_MPI
+    adios2::ADIOS adios(MPI_COMM_WORLD);
 #else
-    adios2::ADIOS adios(true);
+    adios2::ADIOS adios;
 #endif
 
     WriteFile(fname, adios, engineName);
@@ -292,7 +294,7 @@ TEST_F(BPQueryTest, BP4)
 
 int main(int argc, char **argv)
 {
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     // MPI_Init(nullptr, nullptr);
     MPI_Init(&argc, &argv);
 #endif
@@ -306,7 +308,7 @@ int main(int argc, char **argv)
     }
     result = RUN_ALL_TESTS();
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Finalize();
 #endif
 

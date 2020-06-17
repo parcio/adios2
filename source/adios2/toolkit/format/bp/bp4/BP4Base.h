@@ -65,17 +65,10 @@ public:
     /**
      * Unique constructor
      * @param mpiComm for m_BP1Aggregator
-     * @param debugMode true: exceptions checks
      */
-    BP4Base(helper::Comm const &comm, const bool debugMode);
+    BP4Base(helper::Comm const &comm);
 
     virtual ~BP4Base() = default;
-
-    /** A BP4 dataset is a directory. Remove first the trailing \ from
-     * the name if present. Makes it easier to append all file names
-     * to it later.
-     */
-    std::string RemoveTrailingSlash(const std::string &name) const noexcept;
 
     /**
      * Vector version of BPBaseNames
@@ -108,6 +101,12 @@ public:
 
     std::string GetBPMetadataIndexFileName(const std::string &name) const
         noexcept;
+
+    std::vector<std::string>
+    GetBPActiveFlagFileNames(const std::vector<std::string> &names) const
+        noexcept;
+
+    std::string GetBPActiveFlagFileName(const std::string &name) const noexcept;
 
     std::string GetBPSubFileName(const std::string &name,
                                  const size_t subFileIndex,

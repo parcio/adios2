@@ -6,8 +6,10 @@
 #include <cstring>
 #include <ctime>
 
+#include <chrono>
 #include <iostream>
 #include <stdexcept>
+#include <thread>
 
 #include <adios2.h>
 
@@ -23,7 +25,7 @@ public:
     CommonWriteTest() = default;
 };
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
 MPI_Comm testComm;
 #endif
 
@@ -33,17 +35,17 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
     // form a mpiSize * Nx 1D array
     int mpiRank = 0, mpiSize = 1;
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Comm_rank(testComm, &mpiRank);
     MPI_Comm_size(testComm, &mpiSize);
 #endif
 
     // Write test data using ADIOS2
 
-#ifdef ADIOS2_HAVE_MPI
-    adios2::ADIOS adios(testComm, adios2::DebugON);
+#if ADIOS2_USE_MPI
+    adios2::ADIOS adios(testComm);
 #else
-    adios2::ADIOS adios(true);
+    adios2::ADIOS adios;
 #endif
     adios2::IO io = adios.DeclareIO("TestIO");
 
@@ -177,28 +179,54 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
         // fill in the variable with values from starting index to
         // starting index + count
         const adios2::Mode sync = adios2::Mode::Deferred;
+        std::time_t localtime;
+        if (!NoData)
+        {
+            if (mpiRank == 0)
+                engine.Put(scalar_r64, data_scalar_R64);
+            engine.Put(var_i8, data_I8.data(), sync);
+            engine.Put(var_i16, data_I16.data(), sync);
+            engine.Put(var_i32, data_I32.data(), sync);
+            engine.Put(var_i64, data_I64.data(), sync);
+            engine.Put(var_r32, data_R32.data(), sync);
+            engine.Put(var_r64, data_R64.data(), sync);
+            engine.Put(var_c32, data_C32.data(), sync);
+            engine.Put(var_c64, data_C64.data(), sync);
+            engine.Put(var_r64_2d, &data_R64_2d[0], sync);
+            engine.Put(var_r64_2d_rev, &data_R64_2d_rev[0], sync);
+            // Advance to the next time step
+            localtime = std::time(NULL);
+            engine.Put(var_time, (int64_t *)&localtime);
+        }
+        else
+        {
+            // NoData specified
+            if (NoDataNode == mpiRank)
+            {
+                // we'll write all the data for one variable, nobody else does
+                // anything
+                data_R64.resize(Nx * mpiSize);
+                for (int i = 0; i < Nx * mpiSize; i++)
+                    data_R64[i] = (double)10 * i + step;
+                sel_r64.first[0] = 0;
+                sel_r64.second[0] = mpiSize * Nx;
+                var_r64.SetSelection(sel_r64);
 
-        if (mpiRank == 0)
-            engine.Put(scalar_r64, data_scalar_R64);
-        engine.Put(var_i8, data_I8.data(), sync);
-        engine.Put(var_i16, data_I16.data(), sync);
-        engine.Put(var_i32, data_I32.data(), sync);
-        engine.Put(var_i64, data_I64.data(), sync);
-        engine.Put(var_r32, data_R32.data(), sync);
-        engine.Put(var_r64, data_R64.data(), sync);
-        engine.Put(var_c32, data_C32.data(), sync);
-        engine.Put(var_c64, data_C64.data(), sync);
-        engine.Put(var_r64_2d, &data_R64_2d[0], sync);
-        engine.Put(var_r64_2d_rev, &data_R64_2d_rev[0], sync);
-        // Advance to the next time step
-        std::time_t localtime = std::time(NULL);
-        engine.Put(var_time, (int64_t *)&localtime);
+                engine.Put(var_r64, data_R64.data(), sync);
+            }
+            else
+            {
+                // nobody does anything
+            }
+        }
         if (LockGeometry)
         {
             // we'll never change our data decomposition
             engine.LockWriterDefinitions();
         }
         engine.EndStep();
+        std::this_thread::sleep_for(std::chrono::milliseconds(
+            DelayMS)); /* sleep for DelayMS milliseconds */
     }
 
     // Close the file
@@ -207,7 +235,7 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
 
 int main(int argc, char **argv)
 {
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Init(nullptr, nullptr);
 
     int key;
@@ -220,11 +248,13 @@ int main(int argc, char **argv)
     int result;
     ::testing::InitGoogleTest(&argc, argv);
 
+    DelayMS = 0; // zero for common writer
+
     ParseArgs(argc, argv);
 
     result = RUN_ALL_TESTS();
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Finalize();
 #endif
 

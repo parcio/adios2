@@ -23,7 +23,7 @@ public:
     CommonWriteTest() = default;
 };
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
 MPI_Comm testComm;
 #endif
 
@@ -33,17 +33,17 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
     // form a mpiSize * Nx 1D array
     int mpiRank = 0, mpiSize = 1;
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Comm_rank(testComm, &mpiRank);
     MPI_Comm_size(testComm, &mpiSize);
 #endif
 
     // Write test data using ADIOS2
 
-#ifdef ADIOS2_HAVE_MPI
-    adios2::ADIOS adios(testComm, adios2::DebugON);
+#if ADIOS2_USE_MPI
+    adios2::ADIOS adios(testComm);
 #else
-    adios2::ADIOS adios(true);
+    adios2::ADIOS adios;
 #endif
     adios2::IO io = adios.DeclareIO("TestIO");
 
@@ -194,7 +194,7 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
 
 int main(int argc, char **argv)
 {
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Init(nullptr, nullptr);
 
     int key;
@@ -211,7 +211,7 @@ int main(int argc, char **argv)
 
     result = RUN_ALL_TESTS();
 
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
     MPI_Finalize();
 #endif
 

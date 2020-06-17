@@ -31,9 +31,8 @@ class CompressZFP : public Operator
 public:
     /**
      * Unique constructor
-     * @param debugMode
      */
-    CompressZFP(const Params &parameters, const bool debugMode);
+    CompressZFP(const Params &parameters);
 
     ~CompressZFP() = default;
 
@@ -50,6 +49,8 @@ public:
                     const size_t elementSize, const std::string type,
                     void *bufferOut, const Params &parameters,
                     Params &info) const final;
+
+    using Operator::Decompress;
 
     /**
      * Wrapper around zfp decompression
@@ -92,8 +93,7 @@ private:
                            const Params &parameters) const final;
 
     /**
-     * In debug mode, check status from BZip compression and decompression
-     * functions
+     * check status from BZip compression and decompression functions
      * @param status returned by BZip2 library
      * @param hint extra exception information
      */

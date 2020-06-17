@@ -256,6 +256,37 @@ void CheckForNullptr(T *pointer, const std::string hint)
     }
 }
 
+template <class T, class U>
+std::set<T> KeysToSet(const std::unordered_map<T, U> &hash) noexcept
+{
+    std::set<T> output;
+    for (const auto &pair : hash)
+    {
+        output.insert(pair.first);
+    }
+    return output;
+}
+
+template <class T>
+std::set<T> VectorToSet(const std::vector<T> &input) noexcept
+{
+    std::set<T> output;
+    for (const T &in : input)
+    {
+        output.insert(in);
+    }
+    return output;
+}
+
+template <class T, class U>
+U EraseKey(const T &key, std::map<T, U> &map)
+{
+    auto it = map.find(key);
+    const U value = it == map.end() ? U() : it->second;
+    map.erase(it);
+    return value;
+}
+
 } // end namespace helper
 } // end namespace adios2
 

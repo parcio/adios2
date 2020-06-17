@@ -3,7 +3,7 @@
 # accompanying file Copyright.txt for details.
 #------------------------------------------------------------------------------#
 
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.12)
 
 # Fail immediately if not using an out-of-source build
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
@@ -14,12 +14,9 @@ endif()
 
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/ADIOSFunctions.cmake)
 
-setup_version(2.5.0)
+setup_version(2.6.0)
 
 project(ADIOS2 VERSION ${ADIOS2_VERSION})
-if(POLICY CMP0074)
-  cmake_policy(SET CMP0074 NEW)
-endif()
 
 #------------------------------------------------------------------------------#
 # Some boilerplate to setup nice output directories
@@ -81,6 +78,14 @@ if(NOT MSVC)
   set(CMAKE_C_STANDARD_REQUIRED True)
 endif()
 
+# Option for packagers to add a suffix after "adios" in library names (to
+# install multiple builds in parallel)
+set(ADIOS2_LIBRARY_SUFFIX "" CACHE STRING
+  "Suffix to put after \"adios\" in library names")
+set(ADIOS2_EXECUTABLE_SUFFIX "${ADIOS2_LIBRARY_SUFFIX}" CACHE STRING
+  "Suffix to append to executable names")
+mark_as_advanced(ADIOS2_LIBRARY_SUFFIX ADIOS2_EXECUTABLE_SUFFIX)
+
 # Use meta-compile features if available, otherwise use specific language
 # features
 if(CMAKE_VERSION VERSION_LESS 3.9 OR
@@ -107,6 +112,9 @@ cmake_dependent_option(BUILD_SHARED_LIBS
   "SHARED_LIBS_SUPPORTED" OFF
 )
 mark_as_advanced(BUILD_SHARED_LIBS)
+if((NOT BUILD_SHARED_LIBS) AND (NOT DEFINED CMAKE_POSITION_INDEPENDENT_CODE))
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+endif()
 
 adios_option(Blosc     "Enable support for Blosc transforms" AUTO)
 adios_option(BZip2     "Enable support for BZip2 transforms" AUTO)
@@ -122,6 +130,7 @@ adios_option(Table     "Enable support for Table" AUTO)
 adios_option(SST       "Enable support for SST" AUTO)
 adios_option(ZeroMQ    "Enable support for ZeroMQ" AUTO)
 adios_option(HDF5      "Enable support for the HDF5 engine" AUTO)
+adios_option(IME       "Enable support for DDN IME transport" AUTO)
 adios_option(Python    "Enable support for Python bindings" AUTO)
 adios_option(Fortran   "Enable support for Fortran bindings" AUTO)
 adios_option(SysVShMem "Enable support for SysV Shared Memory IPC on *NIX" AUTO)
@@ -141,7 +150,7 @@ if(ADIOS2_HAVE_MPI)
 endif()
 
 set(ADIOS2_CONFIG_OPTS
-    Blosc BZip2 ZFP SZ MGARD PNG MPI DataMan Table SSC SST DataSpaces ZeroMQ HDF5 Python Fortran SysVShMem Profiling Endian_Reverse JULEA
+    Blosc BZip2 ZFP SZ MGARD PNG MPI DataMan Table SSC SST DataSpaces ZeroMQ HDF5 IME Python Fortran SysVShMem Profiling Endian_Reverse JULEA
 )
 GenerateADIOSHeaderConfig(${ADIOS2_CONFIG_OPTS})
 configure_file(
@@ -152,29 +161,37 @@ configure_file(
 
 install(FILES ${PROJECT_BINARY_DIR}/source/adios2/common/ADIOSConfig.h
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/adios2/common
+  COMPONENT adios2_core-development
 )
 
 #------------------------------------------------------------------------------#
 # Some specialized shared library and RPATH handling
 #------------------------------------------------------------------------------#
-if(BUILD_SHARED_LIBS)
+option(ADIOS2_RUN_INSTALL_TEST "Enable / disable the install test" TRUE)
+mark_as_advanced(ADIOS2_RUN_INSTALL_TEST)
+if(BUILD_SHARED_LIBS AND ADIOS2_RUN_INSTALL_TEST)
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+  string(REGEX REPLACE "[^/]+" ".." relative_base "${CMAKE_INSTALL_LIBDIR}")
 
   if(APPLE)
-    # On Mac OS X, set the dir included as part of the installed library's path:
-    if(NOT DEFINED CMAKE_INSTALL_NAME_DIR)
-      set(CMAKE_INSTALL_NAME_DIR
-        "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
-    endif ()
-
     # Various homebrew MPI fortran installations break rpath usage on OSX
     if(APPLE AND ADIOS2_HAVE_Fortran AND ADIOS2_HAVE_MPI)
       set(CMAKE_MACOSX_RPATH OFF)
+      if(NOT CMAKE_VERSION VERSION_LESS 3.17)
+        set(CMAKE_INSTALL_NAME_DIR
+          "$<INSTALL_PREFIX>/${CMAKE_INSTALL_LIBDIR}")
+      else()
+        set(CMAKE_INSTALL_NAME_DIR
+          "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+        message(STATUS "Skipping install tests due to platform specific rpath oddities")
+        set(ADIOS2_RUN_INSTALL_TEST FALSE)
+      endif()
+    else()
+      set(CMAKE_INSTALL_RPATH "@loader_path/${relative_base}/${CMAKE_INSTALL_LIBDIR}")
     endif()
 
   elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
     # Linux needs some specialized RPATH handling
-    string(REGEX REPLACE "[^/]+" ".." relative_base "${CMAKE_INSTALL_LIBDIR}")
     set(CMAKE_INSTALL_RPATH "$ORIGIN/${relative_base}/${CMAKE_INSTALL_LIBDIR}")
   endif()
 endif()
@@ -215,13 +232,25 @@ else()
 endif()
 unset(BUILD_TESTING)
 option(ADIOS2_BUILD_TESTING "Build the ADIOS2 testing tree"
-       ${ADIOS2_BUILD_TESTING_DEFAULT})
+  ${ADIOS2_BUILD_TESTING_DEFAULT})
+
+cmake_dependent_option(ADIOS2_RUN_MPI_MPMD_TESTS
+  "Enable the parallel MPMD tests" ON
+  "ADIOS2_BUILD_TESTING;ADIOS2_HAVE_MPI" OFF)
+mark_as_advanced(ADIOS2_RUN_MPMD_TESTS)
 
 include(CTest)
 set(BUILD_TESTING ${ADIOS2_BUILD_TESTING})
 if(BUILD_TESTING)
   find_program(DIFF_EXECUTABLE diff)
-  if(NOT DIFF_EXECUTABLE)
+  if(DIFF_EXECUTABLE)
+    set(DIFF_COMMAND ${DIFF_EXECUTABLE})
+  elseif(GIT_COMMAND)
+    set(DIFF_COMMAND ${GIT_COMMAND} diff)
+  elseif(GITCOMMAND)
+    set(DIFF_COMMAND ${GITCOMMAND} diff)
+  endif()
+  if(NOT DIFF_COMMAND)
     message(FATAL_ERROR "diff command is required for testing")
   endif()
 
@@ -266,7 +295,7 @@ message("        bin: ${CMAKE_INSTALL_BINDIR}")
 message("        lib: ${CMAKE_INSTALL_LIBDIR}")
 message("    include: ${CMAKE_INSTALL_INCLUDEDIR}")
 message("      cmake: ${CMAKE_INSTALL_CMAKEDIR}")
-if(ADIOS2_HAVE_Python)
+if(DEFINED CMAKE_INSTALL_PYTHONDIR)
   message("     python: ${CMAKE_INSTALL_PYTHONDIR}")
 endif()
 message("")
@@ -285,7 +314,7 @@ message("    Examples: ${ADIOS2_BUILD_EXAMPLES}")
 message("    Build Options:")
 
 foreach(opt IN LISTS ADIOS2_CONFIG_OPTS)
-  message_pad("      ${opt}" 15 label)
+  message_pad("      ${opt}" 16 label)
   if(${ADIOS2_HAVE_${opt}})
     message("${label}: ON")
   else()

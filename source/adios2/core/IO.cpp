@@ -11,10 +11,10 @@
 #include "IO.h"
 #include "IO.tcc"
 
+#include <mutex>
 #include <sstream>
 #include <utility> // std::pair
 
-#include "adios2/common/ADIOSMPI.h"
 #include "adios2/common/ADIOSMacros.h"
 
 #include "adios2/engine/bp3/BP3Reader.h"
@@ -30,6 +30,7 @@
 
 #include "adios2/helper/adiosComm.h"
 #include "adios2/helper/adiosFunctions.h" //BuildParametersMap
+#include "adios2/helper/adiosString.h"
 #include "adios2/toolkit/profiling/taustubs/tautimer.hpp"
 #include <adios2sys/SystemTools.hxx> // FileIsDirectory()
 
@@ -38,58 +39,167 @@
 #include "adios2/engine/dataman/DataManWriter.h"
 #endif
 
-#ifdef ADIOS2_HAVE_SSC // external dependencies
-#include "adios2/engine/ssc/SscReader.h"
-#include "adios2/engine/ssc/SscWriter.h"
+#ifdef ADIOS2_HAVE_SST // external dependencies
+#include "adios2/engine/sst/SstReader.h"
+#include "adios2/engine/sst/SstWriter.h"
 #endif
 
 #ifdef ADIOS2_HAVE_TABLE // external dependencies
 #include "adios2/engine/table/TableWriter.h"
 #endif
 
-#ifdef ADIOS2_HAVE_SST // external dependencies
-#include "adios2/engine/sst/SstReader.h"
-#include "adios2/engine/sst/SstWriter.h"
-#endif
-
-#ifdef ADIOS2_HAVE_DATASPACES // external dependencies
-#include "adios2/engine/dataspaces/DataSpacesReader.h"
-#include "adios2/engine/dataspaces/DataSpacesWriter.h"
-#endif
-
-#ifdef ADIOS2_HAVE_HDF5 // external dependencies
-#include "adios2/engine/hdf5/HDF5ReaderP.h"
-#include "adios2/engine/hdf5/HDF5WriterP.h"
-#if H5_VERSION_GE(1, 11, 0)
-#include "adios2/engine/mixer/HDFMixer.h"
-#endif
-#endif
-
-#ifdef ADIOS2_HAVE_MPI // external dependencies
-#include "adios2/engine/insitumpi/InSituMPIReader.h"
-#include "adios2/engine/insitumpi/InSituMPIWriter.h"
-#endif
-
 #ifdef ADIOS2_HAVE_JULEA // external dependencies
-// #include "adios2/engine/julea-original/JuleaReader.h"
-// #include "adios2/engine/julea-original/JuleaWriter.h"
 #include "adios2/engine/julea-kv/JuleaKVReader.h"
 #include "adios2/engine/julea-kv/JuleaKVWriter.h"
 #include "adios2/engine/julea-db/JuleaDBReader.h"
 #include "adios2/engine/julea-db/JuleaDBWriter.h"
-// #include "adios2/engine/julea-db/JuleaDBReader.h"
-// #include "adios2/engine/julea-db/JuleaDBWriter.h"
 #endif
+
 
 namespace adios2
 {
 namespace core
 {
 
+IO::EngineFactoryEntry IO_MakeEngine_HDFMixer();
+IO::EngineFactoryEntry IO_MakeEngine_HDF5();
+
+namespace
+{
+
+std::unordered_map<std::string, IO::EngineFactoryEntry> Factory = {
+    {"bp3",
+     {IO::MakeEngine<engine::BP3Reader>, IO::MakeEngine<engine::BP3Writer>}},
+    {"bp4",
+     {IO::MakeEngine<engine::BP4Reader>, IO::MakeEngine<engine::BP4Writer>}},
+    {"hdfmixer",
+#ifdef ADIOS2_HAVE_HDF5
+     IO_MakeEngine_HDFMixer()
+#else
+     IO::NoEngineEntry("ERROR: this version didn't compile with "
+                       "HDF5 library, can't use HDF5 engine\n")
+#endif
+    },
+    {"dataman",
+#ifdef ADIOS2_HAVE_DATAMAN
+     {IO::MakeEngine<engine::DataManReader>,
+      IO::MakeEngine<engine::DataManWriter>}
+#else
+     IO::NoEngineEntry("ERROR: this version didn't compile with "
+                       "DataMan library, can't use DataMan engine\n")
+#endif
+    },
+    {"ssc", IO::NoEngineEntry("ERROR: this version didn't compile with "
+                              "SSC library, can't use SSC engine\n")},
+    {"table",
+#ifdef ADIOS2_HAVE_TABLE
+     {IO::NoEngine("ERROR: Table engine only supports Write. It uses other "
+                   "engines as backend. Please use corresponding engines for "
+                   "Read\n"),
+      IO::MakeEngine<engine::TableWriter>}
+#else
+     IO::NoEngineEntry("ERROR: this version didn't compile with "
+                       "Table library, can't use Table engine\n")
+#endif
+    },
+    {"sst",
+#ifdef ADIOS2_HAVE_SST
+     {IO::MakeEngine<engine::SstReader>, IO::MakeEngine<engine::SstWriter>}
+#else
+     IO::NoEngineEntry("ERROR: this version didn't compile with "
+                       "Sst library, can't use Sst engine\n")
+#endif
+    },
+    {"effis",
+#ifdef ADIOS2_HAVE_SST
+     {IO::MakeEngine<engine::SstReader>, IO::MakeEngine<engine::SstWriter>}
+#else
+     IO::NoEngineEntry("ERROR: this version didn't compile with "
+                       "Sst library, can't use Sst engine\n")
+#endif
+    },
+    {"julea-kv",
+#ifdef ADIOS2_HAVE_JULEA
+     {IO::MakeEngine<engine::JuleaKVReader>, IO::MakeEngine<engine::JuleaKVWriter>}
+#else
+     IO::NoEngineEntry("ERROR: this version didn't compile with "
+                       "JULEA library, can't use JULEA key-value (julea-kv) engine\n")
+#endif
+    },
+    {"julea-db",
+#ifdef ADIOS2_HAVE_JULEA
+     {IO::MakeEngine<engine::JuleaDBReader>, IO::MakeEngine<engine::JuleaDBWriter>}
+#else
+     IO::NoEngineEntry("ERROR: this version didn't compile with "
+                       "JULEA library, can't use JULEA database (julea-db) engine\n")
+#endif
+    },
+    {"dataspaces",
+     IO::NoEngineEntry("ERROR: this version didn't compile with "
+                       "DataSpaces library, can't use DataSpaces engine\n")},
+    {"hdf5",
+#ifdef ADIOS2_HAVE_HDF5
+     IO_MakeEngine_HDF5()
+#else
+     IO::NoEngineEntry("ERROR: this version didn't compile with "
+                       "HDF5 library, can't use HDF5 engine\n")
+#endif
+    },
+    {"insitumpi", IO::NoEngineEntry("ERROR: this version didn't compile with "
+                                    "MPI, can't use InSituMPI engine\n")},
+    {"skeleton",
+     {IO::MakeEngine<engine::SkeletonReader>,
+      IO::MakeEngine<engine::SkeletonWriter>}},
+    {"inline",
+     {IO::MakeEngine<engine::InlineReader>,
+      IO::MakeEngine<engine::InlineWriter>}},
+    {"null",
+     {IO::MakeEngine<engine::NullEngine>, IO::MakeEngine<engine::NullEngine>}},
+    {"nullcore",
+     {IO::NoEngine("ERROR: nullcore engine does not support read mode"),
+      IO::MakeEngine<engine::NullCoreWriter>}},
+};
+
+// Synchronize access to the factory in case one thread is
+// looking up while another registers additional entries.
+std::mutex FactoryMutex;
+
+std::unordered_map<std::string, IO::EngineFactoryEntry>::const_iterator
+FactoryLookup(std::string const &name)
+{
+    std::lock_guard<std::mutex> factoryGuard(FactoryMutex);
+    return Factory.find(name);
+}
+
+struct ThrowError
+{
+    std::shared_ptr<Engine> operator()(IO &, const std::string &, const Mode,
+                                       helper::Comm) const
+    {
+        throw std::invalid_argument(Err);
+    }
+    std::string Err;
+};
+
+} // end anonymous namespace
+
+IO::MakeEngineFunc IO::NoEngine(std::string e) { return ThrowError{e}; }
+
+IO::EngineFactoryEntry IO::NoEngineEntry(std::string e)
+{
+    return {NoEngine(e), NoEngine(e)};
+}
+
+void IO::RegisterEngine(const std::string &engineType, EngineFactoryEntry entry)
+{
+    std::lock_guard<std::mutex> factoryGuard(FactoryMutex);
+    Factory[engineType] = std::move(entry);
+}
+
 IO::IO(ADIOS &adios, const std::string name, const bool inConfigFile,
-       const std::string hostLanguage, const bool debugMode)
+       const std::string hostLanguage)
 : m_ADIOS(adios), m_Name(name), m_InConfigFile(inConfigFile),
-  m_HostLanguage(hostLanguage), m_DebugMode(debugMode)
+  m_HostLanguage(hostLanguage)
 {
 }
 
@@ -160,7 +270,7 @@ void IO::SetParameters(const std::string &parameters)
 {
     TAU_SCOPED_TIMER("IO::other");
     adios2::Params parameterMap =
-        adios2::helper::BuildParametersMap(parameters, '=', ',', false);
+        adios2::helper::BuildParametersMap(parameters, '=', ',');
     SetParameters(parameterMap);
 }
 
@@ -182,18 +292,16 @@ size_t IO::AddTransport(const std::string type, const Params &parameters)
 {
     TAU_SCOPED_TIMER("IO::other");
     Params parametersMap(parameters);
-    if (m_DebugMode)
-    {
-        if (parameters.count("transport") == 1 ||
-            parameters.count("Transport") == 1)
-        {
-            throw std::invalid_argument("ERROR: key Transport (or transport) "
-                                        "is not valid for transport type " +
-                                        type + ", in call to AddTransport)");
-        }
 
-        CheckTransportType(type);
+    if (parameters.count("transport") == 1 ||
+        parameters.count("Transport") == 1)
+    {
+        throw std::invalid_argument("ERROR: key Transport (or transport) "
+                                    "is not valid for transport type " +
+                                    type + ", in call to AddTransport)");
     }
+
+    CheckTransportType(type);
 
     parametersMap["transport"] = type;
     m_TransportsParameters.push_back(parametersMap);
@@ -204,16 +312,12 @@ void IO::SetTransportParameter(const size_t transportIndex,
                                const std::string key, const std::string value)
 {
     TAU_SCOPED_TIMER("IO::other");
-    if (m_DebugMode)
+    if (transportIndex >= m_TransportsParameters.size())
     {
-        if (transportIndex >= m_TransportsParameters.size())
-        {
-            throw std::invalid_argument(
-                "ERROR: transportIndex is larger than "
-                "transports created with AddTransport, for key: " +
-                key + ", value: " + value +
-                "in call to SetTransportParameter\n");
-        }
+        throw std::invalid_argument(
+            "ERROR: transportIndex is larger than "
+            "transports created with AddTransport, for key: " +
+            key + ", value: " + value + "in call to SetTransportParameter\n");
     }
 
     m_TransportsParameters[transportIndex][key] = value;
@@ -323,14 +427,16 @@ void IO::RemoveAllAttributes() noexcept
 #undef declare_type
 }
 
-std::map<std::string, Params> IO::GetAvailableVariables() noexcept
+std::map<std::string, Params>
+IO::GetAvailableVariables(const std::set<std::string> &keys) noexcept
 {
     TAU_SCOPED_TIMER("IO::GetAvailableVariables");
+
     std::map<std::string, Params> variablesInfo;
     for (const auto &variablePair : m_Variables)
     {
-        const std::string name(variablePair.first);
-        const std::string type = InquireVariableType(name);
+        const std::string variableName = variablePair.first;
+        const std::string type = InquireVariableType(variableName);
 
         if (type == "compound")
         {
@@ -338,23 +444,7 @@ std::map<std::string, Params> IO::GetAvailableVariables() noexcept
 #define declare_template_instantiation(T)                                      \
     else if (type == helper::GetType<T>())                                     \
     {                                                                          \
-        variablesInfo[name]["Type"] = type;                                    \
-        Variable<T> &variable = *InquireVariable<T>(name);                     \
-        variablesInfo[name]["AvailableStepsCount"] =                           \
-            helper::ValueToString(variable.m_AvailableStepsCount);             \
-        variablesInfo[name]["Shape"] = helper::VectorToCSV(variable.Shape());  \
-        if (variable.m_SingleValue)                                            \
-        {                                                                      \
-            variablesInfo[name]["SingleValue"] = "true";                       \
-        }                                                                      \
-        else                                                                   \
-        {                                                                      \
-            variablesInfo[name]["SingleValue"] = "false";                      \
-            variablesInfo[name]["Min"] =                                       \
-                helper::ValueToString(variable.Min());                         \
-            variablesInfo[name]["Max"] =                                       \
-                helper::ValueToString(variable.Max());                         \
-        }                                                                      \
+        variablesInfo[variableName] = GetVariableInfo<T>(variableName, keys);  \
     }
         ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
@@ -365,37 +455,16 @@ std::map<std::string, Params> IO::GetAvailableVariables() noexcept
 
 std::map<std::string, Params>
 IO::GetAvailableAttributes(const std::string &variableName,
-                           const std::string separator) noexcept
+                           const std::string separator,
+                           const bool fullNameKeys) noexcept
 {
     TAU_SCOPED_TIMER("IO::GetAvailableAttributes");
     std::map<std::string, Params> attributesInfo;
-    const std::string variablePrefix = variableName + separator;
 
-    for (const auto &attributePair : m_Attributes)
+    if (!variableName.empty())
     {
-        const std::string absoluteName(attributePair.first);
-        std::string name = absoluteName;
-        if (!variableName.empty())
-        {
-            // valid associated attribute
-            if (absoluteName.size() <= variablePrefix.size())
-            {
-                continue;
-            }
-
-            if (absoluteName.compare(0, variablePrefix.size(),
-                                     variablePrefix) == 0)
-            {
-                name = absoluteName.substr(variablePrefix.size());
-            }
-            else
-            {
-                continue;
-            }
-        }
-
-        const std::string type(attributePair.second.first);
-        attributesInfo[name]["Type"] = type;
+        auto itVariable = m_Variables.find(variableName);
+        const std::string type = InquireVariableType(itVariable);
 
         if (type == "compound")
         {
@@ -403,25 +472,36 @@ IO::GetAvailableAttributes(const std::string &variableName,
 #define declare_template_instantiation(T)                                      \
     else if (type == helper::GetType<T>())                                     \
     {                                                                          \
-        Attribute<T> &attribute = *InquireAttribute<T>(absoluteName);          \
-        attributesInfo[name]["Elements"] =                                     \
-            std::to_string(attribute.m_Elements);                              \
-                                                                               \
-        if (attribute.m_IsSingleValue)                                         \
-        {                                                                      \
-            attributesInfo[name]["Value"] =                                    \
-                helper::ValueToString(attribute.m_DataSingleValue);            \
-        }                                                                      \
-        else                                                                   \
-        {                                                                      \
-            attributesInfo[name]["Value"] =                                    \
-                "{ " + helper::VectorToCSV(attribute.m_DataArray) + " }";      \
-        }                                                                      \
+        Variable<T> &variable =                                                \
+            GetVariableMap<T>().at(itVariable->second.second);                 \
+        attributesInfo =                                                       \
+            variable.GetAttributesInfo(*this, separator, fullNameKeys);        \
+    }
+        ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
+#undef declare_template_instantiation
+
+        return attributesInfo;
+    }
+
+    // return all attributes if variable name is empty
+    for (const auto &attributePair : m_Attributes)
+    {
+        const std::string &name = attributePair.first;
+        const std::string type = attributePair.second.first;
+
+        if (type == "compound")
+        {
+        }
+#define declare_template_instantiation(T)                                      \
+    else if (type == helper::GetType<T>())                                     \
+    {                                                                          \
+        Attribute<T> &attribute =                                              \
+            GetAttributeMap<T>().at(attributePair.second.second);              \
+        attributesInfo[name] = attribute.GetInfo();                            \
     }
         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
-
-    } // end for
+    }
     return attributesInfo;
 }
 
@@ -429,9 +509,15 @@ std::string IO::InquireVariableType(const std::string &name) const noexcept
 {
     TAU_SCOPED_TIMER("IO::other");
     auto itVariable = m_Variables.find(name);
+    return InquireVariableType(itVariable);
+}
+
+std::string
+IO::InquireVariableType(const DataMap::const_iterator itVariable) const noexcept
+{
     if (itVariable == m_Variables.end())
     {
-        return std::string();
+        return "";
     }
 
     const std::string type = itVariable->second.first;
@@ -449,7 +535,7 @@ std::string IO::InquireVariableType(const std::string &name) const noexcept
                 itVariable->second.second);                                    \
         if (!variable.IsValidStep(m_EngineStep + 1))                           \
         {                                                                      \
-            return std::string();                                              \
+            return "";                                                         \
         }                                                                      \
     }
         ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
@@ -470,7 +556,7 @@ std::string IO::InquireAttributeType(const std::string &name,
     auto itAttribute = m_Attributes.find(globalName);
     if (itAttribute == m_Attributes.end())
     {
-        return std::string();
+        return "";
     }
 
     return itAttribute->second.first;
@@ -479,11 +565,12 @@ std::string IO::InquireAttributeType(const std::string &name,
 size_t IO::AddOperation(Operator &op, const Params &parameters) noexcept
 {
     TAU_SCOPED_TIMER("IO::other");
-    m_Operations.push_back(Operation{&op, parameters, Params()});
+    m_Operations.push_back(
+        Operation{&op, helper::LowerCaseParams(parameters), Params()});
     return m_Operations.size() - 1;
 }
 
-Engine &IO::Open(const std::string &name, const Mode mode, MPI_Comm mpiComm)
+Engine &IO::Open(const std::string &name, const Mode mode, helper::Comm comm)
 {
     TAU_SCOPED_TIMER("IO::Open");
     auto itEngineFound = m_Engines.find(name);
@@ -497,7 +584,7 @@ Engine &IO::Open(const std::string &name, const Mode mode, MPI_Comm mpiComm)
         }
     }
 
-    if (m_DebugMode && isEngineFound)
+    if (isEngineFound)
     {
         if (isEngineActive) // check if active
         {
@@ -515,7 +602,6 @@ Engine &IO::Open(const std::string &name, const Mode mode, MPI_Comm mpiComm)
         }
     }
 
-    auto comm = helper::Comm::Duplicate(mpiComm);
     std::shared_ptr<Engine> engine;
     const bool isDefaultEngine = m_EngineType.empty() ? true : false;
     std::string engineTypeLC = m_EngineType;
@@ -569,253 +655,33 @@ Engine &IO::Open(const std::string &name, const Mode mode, MPI_Comm mpiComm)
         }
     }
 
-    if (engineTypeLC == "bp3")
+    auto f = FactoryLookup(engineTypeLC);
+    if (f != Factory.end())
     {
         if (mode == Mode::Read)
         {
-            engine = std::make_shared<engine::BP3Reader>(*this, name, mode,
-                                                         std::move(comm));
+            engine = f->second.MakeReader(*this, name, mode, std::move(comm));
         }
         else
         {
-            engine = std::make_shared<engine::BP3Writer>(*this, name, mode,
-                                                         std::move(comm));
+            engine = f->second.MakeWriter(*this, name, mode, std::move(comm));
         }
     }
-    else if (engineTypeLC == "bp4")
-    {
-        if (mode == Mode::Read)
-        {
-            engine = std::make_shared<engine::BP4Reader>(*this, name, mode,
-                                                         std::move(comm));
-        }
-        else
-        {
-            engine = std::make_shared<engine::BP4Writer>(*this, name, mode,
-                                                         std::move(comm));
-        }
-    }
-    else if (engineTypeLC == "hdfmixer")
-    {
-#ifdef ADIOS2_HAVE_HDF5
-#if H5_VERSION_GE(1, 11, 0)
-        if (mode == Mode::Read)
-            engine = std::make_shared<engine::HDF5ReaderP>(*this, name, mode,
-                                                           std::move(comm));
-        else
-            engine = std::make_shared<engine::HDFMixer>(*this, name, mode,
-                                                        std::move(comm));
-#else
-        throw std::invalid_argument(
-            "ERROR: update HDF5 >= 1.11 to support VDS.");
-#endif
-#else
-        throw std::invalid_argument("ERROR: this version didn't compile with "
-                                    "HDF5 library, can't use HDF5 engine\n");
-#endif
-    }
-    else if (engineTypeLC == "dataman")
-    {
-#ifdef ADIOS2_HAVE_DATAMAN
-        if (mode == Mode::Read)
-            engine = std::make_shared<engine::DataManReader>(*this, name, mode,
-                                                             std::move(comm));
-        else
-            engine = std::make_shared<engine::DataManWriter>(*this, name, mode,
-                                                             std::move(comm));
-#else
-        throw std::invalid_argument(
-            "ERROR: this version didn't compile with "
-            "DataMan library, can't use DataMan engine\n");
-#endif
-    }
-    else if (engineTypeLC == "ssc")
-    {
-#ifdef ADIOS2_HAVE_SSC
-        if (mode == Mode::Read)
-            engine = std::make_shared<engine::SscReader>(*this, name, mode,
-                                                         std::move(comm));
-        else
-            engine = std::make_shared<engine::SscWriter>(*this, name, mode,
-                                                         std::move(comm));
-#else
-        throw std::invalid_argument("ERROR: this version didn't compile with "
-                                    "SSC library, can't use SSC engine\n");
-#endif
-    }
-    else if (engineTypeLC == "table")
-    {
-#ifdef ADIOS2_HAVE_TABLE
-        if (mode == Mode::Write)
-            engine = std::make_shared<engine::TableWriter>(*this, name, mode,
-                                                           std::move(comm));
-        else
-            throw std::invalid_argument(
-                "ERROR: Table engine only supports Write. It uses other "
-                "engines as backend. Please use corresponding engines for "
-                "Read\n");
-#else
-        throw std::invalid_argument("ERROR: this version didn't compile with "
-                                    "Table library, can't use Table engine\n");
-#endif
-    }
-    else if (engineTypeLC == "sst" || engineTypeLC == "effis")
-    {
-#ifdef ADIOS2_HAVE_SST
-        if (mode == Mode::Read)
-            engine = std::make_shared<engine::SstReader>(*this, name, mode,
-                                                         std::move(comm));
-        else
-            engine = std::make_shared<engine::SstWriter>(*this, name, mode,
-                                                         std::move(comm));
-#else
-        throw std::invalid_argument("ERROR: this version didn't compile with "
-                                    "Sst library, can't use Sst engine\n");
-#endif
-    }
-    else if (engineTypeLC == "dataspaces")
-    {
-#ifdef ADIOS2_HAVE_DATASPACES
-        if (mode == Mode::Read)
-            engine = std::make_shared<engine::DataSpacesReader>(
-                *this, name, mode, std::move(comm));
-        else
-            engine = std::make_shared<engine::DataSpacesWriter>(
-                *this, name, mode, std::move(comm));
-#else
-        throw std::invalid_argument(
-            "ERROR: this version didn't compile with "
-            "DataSpaces library, can't use DataSpaces engine\n");
-#endif
-    }
-    else if (engineTypeLC == "hdf5")
-    {
-#ifdef ADIOS2_HAVE_HDF5
-        if (mode == Mode::Read)
-            engine = std::make_shared<engine::HDF5ReaderP>(*this, name, mode,
-                                                           std::move(comm));
-        else
-            engine = std::make_shared<engine::HDF5WriterP>(*this, name, mode,
-                                                           std::move(comm));
-#else
-        throw std::invalid_argument("ERROR: this version didn't compile with "
-                                    "HDF5 library, can't use HDF5 engine\n");
-#endif
-    }
-    else if (engineTypeLC == "insitumpi")
-    {
-#ifdef ADIOS2_HAVE_MPI
-        if (mode == Mode::Read)
-            engine = std::make_shared<engine::InSituMPIReader>(
-                *this, name, mode, std::move(comm));
-        else
-            engine = std::make_shared<engine::InSituMPIWriter>(
-                *this, name, mode, std::move(comm));
-#else
-        throw std::invalid_argument("ERROR: this version didn't compile with "
-                                    "MPI, can't use InSituMPI engine\n");
-#endif
-    }
-    else if (engineTypeLC == "skeleton")
-    {
-        if (mode == Mode::Read)
-            engine = std::make_shared<engine::SkeletonReader>(*this, name, mode,
-                                                              std::move(comm));
-        else
-            engine = std::make_shared<engine::SkeletonWriter>(*this, name, mode,
-                                                              std::move(comm));
-    }
-    else if (engineTypeLC == "inline")
-    {
-        if (mode == Mode::Read)
-            engine = std::make_shared<engine::InlineReader>(*this, name, mode,
-                                                            std::move(comm));
-        else
-            engine = std::make_shared<engine::InlineWriter>(*this, name, mode,
-                                                            std::move(comm));
-    }
-    else if (engineTypeLC == "null")
-    {
-        engine = std::make_shared<engine::NullEngine>(*this, name, mode,
-                                                      std::move(comm));
-    }
-    else if (engineTypeLC == "nullcore")
-    {
-        if (mode == Mode::Read)
-            throw std::invalid_argument(
-                "ERROR: nullcore engine does not support read mode");
-        else
-            engine = std::make_shared<engine::NullCoreWriter>(*this, name, mode,
-                                                              std::move(comm));
-    }
-    // else if (engineTypeLC == "julea-original")
-    // {
-    //     if (mode == Mode::Read)
-    //         engine = std::make_shared<engine::JuleaReader>(*this, name, mode,
-    //                                                           mpiComm);
-    //     else
-    //         engine = std::make_shared<engine::JuleaWriter>(*this, name, mode,
-    //                                                           mpiComm);
-    // }
-    else if (engineTypeLC == "julea-kv")
-    {
-#ifdef ADIOS2_HAVE_JULEA
-        if (mode == Mode::Read)
-            engine = std::make_shared<engine::JuleaKVReader>(*this, name, mode,
-                                                              std::move(comm));
-        else
-            engine = std::make_shared<engine::JuleaKVWriter>(*this, name, mode,
-                                                              std::move(comm));
-#else
-        throw std::invalid_argument("ERROR: this version didn't compile with "
-                                    "JULEA, can't use JuleaKV engine\n");
-#endif
-    }
-    else if (engineTypeLC == "julea-db")
-    {
-#ifdef ADIOS2_HAVE_JULEA
-        if (mode == Mode::Read)
-            engine = std::make_shared<engine::JuleaDBReader>(*this, name, mode,
-                                                              std::move(comm));
-        else
-            engine = std::make_shared<engine::JuleaDBWriter>(*this, name, mode,
-                                                              std::move(comm));
-#else
-        throw std::invalid_argument("ERROR: this version didn't compile with "
-                                    "JULEA, can't use JuleaDB engine\n");
-#endif
-    }
-    // else if (engineTypeLC == "julea-db")
-    // {
-    //     if (mode == Mode::Read)
-    //         engine = std::make_shared<engine::JuleaDBReader>(*this, name, mode,
-    //                                                           mpiComm);
-    //     else
-    //         engine = std::make_shared<engine::JuleaDBWriter>(*this, name, mode,
-    //                                                           mpiComm);
-    // }
-
     else
     {
-        if (m_DebugMode)
-        {
-            throw std::invalid_argument("ERROR: engine " + m_EngineType +
-                                        " not supported, IO SetEngine must add "
-                                        "a supported engine, in call to "
-                                        "Open\n");
-        }
+        throw std::invalid_argument("ERROR: engine " + m_EngineType +
+                                    " not supported, IO SetEngine must add "
+                                    "a supported engine, in call to "
+                                    "Open\n");
     }
 
     auto itEngine = m_Engines.emplace(name, std::move(engine));
 
-    if (m_DebugMode)
+    if (!itEngine.second)
     {
-        if (!itEngine.second)
-        {
-            throw std::invalid_argument(
-                "ERROR: engine of type " + m_EngineType + " and name " + name +
-                " could not be created, in call to Open\n");
-        }
+        throw std::invalid_argument("ERROR: engine of type " + m_EngineType +
+                                    " and name " + name +
+                                    " could not be created, in call to Open\n");
     }
     // return a reference
     return *itEngine.first->second.get();
@@ -823,24 +689,30 @@ Engine &IO::Open(const std::string &name, const Mode mode, MPI_Comm mpiComm)
 
 Engine &IO::Open(const std::string &name, const Mode mode)
 {
-    return Open(name, mode, m_ADIOS.GetComm().AsMPI());
+    return Open(name, mode, m_ADIOS.GetComm().Duplicate());
 }
 
 Engine &IO::GetEngine(const std::string &name)
 {
     TAU_SCOPED_TIMER("IO::other");
     auto itEngine = m_Engines.find(name);
-    if (m_DebugMode)
+    if (itEngine == m_Engines.end())
     {
-        if (itEngine == m_Engines.end())
-        {
-            throw std::invalid_argument(
-                "ERROR: engine name " + name +
-                " could not be found, in call to GetEngine\n");
-        }
+        throw std::invalid_argument(
+            "ERROR: engine name " + name +
+            " could not be found, in call to GetEngine\n");
     }
     // return a reference
     return *itEngine->second.get();
+}
+
+void IO::RemoveEngine(const std::string &name)
+{
+    auto itEngine = m_Engines.find(name);
+    if (itEngine != m_Engines.end())
+    {
+        m_Engines.erase(itEngine);
+    }
 }
 
 void IO::FlushAll()
@@ -860,12 +732,11 @@ void IO::ResetVariablesStepSelection(const bool zeroStart,
                                      const std::string hint)
 {
     TAU_SCOPED_TIMER("IO::other");
-    const auto &variablesData = GetVariablesDataMap();
-
-    for (const auto &variableData : variablesData)
+    for (auto itVariable = m_Variables.begin(); itVariable != m_Variables.end();
+         ++itVariable)
     {
-        const std::string name = variableData.first;
-        const std::string type = InquireVariableType(name);
+        const std::string &name = itVariable->first;
+        const std::string type = InquireVariableType(itVariable);
 
         if (type.empty())
         {
@@ -879,14 +750,54 @@ void IO::ResetVariablesStepSelection(const bool zeroStart,
 #define declare_type(T)                                                        \
     else if (type == helper::GetType<T>())                                     \
     {                                                                          \
-        Variable<T> *variable = InquireVariable<T>(name);                      \
-        variable->CheckRandomAccessConflict(hint);                             \
-        variable->ResetStepsSelection(zeroStart);                              \
-        variable->m_RandomAccess = false;                                      \
+        Variable<T> &variable =                                                \
+            GetVariableMap<T>().at(itVariable->second.second);                 \
+        variable.CheckRandomAccessConflict(hint);                              \
+        variable.ResetStepsSelection(zeroStart);                               \
+        variable.m_RandomAccess = false;                                       \
     }
         ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
     }
+}
+
+void IO::SetPrefixedNames(const bool isStep) noexcept
+{
+    const std::set<std::string> attributes = helper::KeysToSet(m_Attributes);
+    const std::set<std::string> variables = helper::KeysToSet(m_Variables);
+
+    for (auto itVariable = m_Variables.begin(); itVariable != m_Variables.end();
+         ++itVariable)
+    {
+        const std::string &name = itVariable->first;
+        // if for each step (BP4), check if variable type is not empty (means
+        // variable exist in that step)
+        const std::string type =
+            isStep ? InquireVariableType(itVariable) : itVariable->second.first;
+
+        if (type.empty())
+        {
+            continue;
+        }
+
+        if (type == "compound")
+        {
+        }
+#define declare_type(T)                                                        \
+    else if (type == helper::GetType<T>())                                     \
+    {                                                                          \
+        Variable<T> &variable =                                                \
+            GetVariableMap<T>().at(itVariable->second.second);                 \
+        variable.m_PrefixedVariables =                                         \
+            helper::PrefixMatches(variable.m_Name, variables);                 \
+        variable.m_PrefixedAttributes =                                        \
+            helper::PrefixMatches(variable.m_Name, attributes);                \
+    }
+        ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
+#undef declare_type
+    }
+
+    m_IsPrefixedNames = true;
 }
 
 // PRIVATE

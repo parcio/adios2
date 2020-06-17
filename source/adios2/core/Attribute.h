@@ -28,6 +28,12 @@ public:
     T m_DataSingleValue;        ///< holds data for single value attributes
 
     /**
+     * Copy constructor (enforces zero-padding)
+     * @param other
+     */
+    Attribute<T>(const Attribute<T> &other);
+
+    /**
      * Data array constructor
      * @param name
      * @param data
@@ -44,6 +50,11 @@ public:
     Attribute<T>(const std::string &name, const T &data);
 
     ~Attribute<T>() = default;
+
+    Params GetInfo() const noexcept;
+
+private:
+    Params DoGetInfo() const noexcept;
 };
 
 } // end namespace core

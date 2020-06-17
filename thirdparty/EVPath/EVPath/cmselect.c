@@ -15,9 +15,6 @@
 #include <sys/times.h>
 #endif
 #include <sys/socket.h>
-#ifdef HAVE_SYS_SELECT_H
-#include <sys/select.h>
-#endif
 #ifdef HAVE_SYS_UN_H
 #include <sys/un.h>
 #endif
@@ -55,6 +52,7 @@
 #include <atl.h>
 #include "evpath.h"
 #include "cm_transport.h"
+#include "ev_select.h"
 #include <pthread.h>
 #include <sched.h>
 #define thr_thread_t pthread_t
@@ -77,8 +75,6 @@ typedef struct func_list_item {
     void *arg1;
     void *arg2;
 } FunctionListElement;
-
-typedef struct _periodic_task *periodic_task_handle;
 
 typedef struct select_data {
     thr_thread_t server_thread;
@@ -123,9 +119,9 @@ CManager cm;
     select_data_ptr sd = malloc(sizeof(struct select_data));
     *sdp = sd;
     sd->fdset = svc->malloc_func(sizeof(fd_set));
-    FD_ZERO((fd_set *) sd->fdset);
+    EVPATH_FD_ZERO((fd_set *) sd->fdset);
     sd->write_set = svc->malloc_func(sizeof(fd_set));
-    FD_ZERO((fd_set *) sd->write_set);
+    EVPATH_FD_ZERO((fd_set *) sd->write_set);
     sd->server_thread =  (thr_thread_t) NULL;
     sd->closed = 0;
     sd->sel_item_max = 0;
@@ -336,7 +332,7 @@ int timeout_usec;
 		    fd_set test_set;
 		    timeout.tv_usec = 0;
 		    timeout.tv_sec = 0;
-		    FD_ZERO(&test_set);
+		    EVPATH_FD_ZERO(&test_set);
 		    FD_SET(j, &test_set);
 		    errno = 0;
 		    select(sd->sel_item_max+1, &test_set, (fd_set *) NULL,
@@ -968,8 +964,8 @@ int filedes[2];
 	struct timeval stTimeOut;	/* for select() timeout (none) */
 	int wRet;
 
-	FD_ZERO((fd_set FAR*)&(stXcptFDS));
-	FD_ZERO((fd_set FAR*)&(stWriteFDS));
+	EVPATH_FD_ZERO((fd_set FAR*)&(stXcptFDS));
+	EVPATH_FD_ZERO((fd_set FAR*)&(stWriteFDS));
 	FD_SET(sock1, (fd_set FAR*)&(stWriteFDS));
 	FD_SET(sock1, (fd_set FAR*)&(stXcptFDS));
 	stTimeOut.tv_sec  = 10;
@@ -1116,6 +1112,8 @@ void *client_data;
     svc->verbose(sd->cm, CMFreeVerbose, "CMSelect free task called");
 
     if (*((select_data_ptr *)client_data) != NULL) {
+	close(sd->wake_read_fd);
+	close(sd->wake_write_fd);
 	free_select_data(svc, sdp);
     }
 }

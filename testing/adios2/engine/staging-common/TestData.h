@@ -10,6 +10,7 @@
 #include <array>
 #include <limits>
 #include <string>
+#include <vector>
 
 #ifdef WIN32
 #define NOMINMAX
@@ -20,8 +21,8 @@
 std::size_t Nx = 10;
 
 std::string data_S1 = "Testing ADIOS2 String type";
-std::array<std::string, 1> data_S1array = {{"one"}};
-std::array<std::string, 3> data_S3 = {{"one", "two", "three"}};
+std::vector<std::string> data_S1array = {"one"};
+std::vector<std::string> data_S3 = {"one", "two", "three"};
 
 std::vector<int8_t> data_I8;
 std::vector<int16_t> data_I16;
@@ -172,7 +173,8 @@ void generateCommonTestData(int step, int rank, int size, int Nx, int r64_Nx)
 }
 
 int validateCommonTestData(int start, int length, size_t step,
-                           int missing_end_data)
+                           int missing_end_data, bool varying = false,
+                           int writerRank = 0)
 {
     int failures = 0;
     if (in_scalar_R64 != 1.5 * (step + 1))
@@ -184,13 +186,16 @@ int validateCommonTestData(int start, int length, size_t step,
     }
     for (int i = 0; i < length; i++)
     {
-        if (in_I8[i] != (int8_t)((i + start) * 10 + step))
+        if ((!varying) || (i < length - step - writerRank))
         {
-            std::cout << "Expected 0x" << std::hex
-                      << (int8_t)((i + start) * 10 + step) << ", got 0x"
-                      << std::hex << in_I8[i] << " for in_I8[" << i
-                      << "](global[" << i + start << "])" << std::endl;
-            failures++;
+            if (in_I8[i] != (int8_t)((i + start) * 10 + step))
+            {
+                std::cout << "Expected 0x" << std::hex
+                          << (int8_t)((i + start) * 10 + step) << ", got 0x"
+                          << std::hex << in_I8[i] << " for in_I8[" << i
+                          << "](global[" << i + start << "])" << std::endl;
+                failures++;
+            }
         }
         if (in_I16[i] != (int16_t)((i + start) * 10 + step))
         {
@@ -287,6 +292,24 @@ int validateCommonTestData(int start, int length, size_t step,
                           << i + start << "])" << std::endl;
                 failures++;
             }
+        }
+    }
+    return failures;
+}
+
+int validateCommonTestDataR64(int start, int length, size_t step,
+                              int missing_end_data, bool varying = false,
+                              int writerRank = 0)
+{
+    int failures = 0;
+    for (int i = 0; i < length; i++)
+    {
+        if (in_R64[i] != (double)((i + start) * 10 + step))
+        {
+            std::cout << "Expected " << (double)((i + start) * 10 + step)
+                      << ", got " << in_R64[i] << " for in_R64[" << i
+                      << "](global[" << i + start << "])" << std::endl;
+            failures++;
         }
     }
     return failures;

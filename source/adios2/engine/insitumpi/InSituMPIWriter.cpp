@@ -11,6 +11,7 @@
  *      Author: Norbert Podhorszki pnorbert@ornl.gov
  */
 
+#include "adios2/helper/adiosCommMPI.h"
 #include "adios2/helper/adiosMath.h"
 #include "adios2/toolkit/profiling/taustubs/tautimer.hpp"
 
@@ -31,7 +32,7 @@ namespace engine
 InSituMPIWriter::InSituMPIWriter(IO &io, const std::string &name,
                                  const Mode mode, helper::Comm comm)
 : Engine("InSituMPIWriter", io, name, mode, std::move(comm)),
-  m_BP3Serializer(m_Comm, m_DebugMode)
+  m_BP3Serializer(m_Comm)
 {
     TAU_SCOPED_TIMER("InSituMPIWriter::Open");
     m_EndMessage = " in call to InSituMPIWriter " + m_Name + " Open\n";
@@ -39,7 +40,7 @@ InSituMPIWriter::InSituMPIWriter(IO &io, const std::string &name,
     m_BP3Serializer.Init(m_IO.m_Parameters, "in call to InSituMPI::Open write");
 
     m_RankAllPeers =
-        insitumpi::FindPeers(m_Comm.AsMPI(), m_Name, true, m_CommWorld);
+        insitumpi::FindPeers(CommAsMPI(m_Comm), m_Name, true, m_CommWorld);
     for (int i = 0; i < m_RankAllPeers.size(); i++)
     {
         m_RankToPeerID[m_RankAllPeers[i]] = i;
@@ -54,6 +55,12 @@ InSituMPIWriter::InSituMPIWriter(IO &io, const std::string &name,
         m_CommWorld, true, (m_BP3Serializer.m_RankMPI == 0), m_GlobalRank,
         m_RankDirectPeers);
     m_AmIPrimaryContact = static_cast<bool>(primaryContact);
+    if (m_RankAllPeers.empty())
+    {
+        throw(std::runtime_error(
+            "No writers are found. Make sure that the writer and reader "
+            "applications are launched as one application in MPMD mode."));
+    }
     if (m_Verbosity == 5)
     {
         std::cout << "InSituMPI Writer " << m_WriterRank << " Open(" << m_Name
@@ -160,7 +167,7 @@ void InSituMPIWriter::PerformPuts()
 
             // store length long enough to survive Isend() completion
             // so don't move this into the next if branch
-            unsigned long mdLen = m_BP3Serializer.m_Metadata.m_Position;
+            size_t mdLen = m_BP3Serializer.m_Metadata.m_Position;
 
             // Send the metadata to all reader peers, asynchronously
             // we don't care about keeping these requests because
@@ -194,9 +201,9 @@ void InSituMPIWriter::PerformPuts()
                 MPI_Isend(&mdLen, 1, MPI_UNSIGNED_LONG, peerRank,
                           insitumpi::MpiTags::MetadataLength, m_CommWorld,
                           &request);
-                MPI_Isend(m_BP3Serializer.m_Metadata.m_Buffer.data(), mdLen,
-                          MPI_CHAR, peerRank, insitumpi::MpiTags::Metadata,
-                          m_CommWorld, &request);
+                MPI_Isend(m_BP3Serializer.m_Metadata.m_Buffer.data(),
+                          static_cast<int>(mdLen), MPI_CHAR, peerRank,
+                          insitumpi::MpiTags::Metadata, m_CommWorld, &request);
             }
         }
 
@@ -284,7 +291,7 @@ void InSituMPIWriter::AsyncSendVariable(std::string variableName)
     else if (type == helper::GetType<T>())                                     \
     {                                                                          \
         Variable<T> *variable = m_IO.InquireVariable<T>(variableName);         \
-        if (m_DebugMode && variable == nullptr)                                \
+        if (variable == nullptr)                                               \
         {                                                                      \
             throw std::invalid_argument(                                       \
                 "ERROR: variable " + variableName +                            \
@@ -338,6 +345,12 @@ void InSituMPIWriter::EndStep()
     }
 }
 
+size_t InSituMPIWriter::CurrentStep() const
+{
+    TAU_SCOPED_TIMER_FUNC();
+    return m_CurrentStep;
+}
+
 // PRIVATE
 
 #define declare_type(T)                                                        \
@@ -368,14 +381,11 @@ void InSituMPIWriter::InitParameters()
     if (itVerbosity != m_IO.m_Parameters.end())
     {
         m_Verbosity = std::stoi(itVerbosity->second);
-        if (m_DebugMode)
-        {
-            if (m_Verbosity < 0 || m_Verbosity > 5)
-                throw std::invalid_argument(
-                    "ERROR: Method verbose argument must be an "
-                    "integer in the range [0,5], in call to "
-                    "Open or Engine constructor\n");
-        }
+        if (m_Verbosity < 0 || m_Verbosity > 5)
+            throw std::invalid_argument(
+                "ERROR: Method verbose argument must be an "
+                "integer in the range [0,5], in call to "
+                "Open or Engine constructor\n");
     }
 }
 
@@ -436,7 +446,8 @@ void InSituMPIWriter::ReceiveReadSchedule(
     // Writer root receives nReaderPerWriter from reader root
     if (m_WriterRank == 0)
     {
-        MPI_Recv(nReaderPerWriter.data(), nReaderPerWriter.size(), MPI_INT,
+        MPI_Recv(nReaderPerWriter.data(),
+                 static_cast<int>(nReaderPerWriter.size()), MPI_INT,
                  m_RankDirectPeers[0], insitumpi::MpiTags::NumReaderPerWriter,
                  m_CommWorld, MPI_STATUS_IGNORE);
     }

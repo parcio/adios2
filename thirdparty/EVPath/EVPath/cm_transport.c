@@ -130,8 +130,8 @@ load_transport(CManager cm, const char *trans_name, int quiet)
     strcat(libname, trans_name);
     strcat(libname, MODULE_EXT);
 
-    lt_dladdsearchdir(EVPATH_LIBRARY_BUILD_DIR "/lib");
-    lt_dladdsearchdir(EVPATH_LIBRARY_INSTALL_DIR "/lib");
+    lt_dladdsearchdir(EVPATH_MODULE_BUILD_DIR);
+    lt_dladdsearchdir(EVPATH_MODULE_INSTALL_DIR);
     handle = CMdlopen(cm->CMTrace_file, libname, 0);
     if (!handle) {
 	if (!quiet)
@@ -140,7 +140,7 @@ load_transport(CManager cm, const char *trans_name, int quiet)
 	if (!quiet)
 	    fprintf(stderr,
 		    "Search path includes '.', '%s', '%s' and any default search paths supported by ld.so\n",
-		    EVPATH_LIBRARY_BUILD_DIR, EVPATH_LIBRARY_INSTALL_DIR);
+		    EVPATH_MODULE_BUILD_DIR, EVPATH_MODULE_INSTALL_DIR);
     }
     if (!handle) {
 	return 0;
@@ -161,6 +161,10 @@ load_transport(CManager cm, const char *trans_name, int quiet)
 	lt_dlsym(handle, "non_blocking_listen");
     transport->initiate_conn = (CMConnection(*)())
 	lt_dlsym(handle, "initiate_conn");
+    transport->initiate_conn_nonblocking = (CMTransport_NBconn_func)
+	lt_dlsym(handle, "initiate_conn_nonblocking");
+    transport->finalize_conn_nonblocking = (CMConnection(*)())
+	lt_dlsym(handle, "finalize_conn_nonblocking");
     transport->self_check = (int (*)()) lt_dlsym(handle, "self_check");
     transport->connection_eq =
 	(int (*)()) lt_dlsym(handle, "connection_eq");
@@ -261,6 +265,19 @@ load_transport(CManager cm, const char *trans_name, int quiet)
 							   CMtrans_services
 							   svc);
 	transport = cmenet_add_static_transport(cm, &CMstatic_trans_svcs);
+	transport->data_available = CMDataAvailable;	/* callback
+							 * pointer */
+	transport->write_possible = CMWriteQueuedData;	/* callback
+							 * pointer */
+	(void) add_transport_to_cm(cm, transport);
+    }
+#endif
+#ifdef ZPL_ENET_AVAILABLE
+    if (strcmp(trans_name, "zplenet") == 0) {
+	extern transport_entry cmzplenet_add_static_transport(CManager cm,
+							   CMtrans_services
+							   svc);
+	transport = cmzplenet_add_static_transport(cm, &CMstatic_trans_svcs);
 	transport->data_available = CMDataAvailable;	/* callback
 							 * pointer */
 	transport->write_possible = CMWriteQueuedData;	/* callback

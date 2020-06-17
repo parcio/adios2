@@ -22,7 +22,6 @@
 #define DEFAULT_CONFIG mix.xml
 #define DEFAULT_CONFIG_STR str(DEFAULT_CONFIG)
 
-static int rank_saved;
 adios2::ADIOS *ad = nullptr;
 // std::shared_ptr<adios2::Engine> h5mixerWriter;
 adios2::Engine h5mixerWriter;
@@ -31,14 +30,11 @@ adios2::Variable<unsigned int> varGndx;
 
 IO::IO(const Settings &s, MPI_Comm comm)
 {
-    rank_saved = s.rank;
-
     m_outputfilename = MakeFilename(s.outputfile, ".h5");
 
-    /*ad = new adios2::ADIOS(std::string(DEFAULT_CONFIG_STR), comm,
-                           adios2::DebugON);
-    */
-    ad = new adios2::ADIOS(comm, adios2::DebugOFF);
+    /*ad = new adios2::ADIOS(std::string(DEFAULT_CONFIG_STR), comm);
+     */
+    ad = new adios2::ADIOS(comm);
 
     // Define method for engine creation
 

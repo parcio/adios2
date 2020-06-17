@@ -118,7 +118,7 @@ public:
         size_t StepsStart = 0;
 
         /** Used at Read, number of total steps */
-        size_t StepsCount = 1;
+        size_t StepsCount = 0;
 
         /** Similar to TimeStep, but uses uint64_t and start from zero. Used for
          * streaming a large number of steps */
@@ -201,6 +201,15 @@ public:
 
         /** true: BeginStepPollingFrequency parameter is set */
         bool BeginStepPollingFrequencyIsSet = false;
+
+        /** Burst buffer base path */
+        std::string BurstBufferPath;
+
+        /** Drain the file from Burst Buffer to the original path
+         *  Relevant only if BurstBufferPath is set */
+        bool BurstBufferDrain = true;
+        /** Verbose level for burst buffer draining thread */
+        int BurstBufferVerbose = 0;
     };
 
     /** Return type of the ResizeBuffer function. */
@@ -274,9 +283,8 @@ public:
     /**
      * Default constructor
      * @param comm communicator from Engine
-     * @param debugMode true: exceptions check
      */
-    BPBase(helper::Comm const &comm, const bool debugMode);
+    BPBase(helper::Comm const &comm);
 
     virtual ~BPBase() = default;
 
@@ -284,7 +292,8 @@ public:
      * Init base don parameters passed from the user to IO
      * @param parameters input parameters
      */
-    void Init(const Params &parameters, const std::string hint);
+    void Init(const Params &parameters, const std::string hint,
+              const std::string engineType = "");
     /****************** NEED to check if some are virtual */
 
     /**
@@ -306,9 +315,10 @@ public:
     void ResetBuffer(Buffer &buffer, const bool resetAbsolutePosition = false,
                      const bool zeroInitialize = true);
 
-protected:
-    const bool m_DebugMode = false;
+    /** Delete buffer memory manually */
+    void DeleteBuffers();
 
+protected:
     /** file I/O method type, adios1 legacy, only POSIX and MPI_AGG are used */
     enum IO_METHOD
     {

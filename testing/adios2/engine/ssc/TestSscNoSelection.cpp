@@ -3,11 +3,10 @@
  * accompanying file Copyright.txt for details.
  */
 
+#include "TestSscCommon.h"
 #include <adios2.h>
 #include <gtest/gtest.h>
-#ifdef ADIOS2_HAVE_MPI
 #include <mpi.h>
-#endif
 #include <numeric>
 #include <thread>
 
@@ -15,9 +14,6 @@ using namespace adios2;
 int mpiRank = 0;
 int mpiSize = 1;
 MPI_Comm mpiComm;
-size_t print_lines = 0;
-
-char runMode;
 
 class SscEngineTest : public ::testing::Test
 {
@@ -25,102 +21,13 @@ public:
     SscEngineTest() = default;
 };
 
-template <class T>
-void PrintData(const T *data, const size_t step, const Dims &start,
-               const Dims &count)
-{
-    size_t size = std::accumulate(count.begin(), count.end(), 1,
-                                  std::multiplies<size_t>());
-    std::cout << "Rank: " << mpiRank << " Step: " << step << " Size:" << size
-              << "\n";
-    size_t printsize = 128;
-
-    if (size < printsize)
-    {
-        printsize = size;
-    }
-    int s = 0;
-    for (size_t i = 0; i < printsize; ++i)
-    {
-        ++s;
-        std::cout << data[i] << " ";
-        if (s == count[1])
-        {
-            std::cout << std::endl;
-            s = 0;
-        }
-    }
-
-    std::cout << "]" << std::endl;
-}
-
-template <class T>
-void GenData(std::vector<T> &data, const size_t step, const Dims &start,
-             const Dims &count, const Dims &shape)
-{
-    size_t total_size = std::accumulate(count.begin(), count.end(), 1,
-                                        std::multiplies<size_t>());
-    data.resize(total_size);
-
-    for (int m = 0; m < count[0]; m++)
-    {
-        for (int n = 0; n < count[1]; n++)
-        {
-            data[m * count[1] + n] =
-                (m + start[0]) * shape[1] + (n + start[1]) + step;
-        }
-    }
-}
-
-template <class T>
-void VerifyData(const std::complex<T> *data, size_t step, const Dims &start,
-                const Dims &count, const Dims &shape)
-{
-    size_t size = std::accumulate(count.begin(), count.end(), 1,
-                                  std::multiplies<size_t>());
-    std::vector<std::complex<T>> tmpdata(size);
-    GenData(tmpdata, step, start, count, shape);
-    for (size_t i = 0; i < size; ++i)
-    {
-        ASSERT_EQ(data[i], tmpdata[i]);
-    }
-    if (print_lines < 32)
-    {
-        PrintData(data, step, start, count);
-        ++print_lines;
-    }
-}
-
-template <class T>
-void VerifyData(const T *data, size_t step, const Dims &start,
-                const Dims &count, const Dims &shape)
-{
-    size_t size = std::accumulate(count.begin(), count.end(), 1,
-                                  std::multiplies<size_t>());
-    bool compressed = false;
-    std::vector<T> tmpdata(size);
-    if (print_lines < 32)
-    {
-        PrintData(data, step, start, count);
-        ++print_lines;
-    }
-    GenData(tmpdata, step, start, count, shape);
-    for (size_t i = 0; i < size; ++i)
-    {
-        if (!compressed)
-        {
-            ASSERT_EQ(data[i], tmpdata[i]);
-        }
-    }
-}
-
 void Writer(const Dims &shape, const Dims &start, const Dims &count,
             const size_t steps, const adios2::Params &engineParams,
             const std::string &name)
 {
     size_t datasize = std::accumulate(count.begin(), count.end(), 1,
                                       std::multiplies<size_t>());
-    adios2::ADIOS adios(mpiComm, adios2::DebugON);
+    adios2::ADIOS adios(mpiComm);
     adios2::IO dataManIO = adios.DeclareIO("WAN");
     dataManIO.SetEngine("ssc");
     dataManIO.SetParameters(engineParams);
@@ -188,7 +95,7 @@ void Reader(const Dims &shape, const Dims &start, const Dims &count,
             const size_t steps, const adios2::Params &engineParams,
             const std::string &name)
 {
-    adios2::ADIOS adios(mpiComm, adios2::DebugON);
+    adios2::ADIOS adios(mpiComm);
     adios2::IO dataManIO = adios.DeclareIO("Test");
     dataManIO.SetEngine("ssc");
     dataManIO.SetParameters(engineParams);
@@ -207,23 +114,12 @@ void Reader(const Dims &shape, const Dims &start, const Dims &count,
     std::vector<std::complex<float>> myComplexes(datasize);
     std::vector<std::complex<double>> myDComplexes(datasize);
 
-    bool received_steps = false;
     while (true)
     {
         adios2::StepStatus status = dataManReader.BeginStep(StepMode::Read, 5);
         if (status == adios2::StepStatus::OK)
         {
-            received_steps = true;
             const auto &vars = dataManIO.AvailableVariables();
-            if (print_lines == 0)
-            {
-                std::cout << "All available variables : ";
-                for (const auto &var : vars)
-                {
-                    std::cout << var.first << ", ";
-                }
-                std::cout << std::endl;
-            }
             ASSERT_EQ(vars.size(), 10);
             size_t currentStep = dataManReader.CurrentStep();
             adios2::Variable<char> bpChars =
@@ -246,7 +142,6 @@ void Reader(const Dims &shape, const Dims &start, const Dims &count,
                 dataManIO.InquireVariable<std::complex<float>>("bpComplexes");
             adios2::Variable<std::complex<double>> bpDComplexes =
                 dataManIO.InquireVariable<std::complex<double>>("bpDComplexes");
-            auto charsBlocksInfo = dataManReader.AllStepsBlocksInfo(bpChars);
 
             dataManReader.Get(bpChars, myChars.data(), adios2::Mode::Sync);
             dataManReader.Get(bpUChars, myUChars.data(), adios2::Mode::Sync);
@@ -261,25 +156,25 @@ void Reader(const Dims &shape, const Dims &start, const Dims &count,
             dataManReader.Get(bpDComplexes, myDComplexes.data(),
                               adios2::Mode::Sync);
             VerifyData(myChars.data(), currentStep, Dims(shape.size(), 0),
-                       shape, shape);
+                       shape, shape, mpiRank);
             VerifyData(myUChars.data(), currentStep, Dims(shape.size(), 0),
-                       shape, shape);
+                       shape, shape, mpiRank);
             VerifyData(myShorts.data(), currentStep, Dims(shape.size(), 0),
-                       shape, shape);
+                       shape, shape, mpiRank);
             VerifyData(myUShorts.data(), currentStep, Dims(shape.size(), 0),
-                       shape, shape);
+                       shape, shape, mpiRank);
             VerifyData(myInts.data(), currentStep, Dims(shape.size(), 0), shape,
-                       shape);
+                       shape, mpiRank);
             VerifyData(myUInts.data(), currentStep, Dims(shape.size(), 0),
-                       shape, shape);
+                       shape, shape, mpiRank);
             VerifyData(myFloats.data(), currentStep, Dims(shape.size(), 0),
-                       shape, shape);
+                       shape, shape, mpiRank);
             VerifyData(myDoubles.data(), currentStep, Dims(shape.size(), 0),
-                       shape, shape);
+                       shape, shape, mpiRank);
             VerifyData(myComplexes.data(), currentStep, Dims(shape.size(), 0),
-                       shape, shape);
+                       shape, shape, mpiRank);
             VerifyData(myDComplexes.data(), currentStep, Dims(shape.size(), 0),
-                       shape, shape);
+                       shape, shape, mpiRank);
             dataManReader.EndStep();
         }
         else if (status == adios2::StepStatus::EndOfStream)
@@ -290,23 +185,19 @@ void Reader(const Dims &shape, const Dims &start, const Dims &count,
             break;
         }
     }
-    if (received_steps)
-    {
-        auto attInt = dataManIO.InquireAttribute<int>("AttInt");
-        std::cout << "[Rank " + std::to_string(mpiRank) +
-                         "] Attribute received "
-                  << attInt.Data()[0] << ", expected 110" << std::endl;
-        ASSERT_EQ(110, attInt.Data()[0]);
-        ASSERT_NE(111, attInt.Data()[0]);
-    }
+
+    auto attInt = dataManIO.InquireAttribute<int>("AttInt");
+    std::cout << "[Rank " + std::to_string(mpiRank) + "] Attribute received "
+              << attInt.Data()[0] << ", expected 110" << std::endl;
+    ASSERT_EQ(110, attInt.Data()[0]);
+    ASSERT_NE(111, attInt.Data()[0]);
     dataManReader.Close();
-    print_lines = 0;
 }
 
 TEST_F(SscEngineTest, TestSscNoSelection)
 {
     std::string filename = "TestSscNoSelection";
-    adios2::Params engineParams = {{"Port", "12336"}, {"Verbose", "0"}};
+    adios2::Params engineParams = {{"Verbose", "0"}};
 
     int worldRank, worldSize;
     MPI_Comm_rank(MPI_COMM_WORLD, &worldRank);
@@ -320,17 +211,18 @@ TEST_F(SscEngineTest, TestSscNoSelection)
     Dims shape = {(size_t)mpiSize, 10};
     Dims start = {(size_t)mpiRank, 0};
     Dims count = {1, 10};
+    size_t steps = 200;
 
     if (mpiGroup == 0)
     {
-        Writer(shape, start, count, 200, engineParams, filename);
+        Writer(shape, start, count, steps, engineParams, filename);
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     if (mpiGroup == 1)
     {
-        Reader(shape, start, count, 10, engineParams, filename);
+        Reader(shape, start, count, steps, engineParams, filename);
     }
 
     MPI_Barrier(MPI_COMM_WORLD);

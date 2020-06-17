@@ -129,7 +129,7 @@ public:
      * </pre>
      * @exception
      * <pre>
-     * std::invalid_argument: in debug mode, additional checks for user inputs
+     * std::invalid_argument: always checks for user inputs
      * std::runtime_error: always checks for system failures
      * </pre>
      */
@@ -152,10 +152,8 @@ public:
      * </pre>
      * @exception
      * <pre>
-     * std::invalid_argument: in debug mode, additional checks for user inputs
-     * 						  also thrown if variable is not
-     * found.
-     * std::runtime_error: always checks for system failures
+     * std::invalid_argument: checks for user inputs, also thrown if variable is
+     * not found. std::runtime_error: always checks for system failures
      * </pre>
      */
     template <class T>
@@ -187,10 +185,8 @@ public:
      * @param datum contains user defined single value
      * @exception
      * <pre>
-     * std::invalid_argument: in debug mode, additional checks for user inputs
-     * 						  also thrown if variable is not
-     * found.
-     * std::runtime_error: always checks for system failures
+     * std::invalid_argument: checks for user inputs also thrown if variable is
+     * not found. std::runtime_error: always checks for system failures
      * </pre>
      */
     template <class T>
@@ -215,8 +211,7 @@ public:
      * </pre>
      * @exception
      * <pre>
-     * std::invalid_argument: in debug mode, additional checks for user
-     * inputs
+     * std::invalid_argument: checks for user inputs
      * std::runtime_error: always if system failures are caught
      * </pre>
      */
@@ -241,10 +236,8 @@ public:
      * </pre>
      * @exception
      * <pre>
-     * std::invalid_argument: in debug mode, additional checks for user
-     * inputs, also thrown if variable is not
-     * found.
-     * std::runtime_error: always if system failures are caught
+     * std::invalid_argument: checks for user inputs, also thrown if variable is
+     * not found. std::runtime_error: always if system failures are caught
      * </pre>
      */
     template <class T>
@@ -316,8 +309,7 @@ public:
      * </pre>
      * @exception
      * <pre>
-     * std::invalid_argument: in debug mode, additional checks for user
-     * inputs
+     * std::invalid_argument: checks for user inputs
      * std::runtime_error: always if system failures are caught
      * </pre>
      */
@@ -343,8 +335,7 @@ public:
      * </pre>
      * @exception
      * <pre>
-     * std::invalid_argument: in debug mode, additional checks for user
-     * inputs, also thrown if variable is not
+     * std::invalid_argument: checks for user, also thrown if variable is not
      * found.
      * std::runtime_error: always if system failures are caught
      * </pre>
@@ -450,9 +441,6 @@ protected:
      *  if no communicator is passed */
     helper::Comm m_Comm;
 
-    /** true: additional exceptions */
-    const bool m_DebugMode = false;
-
     /** added to exceptions to improve debugging */
     std::string m_EndMessage;
 
@@ -493,7 +481,8 @@ protected:
 #define declare_type(T)                                                        \
     virtual void DoGetSync(Variable<T> &, T *);                                \
     virtual void DoGetDeferred(Variable<T> &, T *);                            \
-    virtual typename Variable<T>::Info *DoGetBlockSync(Variable<T> &);
+    virtual typename Variable<T>::Info *DoGetBlockSync(Variable<T> &);         \
+    virtual typename Variable<T>::Info *DoGetBlockDeferred(Variable<T> &);
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
 
@@ -503,8 +492,7 @@ protected:
      * Called by string Put/Get versions and deferred modes
      * @param variableName variable to be searched
      * @param hint extra exception information
-     * @return Variable<T>& reference if found, else throws an exception in
-     * debug mode
+     * @return Variable<T>& reference if found, else throws an exception
      */
     template <class T>
     Variable<T> &FindVariable(const std::string &variableName,

@@ -5,7 +5,7 @@
 
 #include <adios2.h>
 #include <gtest/gtest.h>
-#ifdef ADIOS2_HAVE_MPI
+#if ADIOS2_USE_MPI
 #include <mpi.h>
 #endif
 #include <numeric>
@@ -65,7 +65,11 @@ void Reader(const Dims &shape, const Dims &start, const Dims &count,
             const size_t rows, const adios2::Params &engineParams,
             const std::string &name)
 {
-    adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
+#if ADIOS2_USE_MPI
+    adios2::ADIOS adios(MPI_COMM_WORLD);
+#else
+    adios2::ADIOS adios;
+#endif
     adios2::IO dataManIO = adios.DeclareIO("Test");
     dataManIO.SetEngine("BP4");
     dataManIO.SetParameters(engineParams);
@@ -154,7 +158,11 @@ void Writer(const Dims &shape, const Dims &start, const Dims &count,
 {
     size_t datasize = std::accumulate(count.begin(), count.end(), 1,
                                       std::multiplies<size_t>());
-    adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
+#if ADIOS2_USE_MPI
+    adios2::ADIOS adios(MPI_COMM_WORLD);
+#else
+    adios2::ADIOS adios;
+#endif
     adios2::IO dataManIO = adios.DeclareIO("ms");
     dataManIO.SetEngine("table");
     dataManIO.SetParameters(engineParams);
@@ -234,7 +242,7 @@ TEST_F(TableEngineTest, TestTableMultiRank)
     adios2::Params engineParams = {{"Verbose", "0"},
                                    {"RowsPerAggregatorBuffer", "400"}};
 
-    size_t rows = 10000;
+    size_t rows = 1000;
     Dims shape = {rows, 1, 128};
     Dims start = {0, 0, 0};
     Dims count = {1, 1, 128};
@@ -243,17 +251,23 @@ TEST_F(TableEngineTest, TestTableMultiRank)
 
     Reader(shape, start, count, rows, engineParams, filename);
 
+#if ADIOS2_USE_MPI
     MPI_Barrier(MPI_COMM_WORLD);
+#endif
 }
 
 int main(int argc, char **argv)
 {
+#if ADIOS2_USE_MPI
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
+#endif
     int result;
     ::testing::InitGoogleTest(&argc, argv);
     result = RUN_ALL_TESTS();
+#if ADIOS2_USE_MPI
     MPI_Finalize();
+#endif
     return result;
 }
