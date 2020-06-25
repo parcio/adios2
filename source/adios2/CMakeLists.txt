@@ -156,7 +156,7 @@ if(ADIOS2_HAVE_ZeroMQ)
 endif()
 
 if(ADIOS2_HAVE_JULEA)
-  target_sources(adios2 PRIVATE
+  target_sources(adios2_core PRIVATE
       # engine/julea-db/JuleaDBReader.cpp
       # engine/julea-db/JuleaDBReader.tcc
       # engine/julea-db/JuleaDBWriter.cpp
