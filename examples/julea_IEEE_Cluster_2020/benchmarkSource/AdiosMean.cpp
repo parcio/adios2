@@ -165,53 +165,53 @@ void AdiosMean(std::string engineName, std::string path, size_t filesToRead,
         if (type == "compound")
         {
         }
-#define declare_type(T)                                                        \
-    else if (type == adios2::GetType<T>())                                     \
-    {                                                                          \
-        auto variable = io.InquireVariable<T>(varName);                        \
-                                                                               \
-        steps = variable.Steps();                                              \
-                                                                               \
-        for (size_t step = 0; step < steps; step++)                            \
-        {                                                                      \
-            size_t i = 0;                                                      \
-            startGetBlocks = Clock::now();                                     \
-            auto blocksInfo = reader.BlocksInfo(variable, step);               \
-                                                                               \
-            std::vector<std::vector<T>> dataSet;                               \
-            dataSet.resize(blocksInfo.size());                                 \
-            outputFile << "BlkCnt \t" << blocksInfo.size() << std::endl;       \
-                                                                               \
-            for (auto &info : blocksInfo)                                      \
-            {                                                                  \
-                                                                               \
-                variable.SetBlockSelection(info.BlockID);                      \
-                startGetBlock = Clock::now();                                  \
-                reader.Get<T>(variable, dataSet[i], adios2::Mode::Sync);       \
-                                                                               \
-                endGetBlock = Clock::now();                                    \
-                startCalculate = Clock::now();                                  \
-                sum = std::accumulate(dataSet[i].begin(), dataSet[i].end(),    \
-                                      0.0);                                    \
-                mean = sum / dataSet[i].size();                                \
-                outputFile << "mean: " << mean << std::endl;                    \
-                endCalculate = Clock::now();                                  \
-                calculateDelta =                                                   \
-                    duration_cast<milliseconds>(endCalculate - startCalculate);  \
-                calculateDeltaVector.push_back(calculateDelta);                        \
-                blockDelta =                                                   \
-                    duration_cast<milliseconds>(endGetBlock - startGetBlock);  \
-                blockDeltaVector.push_back(blockDelta);                        \
-                i++;                                                           \
-            }                                                                  \
-            endGetBlocks = Clock::now();                                       \
-            getBlocksDelta =                                                   \
-                duration_cast<milliseconds>(endGetBlocks - startGetBlocks);    \
-            getBlocksDeltaVector.push_back(getBlocksDelta);                    \
-        }                                                                      \
-    }
-        ADIOS2_FOREACH_ATTRIBUTE_PRIMITIVE_TYPE_1ARG(declare_type)
-#undef declare_type
+// #define declare_type(T)                                                        \
+//     else if (type == adios2::GetType<T>())                                     \
+//     {                                                                          \
+//         auto variable = io.InquireVariable<T>(varName);                        \
+//                                                                                \
+//         steps = variable.Steps();                                              \
+//                                                                                \
+//         for (size_t step = 0; step < steps; step++)                            \
+//         {                                                                      \
+//             size_t i = 0;                                                      \
+//             startGetBlocks = Clock::now();                                     \
+//             auto blocksInfo = reader.BlocksInfo(variable, step);               \
+//                                                                                \
+//             std::vector<std::vector<T>> dataSet;                               \
+//             dataSet.resize(blocksInfo.size());                                 \
+//             outputFile << "BlkCnt \t" << blocksInfo.size() << std::endl;       \
+//                                                                                \
+//             for (auto &info : blocksInfo)                                      \
+//             {                                                                  \
+//                                                                                \
+//                 variable.SetBlockSelection(info.BlockID);                      \
+//                 startGetBlock = Clock::now();                                  \
+//                 reader.Get<T>(variable, dataSet[i], adios2::Mode::Sync);       \
+//                                                                                \
+//                 endGetBlock = Clock::now();                                    \
+//                 startCalculate = Clock::now();                                  \
+//                 sum = std::accumulate(dataSet[i].begin(), dataSet[i].end(),    \
+//                                       0.0);                                    \
+//                 mean = sum / dataSet[i].size();                                \
+//                 outputFile << "mean: " << mean << std::endl;                    \
+//                 endCalculate = Clock::now();                                  \
+//                 calculateDelta =                                                   \
+//                     duration_cast<milliseconds>(endCalculate - startCalculate);  \
+//                 calculateDeltaVector.push_back(calculateDelta);                        \
+//                 blockDelta =                                                   \
+//                     duration_cast<milliseconds>(endGetBlock - startGetBlock);  \
+//                 blockDeltaVector.push_back(blockDelta);                        \
+//                 i++;                                                           \
+//             }                                                                  \
+//             endGetBlocks = Clock::now();                                       \
+//             getBlocksDelta =                                                   \
+//                 duration_cast<milliseconds>(endGetBlocks - startGetBlocks);    \
+//             getBlocksDeltaVector.push_back(getBlocksDelta);                    \
+//         }                                                                      \
+//     }
+//         ADIOS2_FOREACH_ATTRIBUTE_PRIMITIVE_TYPE_1ARG(declare_type) //FIXME: needs different type to be compiled
+// #undef declare_type
         varCount++;
 
         // calculateMeanTime(outputFile, getBlocksDeltaVector, true);

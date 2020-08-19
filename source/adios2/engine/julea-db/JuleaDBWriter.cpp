@@ -253,14 +253,14 @@ void JuleaDBWriter::InitParameters()
         if (key == "verbose")
         {
             m_Verbosity = std::stoi(value);
-            if (m_DebugMode)
-            {
+            // if (m_DebugMode)
+            // {
                 if (m_Verbosity < 0 || m_Verbosity > 5)
                     throw std::invalid_argument(
                         "ERROR: Method verbose argument must be an "
                         "integer in the range [0,5], in call to "
                         "Open or Engine constructor\n");
-            }
+            // }
         }
         //  else if (key == "collectivemetadata")
         // {
@@ -430,8 +430,8 @@ void JuleaDBWriter::InitParameterFlushStepsCount(const std::string value)
 {
     long long int flushStepsCount = -1;
 
-    if (m_DebugMode)
-    {
+    // if (m_DebugMode)
+    // {
         bool success = true;
         std::string description;
 
@@ -453,11 +453,11 @@ void JuleaDBWriter::InitParameterFlushStepsCount(const std::string value)
                 "description: " +
                 description + "\n, in call to Open\n");
         }
-    }
-    else
-    {
-        flushStepsCount = std::stoll(value);
-    }
+    // }
+    // else //FIXME: is this still necessary?
+    // {
+    //     flushStepsCount = std::stoll(value);
+    // }
 
     m_FlushStepsCount = static_cast<size_t>(flushStepsCount);
 }

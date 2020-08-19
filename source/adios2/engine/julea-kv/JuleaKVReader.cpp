@@ -60,8 +60,8 @@ StepStatus JuleaKVReader::BeginStep(const StepMode mode,
         std::cout << "Julea Reader " << m_ReaderRank
                   << "   BeginStep() new step " << m_CurrentStep << "\n";
     }
-    if (m_DebugMode)
-    {
+    // if (m_DebugMode)
+    // {
         if (!m_DeferredVariables.empty())
         {
             throw std::invalid_argument(
@@ -69,7 +69,7 @@ StepStatus JuleaKVReader::BeginStep(const StepMode mode,
                 "GetDeferred, did you forget to call "
                 "PerformGets() or EndStep()?, in call to BeginStep\n");
         }
-    }
+    // }
 
     m_IO.m_ReadStreaming = true;
     m_IO.m_EngineStep = m_CurrentStep;
@@ -188,15 +188,15 @@ ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 void JuleaKVReader::Init()
 {
 
-    if (m_DebugMode)
-    {
+    // if (m_DebugMode)
+    // {
         if (m_OpenMode != Mode::Read)
         {
             throw std::invalid_argument(
                 "ERROR: JuleaReader only supports OpenMode::Read from" +
                 m_Name + " " + m_EndMessage);
         }
-    }
+    // }
     if (m_Verbosity == 5)
     {
     std::cout << "\n*********************** JULEA ENGINE READER "

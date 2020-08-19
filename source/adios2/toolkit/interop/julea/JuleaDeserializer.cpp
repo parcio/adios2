@@ -17,7 +17,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include "adios2/common/ADIOSMPI.h"
+// #include "adios2/common/ADIOSMPI.h"
 #include "adios2/helper/adiosFunctions.h" // IsRowMajor
 #include <cstring>                        // strlen
 

@@ -15,7 +15,7 @@
 #include "JuleaInteractionWriter.h"
 #include "JuleaKVWriter.h"
 
-#include <adios2_c.h>
+// #include <adios2_c.h>
 #include <fstream>
 #include <iostream>
 #include <memory>
