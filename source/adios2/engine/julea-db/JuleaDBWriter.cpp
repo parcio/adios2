@@ -36,8 +36,15 @@ JuleaDBWriter::JuleaDBWriter(IO &io, const std::string &name, const Mode mode,
     // m_FileDataManager(mpiComm, m_DebugMode),
     // m_EndMessage = " in call to JuleaDBWriter " + m_Name + " Open\n";
     // MPI_Comm_rank(mpiComm, &m_WriterRank);
+
     m_WriterRank = m_Comm.Rank();
-    Init();
+    if (m_WriterRank == 0)
+    {
+        std::cout << "Init" << std::endl;
+        Init();
+        std::cout << "Init finished" << std::endl;
+    }
+    m_Comm.Barrier();
     if (m_Verbosity == 5)
     {
         std::cout << "Julea DB Writer " << m_WriterRank << " Open(" << m_Name
@@ -255,11 +262,11 @@ void JuleaDBWriter::InitParameters()
             m_Verbosity = std::stoi(value);
             // if (m_DebugMode)
             // {
-                if (m_Verbosity < 0 || m_Verbosity > 5)
-                    throw std::invalid_argument(
-                        "ERROR: Method verbose argument must be an "
-                        "integer in the range [0,5], in call to "
-                        "Open or Engine constructor\n");
+            if (m_Verbosity < 0 || m_Verbosity > 5)
+                throw std::invalid_argument(
+                    "ERROR: Method verbose argument must be an "
+                    "integer in the range [0,5], in call to "
+                    "Open or Engine constructor\n");
             // }
         }
         //  else if (key == "collectivemetadata")
@@ -300,6 +307,34 @@ void JuleaDBWriter::InitVariables()
 #define declare_type(T)                                                        \
     void JuleaDBWriter::DoPutSync(Variable<T> &variable, const T *data)        \
     {                                                                          \
+        std::cout << "m_WriterRank: " << m_WriterRank << std::endl;\
+        if (variable.m_ShapeID == ShapeID::GlobalValue || variable.m_ShapeID == ShapeID::GlobalArray)                        \
+        {                                                                      \
+            std::cout << "GlobalValue/GlobalArray: m_CurrentBlockID = m_WriterRank" << std::endl;\
+            m_CurrentBlockID = m_WriterRank;                                   \
+        }                                                                      \
+        else if (variable.m_ShapeID == ShapeID::JoinedArray)                   \
+        {                                                                      \
+            std::cout << "JoinedArray: Currently not implemented yet." << std::endl;        \
+        }                                                                      \
+        else if (variable.m_ShapeID == ShapeID::LocalArray || variable.m_ShapeID == ShapeID::LocalValue)                    \
+        {                                                                      \
+            if (m_Comm.Size() == 1)                                            \
+            {                                                                  \
+                std::cout << "LocalValue/LocalArray: Nothing to do?! Only increment after put."       \
+                          << std::endl;                                        \
+            }                                                                  \
+            else                                                               \
+            {                                                                  \
+                std::cout                                                      \
+                    << "LocalArray: Have fun with synchronized counter across processes."  \
+                    << std::endl;                                              \
+            }                                                                  \
+        }                                                                      \
+        else                                                                   \
+        {                                                                      \
+            std::cout << "Shape Type not known." << std::endl;                 \
+        }                                                                      \
         variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].push_back(    \
             m_CurrentBlockID);                                                 \
         PutSyncCommon(variable, data);                                         \
@@ -432,27 +467,27 @@ void JuleaDBWriter::InitParameterFlushStepsCount(const std::string value)
 
     // if (m_DebugMode)
     // {
-        bool success = true;
-        std::string description;
+    bool success = true;
+    std::string description;
 
-        try
-        {
-            flushStepsCount = std::stoll(value);
-        }
-        catch (std::exception &e)
-        {
-            success = false;
-            description = std::string(e.what());
-        }
+    try
+    {
+        flushStepsCount = std::stoll(value);
+    }
+    catch (std::exception &e)
+    {
+        success = false;
+        description = std::string(e.what());
+    }
 
-        if (!success || flushStepsCount < 1)
-        {
-            throw std::invalid_argument(
-                "ERROR: value in FlushStepscount=value in IO SetParameters "
-                "must be an integer >= 1 (default) \nadditional "
-                "description: " +
-                description + "\n, in call to Open\n");
-        }
+    if (!success || flushStepsCount < 1)
+    {
+        throw std::invalid_argument(
+            "ERROR: value in FlushStepscount=value in IO SetParameters "
+            "must be an integer >= 1 (default) \nadditional "
+            "description: " +
+            description + "\n, in call to Open\n");
+    }
     // }
     // else //FIXME: is this still necessary?
     // {
