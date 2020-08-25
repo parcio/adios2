@@ -65,8 +65,8 @@ int main(int argc, char *argv[])
         // Get io settings from the config file or
         // create one with default settings here
         adios2::IO io = adios.DeclareIO("Output");
-        // io.SetEngine("julea-db");
-        io.SetEngine("BP4");
+        io.SetEngine("julea-db");
+        // io.SetEngine("BP4");
 
         /*
          * Define global array: type, name, global dimensions
@@ -79,7 +79,8 @@ int main(int argc, char *argv[])
         // Open file. "w" means we overwrite any existing file on disk,
         // but Advance() will append steps to the same file.
         // adios2::Engine writer = io.Open("globalArray.jb", adios2::Mode::Write);
-        adios2::Engine writer = io.Open("globalArray.bp", adios2::Mode::Write);
+        adios2::Engine writer = io.Open("globalArray.jb", adios2::Mode::Write);
+        // adios2::Engine writer = io.Open("globalArray.bp", adios2::Mode::Write);
 
         for (size_t step = 0; step < NSTEPS; step++)
         {
@@ -95,20 +96,32 @@ int main(int argc, char *argv[])
             // adios2::SelectionBoundingBox sel();
             varGlobalArray.SetSelection(adios2::Box<adios2::Dims>(
                 {static_cast<size_t>(rank), 0}, {1, static_cast<size_t>(Nx)}));
-            writer.Put<double>(varGlobalArray, row.data());
+            // writer.Put<double>(varGlobalArray, row.data(),adios2::Mode::Sync);
 
-            if (rank == 2)
+            if (rank == 0)
             {
                 sleep(10);
                 row2[0] = 42;
-                writer.Put<double>(varGlobalArray, row2.data());
+                writer.Put<double>(varGlobalArray, row2.data(), adios2::Mode::Sync);
             }
 
             if (rank == 1)
             {
                 row2[0] = 1337;
                 sleep(10);
-                writer.Put<double>(varGlobalArray, row2.data());
+                writer.Put<double>(varGlobalArray, row2.data(),adios2::Mode::Sync);
+            }
+            if (rank == 2)
+            {
+                row2[0] = 666;
+                sleep(10);
+                writer.Put<double>(varGlobalArray, row2.data(),adios2::Mode::Sync);
+            }
+            if (rank == 3)
+            {
+                row2[0] = 424242;
+                sleep(10);
+                writer.Put<double>(varGlobalArray, row2.data(),adios2::Mode::Sync);
             }
 
             // Indicate we are done for this step.
