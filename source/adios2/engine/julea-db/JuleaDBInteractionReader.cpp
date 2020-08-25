@@ -375,7 +375,7 @@ void DBDefineVariableInInit(core::IO *io, const std::string varName,
         if (!isLocalValue)
         {
             auto &var = io->DefineVariable<float>(varName, shape, start, count,
-                                          constantDims);
+                                                  constantDims);
         }
         else
         {

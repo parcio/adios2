@@ -67,23 +67,23 @@ StepStatus JuleaDBReader::BeginStep(const StepMode mode,
 {
     // if (m_DebugMode)
     // {
-        // FIXME: NextAvailable is no longer a StepMode
-        // if (mode != StepMode::NextAvailable)
-        // {
-        //     throw std::invalid_argument(
-        //         "ERROR: mode is not supported yet, "
-        //         "only NextAvailable is valid for "
-        //         "engine BP3 with adios2::Mode::Read, in call to "
-        //         "BeginStep\n");
-        // }
+    // FIXME: NextAvailable is no longer a StepMode
+    // if (mode != StepMode::NextAvailable)
+    // {
+    //     throw std::invalid_argument(
+    //         "ERROR: mode is not supported yet, "
+    //         "only NextAvailable is valid for "
+    //         "engine BP3 with adios2::Mode::Read, in call to "
+    //         "BeginStep\n");
+    // }
 
-        if (!m_DeferredVariables.empty())
-        {
-            throw std::invalid_argument(
-                "ERROR: existing variables subscribed with "
-                "GetDeferred, did you forget to call "
-                "PerformGets() or EndStep()?, in call to BeginStep\n");
-        }
+    if (!m_DeferredVariables.empty())
+    {
+        throw std::invalid_argument(
+            "ERROR: existing variables subscribed with "
+            "GetDeferred, did you forget to call "
+            "PerformGets() or EndStep()?, in call to BeginStep\n");
+    }
     // }
     m_IO.m_ReadStreaming = true;
     m_IO.m_EngineStep = m_CurrentStep;
@@ -206,12 +206,12 @@ void JuleaDBReader::Init()
 
     // if (m_DebugMode)
     // {
-        if (m_OpenMode != Mode::Read)
-        {
-            throw std::invalid_argument(
-                "ERROR: JuleaReader only supports OpenMode::Read from" +
-                m_Name + " " + m_EndMessage);
-        }
+    if (m_OpenMode != Mode::Read)
+    {
+        throw std::invalid_argument(
+            "ERROR: JuleaReader only supports OpenMode::Read from" + m_Name +
+            " " + m_EndMessage);
+    }
     // }
     if (m_Verbosity == 5)
     {
