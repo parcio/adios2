@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
          * before Write().
          */
         adios2::Variable<double> varGlobalArray =
-            io.DefineVariable<double>("GlobalArray", {(unsigned int)nproc, Nx});
+            io.DefineVariable<double>("Variable1", {(unsigned int)nproc, Nx});
 
         // Open file. "w" means we overwrite any existing file on disk,
         // but Advance() will append steps to the same file.
