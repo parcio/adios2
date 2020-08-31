@@ -240,7 +240,7 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
     for (uint i = 0; i < numberSteps; i++)
     {
         blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].size();
-        // std::cout << "i: " << i << "  blocks: " << blocks[i] << std::endl;
+        std::cout << "i: " << i << "  blocks: " << blocks[i] << std::endl;
     }
     if (false)
     {
@@ -609,6 +609,8 @@ void DBPutVariableDataToJulea(Variable<T> &variable, const T *data,
                               size_t block)
 {
     // std::cout << "--- PutVariableDataToJulea ----- " << std::endl;
+    std::cout << "data: " << data[0] << std::endl;
+    std::cout << "data: " << data[1] << std::endl;
 
     guint64 bytesWritten = 0;
     std::string objName = "variableblocks";

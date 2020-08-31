@@ -93,7 +93,7 @@ void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
 
     auto stepBlockID =
         g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
-    // std::cout << "    stepBlockID: " << stepBlockID << std::endl;
+    std::cout << "    stepBlockID: " << stepBlockID << std::endl;
 
     // check whether variable name is already in variable_names DB
     auto itVariableWritten = m_WrittenVariableNames.find(variable.m_Name);
