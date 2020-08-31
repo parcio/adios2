@@ -537,10 +537,11 @@ int main(int argc, char *argv[])
         // write_complex("julea-kv", "SimpleSteps.jv");
         // write_complex("bp3", "SimpleSteps.bp");
         // write_simple("bp3", "SimpleSteps.bp");
+        // write_simple("bp4", "SimpleStepsBP4.bp");
         // write_simple("julea-kv", "SimpleSteps.jv");
-        write_blocks("bp3", "SimpleBlocks.bp");
+        // write_blocks("bp3", "SimpleBlocks.bp");
         // write_blocks("julea-db", "SimpleBlocks.jb");
-        // write_simple("julea-db", "SimpleSteps.jb");
+        write_simple("julea-db", "SimpleSteps.jb");
         // write_simple("hdf5", "SimpleSteps.h5");
         // write("julea-kv", "SimpleSteps.bp");
         // write();

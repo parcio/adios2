@@ -13,9 +13,9 @@
 
 #include <adios2.h>
 
-
 void writeSimpleLocalMINIMAL(std::string engine, std::string fileName,
-                 bool printVectorContent, size_t vectorSize, size_t numberSteps)
+                             bool printVectorContent, size_t vectorSize,
+                             size_t numberSteps)
 {
     const size_t Nglobal = 4;
 
@@ -55,10 +55,9 @@ void writeSimpleLocalMINIMAL(std::string engine, std::string fileName,
     writer.Close();
 }
 
-
-
 void writeSimpleLocal(std::string engine, std::string fileName,
-                 bool printVectorContent, size_t vectorSize, size_t numberSteps)
+                      bool printVectorContent, size_t vectorSize,
+                      size_t numberSteps)
 {
     const size_t Nglobal = vectorSize;
 
@@ -66,7 +65,6 @@ void writeSimpleLocal(std::string engine, std::string fileName,
     std::vector<double> v2(Nglobal);
     std::vector<double> v3(Nglobal);
     std::vector<double> v4(Nglobal);
-
 
     adios2::ADIOS adios(adios2::DebugON);
     adios2::IO io = adios.DeclareIO("Output");
@@ -99,9 +97,9 @@ void writeSimpleLocal(std::string engine, std::string fileName,
     writer.Close();
 }
 
-
 void writeSimpleGlobal(std::string engine, std::string fileName,
-                 bool printVectorContent, size_t vectorSize, size_t numberSteps)
+                       bool printVectorContent, size_t vectorSize,
+                       size_t numberSteps)
 {
     const size_t Nglobal = vectorSize;
 
@@ -109,7 +107,6 @@ void writeSimpleGlobal(std::string engine, std::string fileName,
     std::vector<double> v2(Nglobal);
     std::vector<double> v3(Nglobal);
     std::vector<double> v4(Nglobal);
-
 
     adios2::ADIOS adios(adios2::DebugON);
     adios2::IO io = adios.DeclareIO("Output");
