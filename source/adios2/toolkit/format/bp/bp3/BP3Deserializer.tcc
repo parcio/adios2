@@ -338,12 +338,14 @@ void BP3Deserializer::SetVariableBlockInfo(
             sizeof(T) * helper::LinearIndex(subStreamInfo.BlockBox,
                                             subStreamInfo.IntersectionBox.first,
                                             isRowMajor);
+            std::cout << "Seeks.first: " << subStreamInfo.Seeks.first << std::endl;
 
         subStreamInfo.Seeks.second =
             sizeof(T) * (helper::LinearIndex(
                              subStreamInfo.BlockBox,
                              subStreamInfo.IntersectionBox.second, isRowMajor) +
                          1);
+            std::cout << "Seeks.second: " << subStreamInfo.Seeks.second << std::endl;
 
         const size_t payloadOffset =
             blockCharacteristics.Statistics.PayloadOffset;
