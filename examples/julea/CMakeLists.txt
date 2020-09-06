@@ -22,6 +22,9 @@ target_link_libraries(WRITE_STEPS adios2)
 add_executable(LOCAL_VS_GLOBAL local-vs-global-arrays.cpp)
 target_link_libraries(LOCAL_VS_GLOBAL adios2)
 
+add_executable(GLOBAL_ARRAY_WRITE globalArray_write.cpp)
+target_link_libraries(GLOBAL_ARRAY_WRITE adios2)
+
 
 if (ADIOS2_HAVE_MPI)
     target_link_libraries(WRITE_STEPS MPI::MPI_C)
