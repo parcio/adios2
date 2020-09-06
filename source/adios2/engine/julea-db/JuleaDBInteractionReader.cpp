@@ -167,7 +167,7 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
                     j_db_iterator_get_field(iterator, "_id", &jdbType,         \
                                             (gpointer *)&tmpID, &db_length,    \
                                             NULL);                             \
-                    std::cout << "_id: " << *tmpID << std::endl;\
+                    std::cout << "_id: " << *tmpID << std::endl;               \
                     entryID = *tmpID;                                          \
                 }                                                              \
                 var->m_AvailableStepBlockIndexOffsets[i + 1].push_back(        \
@@ -235,6 +235,55 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
     j_semantics_unref(semantics);
 }
 
+void DBDefineVariableInEngineIO(core::IO *io, const std::string varName,
+                                std::string type, ShapeID shapeID, Dims shape,
+                                Dims start, Dims count, bool constantDims,
+                                bool isLocalValue)
+{
+                // variable->m_AvailableShapes[characteristics.Statistics.Step] = \
+                //     variable->m_Shape;                                         \
+    
+    if (type == "compound")
+    {
+    }
+#define declare_type(T)                                                        \
+    else if (type == helper::GetType<T>())                                     \
+    {                                                                          \
+        core::Variable<T> *variable = nullptr;                                 \
+        {                                                                      \
+            switch (shapeID)                                                   \
+            {                                                                  \
+            case (ShapeID::GlobalValue): {                                     \
+                variable = &io->DefineVariable<T>(varName);            \
+                break;                                                         \
+            }                                                                  \
+            case (ShapeID::GlobalArray): {                                     \
+                variable = &io->DefineVariable<T>(                     \
+                    varName, shape, Dims(shape.size(), 0), shape);             \
+                break;                                                         \
+            }                                                                  \
+            case (ShapeID::LocalValue): {                                      \
+                variable =                                                     \
+                    &io->DefineVariable<T>(varName, {1}, {0}, {1});    \
+                variable->m_ShapeID = ShapeID::LocalValue;                     \
+                break;                                                         \
+            }                                                                  \
+            case (ShapeID::LocalArray): {                                      \
+                variable =                                                     \
+                   &io->DefineVariable<T>(varName, {}, {}, count);    \
+                break;                                                         \
+            }                                                                  \
+            default:                                                           \
+                throw std::runtime_error("ERROR: invalid ShapeID or not yet "  \
+                                         "supported for variable " +           \
+                                         varName + ", in call to Open\n");     \
+            }                                                                  \
+        }                                                                      \
+    }
+    ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
+#undef declare_type
+}
+
 void DBDefineVariableInInit(core::IO *io, const std::string varName,
                             std::string stringType, Dims shape, Dims start,
                             Dims count, bool constantDims, bool isLocalValue)
@@ -243,7 +292,7 @@ void DBDefineVariableInInit(core::IO *io, const std::string varName,
     std::cout << "------ DefineVariableInInit ----------" << std::endl;
     std::cout << "------ type  ---------- " << type << std::endl;
     std::cout << "------ constantDims  ---------- " << constantDims
-    << std::endl;
+              << std::endl;
 
     if (strcmp(type, "unknown") == 0)
     {

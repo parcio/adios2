@@ -19,6 +19,8 @@
 #include "adios2/toolkit/format/bp/bp3/BP3Serializer.h"
 #include "adios2/toolkit/transportman/TransportMan.h" //transport::TransportsMan
 
+
+#include <mutex>
 #include <complex.h>
 #include <glib.h>
 #include <julea.h>
@@ -80,6 +82,8 @@ private:
      *
      */
     mutable bool m_UseKeysForBPLS = false;
+
+    static std::mutex m_Mutex;
 
     int m_Verbosity = 0; // change to 5 for debugging
     int m_Penguin = 0;   // change for debugging info from 0 to 42
@@ -153,8 +157,18 @@ private:
     typename core::Variable<T>::Info &
     InitVariableBlockInfo(core::Variable<T> &variable, T *data);
 
-    // template <class T>
-    // void ReadVariableBlocks(Variable<T> &variable);
+    /**
+     * Sets read block information from the available metadata information
+     * @param variable
+     * @param blockInfo
+     */
+    template <class T>
+    void
+    SetVariableBlockInfo(core::Variable<T> &variable,
+                         typename core::Variable<T>::Info &blockInfo) const;
+
+    template <class T>
+    void ReadVariableBlocks(Variable<T> &variable);
 
     template <class T>
     void ReadBlock(Variable<T> &variable, T *data, size_t blockID);

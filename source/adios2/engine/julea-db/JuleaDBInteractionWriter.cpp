@@ -237,9 +237,14 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
     }
 
     size_t blocks[numberSteps];
+
+    // if the entry does not exist in the map it will be added. This is actually what we want here.
+    // This way, for all steps prior to the first step of this variable, an element will be created of size 0
     for (uint i = 0; i < numberSteps; i++)
     {
+        std::cout << "mapsize: " << variable.m_AvailableStepBlockIndexOffsets.size() << std::endl;
         blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].size();
+        std::cout << "mapsize: " << variable.m_AvailableStepBlockIndexOffsets.size() << std::endl;
         std::cout << "i: " << i << "  blocks: " << blocks[i] << std::endl;
     }
     if (false)
@@ -259,6 +264,10 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
         std::cout << "shape.data = " << variable.m_Shape.data() << std::endl;
         std::cout << "count.data = " << variable.m_Count.data() << std::endl;
         std::cout << "numberSteps: " << numberSteps << std::endl;
+        std::cout << "m_AvailableStepStart: " << variable.m_AvailableStepsStart << std::endl;
+        std::cout << "m_AvailableStepsCount: " << variable.m_AvailableStepsCount << std::endl;
+        std::cout << "m_StepsStart: " << variable.m_StepsStart << std::endl;
+        std::cout << "m_StepsCount: " << variable.m_StepsCount << std::endl;
     }
 
     j_db_entry_set_field(entry, "file", nameSpace.c_str(),
@@ -727,7 +736,7 @@ template <class T>
 void DBPutAttributeDataToJulea(Attribute<T> &attribute,
                                const std::string nameSpace)
 {
-    std::cout << "-- PutAttributeDataToJulea -------" << std::endl;
+    // std::cout << "-- PutAttributeDataToJulea -------" << std::endl;
     void *dataBuf = NULL;
     guint64 bytesWritten = 0;
     unsigned int dataSize = 0;
@@ -780,14 +789,14 @@ void DBPutAttributeDataToJulea(Attribute<T> &attribute,
     j_batch_unref(batch);
     j_semantics_unref(semantics);
 
-    std::cout << "++ Julea Interaction Writer: Put Attribute " << std::endl;
+    // std::cout << "++ Julea Interaction Writer: Put Attribute " << std::endl;
 }
 
 template <>
 void DBPutAttributeDataToJulea<std::string>(Attribute<std::string> &attribute,
                                             const std::string nameSpace)
 {
-    std::cout << "-- PutAttributeDataToJulea -------" << std::endl;
+    // std::cout << "-- PutAttributeDataToJulea -------" << std::endl;
 
     unsigned int dataSize = 0;
     guint64 bytesWritten = 0;
@@ -858,7 +867,7 @@ void DBPutAttributeMetadataToJulea(Attribute<T> &attribute,
                                    bson_t *bsonMetaData,
                                    const std::string nameSpace)
 {
-    std::cout << "-- PutAttributeMetadataToJulea ------ " << std::endl;
+    // std::cout << "-- PutAttributeMetadataToJulea ------ " << std::endl;
     guint32 valueLen = 0;
 
     bson_iter_t bIter;
@@ -926,7 +935,7 @@ void DBPutAttributeMetadataToJulea(Attribute<T> &attribute,
     bson_destroy(bsonNames);
     j_semantics_unref(semantics);
 
-    std::cout << "++ Julea Interaction Writer: Put Attribute " << std::endl;
+    // std::cout << "++ Julea Interaction Writer: Put Attribute " << std::endl;
 }
 
 #define declare_template_instantiation(T)                                      \

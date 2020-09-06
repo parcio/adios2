@@ -315,8 +315,10 @@ void JuleaDBWriter::InitVariables()
                 << "GlobalValue/GlobalArray: m_CurrentBlockID = m_WriterRank"  \
                 << std::endl;                                                  \
             m_CurrentBlockID = m_WriterRank;                                   \
-            variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].resize(m_Comm.Size());\
-            variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].at(m_WriterRank)= m_CurrentBlockID;  \
+            variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].resize(   \
+                m_Comm.Size());                                                \
+            variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].at(       \
+                m_WriterRank) = m_CurrentBlockID;                              \
         }                                                                      \
         else if (variable.m_ShapeID == ShapeID::JoinedArray)                   \
         {                                                                      \
@@ -415,8 +417,8 @@ void JuleaDBWriter::DoFlush(const bool isFinal, const int transportIndex)
  */
 void JuleaDBWriter::PutAttributes(core::IO &io)
 {
-    std::cout << "\n______________PutAttributes_____________________"
-              << std::endl;
+    // std::cout << "\n______________PutAttributes_____________________"
+              // << std::endl;
 
     const auto attributesDataMap = io.GetAttributesDataMap();
 
@@ -433,9 +435,9 @@ void JuleaDBWriter::PutAttributes(core::IO &io)
         const std::string name(attributePair.first);
 
         auto bsonMetadata = bson_new();
-        std::cout << "------------------------------------" << std::endl;
-        std::cout << "-- PutAttributes: type " << type << std::endl;
-        std::cout << "-- PutAttributes: name " << name << std::endl;
+        // std::cout << "------------------------------------" << std::endl;
+        // std::cout << "-- PutAttributes: type " << type << std::endl;
+        // std::cout << "-- PutAttributes: name " << name << std::endl;
 
         // each attribute is only written to output once
         // so filter out the ones already written
