@@ -19,11 +19,10 @@
 #include "adios2/toolkit/format/bp/bp3/BP3Serializer.h"
 #include "adios2/toolkit/transportman/TransportMan.h" //transport::TransportsMan
 
-
-#include <mutex>
 #include <complex.h>
 #include <glib.h>
 #include <julea.h>
+#include <mutex>
 
 namespace adios2
 {
@@ -166,6 +165,10 @@ private:
     void
     SetVariableBlockInfo(core::Variable<T> &variable,
                          typename core::Variable<T>::Info &blockInfo) const;
+
+    template <class T>
+    void ReadBlockMD(typename core::Variable<T>::Info &blockInfo,
+                     size_t blockID);
 
     template <class T>
     void ReadVariableBlocks(Variable<T> &variable);

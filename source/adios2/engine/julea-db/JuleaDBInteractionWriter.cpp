@@ -238,13 +238,18 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
 
     size_t blocks[numberSteps];
 
-    // if the entry does not exist in the map it will be added. This is actually what we want here.
-    // This way, for all steps prior to the first step of this variable, an element will be created of size 0
+    // if the entry does not exist in the map it will be added. This is actually
+    // what we want here. This way, for all steps prior to the first step of
+    // this variable, an element will be created of size 0
     for (uint i = 0; i < numberSteps; i++)
     {
-        std::cout << "mapsize: " << variable.m_AvailableStepBlockIndexOffsets.size() << std::endl;
+        std::cout << "mapsize: "
+                  << variable.m_AvailableStepBlockIndexOffsets.size()
+                  << std::endl;
         blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].size();
-        std::cout << "mapsize: " << variable.m_AvailableStepBlockIndexOffsets.size() << std::endl;
+        std::cout << "mapsize: "
+                  << variable.m_AvailableStepBlockIndexOffsets.size()
+                  << std::endl;
         std::cout << "i: " << i << "  blocks: " << blocks[i] << std::endl;
     }
     if (false)
@@ -264,8 +269,10 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
         std::cout << "shape.data = " << variable.m_Shape.data() << std::endl;
         std::cout << "count.data = " << variable.m_Count.data() << std::endl;
         std::cout << "numberSteps: " << numberSteps << std::endl;
-        std::cout << "m_AvailableStepStart: " << variable.m_AvailableStepsStart << std::endl;
-        std::cout << "m_AvailableStepsCount: " << variable.m_AvailableStepsCount << std::endl;
+        std::cout << "m_AvailableStepStart: " << variable.m_AvailableStepsStart
+                  << std::endl;
+        std::cout << "m_AvailableStepsCount: " << variable.m_AvailableStepsCount
+                  << std::endl;
         std::cout << "m_StepsStart: " << variable.m_StepsStart << std::endl;
         std::cout << "m_StepsCount: " << variable.m_StepsCount << std::endl;
     }

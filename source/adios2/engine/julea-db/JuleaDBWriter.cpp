@@ -418,7 +418,7 @@ void JuleaDBWriter::DoFlush(const bool isFinal, const int transportIndex)
 void JuleaDBWriter::PutAttributes(core::IO &io)
 {
     // std::cout << "\n______________PutAttributes_____________________"
-              // << std::endl;
+    // << std::endl;
 
     const auto attributesDataMap = io.GetAttributesDataMap();
 
