@@ -55,13 +55,6 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
                    const std::string nameSpace, size_t step, size_t block,
                    size_t entryID);
 
-template <class T>
-void DBGetBlockMetadataNEW(Variable<T> &variable, typename core::Variable<T>::Info &blockInfo,
-                           const std::string variableName,
-                           const std::string variableType,
-                           const std::string nameSpace, size_t step,
-                           size_t block, size_t entryID);
-
 /* --- Variables --- */
 
 /** Retrieves all variable names from key-value store. They are all stored
@@ -100,12 +93,6 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
     DBGetBlockMetadata(const core::Variable<T> &variable,                      \
                        const std::string nameSpace, size_t step, size_t block, \
                        size_t entryID);                                        \
-                                                                               \
-    extern template void DBGetBlockMetadataNEW(Variable<T> &variable,typename core::Variable<T>::Info &blockInfo,\
-                           const std::string variableName,\
-                           const std::string variableType,\
-                           const std::string nameSpace, size_t step,\
-                           size_t block, size_t entryID);                     \
                                                                                \
     extern template void DBGetVariableDataFromJulea(                           \
         Variable<T> &variable, T *data, const std::string nameSpace,           \

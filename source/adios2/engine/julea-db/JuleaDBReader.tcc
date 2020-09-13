@@ -656,6 +656,12 @@ void JuleaDBReader::SetVariableBlockInfo(
 
         size_t position = blockIndexOffset;
 
+        auto nameSpace = m_Name;
+        // auto stepBlockID = g_strdup_printf("%lu_%lu", step, i);
+        // auto entryID = blocksIndexOffsets[i];
+        typename core::Variable<T>::Info info =
+            *DBGetBlockMetadata(variable, nameSpace, step, i, blockIndexOffset);
+
         // ReadBlockMD(variable, blockInfo.BlockID);
 
         //     const Characteristics<T> blockCharacteristics =
