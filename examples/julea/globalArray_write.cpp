@@ -69,14 +69,15 @@ int main(int argc, char *argv[])
          * The local process' part (start, count) can be defined now or later
          * before Write().
          */
-        adios2::Variable<double> varGlobalArray =
-            io.DefineVariable<double>("GlobalArray", {static_cast<size_t>(nproc*2), 3});
-            // io.DefineVariable<double>("GlobalArray", {(unsigned int)nproc, Nx});
+        adios2::Variable<double> varGlobalArray = io.DefineVariable<double>(
+            "GlobalArray", {static_cast<size_t>(nproc * 2), 3});
+        // io.DefineVariable<double>("GlobalArray", {(unsigned int)nproc, Nx});
 
         // Open file. "w" means we overwrite any existing file on disk,
         // but Advance() will append steps to the same file.
+        // io.SetEngine("bp3");
         io.SetEngine("julea-db");
-        adios2::Engine writer = io.Open("globalArray.jb", adios2::Mode::Write);
+        adios2::Engine writer = io.Open("globalArray.bp", adios2::Mode::Write);
 
         for (size_t step = 0; step < NSTEPS; step++)
         {
@@ -92,10 +93,8 @@ int main(int argc, char *argv[])
             // adios2::SelectionBoundingBox sel();
             varGlobalArray.SetSelection(adios2::Box<adios2::Dims>(
                 {static_cast<size_t>(rank * 2), 0}, {2, 3}));
-            if (step == NSTEPS -1)
-            {    
-                writer.Put<double>(varGlobalArray, row.data());
-            }
+
+            writer.Put<double>(varGlobalArray, row.data());
 
             // Indicate we are done for this step.
             // Disk I/O will be performed during this call unless
@@ -132,7 +131,7 @@ int main(int argc, char *argv[])
         }
     }
 #if ADIOS2_USE_MPI
-    MPI_Barrier(MPI_COMM_WORLD); 
+    MPI_Barrier(MPI_COMM_WORLD);
 #endif
     try
     {
@@ -140,6 +139,7 @@ int main(int argc, char *argv[])
         // create one with default settings here
         adios2::IO read_io = adios.DeclareIO("Input");
         std::cout << "rank: " << rank << "declared input io" << std::endl;
+        // read_io.SetEngine("bp3");
         read_io.SetEngine("julea-db");
 
         /*
@@ -149,65 +149,53 @@ int main(int argc, char *argv[])
          */
         // adios2::Variable<double> varGlobalArray =
         //     io.DefineVariable<double>("GlobalArray", {4, 3});
-            // io.DefineVariable<double>("GlobalArray", {(unsigned int)nproc, Nx});
+        // io.DefineVariable<double>("GlobalArray", {(unsigned int)nproc, Nx});
 
         // Open file. "w" means we overwrite any existing file on disk,
         // but Advance() will append steps to the same file.
-        std::vector<double> selection = {0.0,0.0,0.0,0.0};
-    if (rank == 0) {
+        std::vector<double> selection = {0.0, 0.0, 0.0, 0.0};
+        if (rank == 0)
+        {
 #if ADIOS2_USE_MPI
-        adios2::Engine reader = read_io.Open("globalArray.jb", adios2::Mode::Read, MPI_COMM_WORLD);
+            std::cout << "hallo" << std::endl;
+            adios2::Engine reader = read_io.Open(
+                "globalArray.bp", adios2::Mode::Read, MPI_COMM_WORLD);
 #else
-        adios2::Engine reader = read_io.Open("globalArray.jb", adios2::Mode::Read);
+            adios2::Engine reader =
+                read_io.Open("globalArray.bp", adios2::Mode::Read);
 #endif
-        std::cout << "opened input io" << std::endl;
-        
-        adios2::Variable<double> var = read_io.InquireVariable<double>("GlobalArray");
-        std::cout << "inquired variable" << std::endl;
-        
-        reader.BeginStep();
+            std::cout << "opened input io" << std::endl;
 
-        var.SetSelection(adios2::Box<adios2::Dims>({0,1}, {1,2}));
-        std::cout << "selecton set" << std::endl;
-        
-        reader.Get<double>(var, selection.data());
-        std::cout << "got variable" << std::endl;
-        
-        reader.EndStep();
-        std::cout << "rank: " << rank << "read end step" << std::endl;
+            for (size_t step = 0; step < NSTEPS; step++)
+            {
+                adios2::Variable<double> var =
+                    read_io.InquireVariable<double>("GlobalArray");
+                std::cout << "inquired variable" << std::endl;
 
-        // for (size_t step = 0; step < NSTEPS; step++)
-        // {
-        //     writer.BeginStep();
+                reader.BeginStep();
 
-        //     for (size_t i = 0; i < Nx; i++)
-        //     {
-        //         row[i] = step * Nx * nproc * 1.0 + rank * Nx * 1.0 + (double)i;
-        //     }
+                var.SetSelection(adios2::Box<adios2::Dims>({0, 1}, {2, 1}));
+                std::cout << "selecton set" << std::endl;
 
-        //     // Make a 2D selection to describe the local dimensions of the
-        //     // variable we write and its offsets in the global spaces
-        //     // adios2::SelectionBoundingBox sel();
-        //     varGlobalArray.SetSelection(adios2::Box<adios2::Dims>(
-        //         {static_cast<size_t>(rank * 2), 0}, {2, 3}));
-        //     writer.Put<double>(varGlobalArray, row.data());
+                std::cout << "trying to get variable" << std::endl;
+                reader.Get<double>(var, selection.data(), adios2::Mode::Sync);
+                std::cout << "got variable" << std::endl;
 
-        //     // Indicate we are done for this step.
-        //     // Disk I/O will be performed during this call unless
-        //     // time aggregation postpones all of that to some later step
-        //     writer.EndStep();
-        // }
+                reader.EndStep();
 
-        // Called once: indicate that we are done with this output for the run
-        reader.Close();
-}
+                std::cout << "rank: " << rank << "read end step" << std::endl;
+                std::cout << "selection: ";
+                for (auto &el : selection)
+                    std::cout << el << " ";
+                std::cout << std::endl;
+                std::cout << "fin" << std::endl;
+            }
+
+            // Called once: indicate that we are done with this output for the
+            // run
+            reader.Close();
+        }
         std::cout << "rank: " << rank << " closed reader" << std::endl;
-        std::cout << "selection: ";
-        for (auto &el : selection)
-            std::cout << el;
-        std::cout << std::endl;
-        std::cout << "fin" << std::endl;
-
     }
     catch (std::invalid_argument &e)
     {
