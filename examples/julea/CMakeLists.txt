@@ -27,5 +27,7 @@ target_link_libraries(GLOBAL_ARRAY_WRITE adios2)
 
 
 if (ADIOS2_HAVE_MPI)
+	add_executable(GLOBAL_ARRAY_WRITE_mpi globalArray_write.cpp)
+    target_link_libraries(GLOBAL_ARRAY_WRITE_mpi adios2::cxx11_mpi MPI::MPI_C)
     target_link_libraries(WRITE_STEPS MPI::MPI_C)
 endif()
