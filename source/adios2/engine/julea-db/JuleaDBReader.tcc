@@ -185,7 +185,8 @@ void JuleaDBReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
 
     size_t numberElements = helper::GetTotalSize(count);
     dataSize = numberElements * variable.m_ElementSize;
-    DBGetVariableDataFromJulea(variable, data, nameSpace, dataSize,
+    size_t offset = 0;
+    DBGetVariableDataFromJulea(variable, data, nameSpace, offset, dataSize,
                                stepBlockID);
 }
 
@@ -307,6 +308,77 @@ void JuleaDBReader::ReadVariableBlocks(Variable<T> &variable)
         //     m_CurrentStep, m_CurrentBlockID);
         // }
         // m_CurrentBlockID++;
+        for (typename Variable<T>::Info &blockInfo : variable.m_BlocksInfo)
+        {
+            T *originalBlockData = blockInfo.Data;
+
+            for (const auto &stepPair : blockInfo.StepBlockSubStreamsInfo)
+            {
+                for (const helper::SubStreamBoxInfo &subStreamBoxInfo :
+                     stepPair.second)
+                {
+                    if (subStreamBoxInfo.ZeroBlock)
+                    {
+                        continue;
+                    }
+
+                    // char *buffer = nullptr;
+                    std::string stepBlockID;
+                    std::string nameSpace = m_Name;
+                    long unsigned int dataSize = 0;
+                    // TODO: -1 because BP stuff starts at 1
+
+                    size_t offset = subStreamBoxInfo.Seeks.first;
+                    size_t step = stepPair.first - 1;
+
+                    std::cout << "stepPair.first: " << stepPair.first << std::endl;
+
+                    stepBlockID = g_strdup_printf("%lu_%lu", step,
+                                                  subStreamBoxInfo.SubStreamID);
+                    std::cout << "stepBlockID: " << stepBlockID << std::endl;
+                    if (m_UseKeysForBPLS)
+                    {
+                        // DBGetVariableDataFromJulea(
+                        //     variable, data, nameSpace, dataSize,
+                        //     variable.m_StepsStart, variable.m_BlockID);
+                    }
+                    else
+                    {
+                        // size_t numberElements = helper::GetTotalSize(count);
+                        // dataSize = numberElements * variable.m_ElementSize;
+                        dataSize = subStreamBoxInfo.Seeks.second -
+                                   subStreamBoxInfo.Seeks.first;
+                        std::cout << "dataSize: " << dataSize << std::endl;
+
+                        T data[dataSize];
+                        DBGetVariableDataFromJulea(variable, data, nameSpace,
+                                                   offset, dataSize,
+                                                   stepBlockID);
+
+                        const Dims blockInfoStart =
+                            (variable.m_ShapeID == ShapeID::LocalArray &&
+                             blockInfo.Start.empty())
+                                ? Dims(blockInfo.Count.size(), 0)
+                                : blockInfo.Start;
+
+                        helper::ClipContiguousMemory(
+                            blockInfo.Data, blockInfoStart, blockInfo.Count,
+                            (char *)data, subStreamBoxInfo.BlockBox,
+                            subStreamBoxInfo.IntersectionBox, true, false,
+                            false);
+
+                        // helper::ClipVector(m_ThreadBuffers[threadID][0],
+                        //                    subStreamBoxInfo.Seeks.first,
+                        //                    subStreamBoxInfo.Seeks.second);
+                    }
+                    m_CurrentBlockID++;
+
+                } // substreams loop
+                // advance pointer to next step
+                blockInfo.Data += helper::GetTotalSize(blockInfo.Count);
+            } // steps loop
+            blockInfo.Data = originalBlockData;
+        } // deferred blocks loop
     }
 }
 
@@ -377,7 +449,8 @@ JuleaDBReader::BlocksInfoCommon(const core::Variable<T> &variable,
         auto entryID = blocksIndexOffsets[i];
 
         typename core::Variable<T>::Info info =
-            *DBGetBlockMetadata(variable, nameSpace, step, i, entryID);
+            // *DBGetBlockMetadata(variable, nameSpace, step, i, entryID);
+            *DBGetBlockMetadata(variable, entryID);
         info.IsReverseDims = false;
         info.Step = step;
 
@@ -454,6 +527,9 @@ JuleaDBReader::InitVariableBlockInfo(core::Variable<T> &variable, T *data)
     const size_t stepsStart = variable.m_StepsStart;
     const size_t stepsCount = variable.m_StepsCount;
 
+    std::cout << "stepsStart: " << stepsStart << std::endl;
+    std::cout << "stepsCount: " << stepsCount << std::endl;
+
     // if (m_DebugMode)
     if (m_Verbosity == 5)
     {
@@ -527,6 +603,17 @@ void JuleaDBReader::SetVariableBlockInfo(
     core::Variable<T> &variable,
     typename core::Variable<T>::Info &blockInfo) const
 {
+    if (m_Verbosity == 5)
+    {
+        std::cout << "\n______________SetVariableBlockInfo_____________________"
+                  << std::endl;
+        std::cout << "Julea DB Reader " << m_ReaderRank
+                  << " Reached SetVariableBlockInfo" << std::endl;
+        std::cout << "Julea Reader " << m_ReaderRank << " Namespace: " << m_Name
+                  << std::endl;
+        std::cout << "Julea Reader " << m_ReaderRank
+                  << " Variable name: " << variable.m_Name << std::endl;
+    }
     // auto lf_SetSubStreamInfoLocalArray =
     //     [&](const std::string &variableName, const Box<Dims> &selectionBox,
     //         typename core::Variable<T>::Info &blockInfo, const size_t step,
@@ -653,36 +740,29 @@ void JuleaDBReader::SetVariableBlockInfo(
 
     {
         //     const std::vector<char> &buffer = bufferSTL.m_Buffer;
-
         size_t position = blockIndexOffset;
 
-        auto nameSpace = m_Name;
-        // auto stepBlockID = g_strdup_printf("%lu_%lu", step, i);
-        // auto entryID = blocksIndexOffsets[i];
+        // info = blockCharacteristics in BP3
         typename core::Variable<T>::Info info =
-            *DBGetBlockMetadata(variable, nameSpace, step, i, blockIndexOffset);
-
-        // ReadBlockMD(variable, blockInfo.BlockID);
-
-        //     const Characteristics<T> blockCharacteristics =
-        //         ReadElementIndexCharacteristics<T>(buffer, position,
-        //                                            TypeTraits<T>::type_enum,
-        //                                            false,
-        //                                            m_Minifooter.IsLittleEndian);
-
-        // TODO
-        // here the blockmetadata needs to be read
+            *DBGetBlockMetadata(variable, blockIndexOffset);
 
         // check if they intersect
         helper::SubStreamBoxInfo subStreamInfo;
 
-        // if (helper::GetTotalSize(blockCharacteristics.Count) == 0)
+        if (helper::GetTotalSize(info.Count) == 0)
         {
             subStreamInfo.ZeroBlock = true;
         }
 
-        subStreamInfo.BlockBox =
-            helper::StartEndBox(blockInfo.Start, blockInfo.Count);
+        subStreamInfo.BlockBox = helper::StartEndBox(info.Start, info.Count);
+        std::cout << "BlockBox: (["
+                  << helper::VectorToCSV(subStreamInfo.BlockBox.first) << "], ["
+                  << helper::VectorToCSV(subStreamInfo.BlockBox.second) << "])"
+                  << std::endl;
+        std::cout << "selectionBox: (["
+                  << helper::VectorToCSV(selectionBox.first) << "], ["
+                  << helper::VectorToCSV(selectionBox.second) << "])"
+                  << std::endl;
         subStreamInfo.IntersectionBox =
             helper::IntersectionBox(selectionBox, subStreamInfo.BlockBox);
 
@@ -692,40 +772,38 @@ void JuleaDBReader::SetVariableBlockInfo(
             return;
         }
 
-        // FIXME: some kind of check is needed for this engine.
-        // However, not sure what blockCharacteristics actually stores
+        const size_t dimensions = info.Shape.size();
+        if (dimensions != blockInfo.Shape.size())
+        {
+            throw std::invalid_argument(
+                "ERROR: block Shape (available) and "
+                "selection Shape (requested) number of dimensions, do not "
+                "match "
+                "when reading global array variable " +
+                variableName + ", in call to Get");
+        }
 
-        // const size_t dimensions = blockCharacteristics.Shape.size();
-        // if (dimensions != blockInfo.Shape.size())
+        Dims readInShape = info.Shape;
+        // if (m_ReverseDimensions)
         // {
-        //     throw std::invalid_argument(
-        //         "ERROR: block Shape (available) and "
-        //         "selection Shape (requested) number of dimensions, do not "
-        //         "match "
-        //         "when reading global array variable " +
-        //         variableName + ", in call to Get");
+        //     std::reverse(readInShape.begin(), readInShape.end());
         // }
 
-        //     Dims readInShape = blockCharacteristics.Shape;
-        //     if (m_ReverseDimensions)
-        //     {
-        //         std::reverse(readInShape.begin(), readInShape.end());
-        //     }
-
-        //     for (size_t i = 0; i < dimensions; ++i)
-        //     {
-        //         if (blockInfo.Start[i] + blockInfo.Count[i] > readInShape[i])
-        //         {
-        //             throw std::invalid_argument(
-        //                 "ERROR: selection Start " +
-        //                 helper::DimsToString(blockInfo.Start) + " and Count "
-        //                 + helper::DimsToString(blockInfo.Count) + "
-        //                 (requested) is out of bounds of (available) " "Shape
-        //                 " + helper::DimsToString(readInShape) + " , when
-        //                 reading global array variable " + variableName +
-        //                 ", in call to Get");
-        //         }
-        //     }
+        for (size_t i = 0; i < dimensions; ++i)
+        {
+            if (blockInfo.Start[i] + blockInfo.Count[i] > readInShape[i])
+            {
+                throw std::invalid_argument(
+                    "ERROR: selection Start " +
+                    helper::DimsToString(blockInfo.Start) + " and Count " +
+                    helper::DimsToString(blockInfo.Count) +
+                    " (requested) is out of bounds of (available) "
+                    "Shape " +
+                    helper::DimsToString(readInShape) +
+                    " , when reading global array variable " + variableName +
+                    ", in call to Get");
+            }
+        }
 
         // relative position
         subStreamInfo.Seeks.first =
@@ -764,6 +842,17 @@ void JuleaDBReader::SetVariableBlockInfo(
 
         //     blockInfo.StepBlockSubStreamsInfo[step].push_back(
         //         std::move(subStreamInfo));
+
+        // make it absolute if no operations
+        // subStreamInfo.Seeks.first += 42;
+        // subStreamInfo.Seeks.second += 42;
+
+        // subStreamInfo.SubStreamID = static_cast<size_t>(blockIndexOffset);
+        subStreamInfo.SubStreamID = static_cast<size_t>(info.BlockID);
+        // static_cast<size_t>(blockCharacteristics.Statistics.FileIndex);
+
+        blockInfo.StepBlockSubStreamsInfo[step].push_back(
+            std::move(subStreamInfo));
     };
 
     // BODY OF FUNCTIONS STARTS HERE
@@ -785,9 +874,10 @@ void JuleaDBReader::SetVariableBlockInfo(
         {
             for (const size_t blockOffset : blockOffsets)
             {
+                std::cout << "blockOffset: " << blockOffset << std::endl;
                 lf_SetSubStreamInfoGlobalArray(variable.m_Name, selectionBox,
                                                blockInfo, step, blockOffset,
-                                               false);
+                                               true);
             }
         }
         else if (variable.m_ShapeID == ShapeID::LocalArray)

@@ -84,7 +84,7 @@ private:
 
     static std::mutex m_Mutex;
 
-    int m_Verbosity = 0; // change to 5 for debugging
+    int m_Verbosity = 5; // change to 5 for debugging
     int m_Penguin = 0;   // change for debugging info from 0 to 42
     int m_ReaderRank;    // my rank in the readers' comm
 

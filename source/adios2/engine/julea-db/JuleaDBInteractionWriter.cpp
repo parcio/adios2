@@ -243,14 +243,14 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
     // this variable, an element will be created of size 0
     for (uint i = 0; i < numberSteps; i++)
     {
-        std::cout << "mapsize: "
-                  << variable.m_AvailableStepBlockIndexOffsets.size()
-                  << std::endl;
+        // std::cout << "mapsize: "
+        //           << variable.m_AvailableStepBlockIndexOffsets.size()
+        //           << std::endl;
         blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].size();
-        std::cout << "mapsize: "
-                  << variable.m_AvailableStepBlockIndexOffsets.size()
-                  << std::endl;
-        std::cout << "i: " << i << "  blocks: " << blocks[i] << std::endl;
+        // std::cout << "mapsize: "
+        //           << variable.m_AvailableStepBlockIndexOffsets.size()
+        //           << std::endl;
+        // std::cout << "i: " << i << "  blocks: " << blocks[i] << std::endl;
     }
     if (false)
     {

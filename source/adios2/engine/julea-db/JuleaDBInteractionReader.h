@@ -52,8 +52,14 @@ void GetCountFromBlockMetadata(const std::string nameSpace,
 template <class T>
 std::unique_ptr<typename core::Variable<T>::Info>
 DBGetBlockMetadata(const core::Variable<T> &variable,
-                   const std::string nameSpace, size_t step, size_t block,
+                   // const std::string nameSpace, size_t step, size_t block,
                    size_t entryID);
+
+// entryID: unique ID for entry in database
+template <class T>
+void DBGetBlockMetadataNEW(Variable<T> &variable,
+                           typename core::Variable<T>::Info &blockInfo,
+                           size_t entryID);
 
 /* --- Variables --- */
 
@@ -80,7 +86,7 @@ void DBGetBlockMetadataFromJulea(const std::string nameSpace,
  * the data is allocated in the application. */
 template <class T>
 void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
-                                const std::string nameSpace,
+                                const std::string nameSpace, size_t offset,
                                 long unsigned int dataSize,
                                 const std::string stepBlockID);
 
@@ -90,15 +96,21 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
         size_t block, Dims *count, size_t entryID, bool isLocalValue,          \
         T *value);                                                             \
     extern template std::unique_ptr<typename core::Variable<T>::Info>          \
-    DBGetBlockMetadata(const core::Variable<T> &variable,                      \
-                       const std::string nameSpace, size_t step, size_t block, \
-                       size_t entryID);                                        \
+    DBGetBlockMetadata(const core::Variable<T> &variable, size_t entryID);     \
+                                                                               \
+    extern template void DBGetBlockMetadataNEW(                                \
+        Variable<T> &variable, typename core::Variable<T>::Info &blockInfo,    \
+        size_t entryID);                                                       \
                                                                                \
     extern template void DBGetVariableDataFromJulea(                           \
         Variable<T> &variable, T *data, const std::string nameSpace,           \
-        long unsigned int dataSize, const std::string stepBlockID);
+        size_t offset, long unsigned int dataSize,                             \
+        const std::string stepBlockID);
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
+
+// const std::string nameSpace, size_t step, size_t block, \
+
 
 /* --- Attributes --- */
 /** Attributes are still implemented using BSON. It was not urgent enough to

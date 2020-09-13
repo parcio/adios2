@@ -93,7 +93,7 @@ StepStatus JuleaDBReader::BeginStep(const StepMode mode,
     m_DeferredVariablesDataSize = 0;
 
     // first param is "zero-init" which initializes stepsStart to 0
-    m_IO.ResetVariablesStepSelection(true, "in call to JULEA Reader BeginStep");
+    m_IO.ResetVariablesStepSelection(false, "in call to JULEA Reader BeginStep");
 
     return StepStatus::OK;
 }
