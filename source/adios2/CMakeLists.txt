@@ -183,6 +183,13 @@ if(ADIOS2_HAVE_JULEA)
       engine/julea-db/JuleaDBInteractionWriter.cpp
       engine/julea-db/JuleaDBInteractionReader.cpp
 
+      engine/julea-db-do/JuleaDB-DO-Reader.cpp
+      engine/julea-db-do/JuleaDB-DO-Reader.tcc
+      engine/julea-db-do/JuleaDB-DO-Writer.cpp
+      engine/julea-db-do/JuleaDB-DO-Writer.tcc
+      engine/julea-db-do/JuleaDB-DO-InteractionWriter.cpp
+      engine/julea-db-do/JuleaDB-DO-InteractionReader.cpp
+
       toolkit/interop/julea/JuleaSerializer.cpp
       toolkit/interop/julea/JuleaSerializer.tcc
       toolkit/interop/julea/JuleaDeserializer.cpp
