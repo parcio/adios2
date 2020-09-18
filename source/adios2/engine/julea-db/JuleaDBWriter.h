@@ -129,6 +129,9 @@ private:
 
     void DoFlush(const bool isFinal = false, const int transportIndex = -1);
 
+    template <class T>
+    void SetBlockID(Variable<T> &variable);
+
     /**
      * Closes a single transport or all transports
      * @param transportIndex, if -1 (default) closes all transports,

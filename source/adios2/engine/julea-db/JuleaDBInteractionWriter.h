@@ -52,7 +52,7 @@ void DBPutBlockMetadataToJulea(Variable<T> &variable,
                                const std::string varName, size_t step,
                                size_t block,
                                const typename Variable<T>::Info &blockInfo,
-                               T &blockMin, T &blockMax);
+                               T &blockMin, T &blockMax, uint32_t &entryID);
 
 /**
  * Store variable data in JULEA object store. The key is:
@@ -63,10 +63,14 @@ void DBPutBlockMetadataToJulea(Variable<T> &variable,
  * @param currentStep   current step (part of key)
  * @param blockID       current block (part of key)
  */
+// template <class T>
+// void DBPutVariableDataToJulea(Variable<T> &variable, const T *data,
+//                               const std::string nameSpace, size_t currentStep,
+//                               size_t blockID);
+
 template <class T>
-void DBPutVariableDataToJulea(Variable<T> &variable, const T *data,
-                              const std::string nameSpace, size_t currentStep,
-                              size_t blockID);
+void DBPutVariableDataToJulea(Variable<T> &variable, const T *data, const std::string nameSpace,
+                             uint32_t entryID);
 
 /** --- Attributes --- */
 template <class T>
@@ -88,8 +92,7 @@ void DBPutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
 
 #define declare_template_instantiation(T)                                      \
     extern template void DBPutVariableDataToJulea(                             \
-        Variable<T> &variable, const T *data, const std::string nameSpace,     \
-        size_t currentStep, size_t blockID);                                   \
+        Variable<T> &variable, const T *data,const std::string nameSpace, uint32_t entryID);                                   \
     extern template void DBPutVariableMetadataToJulea(                         \
         Variable<T> &variable, const std::string nameSpace,                    \
         const std::string varName, size_t currStep, size_t block);             \
@@ -97,7 +100,7 @@ void DBPutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
         Variable<T> &variable, const std::string nameSpace,                    \
         const std::string varName, size_t step, size_t block,                  \
         const typename Variable<T>::Info &blockInfo, , T &blockMin,            \
-        T &blockMax);                                                          \
+        T &blockMax, uint32_t &entryID);                                       \
                                                                                \
     extern template void DBPutAttributeDataToJulea(                            \
         Attribute<T> &attribute, const std::string nameSpace);                 \

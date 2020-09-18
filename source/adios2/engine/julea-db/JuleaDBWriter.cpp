@@ -308,47 +308,7 @@ void JuleaDBWriter::InitVariables()
     void JuleaDBWriter::DoPutSync(Variable<T> &variable, const T *data)        \
     {                                                                          \
         std::cout << "m_WriterRank: " << m_WriterRank << std::endl;            \
-        if (variable.m_ShapeID == ShapeID::GlobalValue ||                      \
-            variable.m_ShapeID == ShapeID::GlobalArray)                        \
-        {                                                                      \
-            std::cout                                                          \
-                << "GlobalValue/GlobalArray: m_CurrentBlockID = m_WriterRank"  \
-                << std::endl;                                                  \
-            m_CurrentBlockID = m_WriterRank;                                   \
-            variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].resize(   \
-                m_Comm.Size());                                                \
-            variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].at(       \
-                m_WriterRank) = m_CurrentBlockID;                              \
-        }                                                                      \
-        else if (variable.m_ShapeID == ShapeID::JoinedArray)                   \
-        {                                                                      \
-            std::cout << "JoinedArray: Currently not implemented yet."         \
-                      << std::endl;                                            \
-        }                                                                      \
-        else if (variable.m_ShapeID == ShapeID::LocalArray ||                  \
-                 variable.m_ShapeID == ShapeID::LocalValue)                    \
-        {                                                                      \
-            if (m_Comm.Size() == 1)                                            \
-            {                                                                  \
-                std::cout << "LocalValue/: Nothing to do?! Only increment "    \
-                             "after put."                                      \
-                          << std::endl;                                        \
-                variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep]       \
-                    .push_back(m_CurrentBlockID);                              \
-            }                                                                  \
-            else                                                               \
-            {                                                                  \
-                std::cout << "LocalArray: Have fun with synchronized counter " \
-                             "across processes."                               \
-                          << std::endl;                                        \
-                variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep]       \
-                    .push_back(m_CurrentBlockID);                              \
-            }                                                                  \
-        }                                                                      \
-        else                                                                   \
-        {                                                                      \
-            std::cout << "Shape Type not known." << std::endl;                 \
-        }                                                                      \
+        SetBlockID(variable);                                                  \
         PutSyncCommon(variable, data);                                         \
         variable.m_BlocksInfo.pop_back();                                      \
         m_CurrentBlockID++;                                                    \

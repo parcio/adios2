@@ -331,7 +331,8 @@ void JuleaDBReader::ReadVariableBlocks(Variable<T> &variable)
                     size_t offset = subStreamBoxInfo.Seeks.first;
                     size_t step = stepPair.first - 1;
 
-                    std::cout << "stepPair.first: " << stepPair.first << std::endl;
+                    std::cout << "stepPair.first: " << stepPair.first
+                              << std::endl;
 
                     stepBlockID = g_strdup_printf("%lu_%lu", step,
                                                   subStreamBoxInfo.SubStreamID);
