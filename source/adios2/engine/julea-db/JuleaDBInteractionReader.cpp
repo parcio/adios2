@@ -167,7 +167,8 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
                     j_db_iterator_get_field(iterator, "_id", &jdbType,         \
                                             (gpointer *)&tmpID, &db_length,    \
                                             NULL);                             \
-                    std::cout << "_id: " << *tmpID << std::endl;               \
+                    std::cout << "DBInitVariable _id: " << *tmpID              \
+                              << std::endl;                                    \
                     entryID = *tmpID;                                          \
                 }                                                              \
                 var->m_AvailableStepBlockIndexOffsets[i + 1].push_back(        \
@@ -1243,7 +1244,7 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
 template <class T>
 void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
                                 const std::string nameSpace, size_t offset,
-                                size_t dataSize, const std::string stepBlockID)
+                                size_t dataSize, uint32_t entryID)
 {
     // std::cout << "-- GetVariableDataFromJulea ----- " << std::endl;
 
@@ -1255,11 +1256,12 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
         g_strdup_printf("%s_%s_%s", nameSpace.c_str(), variable.m_Name.c_str(),
                         objName.c_str());
     // std::cout << "stringDataObject: " << stringDataObject << std::endl;
+    auto uniqueID = g_strdup_printf("%d", entryID);
 
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
-    auto dataObject = j_object_new(stringDataObject, stepBlockID.c_str());
+    auto dataObject = j_object_new(stringDataObject, uniqueID);
 
     j_object_read(dataObject, data, dataSize, offset, &bytesRead, batch);
     g_assert_true(j_batch_execute(batch) == true);
@@ -1294,8 +1296,7 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
                                                                                \
     template void DBGetVariableDataFromJulea(                                  \
         Variable<T> &variable, T *data, const std::string nameSpace,           \
-        size_t offset, long unsigned int dataSize,                             \
-        const std::string stepBlockID);
+        size_t offset, long unsigned int dataSize, uint32_t entryID);
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 

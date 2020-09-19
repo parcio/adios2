@@ -60,7 +60,7 @@ private:
     JSemantics *m_JuleaSemantics;
     StepMode m_StepMode = StepMode::Append;
 
-    int m_Verbosity = 0; // change for debugging info from 0 to 5
+    int m_Verbosity = 5; // change for debugging info from 0 to 5
     int m_Penguin = 0;   // change for debugging info from 0 to 42
     int m_WriterRank;    // my rank in the writers' comm
 

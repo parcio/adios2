@@ -87,8 +87,7 @@ void DBGetBlockMetadataFromJulea(const std::string nameSpace,
 template <class T>
 void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
                                 const std::string nameSpace, size_t offset,
-                                long unsigned int dataSize,
-                                const std::string stepBlockID);
+                                long unsigned int dataSize, uint32_t entryID);
 
 #define variable_template_instantiation(T)                                     \
     extern template void GetCountFromBlockMetadata(                            \
@@ -104,8 +103,7 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
                                                                                \
     extern template void DBGetVariableDataFromJulea(                           \
         Variable<T> &variable, T *data, const std::string nameSpace,           \
-        size_t offset, long unsigned int dataSize,                             \
-        const std::string stepBlockID);
+        size_t offset, long unsigned int dataSize, uint32_t entryID);
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 

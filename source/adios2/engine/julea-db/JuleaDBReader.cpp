@@ -41,7 +41,14 @@ JuleaDBReader::JuleaDBReader(IO &io, const std::string &name, const Mode mode,
     // m_EndMessage = " in call to IO Open JuleaDBReader " + m_Name + "\n";
     // MPI_Comm_rank(mpiComm, &m_ReaderRank);
     m_ReaderRank = m_Comm.Rank();
-    Init();
+    // if (m_ReaderRank == 0)
+    // {
+        std::cout << "Init - " << m_ReaderRank << std::endl;
+        Init();
+        std::cout << "Init finished - " << m_ReaderRank << std::endl;
+    // }
+    // m_Comm.Barrier();
+
     if (m_Verbosity == 5)
     {
         std::cout << "Julea DB Reader " << m_ReaderRank << " Open(" << m_Name
@@ -159,11 +166,22 @@ void JuleaDBReader::PerformGets()
     {                                                                          \
         Variable<T> &variable = FindVariable<T>(                               \
             variableName, "in call to PerformGets, EndStep or Close");         \
-        for (auto &blockInfo : variable.m_BlocksInfo)                          \
+        if (variable.m_ShapeID == ShapeID::GlobalValue ||                      \
+            variable.m_ShapeID == ShapeID::GlobalArray)                        \
         {                                                                      \
-            T *data = variable.m_BlocksInfo[i].Data;                           \
-            ReadBlock(variable, data, i);                                      \
-            i++;                                                               \
+            ReadVariableBlocks(variable);                                      \
+        }                                                                      \
+        else if (variable.m_ShapeID == ShapeID::LocalArray ||                  \
+                 variable.m_ShapeID == ShapeID::LocalValue)                    \
+        {                                                                      \
+            for (auto &blockInfo : variable.m_BlocksInfo)                      \
+            {                                                                  \
+                T *data = variable.m_BlocksInfo[i].Data;                       \
+                std::cout << "size of variable.m_BlocksInfo: "                 \
+                          << variable.m_BlocksInfo.size() << std::endl;        \
+                ReadBlock(variable, data, i);                                  \
+                i++;                                                           \
+            }                                                                  \
         }                                                                      \
         variable.m_BlocksInfo.clear();                                         \
     }

@@ -606,22 +606,33 @@ void DBPutBlockMetadataToJulea(Variable<T> &variable,
     if (j_db_iterator_next(iterator, NULL))
     {
         j_db_entry_update(entry, selector, batch2, NULL);
-        j_db_iterator_get_field(iterator, "_id", &jdbType, (gpointer *)&tmpID,
-                                &db_length, NULL);
-        std::cout << "_id: " << *tmpID << std::endl;
-        entryID = *tmpID;
+        err = j_batch_execute(batch2);
+        // j_db_iterator_get_field(iterator, "_id", &jdbType, (gpointer
+        // *)&tmpID,
+        //                         &db_length, NULL);
+        // std::cout << "_id: " << *tmpID << std::endl;
+        // entryID = *tmpID;
     }
     else
     {
         // std::cout << "Variable metadata does not exist yet." << std::endl;
         j_db_entry_insert(entry, batch2, NULL);
-        j_db_iterator_get_field(iterator, "_id", &jdbType, (gpointer *)&tmpID,
-                                &db_length, NULL);
-        std::cout << "_id: " << *tmpID << std::endl;
-        entryID = *tmpID;
-    }
+        err = j_batch_execute(batch2);
 
-    err = j_batch_execute(batch2);
+        iterator = j_db_iterator_new(schema, selector, NULL);
+        j_db_iterator_next(iterator, NULL);
+        // j_db_iterator_get_field(iterator, "_id", &jdbType, (gpointer
+        // *)&tmpID,
+        //                         &db_length, NULL);
+
+        // std::cout << "_id: " << *tmpID << std::endl;
+        // entryID = *tmpID;
+    }
+    j_db_iterator_get_field(iterator, "_id", &jdbType, (gpointer *)&tmpID,
+                            &db_length, NULL);
+
+    std::cout << "_id: " << *tmpID << std::endl;
+    entryID = *tmpID;
     // variable->m_AvailableStepBlockIndexOffsets[step].
 
     // TODO: how to use this function?
@@ -637,7 +648,8 @@ void DBPutBlockMetadataToJulea(Variable<T> &variable,
 }
 
 template <class T>
-void DBPutVariableDataToJulea(Variable<T> &variable, const T *data, const std::string nameSpace, uint32_t entryID)
+void DBPutVariableDataToJulea(Variable<T> &variable, const T *data,
+                              const std::string nameSpace, uint32_t entryID)
 {
     // std::cout << "--- PutVariableDataToJulea ----- " << std::endl;
     std::cout << "data: " << data[0] << std::endl;
@@ -653,7 +665,7 @@ void DBPutVariableDataToJulea(Variable<T> &variable, const T *data, const std::s
     auto dataSize = variable.m_ElementSize * numberElements;
 
     // auto stepBlockID = g_strdup_printf("%lu_%lu", currStep, block);
-    auto uniqueID = g_strdup_printf("%d",entryID);
+    auto uniqueID = g_strdup_printf("%d", entryID);
     auto stringDataObject =
         g_strdup_printf("%s_%s_%s", nameSpace.c_str(), variable.m_Name.c_str(),
                         objName.c_str());
@@ -965,7 +977,8 @@ void DBPutAttributeMetadataToJulea(Attribute<T> &attribute,
 
 #define declare_template_instantiation(T)                                      \
     template void DBPutVariableDataToJulea(                                    \
-        Variable<T> &variable, const T *data, const std::string nameSpace,uint32_t entryID);                                   \
+        Variable<T> &variable, const T *data, const std::string nameSpace,     \
+        uint32_t entryID);                                                     \
     template void DBPutVariableMetadataToJulea(                                \
         Variable<T> &variable, const std::string nameSpace,                    \
         const std::string varName, size_t currStep, size_t block);             \

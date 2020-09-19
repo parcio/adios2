@@ -175,8 +175,8 @@ void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     std::cout << "entryID: " << entryID << std::endl;
     /** put data to object store */
     // DBPutVariableDataToJulea(variable, data, m_Name, m_CurrentStep,
-                             // m_CurrentBlockID);
-    DBPutVariableDataToJulea(variable, data, m_Name,  entryID);
+    // m_CurrentBlockID);
+    DBPutVariableDataToJulea(variable, data, m_Name, entryID);
 }
 
 template <class T>

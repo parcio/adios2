@@ -129,10 +129,28 @@ void JuleaDBReader::GetDeferredCommon(Variable<T> &variable, T *data)
     }
 
     // store data pointer in related blockinfo to be called in perform gets
-    InitVariableBlockInfo(variable, data);
+    // InitVariableBlockInfo(variable, data);
+
+    typename Variable<T>::Info &blockInfo =
+        InitVariableBlockInfo(variable, data);
+
+    SetVariableBlockInfo(variable, blockInfo);
 
     size_t size = variable.m_BlocksInfo.size();
-    variable.m_BlocksInfo[size - 1].BlockID = variable.m_BlockID;
+
+    // FIXME:
+    if (variable.m_ShapeID == ShapeID::LocalArray)
+    {
+        variable.m_BlocksInfo[size - 1].BlockID = variable.m_BlockID;
+    }
+    else if (variable.m_ShapeID == ShapeID::GlobalArray)
+    {
+        // variable.m_BlocksInfo[size-1].BlockID =
+        // blockInfo.StepBlockSubStreamsInfo[m_CurrentStep].SubStreamID;
+        // variable.m_BlocksInfo[size - 1].BlockID =
+        //     blockInfo.StepBlockSubStreamsInfo[m_CurrentStep][m_ReaderRank]
+        //         .SubStreamID;
+    }
 
     m_DeferredVariables.insert(variable.m_Name);
 }
@@ -155,6 +173,8 @@ void JuleaDBReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
     guint32 buffer_len = 0;
     gpointer md_buffer = nullptr;
 
+    // std::cout << "unique entry ID: " <<
+    // variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep] << std::endl;
     if (m_UseKeysForBPLS)
     {
         stepBlockID =
@@ -186,8 +206,10 @@ void JuleaDBReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
     size_t numberElements = helper::GetTotalSize(count);
     dataSize = numberElements * variable.m_ElementSize;
     size_t offset = 0;
-    DBGetVariableDataFromJulea(variable, data, nameSpace, offset, dataSize,
-                               stepBlockID);
+
+    // FIXME:
+    // DBGetVariableDataFromJulea(variable, data, nameSpace, offset, dataSize,
+    // stepBlockID);
 }
 
 template <class T>
@@ -334,9 +356,18 @@ void JuleaDBReader::ReadVariableBlocks(Variable<T> &variable)
                     std::cout << "stepPair.first: " << stepPair.first
                               << std::endl;
 
-                    stepBlockID = g_strdup_printf("%lu_%lu", step,
-                                                  subStreamBoxInfo.SubStreamID);
-                    std::cout << "stepBlockID: " << stepBlockID << std::endl;
+                    std::cout
+                        << "unique entry ID: " << subStreamBoxInfo.SubStreamID
+                        << std::endl;
+
+                    // std::string entryID = subStreamBoxInfo.SubStreamID;
+
+                    // FIXME: implement
+                    // stepBlockID = g_strdup_printf("%lu_%lu", step,
+                    // subStreamBoxInfo.SubStreamID);
+                    // std::cout << "stepBlockID: " << stepBlockID << std::endl;
+
+                    // variable.m_AvailableStepBlockIndexOffsets
                     if (m_UseKeysForBPLS)
                     {
                         // DBGetVariableDataFromJulea(
@@ -352,9 +383,9 @@ void JuleaDBReader::ReadVariableBlocks(Variable<T> &variable)
                         std::cout << "dataSize: " << dataSize << std::endl;
 
                         T data[dataSize];
-                        DBGetVariableDataFromJulea(variable, data, nameSpace,
-                                                   offset, dataSize,
-                                                   stepBlockID);
+                        DBGetVariableDataFromJulea(
+                            variable, data, nameSpace, offset, dataSize,
+                            subStreamBoxInfo.SubStreamID);
 
                         const Dims blockInfoStart =
                             (variable.m_ShapeID == ShapeID::LocalArray &&
@@ -848,8 +879,8 @@ void JuleaDBReader::SetVariableBlockInfo(
         // subStreamInfo.Seeks.first += 42;
         // subStreamInfo.Seeks.second += 42;
 
-        // subStreamInfo.SubStreamID = static_cast<size_t>(blockIndexOffset);
-        subStreamInfo.SubStreamID = static_cast<size_t>(info.BlockID);
+        subStreamInfo.SubStreamID = static_cast<size_t>(blockIndexOffset);
+        // subStreamInfo.SubStreamID = static_cast<size_t>(info.BlockID);
         // static_cast<size_t>(blockCharacteristics.Statistics.FileIndex);
 
         blockInfo.StepBlockSubStreamsInfo[step].push_back(

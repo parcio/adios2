@@ -70,6 +70,8 @@ StepStatus JuleaDBWriter::BeginStep(StepMode mode, const float timeoutSeconds)
 {
     if (m_Verbosity == 5)
     {
+        std::cout << "\n______________BeginStep _____________________"
+                  << std::endl;
         std::cout << "Julea DB Writer " << m_WriterRank
                   << "   BeginStep() new step " << m_CurrentStep << "\n";
         std::cout << "StepMode mode: " << mode << std::endl;
@@ -107,7 +109,7 @@ void JuleaDBWriter::EndStep()
     // if (m_NeedPerformPuts)
     if (m_DeferredVariables.size() > 0)
     {
-        std::cout << "--- DEBUG : EndStep2" << std::endl;
+        std::cout << "--- DEBUG : EndStep" << std::endl;
         std::cout << "m_DeferredVariables.size() = "
                   << m_DeferredVariables.size() << std::endl;
         PerformPuts();
