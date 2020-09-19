@@ -9,6 +9,7 @@ add_subdirectory(query)
 add_subdirectory(useCases)
 add_subdirectory(julea)
 add_subdirectory(julea_IEEE_Cluster_2020)
+add_subdirectory(julea_EuroSys2021)
 
 
 if(ADIOS2_HAVE_MPI)
