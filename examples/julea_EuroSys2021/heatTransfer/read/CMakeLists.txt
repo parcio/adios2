@@ -3,9 +3,9 @@
 # accompanying file Copyright.txt for details.
 #------------------------------------------------------------------------------#
 
-add_executable(heatTransfer_read 
+add_executable(julea_heatTransfer_read 
   heatRead.cpp 
   PrintDataStep.h 
   ReadSettings.cpp
 )
-target_link_libraries(heatTransfer_read adios2::cxx11_mpi MPI::MPI_C)
+target_link_libraries(julea_heatTransfer_read adios2::cxx11_mpi MPI::MPI_C)
