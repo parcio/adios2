@@ -73,6 +73,8 @@ int main(int argc, char *argv[])
         // ht.printT("Heated T:", mpiHeatTransferComm);
 
         io.write(0, ht, settings, mpiHeatTransferComm);
+
+        // barrier just for output
         MPI_Barrier(mpiHeatTransferComm);
         std::ofstream timeOutput;
         if (rank == 0)
@@ -103,6 +105,10 @@ int main(int argc, char *argv[])
             }
 
             io.write(t, ht, settings, mpiHeatTransferComm);
+
+            // this barrier is just to make output a little bit less random.
+            // since the measurements take place on a per step basis this
+            // barrier does not hurt the benchmarking
             MPI_Barrier(mpiHeatTransferComm);
             if (rank == 0)
             {
