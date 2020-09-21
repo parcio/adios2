@@ -10,10 +10,11 @@
 
 #include "Settings.h"
 
+#include <chrono>
 #include <errno.h>
 
 #include <cstdlib>
-
+#include <fstream>
 #include <stdexcept>
 
 static unsigned int convertToUint(std::string varName, char *arg)
@@ -83,4 +84,36 @@ Settings::Settings(int argc, char *argv[], int rank, int nproc) : rank{rank}
         rank_right = -1;
     else
         rank_right = rank + npx;
+
+    // time_t now = time(0);
+    //    tm *lTime = localtime(&now);
+
+    // std::string fileName( std::string("heatTransfer_") + rank +"-");
+    // + (char) lTime->tm_year + "-" );
+    // lTime->tm_mon + "-" + lTime->tm_mday + "-" +
+    // lTime->tm_hour + "-" + lTime->tm_min);
+    std::ofstream timeOutput("heatTransfer-Output.txt");
+
+    if (timeOutput.is_open())
+    {
+        timeOutput << "configfile: " << configfile << "\n";
+        timeOutput << "outputfile: " << outputfile << "\n";
+        timeOutput << "N: " << npx << "\n";
+        timeOutput << "M: " << npy << "\n";
+        timeOutput << "nx: " << ndx << "\n";
+        timeOutput << "ny: " << ndy << "\n";
+        timeOutput << "steps: " << steps << "\n";
+        timeOutput << "iterations: " << iterations << "\n";
+
+        timeOutput << "\n --- measured times (mikroseconds): ---\n";
+        timeOutput << "put: \t\t right before and right after PUT; in case of "
+                      "deferred I/O nothing is actually written\n";
+        timeOutput
+            << "endstep: \t right before and right after ENDSTEP; this is "
+               "where deferred writes happen\n";
+        timeOutput << "write: \t\t right before PUT and right after ENDSTEP; "
+                      "complete write time for deferred writes\n";
+        timeOutput << "\n--- Write time in mikroseconds ---" << std::endl;
+        timeOutput.close();
+    }
 }

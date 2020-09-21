@@ -75,9 +75,16 @@ int main(int argc, char *argv[])
 
         for (unsigned int t = 1; t <= settings.steps; ++t)
         {
-            std::cout << "settings.steps: " << settings.steps << std::endl;
+            // std::cout << "settings.steps: " << settings.steps << std::endl;
             if (rank == 0)
+            {
+
                 std::cout << "Step " << t << ":\n";
+                std::ofstream timeOutput;
+                timeOutput.open("heatTransfer-Output.txt", std::fstream::app);
+                timeOutput << "--- Beginning step: " << t << " \t---"
+                           << std::endl;
+            }
             for (unsigned int iter = 1; iter <= settings.iterations; ++iter)
             {
                 ht.iterate();
@@ -86,6 +93,10 @@ int main(int argc, char *argv[])
             }
 
             io.write(t, ht, settings, mpiHeatTransferComm);
+            if (rank == 0)
+            {
+                timeOutput << "--- Ending step: " << t << " \t---" << std::endl;
+            }
         }
         MPI_Barrier(mpiHeatTransferComm);
 

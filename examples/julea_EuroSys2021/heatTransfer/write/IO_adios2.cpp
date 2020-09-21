@@ -8,11 +8,14 @@
  *      Author: Norbert Podhorszki
  */
 
-#include "IO.h"
-
-#include <string>
-
 #include <adios2.h>
+#include <chrono>
+#include <fstream>
+#include <iostream>
+#include <string>
+using namespace std::chrono;
+
+#include "IO.h"
 
 adios2::ADIOS ad;
 adios2::Engine bpWriter;
@@ -69,6 +72,29 @@ IO::~IO() { bpWriter.Close(); }
 void IO::write(int step, const HeatTransfer &ht, const Settings &s,
                MPI_Comm comm)
 {
+
+    auto startBeginStep = high_resolution_clock::now();
+    auto stopBeginStep = high_resolution_clock::now();
+
+    auto startEndStep = high_resolution_clock::now();
+    auto stopEndStep = high_resolution_clock::now();
+
+    auto startPut = high_resolution_clock::now();
+    auto stopPut = high_resolution_clock::now();
+
+    // right before and right after PUT; in case of deferred I/O nothing is
+    // actually written
+    auto durationPut = duration_cast<microseconds>(stopPut - startPut);
+
+    // right before and right after ENDSTEP; this is where deferred writes
+    // happen
+    auto durationEndStep =
+        duration_cast<microseconds>(stopEndStep - startEndStep);
+
+    // right before PUT and right after ENDSTEP; complete write time for
+    // deferred writes
+    auto durationWrite = duration_cast<microseconds>(stopEndStep - startPut);
+
     // using PutDeferred() you promise the pointer to the data will be intact
     // until the end of the output step.
     // We need to have the vector object here not to destruct here until the end
@@ -76,16 +102,54 @@ void IO::write(int step, const HeatTransfer &ht, const Settings &s,
     // added support for MemorySelection
     if (bpWriter.Type() == "BP3")
     {
+        startBeginStep = high_resolution_clock::now();
         bpWriter.BeginStep();
+        stopBeginStep = high_resolution_clock::now();
+
+        startPut = high_resolution_clock::now();
         bpWriter.Put<double>(varT, ht.data());
+        stopPut = high_resolution_clock::now();
+
+        startEndStep = high_resolution_clock::now();
         bpWriter.EndStep();
+        stopEndStep = high_resolution_clock::now();
     }
     else
     {
+        startBeginStep = high_resolution_clock::now();
         bpWriter.BeginStep();
+        stopBeginStep = high_resolution_clock::now();
+
         std::vector<double> v = ht.data_noghost();
+
+        startPut = high_resolution_clock::now();
         bpWriter.Put<double>(varT, v.data());
+        stopPut = high_resolution_clock::now();
         // bpWriter.Put<double>(varT, v.data(), adios2::Mode::Sync);
+
+        startEndStep = high_resolution_clock::now();
         bpWriter.EndStep();
+        stopEndStep = high_resolution_clock::now();
     }
+
+    durationPut = duration_cast<microseconds>(stopPut - startPut);
+    durationEndStep = duration_cast<microseconds>(stopEndStep - startEndStep);
+    durationWrite = duration_cast<microseconds>(stopEndStep - startPut);
+
+    std::ofstream timeOutput;
+    // std::ofstream timeOutput("heatTransfer-Output.txt");
+    timeOutput.open("heatTransfer-Output.txt", std::fstream::app);
+    // if (timeOutput.is_open())
+    // {
+    // timeOutput << "\n--- Write time in mikroseconds ---\n" << std::endl;
+    std::cout << "duration for put [us]: " << durationPut.count() << std::endl;
+    timeOutput << "put: \t rank: " << s.rank << "\t" << durationPut.count()
+               << std::endl;
+    timeOutput << "step: \t rank: " << s.rank << "\t" << durationEndStep.count()
+               << std::endl;
+    timeOutput << "write: \t rank: " << s.rank << "\t" << durationWrite.count()
+               << "\n"
+               << std::endl;
+    timeOutput.close();
+    // }
 }
