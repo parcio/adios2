@@ -12,6 +12,7 @@
  */
 #include <mpi.h>
 
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -72,6 +73,14 @@ int main(int argc, char *argv[])
         // ht.printT("Heated T:", mpiHeatTransferComm);
 
         io.write(0, ht, settings, mpiHeatTransferComm);
+        MPI_Barrier(mpiHeatTransferComm);
+        std::ofstream timeOutput;
+        if (rank == 0)
+        {
+            timeOutput.open("heatTransfer-Output.txt", std::fstream::app);
+            timeOutput << "--- Ending step: " << 0 << " \t---\n\n" << std::endl;
+            timeOutput.close();
+        }
 
         for (unsigned int t = 1; t <= settings.steps; ++t)
         {
@@ -80,10 +89,11 @@ int main(int argc, char *argv[])
             {
 
                 std::cout << "Step " << t << ":\n";
-                std::ofstream timeOutput;
-                timeOutput.open("heatTransfer-Output.txt", std::fstream::app);
-                timeOutput << "--- Beginning step: " << t << " \t---"
-                           << std::endl;
+                // timeOutput.open("heatTransfer-Output.txt",
+                // std::fstream::app); timeOutput << "--- Beginning step: " << t
+                // << " \t---"
+                //            << std::endl;
+                // timeOutput.close();
             }
             for (unsigned int iter = 1; iter <= settings.iterations; ++iter)
             {
@@ -93,9 +103,13 @@ int main(int argc, char *argv[])
             }
 
             io.write(t, ht, settings, mpiHeatTransferComm);
+            MPI_Barrier(mpiHeatTransferComm);
             if (rank == 0)
             {
-                timeOutput << "--- Ending step: " << t << " \t---" << std::endl;
+                timeOutput.open("heatTransfer-Output.txt", std::fstream::app);
+                timeOutput << "--- Ending step: " << t << " \t---\n\n"
+                           << std::endl;
+                timeOutput.close();
             }
         }
         MPI_Barrier(mpiHeatTransferComm);

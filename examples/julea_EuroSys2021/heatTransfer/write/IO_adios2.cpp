@@ -142,13 +142,13 @@ void IO::write(int step, const HeatTransfer &ht, const Settings &s,
     // if (timeOutput.is_open())
     // {
     // timeOutput << "\n--- Write time in mikroseconds ---\n" << std::endl;
-    std::cout << "duration for put [us]: " << durationPut.count() << std::endl;
+    // std::cout << "duration for put [us]: " << durationPut.count() << std::endl;
     timeOutput << "put: \t rank: " << s.rank << "\t" << durationPut.count()
                << std::endl;
     timeOutput << "step: \t rank: " << s.rank << "\t" << durationEndStep.count()
                << std::endl;
     timeOutput << "write: \t rank: " << s.rank << "\t" << durationWrite.count()
-               << "\n"
+               // << "\n"
                << std::endl;
     timeOutput.close();
     // }
