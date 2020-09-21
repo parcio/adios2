@@ -636,16 +636,22 @@ void DB_DO_PutVariableDataToJulea(Variable<T> &variable, const T *data,
 
     auto numberElements = adios2::helper::GetTotalSize(variable.m_Count);
     auto dataSize = variable.m_ElementSize * numberElements;
+    auto distribution = j_distribution_new(J_DISTRIBUTION_ROUND_ROBIN);
+
+    // j_distribution_set(distribution*, gchar const* , guint64);
+    j_distribution_set(distribution, 0,3);
 
     auto stepBlockID = g_strdup_printf("%lu_%lu", currStep, block);
     auto stringDataObject =
         g_strdup_printf("%s_%s_%s", nameSpace.c_str(), variable.m_Name.c_str(),
                         objName.c_str());
 
-    auto dataObject = j_object_new(stringDataObject, stepBlockID);
+    auto dataObject = j_distributed_object_new(stringDataObject, stepBlockID, distribution);
+    g_assert_true(dataObject != NULL);
+    // j_object_create(dataObject, batch);
+    j_distributed_object_create(dataObject, batch);
 
-    j_object_create(dataObject, batch);
-    j_object_write(dataObject, data, dataSize, 0, &bytesWritten, batch);
+    j_distributed_object_write(dataObject, data, dataSize, 0, &bytesWritten, batch);
     g_assert_true(j_batch_execute(batch) == true);
 
     if (bytesWritten == dataSize)
@@ -660,7 +666,7 @@ void DB_DO_PutVariableDataToJulea(Variable<T> &variable, const T *data,
                   << std::endl;
     }
     g_free(stringDataObject);
-    j_object_unref(dataObject);
+    j_distributed_object_unref(dataObject);
     j_batch_unref(batch);
     j_semantics_unref(semantics);
 
