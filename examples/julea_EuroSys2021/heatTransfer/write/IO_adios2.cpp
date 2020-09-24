@@ -142,14 +142,23 @@ void IO::write(int step, const HeatTransfer &ht, const Settings &s,
     // if (timeOutput.is_open())
     // {
     // timeOutput << "\n--- Write time in mikroseconds ---\n" << std::endl;
-    // std::cout << "duration for put [us]: " << durationPut.count() << std::endl;
-    timeOutput << "put: \t rank: " << s.rank << "\t" << durationPut.count()
+    // std::cout << "duration for put [us]: " << durationPut.count() <<
+    // std::endl;
+    timeOutput << "put: \t rank: \t" << s.rank << "\t" << durationPut.count()
                << std::endl;
-    timeOutput << "step: \t rank: " << s.rank << "\t" << durationEndStep.count()
+    timeOutput << "step: \t rank: \t" << s.rank << "\t" << durationEndStep.count()
                << std::endl;
-    timeOutput << "write: \t rank: " << s.rank << "\t" << durationWrite.count()
+    timeOutput << "write: \t rank: \t" << s.rank << "\t"
+               << durationWrite.count()
                // << "\n"
                << std::endl;
     timeOutput.close();
+
+    std::cout << "put: \t rank: \t" << s.rank << "\t" << durationPut.count()
+              << std::endl;
+    std::cout << "step: \t rank: \t" << s.rank << "\t" << durationEndStep.count()
+              << std::endl;
+    std::cout << "write: \t rank: \t" << s.rank << "\t" << durationWrite.count()
+              << std::endl;
     // }
 }

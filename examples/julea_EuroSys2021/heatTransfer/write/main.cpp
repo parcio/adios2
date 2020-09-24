@@ -82,6 +82,7 @@ int main(int argc, char *argv[])
             timeOutput.open("heatTransfer-Output.txt", std::fstream::app);
             timeOutput << "--- Ending step: " << 0 << " \t---\n\n" << std::endl;
             timeOutput.close();
+            std::cout << "--- Ending step: " << 0 << " \t---\n\n" << std::endl;
         }
 
         for (unsigned int t = 1; t <= settings.steps; ++t)
@@ -116,6 +117,8 @@ int main(int argc, char *argv[])
                 timeOutput << "--- Ending step: " << t << " \t---\n\n"
                            << std::endl;
                 timeOutput.close();
+                std::cout << "--- Ending step: " << t << " \t---\n\n"
+                          << std::endl;
             }
         }
         MPI_Barrier(mpiHeatTransferComm);
