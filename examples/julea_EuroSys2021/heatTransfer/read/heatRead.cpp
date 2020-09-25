@@ -12,6 +12,8 @@
 
 #include "adios2.h"
 
+#include <chrono>
+using namespace std::chrono;
 #include <cstdint>
 #include <iomanip>
 #include <iostream>
@@ -20,6 +22,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+
 
 #include "PrintDataStep.h"
 #include "ReadSettings.h"
@@ -118,12 +121,32 @@ int main(int argc, char *argv[])
         bool firstStep = true;
         int step = 0;
 
-
         std::ofstream outFile;
-        outFile.open (inIO.EngineType() + "-readOutput.txt");
+        outFile.open(inIO.EngineType() + "-readOutput.txt");
 
         std::cout << "engine type: " << inIO.EngineType() << std::endl;
 
+        auto startBeginStep = high_resolution_clock::now();
+        auto stopBeginStep = high_resolution_clock::now();
+
+        auto startEndStep = high_resolution_clock::now();
+        auto stopEndStep = high_resolution_clock::now();
+
+        auto startGet = high_resolution_clock::now();
+        auto stopGet = high_resolution_clock::now();
+
+        // right before and right after PUT; in case of deferred I/O nothing is
+        // actually written
+        auto durationGet = duration_cast<microseconds>(stopGet - startGet);
+
+        // right before and right after ENDSTEP; this is where deferred writes
+        // happen
+        auto durationEndStep =
+            duration_cast<microseconds>(stopEndStep - startEndStep);
+
+        // right before GET and right after ENDSTEP; complete write time for
+        // deferred reads
+        auto durationRead = duration_cast<microseconds>(stopEndStep - startGet);
 
         while (true)
         {
@@ -186,31 +209,38 @@ int main(int argc, char *argv[])
             vTin.SetSelection(
                 adios2::Box<adios2::Dims>(settings.offset, settings.readsize));
 
+            startGet = high_resolution_clock::now();
+
             // Arrays are read by scheduling one or more of them
             // and performing the reads at once
             reader.Get<double>(vTin, Tin.data());
             // reader.Get<double>(vTin, Tin.data(), adios2::Mode::Sync);
             /*printDataStep(Tin.data(), settings.readsize.data(),
                           settings.offset.data(), rank, step); */
+            stopGet = high_resolution_clock::now();
+
+            startEndStep = high_resolution_clock::now();
             reader.EndStep();
+            stopEndStep = high_resolution_clock::now();
 
-            double sum = 0;
-            int i = 0;
-            for (auto &el: Tin)
-            {
-                sum += el;
-                if (i%10 == 0)
-                {
-                    std::cout << std::endl;
-                    outFile << std::endl;
-                }
-                std::cout << el << " ";
-                outFile << el << " ";
-                i++;
-            }
-            std::cout << "\n" << "sum: " << sum << std::endl;
-            outFile << "\n" << "sum: " << sum << std::endl;
-
+            // double sum = 0;
+            // int i = 0;
+            // for (auto &el : Tin)
+            // {
+            //     sum += el;
+            //     if (i % 10 == 0)
+            //     {
+            //         std::cout << std::endl;
+            //         outFile << std::endl;
+            //     }
+            //     std::cout << el << " ";
+            //     outFile << el << " ";
+            //     i++;
+            // }
+            // std::cout << "\n"
+            //           << "sum: " << sum << std::endl;
+            // outFile << "\n"
+            //         << "sum: " << sum << std::endl;
 
             /* Compute dT from current T (Tin) and previous T (Tout)
              * and save Tin in Tout for output and for future computation
@@ -228,6 +258,42 @@ int main(int argc, char *argv[])
 
             step++;
             firstStep = false;
+
+            durationGet = duration_cast<microseconds>(stopGet - startGet);
+            durationEndStep =
+                duration_cast<microseconds>(stopEndStep - startEndStep);
+            durationRead = duration_cast<microseconds>(stopEndStep - startGet);
+            if (rank == 0)
+            {
+                std::cout << "get: \t rank: \t" << rank << "\t"
+                          << durationGet.count() << "\n"
+                          << "step: \t rank: \t" << rank << "\t"
+                          << durationEndStep.count() << "\n"
+                          << "read: \t rank: \t" << rank << "\t"
+                          << durationRead.count() << std::endl;
+                for (int i = 1; i < nproc; i++)
+                {
+                    size_t get, step, read;
+
+                    MPI_Recv(&get, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, 0);
+                    MPI_Recv(&step, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, 0);
+                    MPI_Recv(&read, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, 0);
+                    std::cout << "get: \t rank: \t" << i << "\t" << get << "\n"
+                              << "step: \t rank: \t" << i << "\t" << step
+                              << "\n"
+                              << "read: \t rank: \t" << i << "\t" << read
+                              << std::endl;
+                }
+            }
+            else
+            {
+                size_t get = durationGet.count();
+                size_t step = durationEndStep.count();
+                size_t read = durationRead.count();
+                MPI_Send(&get, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
+                MPI_Send(&step, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
+                MPI_Send(&read, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
+            }
         }
         reader.Close();
         if (writer)

@@ -382,9 +382,10 @@ void JuleaDBReader::ReadVariableBlocks(Variable<T> &variable)
                                    subStreamBoxInfo.Seeks.first;
                         std::cout << "dataSize: " << dataSize << std::endl;
 
-                        T data[dataSize];
+                        // T data[dataSize];
+                        std::vector<T> data = std::vector<T>(dataSize);
                         DBGetVariableDataFromJulea(
-                            variable, data, nameSpace, offset, dataSize,
+                            variable, data.data(), nameSpace, offset, dataSize,
                             subStreamBoxInfo.SubStreamID);
 
                         const Dims blockInfoStart =
@@ -395,7 +396,7 @@ void JuleaDBReader::ReadVariableBlocks(Variable<T> &variable)
 
                         helper::ClipContiguousMemory(
                             blockInfo.Data, blockInfoStart, blockInfo.Count,
-                            (char *)data, subStreamBoxInfo.BlockBox,
+                            (char *)data.data(), subStreamBoxInfo.BlockBox,
                             subStreamBoxInfo.IntersectionBox, true, false,
                             false);
 
@@ -787,14 +788,14 @@ void JuleaDBReader::SetVariableBlockInfo(
         }
 
         subStreamInfo.BlockBox = helper::StartEndBox(info.Start, info.Count);
-        std::cout << "BlockBox: (["
-                  << helper::VectorToCSV(subStreamInfo.BlockBox.first) << "], ["
-                  << helper::VectorToCSV(subStreamInfo.BlockBox.second) << "])"
-                  << std::endl;
-        std::cout << "selectionBox: (["
-                  << helper::VectorToCSV(selectionBox.first) << "], ["
-                  << helper::VectorToCSV(selectionBox.second) << "])"
-                  << std::endl;
+        // std::cout << "BlockBox: (["
+        //           << helper::VectorToCSV(subStreamInfo.BlockBox.first) << "], ["
+        //           << helper::VectorToCSV(subStreamInfo.BlockBox.second) << "])"
+        //           << std::endl;
+        // std::cout << "selectionBox: (["
+        //           << helper::VectorToCSV(selectionBox.first) << "], ["
+        //           << helper::VectorToCSV(selectionBox.second) << "])"
+        //           << std::endl;
         subStreamInfo.IntersectionBox =
             helper::IntersectionBox(selectionBox, subStreamInfo.BlockBox);
 
@@ -842,15 +843,15 @@ void JuleaDBReader::SetVariableBlockInfo(
             sizeof(T) * helper::LinearIndex(subStreamInfo.BlockBox,
                                             subStreamInfo.IntersectionBox.first,
                                             isRowMajor);
-        std::cout << "Seeks.first: " << subStreamInfo.Seeks.first << std::endl;
+        // std::cout << "Seeks.first: " << subStreamInfo.Seeks.first << std::endl;
 
         subStreamInfo.Seeks.second =
             sizeof(T) * (helper::LinearIndex(
                              subStreamInfo.BlockBox,
                              subStreamInfo.IntersectionBox.second, isRowMajor) +
                          1);
-        std::cout << "Seeks.second: " << subStreamInfo.Seeks.second
-                  << std::endl;
+        // std::cout << "Seeks.second: " << subStreamInfo.Seeks.second
+                  // << std::endl;
 
         //     const size_t payloadOffset =
         //         blockCharacteristics.Statistics.PayloadOffset;
@@ -906,7 +907,7 @@ void JuleaDBReader::SetVariableBlockInfo(
         {
             for (const size_t blockOffset : blockOffsets)
             {
-                std::cout << "blockOffset: " << blockOffset << std::endl;
+                // std::cout << "blockOffset: " << blockOffset << std::endl;
                 lf_SetSubStreamInfoGlobalArray(variable.m_Name, selectionBox,
                                                blockInfo, step, blockOffset,
                                                true);
