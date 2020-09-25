@@ -91,7 +91,9 @@ int main(int argc, char *argv[])
             if (rank == 0)
             {
 
-                std::cout << "Step " << t << ":\n";
+                // std::cout << "Step " << t << ":\n";
+                std::cout << "--- Beginning step: " << t << " \t---\n\n"
+                          << std::endl;
                 // timeOutput.open("heatTransfer-Output.txt",
                 // std::fstream::app); timeOutput << "--- Beginning step: " << t
                 // << " \t---"

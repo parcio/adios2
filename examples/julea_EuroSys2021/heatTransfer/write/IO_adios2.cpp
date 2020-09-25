@@ -12,6 +12,7 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 using namespace std::chrono;
 
@@ -143,20 +144,84 @@ void IO::write(int step, const HeatTransfer &ht, const Settings &s,
     // {
     // timeOutput << "\n--- Write time in mikroseconds ---\n" << std::endl;
     // timeOutput << "put: \t rank: \t" << s.rank << "\t" << durationPut.count()
-               // << std::endl;
-    // timeOutput << "step: \t rank: \t" << s.rank << "\t" << durationEndStep.count()
-               // << std::endl;
+    // << std::endl;
+    // timeOutput << "step: \t rank: \t" << s.rank << "\t" <<
+    // durationEndStep.count()
+    // << std::endl;
     // timeOutput << "write: \t rank: \t" << s.rank << "\t"
-               // << durationWrite.count()
-               // << "\n"
-               // << std::endl;
+    // << durationWrite.count()
+    // << "\n"
+    // << std::endl;
     // timeOutput.close();
 
-    std::cout << "put: \t rank: \t" << s.rank << "\t" << durationPut.count()
-              << std::endl;
-    std::cout << "step: \t rank: \t" << s.rank << "\t" << durationEndStep.count()
-              << std::endl;
-    std::cout << "write: \t rank: \t" << s.rank << "\t" << durationWrite.count()
-              << std::endl;
+    // std::stringstream outputBuffer;
+    // outputBuffer << "put: \t rank: \t" << s.rank << "\t" <<
+    // durationPut.count()
+    //              << "\n"
+    //              << "step: \t rank: \t" << s.rank << "\t"
+    //              << durationEndStep.count() << "\n"
+    //              << "write: \t rank: \t" << s.rank << "\t"
+    //              << durationWrite.count();
+    //              // << durationWrite.count() << std::endl;
+
+    // std::string output = outputBuffer.str();
+    // std::string input = std::string(output);
+
+    // std::cout << output << std::endl;
+
+    // for (int i = 0; i < s.nproc; i++)
+    // {
+    if (s.rank == 0)
+    {
+        // std::cout << outputBuffer.str() << std::endl;
+        std::cout << "put: \t rank: \t" << s.rank << "\t" << durationPut.count()
+                  << "\n"
+                  << "step: \t rank: \t" << s.rank << "\t"
+                  << durationEndStep.count() << "\n"
+                  << "write: \t rank: \t" << s.rank << "\t"
+                  << durationWrite.count() << std::endl;
+        for (int i = 1; i < s.nproc; i++)
+        {
+            size_t put, step, write;
+
+            // MPI_Recv((void *)input.c_str(), 1, MPI_CHAR, i, 0,
+            // MPI_COMM_WORLD, MPI_Recv((void *)input.c_str(), input.length(),
+            // MPI_CHAR, i, 0, MPI_COMM_WORLD,
+            MPI_Recv(&put, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, 0);
+            MPI_Recv(&step, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, 0);
+            MPI_Recv(&write, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, 0);
+            std::cout << "put: \t rank: \t" << i << "\t" << put << "\n"
+                      << "step: \t rank: \t" << i << "\t" << step << "\n"
+                      << "write: \t rank: \t" << i << "\t" << write
+                      << std::endl;
+            // std::cout << "input: " << std::endl;
+            // std::cout << input << std::endl;
+        }
+    }
+    else
+    {
+        size_t put = durationPut.count();
+        size_t step = durationEndStep.count();
+        size_t write = durationWrite.count();
+        // MPI_Send(data, ..., 0, ...);
+        // std::cout << "rank: " << s.rank << std::endl;
+        // std::cout << "output: " << output.c_str() << std::endl;
+        // MPI_Send((void *)output.c_str(),1, MPI_CHAR, 0, 0, MPI_COMM_WORLD);
+        // std::cout << "output: " << output << std::endl;
+        // MPI_Send((void *)output.c_str(), output.length(), MPI_CHAR, 0, 0,
+        // MPI_COMM_WORLD);
+        MPI_Send(&put, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
+        MPI_Send(&step, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
+        MPI_Send(&write, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
+    }
+    // }
+
+    // std::cout << "put: \t rank: \t" << s.rank << "\t" << durationPut.count()
+    //           << "\n"
+    //         << "step: \t rank: \t" << s.rank << "\t" <<
+    //         durationEndStep.count()
+    //           << "\n"
+    // << "write: \t rank: \t" << s.rank << "\t" << durationWrite.count()
+    //           << std::endl;
     // }
 }
