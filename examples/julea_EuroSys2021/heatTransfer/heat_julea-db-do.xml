@@ -11,19 +11,19 @@
         ====================================-->
 
     <io name="writer">
-        <engine type="HDF5">
+        <engine type="julea-db-do">
             
             <!-- for vectorized memory operations, make sure your system 
                  enables threads--> 
-            <parameter key="Threads" value="2"/>
+            <parameter key="Threads" value="1"/>
 
             <!-- Microseconds (default), Milliseconds, Seconds, 
                  Minutes, Hours -->
-            <parameter key="ProfileUnits" value="Microseconds"/>
+            <!-- <parameter key="ProfileUnits" value="Microseconds"/> -->
 
             <!-- XXKb, XXMb, or XXXGb supported, default=16Kb 
                 (applications might choose an optimal value) -->
-            <parameter key="InitialBufferSize" value="16Kb"/> 
+            <!-- <parameter key="InitialBufferSize" value="16Kb"/>  -->
             
             <!-- XXKb, XXMb, or XXXGb supported, default=Unlimited (until 
                  fails), maximum at each time step  
@@ -36,21 +36,25 @@
                  (optimal value is application dependent)--> 
             <!-- <parameter key="BufferGrowthFactor" value="1.05"/> -->
             
+            <!-- Indicates how often (in number of steps), pick a large 
+                 number so metadata will only be written at Close  
+                (applications might choose an optimal value) -->
+            <!-- <parameter key="FlushStepsCount" value="1"/>  -->
+            
         </engine>
 
-        <transport type="File">
+        <!-- <transport type="File"> -->
             
             <!-- POSIX, stdio (C FILE*), fstream (C++) -->
-            <parameter key="Library" value="stdio"/>
+            <!-- <parameter key="Library" value="stdio"/> -->
             
             <!-- For read/write, Microseconds (default), Milliseconds, Seconds, 
                  Minutes, Hours. open/close always in Microseconds -->
-            <parameter key="ProfileUnits" value="Microseconds"/>
+            <!-- <parameter key="ProfileUnits" value="Microseconds"/> -->
             
-        </transport>
+        <!-- </transport> -->
         
     </io>
-
 
 
     <!--=======================================
@@ -58,60 +62,59 @@
         =======================================-->
 
     <io name="readerInput">
-       <engine type="HDF5"> 
+        <engine type="julea-db-do">
             
             <!-- for vectorized memory operations, make sure your system 
                  enables threads--> 
-            <parameter key="Threads" value="2"/>
+            <parameter key="Threads" value="1"/>
 
             <!-- Microseconds (default), Milliseconds, Seconds, 
                  Minutes, Hours -->
-            <parameter key="ProfileUnits" value="Microseconds"/>
+            <!-- <parameter key="ProfileUnits" value="Microseconds"/> -->
 
         </engine>
 
-        <transport type="File">
+        <!-- <transport type="File"> -->
             
             <!-- POSIX, stdio (C FILE*), fstream (C++) -->
-            <parameter key="Library" value="stdio"/>
+            <!-- <parameter key="Library" value="stdio"/> -->
             
             <!-- For read/write, Microseconds (default), Milliseconds, Seconds, 
                  Minutes, Hours. open/close always in Microseconds -->
-            <parameter key="ProfileUnits" value="Microseconds"/>
+            <!-- <parameter key="ProfileUnits" value="Microseconds"/> -->
             
-        </transport>
+        <!-- </transport> -->
         
     </io>
-
 
 
     <!--=======================================
            Configuration for the Reader output
         =======================================-->
-
+    
     <io name="readerOutput">
-       <engine type="HDF5"> 
+        <engine type="julea-db-do">
             
             <!-- for vectorized memory operations, make sure your system 
                  enables threads--> 
-            <parameter key="Threads" value="2"/>
+            <parameter key="Threads" value="1"/>
 
             <!-- Microseconds (default), Milliseconds, Seconds, 
                  Minutes, Hours -->
-            <parameter key="ProfileUnits" value="Microseconds"/>
+            <!-- <parameter key="ProfileUnits" value="Microseconds"/> -->
 
         </engine>
 
-        <transport type="File">
+        <!-- <transport type="File"> -->
             
             <!-- POSIX, stdio (C FILE*), fstream (C++) -->
-            <parameter key="Library" value="stdio"/>
+            <!-- <parameter key="Library" value="stdio"/> -->
             
             <!-- For read/write, Microseconds (default), Milliseconds, Seconds, 
                  Minutes, Hours. open/close always in Microseconds -->
-            <parameter key="ProfileUnits" value="Microseconds"/>
+            <!-- <parameter key="ProfileUnits" value="Microseconds"/> -->
             
-        </transport>
-        
+        <!-- </transport> -->
+
     </io>
 </adios-config>
