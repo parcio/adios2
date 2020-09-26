@@ -274,10 +274,11 @@ int main(int argc, char *argv[])
                 for (int i = 1; i < nproc; i++)
                 {
                     size_t get, step, read;
+                    MPI_Status status;
 
-                    MPI_Recv(&get, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, 0);
-                    MPI_Recv(&step, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, 0);
-                    MPI_Recv(&read, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, 0);
+                    MPI_Recv(&get, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, &status);
+                    MPI_Recv(&step, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, &status);
+                    MPI_Recv(&read, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, &status);
                     std::cout << "get: \t rank: \t" << i << "\t" << get << "\n"
                               << "step: \t rank: \t" << i << "\t" << step
                               << "\n"
