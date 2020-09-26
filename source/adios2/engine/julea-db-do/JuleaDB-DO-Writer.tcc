@@ -30,7 +30,7 @@ namespace engine
 
 template <class T>
 void JuleaDB_DO_SetMinMax(Variable<T> &variable, const T *data, T &blockMin,
-                      T &blockMax)
+                          T &blockMax)
 {
     T min;
     T max;
@@ -77,8 +77,53 @@ void JuleaDB_DO_SetMinMax<std::complex<double>>(
 }
 
 template <class T>
-void JuleaDB_DO_Writer::PutSyncToJulea(Variable<T> &variable, const T *data,
-                                   const typename Variable<T>::Info &blockInfo)
+void JuleaDB_DO_Writer::SetBlockID(Variable<T> &variable)
+{
+    if (variable.m_ShapeID == ShapeID::GlobalValue ||
+        variable.m_ShapeID == ShapeID::GlobalArray)
+    {
+        std::cout << "GlobalValue/GlobalArray: m_CurrentBlockID = m_WriterRank"
+                  << std::endl;
+        m_CurrentBlockID = m_WriterRank;
+        variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].resize(
+            m_Comm.Size());
+        variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].at(
+            m_WriterRank) = m_CurrentBlockID;
+    }
+    else if (variable.m_ShapeID == ShapeID::JoinedArray)
+    {
+        std::cout << "JoinedArray: Currently not implemented yet." << std::endl;
+    }
+    else if (variable.m_ShapeID == ShapeID::LocalArray ||
+             variable.m_ShapeID == ShapeID::LocalValue)
+    {
+        if (m_Comm.Size() == 1)
+        {
+            std::cout << "LocalValue/: Nothing to do?! Only increment "
+                         "after put."
+                      << std::endl;
+            variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].push_back(
+                m_CurrentBlockID);
+        }
+        else
+        {
+            std::cout << "LocalArray: Have fun with synchronized counter "
+                         "across processes."
+                      << std::endl;
+            variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].push_back(
+                m_CurrentBlockID);
+        }
+    }
+    else
+    {
+        std::cout << "Shape Type not known." << std::endl;
+    }
+}
+
+template <class T>
+void JuleaDB_DO_Writer::PutSyncToJulea(
+    Variable<T> &variable, const T *data,
+    const typename Variable<T>::Info &blockInfo)
 {
     if (m_Verbosity == 5)
     {
@@ -88,12 +133,13 @@ void JuleaDB_DO_Writer::PutSyncToJulea(Variable<T> &variable, const T *data,
     }
     T blockMin;
     T blockMax;
+    uint32_t entryID = 0;
 
     JuleaDB_DO_SetMinMax(variable, data, blockMin, blockMax);
 
     auto stepBlockID =
         g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
-    std::cout << "    stepBlockID: " << stepBlockID << std::endl;
+    // std::cout << "    stepBlockID: " << stepBlockID << std::endl;
 
     // check whether variable name is already in variable_names DB
     auto itVariableWritten = m_WrittenVariableNames.find(variable.m_Name);
@@ -120,19 +166,20 @@ void JuleaDB_DO_Writer::PutSyncToJulea(Variable<T> &variable, const T *data,
 
     /** updates the variable metadata as there is a new block now */
     DB_DO_PutVariableMetadataToJulea(variable, m_Name, variable.m_Name,
-                                 m_CurrentStep, m_CurrentBlockID);
+                                     m_CurrentStep, m_CurrentBlockID);
 
     /** put block metadata to DB */
-    DB_DO_PutBlockMetadataToJulea(variable, m_Name, variable.m_Name, m_CurrentStep,
-                              m_CurrentBlockID, blockInfo, blockMin, blockMax);
+    DB_DO_PutBlockMetadataToJulea(variable, m_Name, variable.m_Name,
+                                  m_CurrentStep, m_CurrentBlockID, blockInfo,
+                                  blockMin, blockMax, entryID);
+    // std::cout << "entryID: " << entryID << std::endl;
     /** put data to object store */
-    DB_DO_PutVariableDataToJulea(variable, data, m_Name, m_CurrentStep,
-                             m_CurrentBlockID);
+    DB_DO_PutVariableDataToJulea(variable, data, m_Name, entryID);
 }
 
 template <class T>
-void JuleaDB_DO_Writer::PutSyncCommon(Variable<T> &variable,
-                                  const typename Variable<T>::Info &blockInfo)
+void JuleaDB_DO_Writer::PutSyncCommon(
+    Variable<T> &variable, const typename Variable<T>::Info &blockInfo)
 {
     if (m_Verbosity == 5)
     {
@@ -217,8 +264,10 @@ void JuleaDB_DO_Writer::PerformPutCommon(Variable<T> &variable)
     {
         // std::cout << "variable: " << variable.m_Name << "--- i: " << i
         // << std::endl;
-        variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].push_back(
-            m_CurrentBlockID);
+        // variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].push_back(
+        // m_CurrentBlockID);
+
+        SetBlockID(variable);
 
         /** if there are no SpanBlocks simply put every variable */
         auto itSpanBlock = variable.m_BlocksSpan.find(i);

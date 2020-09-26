@@ -33,7 +33,7 @@ namespace engine
 {
 
 void DB_DO_setMinMaxValueFields(std::string *minField, std::string *maxField,
-                          std::string *valueField, const char *varType)
+                                std::string *valueField, const char *varType)
 {
 
     if ((strcmp(varType, "char") == 0) || (strcmp(varType, "int8_t") == 0) ||
@@ -90,11 +90,11 @@ void DB_DO_setMinMaxValueFields(std::string *minField, std::string *maxField,
     }
 }
 
-void DB_DO_InitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
-                    std::string varName, size_t *blocks, size_t numberSteps,
-                    ShapeID shapeID, bool isReadAsJoined,
-                    bool isReadAsLocalValue, bool isRandomAccess,
-                    bool isSingleValue)
+void DB_DO_InitVariable(core::IO *io, core::Engine &engine,
+                        std::string nameSpace, std::string varName,
+                        size_t *blocks, size_t numberSteps, ShapeID shapeID,
+                        bool isReadAsJoined, bool isReadAsLocalValue,
+                        bool isRandomAccess, bool isSingleValue)
 {
     std::cout << "----- InitVariable --- " << varName << std::endl;
     const std::string type(io->InquireVariableType(varName));
@@ -177,7 +177,8 @@ void DB_DO_InitVariable(core::IO *io, core::Engine &engine, std::string nameSpac
             var->m_AvailableStepsCount++;                                      \
         }                                                                      \
                                                                                \
-        DB_DO_setMinMaxValueFields(&minField, &maxField, &valueField, type.c_str()); \
+        DB_DO_setMinMaxValueFields(&minField, &maxField, &valueField,          \
+                                   type.c_str());                              \
         g_autoptr(JDBSelector) selector =                                      \
             j_db_selector_new(varSchema, J_DB_SELECTOR_MODE_AND, NULL);        \
                                                                                \
@@ -236,9 +237,9 @@ void DB_DO_InitVariable(core::IO *io, core::Engine &engine, std::string nameSpac
 }
 
 void DB_DO_DefineVariableInEngineIO(core::IO *io, const std::string varName,
-                                std::string type, ShapeID shapeID, Dims shape,
-                                Dims start, Dims count, bool constantDims,
-                                bool isLocalValue)
+                                    std::string type, ShapeID shapeID,
+                                    Dims shape, Dims start, Dims count,
+                                    bool constantDims, bool isLocalValue)
 {
     // variable->m_AvailableShapes[characteristics.Statistics.Step] = \
                 //     variable->m_Shape;                                         \
@@ -283,8 +284,9 @@ void DB_DO_DefineVariableInEngineIO(core::IO *io, const std::string varName,
 }
 
 void DB_DO_DefineVariableInInit(core::IO *io, const std::string varName,
-                            std::string stringType, Dims shape, Dims start,
-                            Dims count, bool constantDims, bool isLocalValue)
+                                std::string stringType, Dims shape, Dims start,
+                                Dims count, bool constantDims,
+                                bool isLocalValue)
 {
     const char *type = stringType.c_str();
     std::cout << "------ DefineVariableInInit ----------" << std::endl;
@@ -527,7 +529,7 @@ void DB_DO_CheckSchemas()
 }
 
 void InitVariablesFromDB_DO(const std::string nameSpace, core::IO *io,
-                         core::Engine &engine)
+                            core::Engine &engine)
 {
     // std::cout << "--- InitVariablesFromDB ---" << std::endl;
     int err = 0;
@@ -681,10 +683,10 @@ void InitVariablesFromDB_DO(const std::string nameSpace, core::IO *io,
         // }
 
         DB_DO_DefineVariableInInit(io, varName, varType, shape, start, count,
-                               *isConstantDims, *isSingleValue);
+                                   *isConstantDims, *isSingleValue);
         DB_DO_InitVariable(io, engine, nameSpace, varName, blocks, *numberSteps,
-                       *shapeID, *isReadAsJoined, *isReadAsLocalValue,
-                       *isRandomAccess, *isSingleValue);
+                           *shapeID, *isReadAsJoined, *isReadAsLocalValue,
+                           *isRandomAccess, *isSingleValue);
         if (*numberSteps > 0)
         {
             g_free(*tmpblocks);
@@ -712,9 +714,9 @@ void InitVariablesFromDB_DO(const std::string nameSpace, core::IO *io,
 
 template <class T>
 void DB_DO_GetCountFromBlockMetadata(const std::string nameSpace,
-                               const std::string varName, size_t step,
-                               size_t block, Dims *count, size_t entryID,
-                               bool isLocalValue, T *value)
+                                     const std::string varName, size_t step,
+                                     size_t block, Dims *count, size_t entryID,
+                                     bool isLocalValue, T *value)
 {
     // std::cout << "------ GetCountFromBlockMetadata ----------" << std::endl;
     int err = 0;
@@ -788,8 +790,8 @@ void DB_DO_GetCountFromBlockMetadata(const std::string nameSpace,
 
 template <class T>
 void DB_DO_GetBlockMetadataNEW(Variable<T> &variable,
-                           typename core::Variable<T>::Info &blockInfo,
-                           size_t entryID)
+                               typename core::Variable<T>::Info &blockInfo,
+                               size_t entryID)
 {
     // std::cout << "--- DBGetBlockMetadata ---" << std::endl;
     // std::unique_ptr<typename Variable<T>::Info> blockInfo(
@@ -979,10 +981,10 @@ void DB_DO_GetBlockMetadataNEW(Variable<T> &variable,
 
 // TODO: remove step, block from parameter list
 template <class T>
-std::unique_ptr<typename core::Variable<T>::Info>
-DB_DO_GetBlockMetadata(const core::Variable<T> &variable,
-                   // const std::string nameSpace, size_t step, size_t block,
-                   size_t entryID)
+std::unique_ptr<typename core::Variable<T>::Info> DB_DO_GetBlockMetadata(
+    const core::Variable<T> &variable,
+    // const std::string nameSpace, size_t step, size_t block,
+    size_t entryID)
 {
     // std::cout << "--- DBGetBlockMetadata ---" << std::endl;
     std::unique_ptr<typename Variable<T>::Info> info(
@@ -1242,8 +1244,8 @@ DB_DO_GetBlockMetadata(const core::Variable<T> &variable,
 
 template <class T>
 void DB_DO_GetVariableDataFromJulea(Variable<T> &variable, T *data,
-                                const std::string nameSpace, size_t offset,
-                                size_t dataSize, const std::string stepBlockID)
+                                    const std::string nameSpace, size_t offset,
+                                    size_t dataSize, uint32_t entryID)
 {
     // std::cout << "-- GetVariableDataFromJulea ----- " << std::endl;
 
@@ -1255,11 +1257,13 @@ void DB_DO_GetVariableDataFromJulea(Variable<T> &variable, T *data,
         g_strdup_printf("%s_%s_%s", nameSpace.c_str(), variable.m_Name.c_str(),
                         objName.c_str());
     // std::cout << "stringDataObject: " << stringDataObject << std::endl;
+    auto uniqueID = g_strdup_printf("%d", entryID);
 
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
-    auto dataObject = j_object_new(stringDataObject, stepBlockID.c_str());
+    auto dataObject = j_object_new(stringDataObject, uniqueID);
+    // auto dataObject = j_object_new(stringDataObject, stepBlockID.c_str());
 
     j_object_read(dataObject, data, dataSize, offset, &bytesRead, batch);
     g_assert_true(j_batch_execute(batch) == true);
@@ -1282,20 +1286,19 @@ void DB_DO_GetVariableDataFromJulea(Variable<T> &variable, T *data,
 }
 
 #define variable_template_instantiation(T)                                     \
-    template void DB_DO_GetCountFromBlockMetadata(                                   \
+    template void DB_DO_GetCountFromBlockMetadata(                             \
         const std::string nameSpace, const std::string varName, size_t step,   \
         size_t block, Dims *count, size_t entryID, bool isLocalValue,          \
         T *value);                                                             \
-    template void DB_DO_GetBlockMetadataNEW(                                       \
+    template void DB_DO_GetBlockMetadataNEW(                                   \
         Variable<T> &variable, typename core::Variable<T>::Info &blockInfo,    \
         size_t entryID);                                                       \
     template std::unique_ptr<typename core::Variable<T>::Info>                 \
-    DB_DO_GetBlockMetadata(const core::Variable<T> &variable, size_t entryID);     \
+    DB_DO_GetBlockMetadata(const core::Variable<T> &variable, size_t entryID); \
                                                                                \
-    template void DB_DO_GetVariableDataFromJulea(                                  \
+    template void DB_DO_GetVariableDataFromJulea(                              \
         Variable<T> &variable, T *data, const std::string nameSpace,           \
-        size_t offset, long unsigned int dataSize,                             \
-        const std::string stepBlockID);
+        size_t offset, long unsigned int dataSize, uint32_t entryID);
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 
@@ -1307,7 +1310,7 @@ ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 /** Retrieves all variable names from key-value store. They are all stored in
  * one bson. */
 void DB_DO_GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
-                         unsigned int *varCount, bool isVariable)
+                             unsigned int *varCount, bool isVariable)
 {
     std::cout << "-- GetNamesFromJulea ------" << std::endl;
     guint32 valueLen = 0;
@@ -1365,8 +1368,8 @@ void DB_DO_GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
 }
 
 void DB_DO_GetAttributeBSONFromJulea(const std::string nameSpace,
-                                 const std::string attrName,
-                                 bson_t **bsonMetadata, guint32 *valueLen)
+                                     const std::string attrName,
+                                     bson_t **bsonMetadata, guint32 *valueLen)
 {
     // guint32 valueLen = 0;
     void *metaDataBuf = NULL;
@@ -1404,15 +1407,16 @@ void DB_DO_GetAttributeBSONFromJulea(const std::string nameSpace,
 }
 
 void DB_DO_GetAttributeMetadataFromJulea(const std::string attrName,
-                                     const std::string nameSpace,
-                                     long unsigned int *dataSize,
-                                     size_t *numberElements,
-                                     bool *IsSingleValue, int *type)
+                                         const std::string nameSpace,
+                                         long unsigned int *dataSize,
+                                         size_t *numberElements,
+                                         bool *IsSingleValue, int *type)
 {
     bson_t *bsonMetadata;
     std::cout << "-- GetAttributeMetadataFromJulea ------" << std::endl;
     guint32 valueLen = 0;
-    DB_DO_GetAttributeBSONFromJulea(nameSpace, attrName, &bsonMetadata, &valueLen);
+    DB_DO_GetAttributeBSONFromJulea(nameSpace, attrName, &bsonMetadata,
+                                    &valueLen);
 
     if (valueLen > 0)
     {
@@ -1423,16 +1427,17 @@ void DB_DO_GetAttributeMetadataFromJulea(const std::string attrName,
 }
 
 void DB_DO_GetAttributeMetadataFromJulea(const std::string attrName,
-                                     const std::string nameSpace,
-                                     long unsigned int *completeSize,
-                                     size_t *numberElements,
-                                     bool *IsSingleValue, int *type,
-                                     unsigned long **dataSizes)
+                                         const std::string nameSpace,
+                                         long unsigned int *completeSize,
+                                         size_t *numberElements,
+                                         bool *IsSingleValue, int *type,
+                                         unsigned long **dataSizes)
 {
     bson_t *bsonMetadata;
     std::cout << "-- GetAttributeMetadataFromJulea ------" << std::endl;
     guint32 valueLen = 0;
-    DB_DO_GetAttributeBSONFromJulea(nameSpace, attrName, &bsonMetadata, &valueLen);
+    DB_DO_GetAttributeBSONFromJulea(nameSpace, attrName, &bsonMetadata,
+                                    &valueLen);
 
     if (valueLen > 0)
     {
@@ -1444,8 +1449,8 @@ void DB_DO_GetAttributeMetadataFromJulea(const std::string attrName,
 
 template <class T>
 void DB_DO_GetAttributeDataFromJulea(const std::string attrName, T *data,
-                                 const std::string nameSpace,
-                                 long unsigned int dataSize)
+                                     const std::string nameSpace,
+                                     long unsigned int dataSize)
 {
     std::cout << "-- GetAttributeDataFromJulea -----" << std::endl;
 
@@ -1482,11 +1487,9 @@ void DB_DO_GetAttributeDataFromJulea(const std::string attrName, T *data,
     j_object_unref(dataObject);
 }
 
-void DB_DO_GetAttributeStringDataFromJulea(const std::string attrName, char *data,
-                                       const std::string nameSpace,
-                                       long unsigned int completeSize,
-                                       bool IsSingleValue,
-                                       size_t numberElements)
+void DB_DO_GetAttributeStringDataFromJulea(
+    const std::string attrName, char *data, const std::string nameSpace,
+    long unsigned int completeSize, bool IsSingleValue, size_t numberElements)
 {
     std::cout << "-- GetAttributeDataFromJulea -- String version -----"
               << std::endl;
@@ -1541,7 +1544,7 @@ void DB_DO_GetAttributeStringDataFromJulea(const std::string attrName, char *dat
 }
 
 #define attribute_template_instantiation(T)                                    \
-    template void DB_DO_GetAttributeDataFromJulea(                                 \
+    template void DB_DO_GetAttributeDataFromJulea(                             \
         const std::string attrName, T *data, const std::string nameSpace,      \
         long unsigned int dataSize);
 ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(attribute_template_instantiation)

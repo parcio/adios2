@@ -28,7 +28,7 @@ namespace engine
 // is separate data stored which needs to be read or just metadata?
 template <>
 void JuleaDB_DO_Reader::GetSyncCommon(Variable<std::string> &variable,
-                                  std::string *data)
+                                      std::string *data)
 {
     if (m_Verbosity == 5)
     {
@@ -129,16 +129,35 @@ void JuleaDB_DO_Reader::GetDeferredCommon(Variable<T> &variable, T *data)
     }
 
     // store data pointer in related blockinfo to be called in perform gets
-    InitVariableBlockInfo(variable, data);
+    // InitVariableBlockInfo(variable, data);
+
+    typename Variable<T>::Info &blockInfo =
+        InitVariableBlockInfo(variable, data);
+
+    SetVariableBlockInfo(variable, blockInfo);
 
     size_t size = variable.m_BlocksInfo.size();
-    variable.m_BlocksInfo[size - 1].BlockID = variable.m_BlockID;
+
+    // FIXME:
+    if (variable.m_ShapeID == ShapeID::LocalArray)
+    {
+        variable.m_BlocksInfo[size - 1].BlockID = variable.m_BlockID;
+    }
+    else if (variable.m_ShapeID == ShapeID::GlobalArray)
+    {
+        // variable.m_BlocksInfo[size-1].BlockID =
+        // blockInfo.StepBlockSubStreamsInfo[m_CurrentStep].SubStreamID;
+        // variable.m_BlocksInfo[size - 1].BlockID =
+        //     blockInfo.StepBlockSubStreamsInfo[m_CurrentStep][m_ReaderRank]
+        //         .SubStreamID;
+    }
 
     m_DeferredVariables.insert(variable.m_Name);
 }
 
 template <class T>
-void JuleaDB_DO_Reader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
+void JuleaDB_DO_Reader::ReadBlock(Variable<T> &variable, T *data,
+                                  size_t blockID)
 {
     if (m_Verbosity == 5)
     {
@@ -174,8 +193,9 @@ void JuleaDB_DO_Reader::ReadBlock(Variable<T> &variable, T *data, size_t blockID
     /** only retrieve Count. Everything is only needed for bp3 and bp4 to
      * determine block position in buffer and for AllStepsBlockInfo for bpls */
     auto entryID = variable.m_AvailableStepBlockIndexOffsets[step + 1][blockID];
-    DB_DO_GetCountFromBlockMetadata(nameSpace, variable.m_Name, step, blockID, &count,
-                              entryID, variable.m_SingleValue, data);
+    DB_DO_GetCountFromBlockMetadata(nameSpace, variable.m_Name, step, blockID,
+                                    &count, entryID, variable.m_SingleValue,
+                                    data);
     if (variable.m_SingleValue)
     {
         // FIXME: get Value from DB
@@ -186,13 +206,15 @@ void JuleaDB_DO_Reader::ReadBlock(Variable<T> &variable, T *data, size_t blockID
     size_t numberElements = helper::GetTotalSize(count);
     dataSize = numberElements * variable.m_ElementSize;
     size_t offset = 0;
-    DB_DO_GetVariableDataFromJulea(variable, data, nameSpace, offset, dataSize,
-                               stepBlockID);
+
+    // FIXME
+    // DB_DO_GetVariableDataFromJulea(variable, data, nameSpace, offset,
+    // dataSize, stepBlockID);
 }
 
 template <class T>
 void JuleaDB_DO_Reader::ReadBlockMD(typename core::Variable<T>::Info &blockInfo,
-                                size_t blockID)
+                                    size_t blockID)
 {
     // if (m_Verbosity == 5)
     // {
@@ -331,11 +353,15 @@ void JuleaDB_DO_Reader::ReadVariableBlocks(Variable<T> &variable)
                     size_t offset = subStreamBoxInfo.Seeks.first;
                     size_t step = stepPair.first - 1;
 
-                    std::cout << "stepPair.first: " << stepPair.first << std::endl;
+                    // std::cout << "stepPair.first: " << stepPair.first <<
+                    // std::endl;
 
-                    stepBlockID = g_strdup_printf("%lu_%lu", step,
-                                                  subStreamBoxInfo.SubStreamID);
-                    std::cout << "stepBlockID: " << stepBlockID << std::endl;
+                    // std::cout
+                    // << "unique entry ID: " << subStreamBoxInfo.SubStreamID
+                    // << std::endl;
+                    // stepBlockID = g_strdup_printf("%lu_%lu", step,
+                    // subStreamBoxInfo.SubStreamID);
+                    // std::cout << "stepBlockID: " << stepBlockID << std::endl;
                     if (m_UseKeysForBPLS)
                     {
                         // DBGetVariableDataFromJulea(
@@ -350,10 +376,11 @@ void JuleaDB_DO_Reader::ReadVariableBlocks(Variable<T> &variable)
                                    subStreamBoxInfo.Seeks.first;
                         std::cout << "dataSize: " << dataSize << std::endl;
 
-                        T data[dataSize];
-                        DB_DO_GetVariableDataFromJulea(variable, data, nameSpace,
-                                                   offset, dataSize,
-                                                   stepBlockID);
+                        // T data[dataSize];
+                        std::vector<T> data = std::vector<T>(dataSize);
+                        DB_DO_GetVariableDataFromJulea(
+                            variable, data.data(), nameSpace, offset, dataSize,
+                            subStreamBoxInfo.SubStreamID);
 
                         const Dims blockInfoStart =
                             (variable.m_ShapeID == ShapeID::LocalArray &&
@@ -363,7 +390,7 @@ void JuleaDB_DO_Reader::ReadVariableBlocks(Variable<T> &variable)
 
                         helper::ClipContiguousMemory(
                             blockInfo.Data, blockInfoStart, blockInfo.Count,
-                            (char *)data, subStreamBoxInfo.BlockBox,
+                            (char *)data.data(), subStreamBoxInfo.BlockBox,
                             subStreamBoxInfo.IntersectionBox, true, false,
                             false);
 
@@ -420,9 +447,9 @@ JuleaDB_DO_Reader::AllStepsBlocksInfo(const core::Variable<T> &variable) const
 
 template <class T>
 std::vector<typename core::Variable<T>::Info>
-JuleaDB_DO_Reader::BlocksInfoCommon(const core::Variable<T> &variable,
-                                const std::vector<size_t> &blocksIndexOffsets,
-                                size_t step) const
+JuleaDB_DO_Reader::BlocksInfoCommon(
+    const core::Variable<T> &variable,
+    const std::vector<size_t> &blocksIndexOffsets, size_t step) const
 {
     if (m_Verbosity == 5)
     {
@@ -491,7 +518,7 @@ JuleaDB_DO_Reader::AllRelativeStepsBlocksInfo(
 template <class T>
 std::vector<typename core::Variable<T>::Info>
 JuleaDB_DO_Reader::BlocksInfo(const core::Variable<T> &variable,
-                          const size_t step) const
+                              const size_t step) const
 {
     if (m_Verbosity == 5)
     {
@@ -755,14 +782,16 @@ void JuleaDB_DO_Reader::SetVariableBlockInfo(
         }
 
         subStreamInfo.BlockBox = helper::StartEndBox(info.Start, info.Count);
-        std::cout << "BlockBox: (["
-                  << helper::VectorToCSV(subStreamInfo.BlockBox.first) << "], ["
-                  << helper::VectorToCSV(subStreamInfo.BlockBox.second) << "])"
-                  << std::endl;
-        std::cout << "selectionBox: (["
-                  << helper::VectorToCSV(selectionBox.first) << "], ["
-                  << helper::VectorToCSV(selectionBox.second) << "])"
-                  << std::endl;
+        // std::cout << "BlockBox: (["
+        //           << helper::VectorToCSV(subStreamInfo.BlockBox.first) << "],
+        //           ["
+        //           << helper::VectorToCSV(subStreamInfo.BlockBox.second) <<
+        //           "])"
+        //           << std::endl;
+        // std::cout << "selectionBox: (["
+        //           << helper::VectorToCSV(selectionBox.first) << "], ["
+        //           << helper::VectorToCSV(selectionBox.second) << "])"
+        //           << std::endl;
         subStreamInfo.IntersectionBox =
             helper::IntersectionBox(selectionBox, subStreamInfo.BlockBox);
 
@@ -810,15 +839,16 @@ void JuleaDB_DO_Reader::SetVariableBlockInfo(
             sizeof(T) * helper::LinearIndex(subStreamInfo.BlockBox,
                                             subStreamInfo.IntersectionBox.first,
                                             isRowMajor);
-        std::cout << "Seeks.first: " << subStreamInfo.Seeks.first << std::endl;
+        // std::cout << "Seeks.first: " << subStreamInfo.Seeks.first <<
+        // std::endl;
 
         subStreamInfo.Seeks.second =
             sizeof(T) * (helper::LinearIndex(
                              subStreamInfo.BlockBox,
                              subStreamInfo.IntersectionBox.second, isRowMajor) +
                          1);
-        std::cout << "Seeks.second: " << subStreamInfo.Seeks.second
-                  << std::endl;
+        // std::cout << "Seeks.second: " << subStreamInfo.Seeks.second
+        // << std::endl;
 
         //     const size_t payloadOffset =
         //         blockCharacteristics.Statistics.PayloadOffset;
@@ -847,8 +877,8 @@ void JuleaDB_DO_Reader::SetVariableBlockInfo(
         // subStreamInfo.Seeks.first += 42;
         // subStreamInfo.Seeks.second += 42;
 
-        // subStreamInfo.SubStreamID = static_cast<size_t>(blockIndexOffset);
-        subStreamInfo.SubStreamID = static_cast<size_t>(info.BlockID);
+        subStreamInfo.SubStreamID = static_cast<size_t>(blockIndexOffset);
+        // subStreamInfo.SubStreamID = static_cast<size_t>(info.BlockID);
         // static_cast<size_t>(blockCharacteristics.Statistics.FileIndex);
 
         blockInfo.StepBlockSubStreamsInfo[step].push_back(
@@ -874,7 +904,7 @@ void JuleaDB_DO_Reader::SetVariableBlockInfo(
         {
             for (const size_t blockOffset : blockOffsets)
             {
-                std::cout << "blockOffset: " << blockOffset << std::endl;
+                // std::cout << "blockOffset: " << blockOffset << std::endl;
                 lf_SetSubStreamInfoGlobalArray(variable.m_Name, selectionBox,
                                                blockInfo, step, blockOffset,
                                                true);

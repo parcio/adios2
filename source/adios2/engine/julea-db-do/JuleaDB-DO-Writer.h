@@ -45,7 +45,7 @@ public:
      * @param debugMode
      */
     JuleaDB_DO_Writer(IO &adios, const std::string &name, const Mode mode,
-                  helper::Comm comm);
+                      helper::Comm comm);
 
     ~JuleaDB_DO_Writer(); // was =default -> meaning?
 
@@ -128,6 +128,9 @@ private:
     void PutDeferredCommon(Variable<T> &variable, const T *values);
 
     void DoFlush(const bool isFinal = false, const int transportIndex = -1);
+
+    template <class T>
+    void SetBlockID(Variable<T> &variable);
 
     /**
      * Closes a single transport or all transports

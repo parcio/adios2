@@ -34,9 +34,9 @@ void InitDB_DO_Schemas();
  */
 template <class T>
 void DB_DO_PutVariableMetadataToJulea(Variable<T> &variable,
-                                  const std::string nameSpace,
-                                  const std::string varName, size_t currStep,
-                                  size_t block);
+                                      const std::string nameSpace,
+                                      const std::string varName,
+                                      size_t currStep, size_t block);
 /**
  * Put the metadata for a specific block in a specific step to JULEA key-value
  * store.
@@ -48,11 +48,11 @@ void DB_DO_PutVariableMetadataToJulea(Variable<T> &variable,
  */
 template <class T>
 void DB_DO_PutBlockMetadataToJulea(Variable<T> &variable,
-                               const std::string nameSpace,
-                               const std::string varName, size_t step,
-                               size_t block,
-                               const typename Variable<T>::Info &blockInfo,
-                               T &blockMin, T &blockMax);
+                                   const std::string nameSpace,
+                                   const std::string varName, size_t step,
+                                   size_t block,
+                                   const typename Variable<T>::Info &blockInfo,
+                                   T &blockMin, T &blockMax, uint32_t &entryID);
 
 /**
  * Store variable data in JULEA object store. The key is:
@@ -65,48 +65,48 @@ void DB_DO_PutBlockMetadataToJulea(Variable<T> &variable,
  */
 template <class T>
 void DB_DO_PutVariableDataToJulea(Variable<T> &variable, const T *data,
-                              const std::string nameSpace, size_t currentStep,
-                              size_t blockID);
+                                  const std::string nameSpace,
+                                  uint32_t entryID);
 
 /** --- Attributes --- */
 template <class T>
 void DB_DO_PutAttributeDataToJulea(Attribute<T> &attribute,
-                               const std::string nameSpace);
-
-template <class T>
-void DB_DO_PutAttributeMetadataToJulea(Attribute<T> &attribute,
-                                   bson_t *bsonMetadata,
                                    const std::string nameSpace);
 
 template <class T>
+void DB_DO_PutAttributeMetadataToJulea(Attribute<T> &attribute,
+                                       bson_t *bsonMetadata,
+                                       const std::string nameSpace);
+
+template <class T>
 void DB_DO_PutAttributeDataToJuleaSmall(Attribute<T> &attribute, const T *data,
-                                    const std::string nameSpace);
+                                        const std::string nameSpace);
 template <class T>
 void DB_DO_PutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
-                                        bson_t *bsonMetadata,
-                                        const std::string nameSpace);
+                                            bson_t *bsonMetadata,
+                                            const std::string nameSpace);
 
 #define declare_template_instantiation(T)                                      \
-    extern template void DB_DO_PutVariableDataToJulea(                             \
+    extern template void DB_DO_PutVariableDataToJulea(                         \
         Variable<T> &variable, const T *data, const std::string nameSpace,     \
-        size_t currentStep, size_t blockID);                                   \
-    extern template void DB_DO_PutVariableMetadataToJulea(                         \
+        uint32_t entryID);                                                     \
+    extern template void DB_DO_PutVariableMetadataToJulea(                     \
         Variable<T> &variable, const std::string nameSpace,                    \
         const std::string varName, size_t currStep, size_t block);             \
-    extern template void DB_DO_PutBlockMetadataToJulea(                            \
+    extern template void DB_DO_PutBlockMetadataToJulea(                        \
         Variable<T> &variable, const std::string nameSpace,                    \
         const std::string varName, size_t step, size_t block,                  \
         const typename Variable<T>::Info &blockInfo, , T &blockMin,            \
-        T &blockMax);                                                          \
+        T &blockMax, uint32_t &entryID);                                       \
                                                                                \
-    extern template void DB_DO_PutAttributeDataToJulea(                            \
+    extern template void DB_DO_PutAttributeDataToJulea(                        \
         Attribute<T> &attribute, const std::string nameSpace);                 \
-    extern template void DB_DO_PutAttributeDataToJuleaSmall(                       \
+    extern template void DB_DO_PutAttributeDataToJuleaSmall(                   \
         Attribute<T> &attribute, const T *data, const std::string nameSpace);  \
-    extern template void DB_DO_PutAttributeMetadataToJulea(                        \
+    extern template void DB_DO_PutAttributeMetadataToJulea(                    \
         Attribute<T> &attribute, bson_t *bsonMetadata,                         \
         const std::string nameSpace);                                          \
-    extern template void DB_DO_PutAttributeMetadataToJuleaSmall(                   \
+    extern template void DB_DO_PutAttributeMetadataToJuleaSmall(               \
         Attribute<T> &attribute, bson_t *bsonMetadata,                         \
         const std::string nameSpace);                                          \
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)

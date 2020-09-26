@@ -33,8 +33,8 @@ namespace engine
 // : Engine("JuleaDBReader", io, name, mode, mpiComm),
 //   m_BP3Deserializer(mpiComm, m_DebugMode)
 
-JuleaDB_DO_Reader::JuleaDB_DO_Reader(IO &io, const std::string &name, const Mode mode,
-                             helper::Comm comm)
+JuleaDB_DO_Reader::JuleaDB_DO_Reader(IO &io, const std::string &name,
+                                     const Mode mode, helper::Comm comm)
 : Engine("JuleaDBReader", io, name, mode, std::move(comm))
 
 {
@@ -63,7 +63,7 @@ JuleaDB_DO_Reader::~JuleaDB_DO_Reader()
 }
 
 StepStatus JuleaDB_DO_Reader::BeginStep(const StepMode mode,
-                                    const float timeoutSeconds)
+                                        const float timeoutSeconds)
 {
     // if (m_DebugMode)
     // {
@@ -93,7 +93,8 @@ StepStatus JuleaDB_DO_Reader::BeginStep(const StepMode mode,
     m_DeferredVariablesDataSize = 0;
 
     // first param is "zero-init" which initializes stepsStart to 0
-    m_IO.ResetVariablesStepSelection(false, "in call to JULEA Reader BeginStep");
+    m_IO.ResetVariablesStepSelection(false,
+                                     "in call to JULEA Reader BeginStep");
 
     return StepStatus::OK;
 }
@@ -158,11 +159,22 @@ void JuleaDB_DO_Reader::PerformGets()
     {                                                                          \
         Variable<T> &variable = FindVariable<T>(                               \
             variableName, "in call to PerformGets, EndStep or Close");         \
-        for (auto &blockInfo : variable.m_BlocksInfo)                          \
+        if (variable.m_ShapeID == ShapeID::GlobalValue ||                      \
+            variable.m_ShapeID == ShapeID::GlobalArray)                        \
         {                                                                      \
-            T *data = variable.m_BlocksInfo[i].Data;                           \
-            ReadBlock(variable, data, i);                                      \
-            i++;                                                               \
+            ReadVariableBlocks(variable);                                      \
+        }                                                                      \
+        else if (variable.m_ShapeID == ShapeID::LocalArray ||                  \
+                 variable.m_ShapeID == ShapeID::LocalValue)                    \
+        {                                                                      \
+            for (auto &blockInfo : variable.m_BlocksInfo)                      \
+            {                                                                  \
+                T *data = variable.m_BlocksInfo[i].Data;                       \
+                std::cout << "size of variable.m_BlocksInfo: "                 \
+                          << variable.m_BlocksInfo.size() << std::endl;        \
+                ReadBlock(variable, data, i);                                  \
+                i++;                                                           \
+            }                                                                  \
         }                                                                      \
         variable.m_BlocksInfo.clear();                                         \
     }
@@ -177,11 +189,11 @@ void JuleaDB_DO_Reader::PerformGets()
 }
 
 #define declare_type(T)                                                        \
-    void JuleaDB_DO_Reader::DoGetSync(Variable<T> &variable, T *data)              \
+    void JuleaDB_DO_Reader::DoGetSync(Variable<T> &variable, T *data)          \
     {                                                                          \
         GetSyncCommon(variable, data);                                         \
     }                                                                          \
-    void JuleaDB_DO_Reader::DoGetDeferred(Variable<T> &variable, T *data)          \
+    void JuleaDB_DO_Reader::DoGetDeferred(Variable<T> &variable, T *data)      \
     {                                                                          \
         GetDeferredCommon(variable, data);                                     \
     }
@@ -195,7 +207,8 @@ void JuleaDB_DO_Reader::Init()
         std::cout << "\n*********************** JULEA ENGINE READER "
                      "*************************"
                   << std::endl;
-        std::cout << "JULEA DB DISTRIBUTED OBJECT STORE READER: Init" << std::endl;
+        std::cout << "JULEA DB DISTRIBUTED OBJECT STORE READER: Init"
+                  << std::endl;
         std::cout
             << "      .___. \n     /     \\ \n    | O _ O | \n    /  \\_/  \\ \n  .' / \
     \\ `. \n / _|       |_ \\ \n(_/ |       | \\_) \n    \\       / \n   __\\_>-<_/__ \
@@ -269,18 +282,18 @@ void JuleaDB_DO_Reader::DoClose(const int transportIndex)
 
 #define declare_type(T)                                                        \
     std::map<size_t, std::vector<typename Variable<T>::Info>>                  \
-    JuleaDB_DO_Reader::DoAllStepsBlocksInfo(const Variable<T> &variable) const     \
+    JuleaDB_DO_Reader::DoAllStepsBlocksInfo(const Variable<T> &variable) const \
     {                                                                          \
         return AllStepsBlocksInfo(variable);                                   \
     }                                                                          \
     std::vector<std::vector<typename Variable<T>::Info>>                       \
-    JuleaDB_DO_Reader::DoAllRelativeStepsBlocksInfo(const Variable<T> &variable)   \
-        const                                                                  \
+    JuleaDB_DO_Reader::DoAllRelativeStepsBlocksInfo(                           \
+        const Variable<T> &variable) const                                     \
     {                                                                          \
         return AllRelativeStepsBlocksInfo(variable);                           \
     }                                                                          \
                                                                                \
-    std::vector<typename Variable<T>::Info> JuleaDB_DO_Reader::DoBlocksInfo(       \
+    std::vector<typename Variable<T>::Info> JuleaDB_DO_Reader::DoBlocksInfo(   \
         const Variable<T> &variable, const size_t step) const                  \
     {                                                                          \
         return BlocksInfo(variable, step);                                     \

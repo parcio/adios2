@@ -27,8 +27,8 @@ namespace core
 namespace engine
 {
 
-JuleaDB_DO_Writer::JuleaDB_DO_Writer(IO &io, const std::string &name, const Mode mode,
-                             helper::Comm comm)
+JuleaDB_DO_Writer::JuleaDB_DO_Writer(IO &io, const std::string &name,
+                                     const Mode mode, helper::Comm comm)
 : Engine("JuleaDB_DO_Writer", io, name, mode, std::move(comm))
 {
     // std::cout << "JULEA ENGINE: Constructor" << std::endl;
@@ -66,7 +66,8 @@ JuleaDB_DO_Writer::~JuleaDB_DO_Writer()
 /**
  * Begins a step. Clears the deferred variable set.
  */
-StepStatus JuleaDB_DO_Writer::BeginStep(StepMode mode, const float timeoutSeconds)
+StepStatus JuleaDB_DO_Writer::BeginStep(StepMode mode,
+                                        const float timeoutSeconds)
 {
     if (m_Verbosity == 5)
     {
@@ -224,7 +225,8 @@ void JuleaDB_DO_Writer::Init()
         std::cout << "\n*********************** JULEA ENGINE WRITER "
                      "*************************"
                   << std::endl;
-        std::cout << "JULEA DB DISTRIBUTED OBJECT STORE WRITER: Init" << std::endl;
+        std::cout << "JULEA DB DISTRIBUTED OBJECT STORE WRITER: Init"
+                  << std::endl;
         std::cout
             << "      .___. \n     /     \\ \n    | O _ O | \n    /  \\_/  \\ \n  .' / \
     \\ `. \n / _|       |_ \\ \n(_/ |       | \\_) \n    \\       / \n   __\\_>-<_/__ \
@@ -305,55 +307,16 @@ void JuleaDB_DO_Writer::InitVariables()
  */
 
 #define declare_type(T)                                                        \
-    void JuleaDB_DO_Writer::DoPutSync(Variable<T> &variable, const T *data)        \
+    void JuleaDB_DO_Writer::DoPutSync(Variable<T> &variable, const T *data)    \
     {                                                                          \
         std::cout << "m_WriterRank: " << m_WriterRank << std::endl;            \
-        if (variable.m_ShapeID == ShapeID::GlobalValue ||                      \
-            variable.m_ShapeID == ShapeID::GlobalArray)                        \
-        {                                                                      \
-            std::cout                                                          \
-                << "GlobalValue/GlobalArray: m_CurrentBlockID = m_WriterRank"  \
-                << std::endl;                                                  \
-            m_CurrentBlockID = m_WriterRank;                                   \
-            variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].resize(   \
-                m_Comm.Size());                                                \
-            variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].at(       \
-                m_WriterRank) = m_CurrentBlockID;                              \
-        }                                                                      \
-        else if (variable.m_ShapeID == ShapeID::JoinedArray)                   \
-        {                                                                      \
-            std::cout << "JoinedArray: Currently not implemented yet."         \
-                      << std::endl;                                            \
-        }                                                                      \
-        else if (variable.m_ShapeID == ShapeID::LocalArray ||                  \
-                 variable.m_ShapeID == ShapeID::LocalValue)                    \
-        {                                                                      \
-            if (m_Comm.Size() == 1)                                            \
-            {                                                                  \
-                std::cout << "LocalValue/: Nothing to do?! Only increment "    \
-                             "after put."                                      \
-                          << std::endl;                                        \
-                variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep]       \
-                    .push_back(m_CurrentBlockID);                              \
-            }                                                                  \
-            else                                                               \
-            {                                                                  \
-                std::cout << "LocalArray: Have fun with synchronized counter " \
-                             "across processes."                               \
-                          << std::endl;                                        \
-                variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep]       \
-                    .push_back(m_CurrentBlockID);                              \
-            }                                                                  \
-        }                                                                      \
-        else                                                                   \
-        {                                                                      \
-            std::cout << "Shape Type not known." << std::endl;                 \
-        }                                                                      \
+        SetBlockID(variable);                                                  \
         PutSyncCommon(variable, data);                                         \
         variable.m_BlocksInfo.pop_back();                                      \
         m_CurrentBlockID++;                                                    \
     }                                                                          \
-    void JuleaDB_DO_Writer::DoPutDeferred(Variable<T> &variable, const T *data)    \
+    void JuleaDB_DO_Writer::DoPutDeferred(Variable<T> &variable,               \
+                                          const T *data)                       \
     {                                                                          \
         PutDeferredCommon(variable, data);                                     \
     }

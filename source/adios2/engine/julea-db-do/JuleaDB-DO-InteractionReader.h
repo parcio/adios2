@@ -21,16 +21,17 @@ namespace core
 namespace engine
 {
 void DB_DO_setMinMaxValueFields(std::string *minField, std::string *maxField,
-                          std::string *valueField, const char *varType);
+                                std::string *valueField, const char *varType);
 
 void DB_DO_DefineVariableInInit(core::IO *io, const std::string varName,
-                            std::string type, Dims shape, Dims start,
-                            Dims count, bool constantDims, bool isLocalValue);
+                                std::string type, Dims shape, Dims start,
+                                Dims count, bool constantDims,
+                                bool isLocalValue);
 
 void DB_DO_CheckSchemas();
 
 void InitVariablesFromDB_DO(const std::string nameSpace, core::IO *io,
-                         core::Engine &engine);
+                            core::Engine &engine);
 
 /**
  * Deserialize the metadata of a single block of a step of a variable.
@@ -45,67 +46,66 @@ void InitVariablesFromDB_DO(const std::string nameSpace, core::IO *io,
 //                               typename core::Variable<T>::Info &info);
 template <class T>
 void DB_DO_GetCountFromBlockMetadata(const std::string nameSpace,
-                               const std::string varName, size_t step,
-                               size_t block, Dims *count, size_t entryID,
-                               bool isLocalValue, T *value);
+                                     const std::string varName, size_t step,
+                                     size_t block, Dims *count, size_t entryID,
+                                     bool isLocalValue, T *value);
 
 template <class T>
-std::unique_ptr<typename core::Variable<T>::Info>
-DB_DO_GetBlockMetadata(const core::Variable<T> &variable,
-                   // const std::string nameSpace, size_t step, size_t block,
-                   size_t entryID);
+std::unique_ptr<typename core::Variable<T>::Info> DB_DO_GetBlockMetadata(
+    const core::Variable<T> &variable,
+    // const std::string nameSpace, size_t step, size_t block,
+    size_t entryID);
 
 // entryID: unique ID for entry in database
 template <class T>
 void DB_DO_GetBlockMetadataNEW(Variable<T> &variable,
-                           typename core::Variable<T>::Info &blockInfo,
-                           size_t entryID);
+                               typename core::Variable<T>::Info &blockInfo,
+                               size_t entryID);
 
 /* --- Variables --- */
 
 /** Retrieves all variable names from key-value store. They are all stored
  * in one bson. */
 void DB_DO_GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
-                         unsigned int *varCount, bool isVariable);
+                             unsigned int *varCount, bool isVariable);
 
 /** Retrieves the metadata buffer for the variable metadata that do not vary
  * from block to block. The key is the variable name. */
 void DB_DO_GetVariableMetadataFromJulea(const std::string nameSpace,
-                                    const std::string varName, gpointer *buffer,
-                                    guint32 *buffer_len);
+                                        const std::string varName,
+                                        gpointer *buffer, guint32 *buffer_len);
 
 /** Retrieves the block metadata buffer from the key-value store. The key is:
  * currentStep_currentBlock. The variable name and the nameSpace from the
  * key-value namespace. */
 void DB_DO_GetBlockMetadataFromJulea(const std::string nameSpace,
-                                 const std::string varName, gpointer *buffer,
-                                 guint32 *buffer_len,
-                                 const std::string stepBlockID);
+                                     const std::string varName,
+                                     gpointer *buffer, guint32 *buffer_len,
+                                     const std::string stepBlockID);
 
 /** Passing the data pointer from application to the key-value store. Space for
  * the data is allocated in the application. */
 template <class T>
 void DB_DO_GetVariableDataFromJulea(Variable<T> &variable, T *data,
-                                const std::string nameSpace, size_t offset,
-                                long unsigned int dataSize,
-                                const std::string stepBlockID);
+                                    const std::string nameSpace, size_t offset,
+                                    long unsigned int dataSize,
+                                    uint32_t entryID);
 
 #define variable_template_instantiation(T)                                     \
-    extern template void DB_DO_GetCountFromBlockMetadata(                            \
+    extern template void DB_DO_GetCountFromBlockMetadata(                      \
         const std::string nameSpace, const std::string varName, size_t step,   \
         size_t block, Dims *count, size_t entryID, bool isLocalValue,          \
         T *value);                                                             \
     extern template std::unique_ptr<typename core::Variable<T>::Info>          \
-    DB_DO_GetBlockMetadata(const core::Variable<T> &variable, size_t entryID);     \
+    DB_DO_GetBlockMetadata(const core::Variable<T> &variable, size_t entryID); \
                                                                                \
-    extern template void DB_DO_GetBlockMetadataNEW(                                \
+    extern template void DB_DO_GetBlockMetadataNEW(                            \
         Variable<T> &variable, typename core::Variable<T>::Info &blockInfo,    \
         size_t entryID);                                                       \
                                                                                \
-    extern template void DB_DO_GetVariableDataFromJulea(                           \
+    extern template void DB_DO_GetVariableDataFromJulea(                       \
         Variable<T> &variable, T *data, const std::string nameSpace,           \
-        size_t offset, long unsigned int dataSize,                             \
-        const std::string stepBlockID);
+        size_t offset, long unsigned int dataSize, uint32_t entryID);
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 
@@ -116,34 +116,32 @@ ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 /** Attributes are still implemented using BSON. It was not urgent enough to
  * change anything. */
 void DB_DO_GetAttributeMetadataFromJulea(const std::string attrName,
-                                     const std::string nameSpace,
-                                     long unsigned int *dataSize,
-                                     size_t *numberElements,
-                                     bool *IsSingleValue, int *type);
+                                         const std::string nameSpace,
+                                         long unsigned int *dataSize,
+                                         size_t *numberElements,
+                                         bool *IsSingleValue, int *type);
 
 void DB_DO_GetAttributeMetadataFromJulea(const std::string attrName,
-                                     const std::string nameSpace,
-                                     long unsigned int *completeSize,
-                                     size_t *numberElements,
-                                     bool *IsSingleValue, int *type,
-                                     unsigned long **dataSizes);
+                                         const std::string nameSpace,
+                                         long unsigned int *completeSize,
+                                         size_t *numberElements,
+                                         bool *IsSingleValue, int *type,
+                                         unsigned long **dataSizes);
 
 void DB_DO_GetAttributeBSONFromJulea(const std::string nameSpace,
-                                 const std::string varName,
-                                 bson_t **bsonMetadata, guint32 *valueLen);
+                                     const std::string varName,
+                                     bson_t **bsonMetadata, guint32 *valueLen);
 template <class T>
 void DB_DO_GetAttributeDataFromJulea(const std::string attrName, T *data,
-                                 const std::string nameSpace,
-                                 long unsigned int dataSize);
+                                     const std::string nameSpace,
+                                     long unsigned int dataSize);
 
-void DB_DO_GetAttributeStringDataFromJulea(const std::string attrName, char *data,
-                                       const std::string nameSpace,
-                                       long unsigned int completeSize,
-                                       bool IsSingleValue,
-                                       size_t numberElements);
+void DB_DO_GetAttributeStringDataFromJulea(
+    const std::string attrName, char *data, const std::string nameSpace,
+    long unsigned int completeSize, bool IsSingleValue, size_t numberElements);
 
 #define attribute_template_instantiation(T)                                    \
-    extern template void DB_DO_GetAttributeDataFromJulea(                          \
+    extern template void DB_DO_GetAttributeDataFromJulea(                      \
         const std::string attrName, T *data, const std::string nameSpace,      \
         long unsigned int dataSize);
 
