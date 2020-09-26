@@ -183,13 +183,14 @@ void IO::write(int step, const HeatTransfer &ht, const Settings &s,
         for (int i = 1; i < s.nproc; i++)
         {
             size_t put, step, write;
+            MPI_Status status;
 
             // MPI_Recv((void *)input.c_str(), 1, MPI_CHAR, i, 0,
             // MPI_COMM_WORLD, MPI_Recv((void *)input.c_str(), input.length(),
             // MPI_CHAR, i, 0, MPI_COMM_WORLD,
-            MPI_Recv(&put, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, 0);
-            MPI_Recv(&step, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, 0);
-            MPI_Recv(&write, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, 0);
+            MPI_Recv(&put, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, &status);
+            MPI_Recv(&step, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, &status);
+            MPI_Recv(&write, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, &status);
             std::cout << "put: \t rank: \t" << i << "\t" << put << "\n"
                       << "step: \t rank: \t" << i << "\t" << step << "\n"
                       << "write: \t rank: \t" << i << "\t" << write
