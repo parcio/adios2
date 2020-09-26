@@ -43,9 +43,9 @@ JuleaDBReader::JuleaDBReader(IO &io, const std::string &name, const Mode mode,
     m_ReaderRank = m_Comm.Rank();
     // if (m_ReaderRank == 0)
     // {
-        std::cout << "Init - " << m_ReaderRank << std::endl;
+        // std::cout << "Init - " << m_ReaderRank << std::endl;
         Init();
-        std::cout << "Init finished - " << m_ReaderRank << std::endl;
+        // std::cout << "Init finished - " << m_ReaderRank << std::endl;
     // }
     // m_Comm.Barrier();
 

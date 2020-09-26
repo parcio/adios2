@@ -602,7 +602,9 @@ void DBPutBlockMetadataToJulea(Variable<T> &variable,
                             sizeof(step), NULL);
     j_db_selector_add_field(selector, "block", J_DB_SELECTOR_OPERATOR_EQ,
                             &block, sizeof(block), NULL);
+
     iterator = j_db_iterator_new(schema, selector, NULL);
+    
     if (j_db_iterator_next(iterator, NULL))
     {
         j_db_entry_update(entry, selector, batch2, NULL);
