@@ -41,7 +41,8 @@ public:
                 MPI_Comm comm) const; // debug: print local TCurrent on stdout
 
 private:
-    const double edgetemp = 3.0; // temperature at the edges of the global plate
+    const double edgetemp = 120.0; // temperature at the edges of the global plate
+    // const double edgetemp = 3.0; // temperature at the edges of the global plate
     const double omega =
         0.8;       // weight for current temp is (1-omega) in iteration
     double **m_T1; // 2D array (ndx+2) * (ndy+2) size, including ghost cells
