@@ -169,50 +169,53 @@ void IO::write(int step, const HeatTransfer &ht, const Settings &s,
 
     // std::cout << output << std::endl;
 
+    size_t writeSum = 0;
+    size_t writeMean = 0;
+    size_t write = durationWrite.count();
+    // size_t
+        // MPI_Allreduce();
+        MPI_Reduce(&write, &writeSum, 1, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
+
+    writeMean = writeSum / s.nproc;
     // for (int i = 0; i < s.nproc; i++)
     // {
     if (s.rank == 0)
     {
         // std::cout << outputBuffer.str() << std::endl;
-        std::cout << "put: \t rank: \t" << s.rank << "\t" << durationPut.count()
-                  << "\n"
-                  << "step: \t rank: \t" << s.rank << "\t"
-                  << durationEndStep.count() << "\n"
-                  << "write: \t rank: \t" << s.rank << "\t"
-                  << durationWrite.count() << std::endl;
+        // std::cout << "put: \t rank: \t" << s.rank << "\t" << durationPut.count()
+        //           << "\n"
+        //           << "step: \t rank: \t" << s.rank << "\t"
+        //           << durationEndStep.count() << "\n"
+        //           << "write: \t rank: \t" << s.rank << "\t"
+        //           << durationWrite.count() << std::endl;
+        // writeMean;
+        std::cout << writeMean << "\t";
+        std::cout << "\t " << durationWrite.count();
         for (int i = 1; i < s.nproc; i++)
         {
-            size_t put, step, write;
+            // size_t put, step, write;
             MPI_Status status;
 
-            // MPI_Recv((void *)input.c_str(), 1, MPI_CHAR, i, 0,
-            // MPI_COMM_WORLD, MPI_Recv((void *)input.c_str(), input.length(),
-            // MPI_CHAR, i, 0, MPI_COMM_WORLD,
-            MPI_Recv(&put, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, &status);
-            MPI_Recv(&step, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, &status);
+            // MPI_Recv(&put, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, &status);
+            // MPI_Recv(&step, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, &status);
             MPI_Recv(&write, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, &status);
-            std::cout << "put: \t rank: \t" << i << "\t" << put << "\n"
-                      << "step: \t rank: \t" << i << "\t" << step << "\n"
-                      << "write: \t rank: \t" << i << "\t" << write
-                      << std::endl;
-            // std::cout << "input: " << std::endl;
-            // std::cout << input << std::endl;
+            // std::cout << "put: \t rank: \t" << i << "\t" << put << "\n"
+            //           << "step: \t rank: \t" << i << "\t" << step << "\n"
+            //           << "write: \t rank: \t" << i << "\t" << write
+            //           << std::endl;
+
+            std::cout << "\t " << write;
         }
+        std::cout << std::endl;
     }
     else
     {
-        size_t put = durationPut.count();
-        size_t step = durationEndStep.count();
-        size_t write = durationWrite.count();
-        // MPI_Send(data, ..., 0, ...);
-        // std::cout << "rank: " << s.rank << std::endl;
-        // std::cout << "output: " << output.c_str() << std::endl;
-        // MPI_Send((void *)output.c_str(),1, MPI_CHAR, 0, 0, MPI_COMM_WORLD);
-        // std::cout << "output: " << output << std::endl;
-        // MPI_Send((void *)output.c_str(), output.length(), MPI_CHAR, 0, 0,
-        // MPI_COMM_WORLD);
-        MPI_Send(&put, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
-        MPI_Send(&step, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
+        // size_t put = durationPut.count();
+        // size_t step = durationEndStep.count();
+        // size_t write = durationWrite.count();
+       
+        // MPI_Send(&put, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
+        // MPI_Send(&step, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
         MPI_Send(&write, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
     }
     // }

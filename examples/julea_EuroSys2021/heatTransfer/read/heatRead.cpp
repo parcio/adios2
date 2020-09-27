@@ -121,10 +121,10 @@ int main(int argc, char *argv[])
         bool firstStep = true;
         int step = 0;
 
-        std::ofstream outFile;
-        outFile.open(inIO.EngineType() + "-readOutput.txt");
+        // std::ofstream outFile;
+        // outFile.open(inIO.EngineType() + "-readOutput.txt");
 
-        std::cout << "engine type: " << inIO.EngineType() << std::endl;
+        // std::cout << "engine type: " << inIO.EngineType() << std::endl;
 
         auto startBeginStep = high_resolution_clock::now();
         auto stopBeginStep = high_resolution_clock::now();
@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
         auto durationRead = duration_cast<microseconds>(stopEndStep - startGet);
 
         while (true)
-        {
+        {   
             adios2::StepStatus status =
                 reader.BeginStep(adios2::StepMode::Read);
             if (status != adios2::StepStatus::OK)
@@ -157,6 +157,12 @@ int main(int argc, char *argv[])
                 break;
             }
 
+            MPI_Barrier(mpiReaderComm);
+            if (rank == 0)
+            {
+                 std::cout << "--- Beginning step: " << step << " \t---\n"
+                          << std::endl;
+            }
             // Variable objects disappear between steps so we need this every
             // step
             vTin = inIO.InquireVariable<double>("T");
@@ -197,12 +203,12 @@ int main(int argc, char *argv[])
                 writer = outIO.Open(settings.outputfile, adios2::Mode::Write,
                                     mpiReaderComm);
 
-                MPI_Barrier(mpiReaderComm); // sync processes just for stdout
+                // MPI_Barrier(mpiReaderComm); // sync processes just for stdout
             }
 
             if (!rank)
             {
-                std::cout << "Processing step " << step << std::endl;
+                // std::cout << "Processing step " << step << std::endl;
             }
 
             // Create a 2D selection for the subset
@@ -223,7 +229,7 @@ int main(int argc, char *argv[])
             reader.EndStep();
             stopEndStep = high_resolution_clock::now();
 
-            // double sum = 0;
+             // double sum = 0;
             // int i = 0;
             // for (auto &el : Tin)
             // {
@@ -256,8 +262,6 @@ int main(int argc, char *argv[])
             //     writer.Put<double>(vdT, dT.data());
             // writer.EndStep();
 
-            step++;
-            firstStep = false;
 
             durationGet = duration_cast<microseconds>(stopGet - startGet);
             durationEndStep =
@@ -295,11 +299,20 @@ int main(int argc, char *argv[])
                 MPI_Send(&step, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
                 MPI_Send(&read, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
             }
+            MPI_Barrier(mpiReaderComm);
+            if (rank == 0)
+            {
+            std::cout << "--- Ending step: " << step << " \t---\n\n"
+                          << std::endl;
+
+            }
+            step++;
+            firstStep = false;
         }
         reader.Close();
         if (writer)
             writer.Close();
-        outFile.close();
+        // outFile.close();
     }
     catch (std::invalid_argument &e) // command-line argument errors
     {
