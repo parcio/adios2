@@ -256,9 +256,9 @@ int main(int argc, char *argv[])
 
             if (!vTin)
             {
-                std::cout << "Error: NO variable T found. Unable to proceed. "
-                             "Exiting. "
-                          << std::endl;
+                // std::cout << "Error: NO variable T found. Unable to proceed. "
+                             // "Exiting. "
+                          // << std::endl;
                 break;
             }
 
