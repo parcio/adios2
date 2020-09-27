@@ -57,20 +57,27 @@ ReadSettings::ReadSettings(int argc, char *argv[], int rank, int nproc)
 
     if (rank == 0)
     {
-        std::cout << "configfile: " << configfile << "\n";
-        std::cout << "inputfile: " << inputfile << "\n";
-        std::cout << "outputfile: " << outputfile << "\n";
-        std::cout << "N: " << npx << "\n";
-        std::cout << "M: " << npy << "\n";
-        std::cout << "\n --- measured times (mikroseconds): ---\n";
-        std::cout << "get: \t\t right before and right after GET; in case of "
-                     "deferred I/O nothing is actually read\n";
-        std::cout
-            << "step: \t right before and right after ENDSTEP; this is "
-               "where deferred reads happen\n";
-        std::cout << "read: \t\t right before GET and right after ENDSTEP; "
-                     "complete read time for deferred reads\n";
-        std::cout << "\n--- Read time in mikroseconds ---" << std::endl;
+        std::cout << "\n# --- Read time in mikroseconds ---" << std::endl;
+        std::cout << "# configfile: " << configfile << "\n";
+        std::cout << "# inputfile: " << inputfile << "\n";
+        std::cout << "# outputfile: " << outputfile << "\n";
+        std::cout << "# MPI_Comm_size: " << nproc << "\n";
+        // std::cout << "# N: " << npx << "\n";
+        // std::cout << "# M: " << npy << "\n";
+        // std::cout << "# \n --- measured times (mikroseconds): ---\n";
+        // std::cout << "# get: \t\t right before and right after GET; in case
+        // of "
+        //              "deferred I/O nothing is actually read\n";
+        // std::cout
+        //     << "# step: \t right before and right after ENDSTEP; this is "
+        //        "where deferred reads happen\n";
+        // std::cout << "# read: \t\t right before GET and right after ENDSTEP;
+        // "
+        //              "complete read time for deferred reads\n";
+        std::cout << "# N \t M" << std::endl;
+        std::cout << npx << " \t " << npy << "\n" << std::endl;
+
+        // std::cout << "# Mean \t Rank 0" << std::endl;
     }
 }
 
@@ -98,5 +105,5 @@ void ReadSettings::DecomposeArray(int gndx, int gndy)
     offset.push_back(offsy);
 
     // std::cout << "rank " << rank << " reads 2D slice " << ndx << " x " << ndy
-              // << " from offset (" << offsx << "," << offsy << ")" << std::endl;
+    // << " from offset (" << offsx << "," << offsy << ")" << std::endl;
 }

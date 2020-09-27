@@ -86,60 +86,64 @@ Settings::Settings(int argc, char *argv[], int rank, int nproc) : rank{rank}
     else
         rank_right = rank + npx;
 
-    // time_t now = time(0);
-    //    tm *lTime = localtime(&now);
+    // std::ofstream timeOutput("heatTransfer-Output.txt");
+    // if (timeOutput.is_open())
+    // {
+    //     if (rank == 0)
+    //     {
+    //         timeOutput << "configfile: " << configfile << "\n";
+    //         timeOutput << "outputfile: " << outputfile << "\n";
+    //         timeOutput << "N: " << npx << "\n";
+    //         timeOutput << "M: " << npy << "\n";
+    //         timeOutput << "nx: " << ndx << "\n";
+    //         timeOutput << "ny: " << ndy << "\n";
+    //         timeOutput << "steps: " << steps << "\n";
+    //         timeOutput << "iterations: " << iterations << "\n";
 
-    // std::string fileName( std::string("heatTransfer_") + rank +"-");
-    // + (char) lTime->tm_year + "-" );
-    // lTime->tm_mon + "-" + lTime->tm_mday + "-" +
-    // lTime->tm_hour + "-" + lTime->tm_min);
-    std::ofstream timeOutput("heatTransfer-Output.txt");
+    //         timeOutput << "\n --- measured times (mikroseconds): ---\n";
+    //         timeOutput
+    //             << "put: \t\t right before and right after PUT; in case of "
+    //                "deferred I/O nothing is actually written\n";
+    //         timeOutput
+    //             << "endstep: \t right before and right after ENDSTEP; this is
+    //             "
+    //                "where deferred writes happen\n";
+    //         timeOutput
+    //             << "write: \t\t right before PUT and right after ENDSTEP; "
+    //                "complete write time for deferred writes\n";
+    //         timeOutput << "\n--- Write time in mikroseconds ---" <<
+    //         std::endl; timeOutput.close();
+    //     }
+    // }
 
-    if (timeOutput.is_open())
-    {
-        if (rank == 0)
-        {
-            timeOutput << "configfile: " << configfile << "\n";
-            timeOutput << "outputfile: " << outputfile << "\n";
-            timeOutput << "N: " << npx << "\n";
-            timeOutput << "M: " << npy << "\n";
-            timeOutput << "nx: " << ndx << "\n";
-            timeOutput << "ny: " << ndy << "\n";
-            timeOutput << "steps: " << steps << "\n";
-            timeOutput << "iterations: " << iterations << "\n";
-
-            timeOutput << "\n --- measured times (mikroseconds): ---\n";
-            timeOutput
-                << "put: \t\t right before and right after PUT; in case of "
-                   "deferred I/O nothing is actually written\n";
-            timeOutput
-                << "endstep: \t right before and right after ENDSTEP; this is "
-                   "where deferred writes happen\n";
-            timeOutput
-                << "write: \t\t right before PUT and right after ENDSTEP; "
-                   "complete write time for deferred writes\n";
-            timeOutput << "\n--- Write time in mikroseconds ---" << std::endl;
-            timeOutput.close();
-        }
-    }
     if (rank == 0)
     {
-        std::cout << "configfile: " << configfile << "\n";
-        std::cout << "outputfile: " << outputfile << "\n";
-        std::cout << "N: " << npx << "\n";
-        std::cout << "M: " << npy << "\n";
-        std::cout << "nx: " << ndx << "\n";
-        std::cout << "ny: " << ndy << "\n";
-        std::cout << "steps: " << steps << "\n";
-        std::cout << "iterations: " << iterations << "\n";
-        std::cout << "\n --- measured times (mikroseconds): ---\n";
-        std::cout << "put: \t\t right before and right after PUT; in case of "
-                     "deferred I/O nothing is actually written\n";
-        std::cout
-            << "step: \t right before and right after ENDSTEP; this is "
-               "where deferred writes happen\n";
-        std::cout << "write: \t\t right before PUT and right after ENDSTEP; "
-                     "complete write time for deferred writes\n";
-        std::cout << "\n--- Write time in mikroseconds ---" << std::endl;
+        std::cout << "\n# --- Write time in mikroseconds ---" << std::endl;
+        std::cout << "# configfile: " << configfile << "\n";
+        std::cout << "# outputfile: " << outputfile << "\n";
+        std::cout << "# MPI_Comm_size: " << nproc << "\n";
+        // std::cout << "# N: " << npx << "\n";
+        // std::cout << "# M: " << npy << "\n";
+        // std::cout << "# nx: " << ndx << "\n";
+        // std::cout << "# ny: " << ndy << "\n";
+        // std::cout << "# steps: " << steps << "\n";
+        // std::cout << "# iterations: " << iterations << "\n";
+        // std::cout << "# \n --- measured times (mikroseconds): ---\n";
+        // std::cout << "# put: \t\t right before and right after PUT; in case
+        // of "
+        //              "deferred I/O nothing is actually written\n";
+        // std::cout << "# step: \t right before and right after ENDSTEP; this
+        // is "
+        //              "where deferred writes happen\n";
+        // std::cout << "# write: \t\t right before PUT and right after ENDSTEP;
+        // "
+        //              "complete write time for deferred writes\n";
+
+        std::cout << "# N \t M \t ny \t ny \t steps \t iterations" << std::endl;
+        std::cout << npx << " \t " << npy << " \t " << ndx << " \t " << ndy
+                  << " \t " << steps << " \t " << iterations << "\n"
+                  << std::endl;
+
+        std::cout << "# Mean \t Rank 0" << std::endl;
     }
 }

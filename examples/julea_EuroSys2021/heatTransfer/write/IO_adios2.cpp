@@ -133,8 +133,9 @@ void IO::write(int step, const HeatTransfer &ht, const Settings &s,
         stopEndStep = high_resolution_clock::now();
     }
 
-    durationPut = duration_cast<microseconds>(stopPut - startPut);
-    durationEndStep = duration_cast<microseconds>(stopEndStep - startEndStep);
+    // durationPut = duration_cast<microseconds>(stopPut - startPut);
+    // durationEndStep = duration_cast<microseconds>(stopEndStep -
+    // startEndStep);
     durationWrite = duration_cast<microseconds>(stopEndStep - startPut);
 
     // std::ofstream timeOutput;
@@ -172,25 +173,24 @@ void IO::write(int step, const HeatTransfer &ht, const Settings &s,
     size_t writeSum = 0;
     size_t writeMean = 0;
     size_t write = durationWrite.count();
-    // size_t
-        // MPI_Allreduce();
-        MPI_Reduce(&write, &writeSum, 1, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
+
+    MPI_Reduce(&write, &writeSum, 1, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
 
     writeMean = writeSum / s.nproc;
-    // for (int i = 0; i < s.nproc; i++)
-    // {
+
     if (s.rank == 0)
     {
         // std::cout << outputBuffer.str() << std::endl;
-        // std::cout << "put: \t rank: \t" << s.rank << "\t" << durationPut.count()
+        // std::cout << "put: \t rank: \t" << s.rank << "\t" <<
+        // durationPut.count()
         //           << "\n"
         //           << "step: \t rank: \t" << s.rank << "\t"
         //           << durationEndStep.count() << "\n"
         //           << "write: \t rank: \t" << s.rank << "\t"
         //           << durationWrite.count() << std::endl;
         // writeMean;
-        std::cout << writeMean << "\t";
-        std::cout << "\t " << durationWrite.count();
+        std::cout << writeMean;
+        std::cout << "\t " << write;
         for (int i = 1; i < s.nproc; i++)
         {
             // size_t put, step, write;
@@ -213,12 +213,11 @@ void IO::write(int step, const HeatTransfer &ht, const Settings &s,
         // size_t put = durationPut.count();
         // size_t step = durationEndStep.count();
         // size_t write = durationWrite.count();
-       
+
         // MPI_Send(&put, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
         // MPI_Send(&step, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
         MPI_Send(&write, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
     }
-    // }
 
     // std::cout << "put: \t rank: \t" << s.rank << "\t" << durationPut.count()
     //           << "\n"

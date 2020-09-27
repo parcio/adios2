@@ -63,12 +63,14 @@ void HeatTransfer::init(bool init_with_rank)
             for (unsigned int j = 0; j < m_s.ndy + 2; j++)
             {
                 y = 0.0 + hy * (j - 1);
-                // m_T1[i][j] = cos(8 * x) + cos(6 * x) - cos(4 * x) + cos(2 * x) -
+                // m_T1[i][j] = cos(8 * x) + cos(6 * x) - cos(4 * x) + cos(2 *
+                // x) -
                 //              cos(x) + sin(8 * y) - sin(6 * y) + sin(4 * y) -
                 //              sin(2 * y) + sin(y);
-                m_T1[i][j] = 10 * (cos(8 * x) + cos(6 * x) - cos(4 * x) + cos(2 * x) -
-                             cos(x) + sin(8 * y) - sin(6 * y) + sin(4 * y) -
-                             sin(2 * y) + sin(y));
+                m_T1[i][j] =
+                    10 * (cos(8 * x) + cos(6 * x) - cos(4 * x) + cos(2 * x) -
+                          cos(x) + sin(8 * y) - sin(6 * y) + sin(4 * y) -
+                          sin(2 * y) + sin(y));
             }
         }
     }
