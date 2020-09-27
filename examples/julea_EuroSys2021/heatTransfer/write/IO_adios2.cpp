@@ -14,6 +14,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <math.h>
 using namespace std::chrono;
 
 #include "IO.h"
@@ -171,12 +172,18 @@ void IO::write(int step, const HeatTransfer &ht, const Settings &s,
     // std::cout << output << std::endl;
 
     size_t writeSum = 0;
+    size_t writeSquareSum = 0;
     size_t writeMean = 0;
+    size_t writeSdev = 0;
     size_t write = durationWrite.count();
+    size_t writeSquare = write * write;
 
     MPI_Reduce(&write, &writeSum, 1, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&writeSquare, &writeSquareSum, 1, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
 
     writeMean = writeSum / s.nproc;
+    writeSdev = sqrt(writeSquareSum / s.nproc - (writeMean * writeMean));
+
 
     if (s.rank == 0)
     {
@@ -190,6 +197,7 @@ void IO::write(int step, const HeatTransfer &ht, const Settings &s,
         //           << durationWrite.count() << std::endl;
         // writeMean;
         std::cout << writeMean;
+        std::cout << "\t " << writeSdev;
         std::cout << "\t " << write;
         for (int i = 1; i < s.nproc; i++)
         {

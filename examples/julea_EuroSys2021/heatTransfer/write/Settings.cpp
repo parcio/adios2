@@ -122,6 +122,13 @@ Settings::Settings(int argc, char *argv[], int rank, int nproc) : rank{rank}
         std::cout << "# configfile: " << configfile << "\n";
         std::cout << "# outputfile: " << outputfile << "\n";
         std::cout << "# MPI_Comm_size: " << nproc << "\n";
+
+        std::cout << "# N \t M \t ny \t ny \t steps \t iterations" << std::endl;
+        std::cout << npx << " \t " << npy << " \t " << ndx << " \t " << ndy
+                  << " \t " << steps << " \t " << iterations << "\n"
+                  << std::endl;
+
+        std::cout << "# Mean \t Sdev \t Rank 0" << std::endl;
         // std::cout << "# N: " << npx << "\n";
         // std::cout << "# M: " << npy << "\n";
         // std::cout << "# nx: " << ndx << "\n";
@@ -138,12 +145,5 @@ Settings::Settings(int argc, char *argv[], int rank, int nproc) : rank{rank}
         // std::cout << "# write: \t\t right before PUT and right after ENDSTEP;
         // "
         //              "complete write time for deferred writes\n";
-
-        std::cout << "# N \t M \t ny \t ny \t steps \t iterations" << std::endl;
-        std::cout << npx << " \t " << npy << " \t " << ndx << " \t " << ndy
-                  << " \t " << steps << " \t " << iterations << "\n"
-                  << std::endl;
-
-        std::cout << "# Mean \t Rank 0" << std::endl;
     }
 }
