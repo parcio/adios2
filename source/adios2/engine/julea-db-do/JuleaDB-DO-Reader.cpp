@@ -121,8 +121,8 @@ void JuleaDB_DO_Reader::EndStep()
 
     if (m_DeferredVariables.size() > 0)
     {
-        std::cout << "m_DeferredVariables.size() = "
-                  << m_DeferredVariables.size() << std::endl;
+        // std::cout << "m_DeferredVariables.size() = "
+                  // << m_DeferredVariables.size() << std::endl;
         PerformGets();
     }
     ++m_CurrentStep;
@@ -170,8 +170,6 @@ void JuleaDB_DO_Reader::PerformGets()
             for (auto &blockInfo : variable.m_BlocksInfo)                      \
             {                                                                  \
                 T *data = variable.m_BlocksInfo[i].Data;                       \
-                std::cout << "size of variable.m_BlocksInfo: "                 \
-                          << variable.m_BlocksInfo.size() << std::endl;        \
                 ReadBlock(variable, data, i);                                  \
                 i++;                                                           \
             }                                                                  \

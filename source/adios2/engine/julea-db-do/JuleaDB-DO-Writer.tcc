@@ -82,8 +82,8 @@ void JuleaDB_DO_Writer::SetBlockID(Variable<T> &variable)
     if (variable.m_ShapeID == ShapeID::GlobalValue ||
         variable.m_ShapeID == ShapeID::GlobalArray)
     {
-        std::cout << "GlobalValue/GlobalArray: m_CurrentBlockID = m_WriterRank"
-                  << std::endl;
+        // std::cout << "GlobalValue/GlobalArray: m_CurrentBlockID = m_WriterRank"
+                  // << std::endl;
         m_CurrentBlockID = m_WriterRank;
         variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].resize(
             m_Comm.Size());

@@ -40,9 +40,9 @@ JuleaDB_DO_Writer::JuleaDB_DO_Writer(IO &io, const std::string &name,
     m_WriterRank = m_Comm.Rank();
     if (m_WriterRank == 0)
     {
-        std::cout << "Init" << std::endl;
+        // std::cout << "Init" << std::endl;
         Init();
-        std::cout << "Init finished" << std::endl;
+        // std::cout << "Init finished" << std::endl;
     }
     m_Comm.Barrier();
     if (m_Verbosity == 5)
@@ -108,9 +108,9 @@ void JuleaDB_DO_Writer::EndStep()
     // if (m_NeedPerformPuts)
     if (m_DeferredVariables.size() > 0)
     {
-        std::cout << "--- DEBUG : EndStep2" << std::endl;
-        std::cout << "m_DeferredVariables.size() = "
-                  << m_DeferredVariables.size() << std::endl;
+        // std::cout << "--- DEBUG : EndStep2" << std::endl;
+        // std::cout << "m_DeferredVariables.size() = "
+                  // << m_DeferredVariables.size() << std::endl;
         PerformPuts();
     }
 
@@ -309,7 +309,6 @@ void JuleaDB_DO_Writer::InitVariables()
 #define declare_type(T)                                                        \
     void JuleaDB_DO_Writer::DoPutSync(Variable<T> &variable, const T *data)    \
     {                                                                          \
-        std::cout << "m_WriterRank: " << m_WriterRank << std::endl;            \
         SetBlockID(variable);                                                  \
         PutSyncCommon(variable, data);                                         \
         variable.m_BlocksInfo.pop_back();                                      \
@@ -389,7 +388,7 @@ void JuleaDB_DO_Writer::PutAttributes(core::IO &io)
     const uint32_t attributesCount =
         static_cast<uint32_t>(attributesDataMap.size());
 
-    std::cout << "attributesCount: " << attributesCount << std::endl;
+    // std::cout << "attributesCount: " << attributesCount << std::endl;
 
     for (const auto &attributePair : attributesDataMap)
     {

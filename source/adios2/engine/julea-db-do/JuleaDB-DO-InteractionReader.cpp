@@ -96,7 +96,7 @@ void DB_DO_InitVariable(core::IO *io, core::Engine &engine,
                         bool isReadAsJoined, bool isReadAsLocalValue,
                         bool isRandomAccess, bool isSingleValue)
 {
-    std::cout << "----- InitVariable --- " << varName << std::endl;
+    // std::cout << "----- InitVariable --- " << varName << std::endl;
     const std::string type(io->InquireVariableType(varName));
 
     int err = 0;
@@ -167,7 +167,6 @@ void DB_DO_InitVariable(core::IO *io, core::Engine &engine,
                     j_db_iterator_get_field(iterator, "_id", &jdbType,         \
                                             (gpointer *)&tmpID, &db_length,    \
                                             NULL);                             \
-                    std::cout << "_id: " << *tmpID << std::endl;               \
                     entryID = *tmpID;                                          \
                 }                                                              \
                 var->m_AvailableStepBlockIndexOffsets[i + 1].push_back(        \
@@ -289,10 +288,10 @@ void DB_DO_DefineVariableInInit(core::IO *io, const std::string varName,
                                 bool isLocalValue)
 {
     const char *type = stringType.c_str();
-    std::cout << "------ DefineVariableInInit ----------" << std::endl;
-    std::cout << "------ type  ---------- " << type << std::endl;
-    std::cout << "------ constantDims  ---------- " << constantDims
-              << std::endl;
+    // std::cout << "------ DefineVariableInInit ----------" << std::endl;
+    // std::cout << "------ type  ---------- " << type << std::endl;
+    // std::cout << "------ constantDims  ---------- " << constantDims
+              // << std::endl;
 
     if (strcmp(type, "unknown") == 0)
     {
@@ -1312,7 +1311,7 @@ ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 void DB_DO_GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
                              unsigned int *varCount, bool isVariable)
 {
-    std::cout << "-- GetNamesFromJulea ------" << std::endl;
+    // std::cout << "-- GetNamesFromJulea ------" << std::endl;
     guint32 valueLen = 0;
     int err = 0;
     void *namesBuf = NULL;

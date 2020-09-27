@@ -374,7 +374,7 @@ void JuleaDB_DO_Reader::ReadVariableBlocks(Variable<T> &variable)
                         // dataSize = numberElements * variable.m_ElementSize;
                         dataSize = subStreamBoxInfo.Seeks.second -
                                    subStreamBoxInfo.Seeks.first;
-                        std::cout << "dataSize: " << dataSize << std::endl;
+                        // std::cout << "dataSize: " << dataSize << std::endl;
 
                         // T data[dataSize];
                         std::vector<T> data = std::vector<T>(dataSize);
@@ -554,8 +554,8 @@ JuleaDB_DO_Reader::InitVariableBlockInfo(core::Variable<T> &variable, T *data)
     const size_t stepsStart = variable.m_StepsStart;
     const size_t stepsCount = variable.m_StepsCount;
 
-    std::cout << "stepsStart: " << stepsStart << std::endl;
-    std::cout << "stepsCount: " << stepsCount << std::endl;
+    // std::cout << "stepsStart: " << stepsStart << std::endl;
+    // std::cout << "stepsCount: " << stepsCount << std::endl;
 
     // if (m_DebugMode)
     if (m_Verbosity == 5)

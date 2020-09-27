@@ -624,7 +624,7 @@ void DB_DO_PutBlockMetadataToJulea(Variable<T> &variable,
     j_db_iterator_get_field(iterator, "_id", &jdbType, (gpointer *)&tmpID,
                             &db_length, NULL);
 
-    std::cout << "_id: " << *tmpID << std::endl;
+    // std::cout << "_id: " << *tmpID << std::endl;
     entryID = *tmpID;
     // g_assert_true(j_batch_execute(batch2) == true);
 
@@ -640,8 +640,8 @@ void DB_DO_PutVariableDataToJulea(Variable<T> &variable, const T *data,
                                   const std::string nameSpace, uint32_t entryID)
 {
     // std::cout << "--- PutVariableDataToJulea ----- " << std::endl;
-    std::cout << "data: " << data[0] << std::endl;
-    std::cout << "data: " << data[1] << std::endl;
+    // std::cout << "data: " << data[0] << std::endl;
+    // std::cout << "data: " << data[1] << std::endl;
 
     guint64 bytesWritten = 0;
     std::string objName = "variableblocks";
@@ -980,7 +980,7 @@ void DB_DO_PutAttributeMetadataToJulea(Attribute<T> &attribute,
         Variable<T> &variable, const std::string nameSpace,                    \
         const std::string varName, size_t step, size_t block,                  \
         const typename Variable<T>::Info &blockInfo, T &blockMin, T &blockMax, \
-        uint32_t &entryID);                                                     \
+        uint32_t &entryID);                                                    \
                                                                                \
     template void DB_DO_PutAttributeDataToJulea(Attribute<T> &attribute,       \
                                                 const std::string nameSpace);  \
