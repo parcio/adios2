@@ -96,7 +96,7 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
                     bool isReadAsLocalValue, bool isRandomAccess,
                     bool isSingleValue)
 {
-    std::cout << "----- InitVariable --- " << varName << std::endl;
+    // std::cout << "----- InitVariable --- " << varName << std::endl;
     const std::string type(io->InquireVariableType(varName));
 
     int err = 0;
@@ -167,8 +167,6 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
                     j_db_iterator_get_field(iterator, "_id", &jdbType,         \
                                             (gpointer *)&tmpID, &db_length,    \
                                             NULL);                             \
-                    std::cout << "DBInitVariable _id: " << *tmpID              \
-                              << std::endl;                                    \
                     entryID = *tmpID;                                          \
                 }                                                              \
                 var->m_AvailableStepBlockIndexOffsets[i + 1].push_back(        \
@@ -288,10 +286,10 @@ void DBDefineVariableInInit(core::IO *io, const std::string varName,
                             Dims count, bool constantDims, bool isLocalValue)
 {
     const char *type = stringType.c_str();
-    std::cout << "------ DefineVariableInInit ----------" << std::endl;
-    std::cout << "------ type  ---------- " << type << std::endl;
-    std::cout << "------ constantDims  ---------- " << constantDims
-              << std::endl;
+    // std::cout << "------ DefineVariableInInit ----------" << std::endl;
+    // std::cout << "------ type  ---------- " << type << std::endl;
+    // std::cout << "------ constantDims  ---------- " << constantDims
+              // << std::endl;
 
     if (strcmp(type, "unknown") == 0)
     {

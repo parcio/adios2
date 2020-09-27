@@ -633,7 +633,7 @@ void DBPutBlockMetadataToJulea(Variable<T> &variable,
     j_db_iterator_get_field(iterator, "_id", &jdbType, (gpointer *)&tmpID,
                             &db_length, NULL);
 
-    std::cout << "_id: " << *tmpID << std::endl;
+    // std::cout << "_id: " << *tmpID << std::endl;
     entryID = *tmpID;
     // variable->m_AvailableStepBlockIndexOffsets[step].
 
@@ -654,8 +654,8 @@ void DBPutVariableDataToJulea(Variable<T> &variable, const T *data,
                               const std::string nameSpace, uint32_t entryID)
 {
     // std::cout << "--- PutVariableDataToJulea ----- " << std::endl;
-    std::cout << "data: " << data[0] << std::endl;
-    std::cout << "data: " << data[1] << std::endl;
+    // std::cout << "data: " << data[0] << std::endl;
+    // std::cout << "data: " << data[1] << std::endl;
 
     guint64 bytesWritten = 0;
     std::string objName = "variableblocks";
