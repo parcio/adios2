@@ -22,6 +22,7 @@ using namespace std::chrono;
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <math.h>
 
 #include "PrintDataStep.h"
 #include "ReadSettings.h"
@@ -59,6 +60,120 @@ void Compute(const std::vector<double> &Tin, std::vector<double> &Tout,
             Tout[i] = Tin[i];
         }
     }
+}
+
+void printElements(std::string engineType, std::vector<double> Tin)
+{
+    std::ofstream outFile;
+    outFile.open(engineType + "-readOutput.txt");
+    std::cout << "engine type: " << engineType << std::endl;
+    // outFile.open(inIO.EngineType() + "-readOutput.txt");
+    // std::cout << "engine type: " << inIO.EngineType() << std::endl;
+    /*
+     * Print every element in Tin
+     */
+    double sum = 0;
+    int i = 0;
+    for (auto &el : Tin)
+    {
+        sum += el;
+        if (i % 10 == 0)
+        {
+            std::cout << std::endl;
+            outFile << std::endl;
+        }
+        std::cout << el << " ";
+        outFile << el << " ";
+        i++;
+    }
+    std::cout << "\n"
+              << "sum: " << sum << std::endl;
+    outFile << "\n"
+            << "sum: " << sum << std::endl;
+}
+
+void printDurations(
+    std::chrono::time_point<std::chrono::high_resolution_clock> stopGet,
+    std::chrono::time_point<std::chrono::high_resolution_clock> startGet,
+    std::chrono::time_point<std::chrono::high_resolution_clock> stopEndStep,
+    std::chrono::time_point<std::chrono::high_resolution_clock> startEndStep,
+    int rank, int nproc)
+{
+    // right before and right after PUT; in case of deferred I/O nothing is
+    // actually written
+    auto durationGet = duration_cast<microseconds>(stopGet - startGet);
+
+    // right before and right after ENDSTEP; this is where deferred writes
+    // happen
+    auto durationEndStep =
+        duration_cast<microseconds>(stopEndStep - startEndStep);
+
+    // right before GET and right after ENDSTEP; complete write time for
+    // deferred reads
+    auto durationRead = duration_cast<microseconds>(stopEndStep - startGet);
+
+    // durationGet = duration_cast<microseconds>(stopGet - startGet);
+    // durationEndStep =
+    // duration_cast<microseconds>(stopEndStep - startEndStep);
+    durationRead = duration_cast<microseconds>(stopEndStep - startGet);
+
+    size_t readSum = 0;
+    size_t readSquareSum = 0;
+    size_t readMean = 0;
+    size_t readSdev = 0;
+    size_t read = durationRead.count();
+    size_t readSquare = read * read;
+
+    MPI_Reduce(&read, &readSum, 1, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&readSquare, &readSquareSum, 1, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
+
+    readMean = readSum / nproc;
+    readSdev = sqrt(readSquareSum / nproc - (readMean * readMean));
+    if (rank == 0)
+    {
+        std::cout << readMean;
+        std::cout << "\t" << readSdev;
+        std::cout << "\t" << read;
+        // std::cout << "get: \t rank: \t" << rank << "\t"
+        //           << durationGet.count() << "\n"
+        //           << "step: \t rank: \t" << rank << "\t"
+        //           << durationEndStep.count() << "\n"
+        //           << "read: \t rank: \t" << rank << "\t"
+        //           << durationRead.count() << std::endl;
+        for (int i = 1; i < nproc; i++)
+        {
+            // size_t get, step, read;
+            MPI_Status status;
+
+            // MPI_Recv(&get, 1, MPI_LONG, i, 0, MPI_COMM_WORLD,
+            // &status); MPI_Recv(&step, 1, MPI_LONG, i, 0,
+            // MPI_COMM_WORLD, &status);
+            MPI_Recv(&read, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, &status);
+            // std::cout << "get: \t rank: \t" << i << "\t" << get <<
+            // "\n"
+            //           << "step: \t rank: \t" << i << "\t" << step
+            //           << "\n"
+            //           << "read: \t rank: \t" << i << "\t" << read
+            //           << std::endl;
+            std::cout << "\t " << read;
+        }
+        std::cout << std::endl;
+    }
+    else
+    {
+        // size_t get = durationGet.count();
+        // size_t step = durationEndStep.count();
+        // size_t read = durationRead.count();
+        // MPI_Send(&get, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
+        // MPI_Send(&step, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
+        MPI_Send(&read, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
+    }
+    // MPI_Barrier(mpiReaderComm);
+    // if (rank == 0)
+    // {
+    //     std::cout << "--- Ending step: " << step << " \t---\n\n"
+    //               << std::endl;
+    // }
 }
 
 int main(int argc, char *argv[])
@@ -120,32 +235,11 @@ int main(int argc, char *argv[])
         bool firstStep = true;
         int step = 0;
 
-        // std::ofstream outFile;
-        // outFile.open(inIO.EngineType() + "-readOutput.txt");
-
-        // std::cout << "engine type: " << inIO.EngineType() << std::endl;
-
-        auto startBeginStep = high_resolution_clock::now();
-        auto stopBeginStep = high_resolution_clock::now();
-
         auto startEndStep = high_resolution_clock::now();
         auto stopEndStep = high_resolution_clock::now();
 
         auto startGet = high_resolution_clock::now();
         auto stopGet = high_resolution_clock::now();
-
-        // right before and right after PUT; in case of deferred I/O nothing is
-        // actually written
-        auto durationGet = duration_cast<microseconds>(stopGet - startGet);
-
-        // right before and right after ENDSTEP; this is where deferred writes
-        // happen
-        auto durationEndStep =
-            duration_cast<microseconds>(stopEndStep - startEndStep);
-
-        // right before GET and right after ENDSTEP; complete write time for
-        // deferred reads
-        auto durationRead = duration_cast<microseconds>(stopEndStep - startGet);
 
         while (true)
         {
@@ -156,12 +250,6 @@ int main(int argc, char *argv[])
                 break;
             }
 
-            // MPI_Barrier(mpiReaderComm);
-            // if (rank == 0)
-            // {
-            //     std::cout << "--- Beginning step: " << step << " \t---\n"
-            //               << std::endl;
-            // }
             // Variable objects disappear between steps so we need this every
             // step
             vTin = inIO.InquireVariable<double>("T");
@@ -205,7 +293,7 @@ int main(int argc, char *argv[])
                 // MPI_Barrier(mpiReaderComm); // sync processes just for stdout
                 if (rank == 0)
                 {
-                    std::cout << "\n# Mean \t Rank 0" << std::endl;
+                    std::cout << "\n# Mean \t Sdev \t Rank 0" << std::endl;
                 }
             }
 
@@ -232,25 +320,6 @@ int main(int argc, char *argv[])
             reader.EndStep();
             stopEndStep = high_resolution_clock::now();
 
-            // double sum = 0;
-            // int i = 0;
-            // for (auto &el : Tin)
-            // {
-            //     sum += el;
-            //     if (i % 10 == 0)
-            //     {
-            //         std::cout << std::endl;
-            //         outFile << std::endl;
-            //     }
-            //     std::cout << el << " ";
-            //     outFile << el << " ";
-            //     i++;
-            // }
-            // std::cout << "\n"
-            //           << "sum: " << sum << std::endl;
-            // outFile << "\n"
-            //         << "sum: " << sum << std::endl;
-
             /* Compute dT from current T (Tin) and previous T (Tout)
              * and save Tin in Tout for output and for future computation
              */
@@ -265,63 +334,10 @@ int main(int argc, char *argv[])
             //     writer.Put<double>(vdT, dT.data());
             // writer.EndStep();
 
-            // durationGet = duration_cast<microseconds>(stopGet - startGet);
-            // durationEndStep =
-            // duration_cast<microseconds>(stopEndStep - startEndStep);
-            durationRead = duration_cast<microseconds>(stopEndStep - startGet);
+            printDurations(stopGet, startGet, stopEndStep, startEndStep, rank,
+                           nproc);
+            // printElements(inIO.EngineType(), Tin);
 
-            size_t readSum = 0;
-            size_t readMean = 0;
-            size_t read = durationRead.count();
-
-            MPI_Reduce(&read, &readSum, 1, MPI_LONG, MPI_SUM, 0,
-                       MPI_COMM_WORLD);
-
-            readMean = readSum / nproc;
-            if (rank == 0)
-            {
-                std::cout << readMean;
-                std::cout << "\t" << read;
-                // std::cout << "get: \t rank: \t" << rank << "\t"
-                //           << durationGet.count() << "\n"
-                //           << "step: \t rank: \t" << rank << "\t"
-                //           << durationEndStep.count() << "\n"
-                //           << "read: \t rank: \t" << rank << "\t"
-                //           << durationRead.count() << std::endl;
-                for (int i = 1; i < nproc; i++)
-                {
-                    // size_t get, step, read;
-                    MPI_Status status;
-
-                    // MPI_Recv(&get, 1, MPI_LONG, i, 0, MPI_COMM_WORLD,
-                    // &status); MPI_Recv(&step, 1, MPI_LONG, i, 0,
-                    // MPI_COMM_WORLD, &status);
-                    MPI_Recv(&read, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, &status);
-                    // std::cout << "get: \t rank: \t" << i << "\t" << get <<
-                    // "\n"
-                    //           << "step: \t rank: \t" << i << "\t" << step
-                    //           << "\n"
-                    //           << "read: \t rank: \t" << i << "\t" << read
-                    //           << std::endl;
-                    std::cout << "\t " << read;
-                }
-                std::cout << std::endl;
-            }
-            else
-            {
-                // size_t get = durationGet.count();
-                // size_t step = durationEndStep.count();
-                // size_t read = durationRead.count();
-                // MPI_Send(&get, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
-                // MPI_Send(&step, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
-                MPI_Send(&read, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
-            }
-            // MPI_Barrier(mpiReaderComm);
-            // if (rank == 0)
-            // {
-            //     std::cout << "--- Ending step: " << step << " \t---\n\n"
-            //               << std::endl;
-            // }
             step++;
             firstStep = false;
         }

@@ -62,6 +62,9 @@ ReadSettings::ReadSettings(int argc, char *argv[], int rank, int nproc)
         std::cout << "# inputfile: " << inputfile << "\n";
         std::cout << "# outputfile: " << outputfile << "\n";
         std::cout << "# MPI_Comm_size: " << nproc << "\n";
+        std::cout << "# N \t M" << std::endl;
+        std::cout << npx << " \t " << npy << "\n" << std::endl;
+
         // std::cout << "# N: " << npx << "\n";
         // std::cout << "# M: " << npy << "\n";
         // std::cout << "# \n --- measured times (mikroseconds): ---\n";
@@ -74,9 +77,6 @@ ReadSettings::ReadSettings(int argc, char *argv[], int rank, int nproc)
         // std::cout << "# read: \t\t right before GET and right after ENDSTEP;
         // "
         //              "complete read time for deferred reads\n";
-        std::cout << "# N \t M" << std::endl;
-        std::cout << npx << " \t " << npy << "\n" << std::endl;
-
         // std::cout << "# Mean \t Rank 0" << std::endl;
     }
 }
