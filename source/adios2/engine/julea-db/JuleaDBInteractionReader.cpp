@@ -241,6 +241,7 @@ void DBDefineVariableInEngineIO(core::IO *io, const std::string varName,
 {
     // variable->m_AvailableShapes[characteristics.Statistics.Step] = \
                 //     variable->m_Shape;                                         \
+    
     std::cout << "--- DBDefineVariableInEngineIO" <<std::endl;
     if (type == "compound")
     {
