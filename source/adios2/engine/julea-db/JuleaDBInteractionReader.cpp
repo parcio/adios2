@@ -96,7 +96,7 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
                     bool isReadAsLocalValue, bool isRandomAccess,
                     bool isSingleValue)
 {
-    // std::cout << "----- InitVariable --- " << varName << std::endl;
+    std::cout << "----- InitVariable --- " << varName << std::endl;
     const std::string type(io->InquireVariableType(varName));
 
     int err = 0;
@@ -503,7 +503,7 @@ void DBDefineVariableInInit(core::IO *io, const std::string varName,
 
 void CheckSchemas()
 {
-    // std::cout << "--- CheckSchemas" << std::endl;
+    std::cout << "--- CheckSchemas" << std::endl;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
     auto batch2 = j_batch_new(semantics);
