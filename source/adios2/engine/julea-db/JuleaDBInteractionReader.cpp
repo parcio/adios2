@@ -241,7 +241,7 @@ void DBDefineVariableInEngineIO(core::IO *io, const std::string varName,
 {
     // variable->m_AvailableShapes[characteristics.Statistics.Step] = \
                 //     variable->m_Shape;                                         \
-
+    std::cout << "--- DBDefineVariableInEngineIO" <<std::endl;
     if (type == "compound")
     {
     }
@@ -286,7 +286,7 @@ void DBDefineVariableInInit(core::IO *io, const std::string varName,
                             Dims count, bool constantDims, bool isLocalValue)
 {
     const char *type = stringType.c_str();
-    // std::cout << "------ DefineVariableInInit ----------" << std::endl;
+    std::cout << "------ DefineVariableInInit ----------" << std::endl;
     // std::cout << "------ type  ---------- " << type << std::endl;
     // std::cout << "------ constantDims  ---------- " << constantDims
               // << std::endl;
@@ -503,7 +503,7 @@ void DBDefineVariableInInit(core::IO *io, const std::string varName,
 
 void CheckSchemas()
 {
-    std::cout << "--- CheckSchemas" << std::endl;
+    // std::cout << "--- CheckSchemas" << std::endl;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
     auto batch2 = j_batch_new(semantics);
@@ -678,9 +678,11 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
         // {
         //     std::cout << "\n FIXME: time\n" << std::endl;
         // }
-
-        DBDefineVariableInInit(io, varName, varType, shape, start, count,
+        std::cout << "before DBDefineVariableInEngineIO: " << std::endl;
+        DBDefineVariableInEngineIO(io, varName, varType, *shapeID, shape, start, count,
                                *isConstantDims, *isSingleValue);
+        // DBDefineVariableInInit(io, varName, varType, shape, start, count,
+        //                        *isConstantDims, *isSingleValue);
         DBInitVariable(io, engine, nameSpace, varName, blocks, *numberSteps,
                        *shapeID, *isReadAsJoined, *isReadAsLocalValue,
                        *isRandomAccess, *isSingleValue);
