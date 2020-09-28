@@ -201,6 +201,8 @@ int main(int argc, char *argv[])
 
     try
     {
+        double timeStart = MPI_Wtime();
+        
         ReadSettings settings(argc, argv, rank, nproc);
         adios2::ADIOS ad(settings.configfile, mpiReaderComm);
 
@@ -347,6 +349,11 @@ int main(int argc, char *argv[])
         if (writer)
             writer.Close();
         // outFile.close();
+        MPI_Barrier(mpiReaderComm);
+
+        double timeEnd = MPI_Wtime();
+        if (rank == 0)
+            std::cout << "Total runtime = " << timeEnd - timeStart << "s\n";
     }
     catch (std::invalid_argument &e) // command-line argument errors
     {
