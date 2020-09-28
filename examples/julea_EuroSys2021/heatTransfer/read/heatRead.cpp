@@ -249,6 +249,8 @@ int main(int argc, char *argv[])
             {
                 break;
             }
+            
+            MPI_Barrier(mpiReaderComm); // sync to avoid race conditions?!
 
             // Variable objects disappear between steps so we need this every
             // step
@@ -290,7 +292,7 @@ int main(int argc, char *argv[])
                 writer = outIO.Open(settings.outputfile, adios2::Mode::Write,
                                     mpiReaderComm);
 
-                // MPI_Barrier(mpiReaderComm); // sync processes just for stdout
+                MPI_Barrier(mpiReaderComm); // sync processes just for stdout
                 if (rank == 0)
                 {
                     std::cout << "\n# Mean \t Sdev \t Rank 0" << std::endl;
@@ -323,7 +325,7 @@ int main(int argc, char *argv[])
             /* Compute dT from current T (Tin) and previous T (Tout)
              * and save Tin in Tout for output and for future computation
              */
-            Compute(Tin, Tout, dT, firstStep);
+            // Compute(Tin, Tout, dT, firstStep);
 
             /* Output Tout and dT */
             // writer.BeginStep();
