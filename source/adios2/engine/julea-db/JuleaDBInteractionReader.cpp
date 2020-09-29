@@ -529,7 +529,7 @@ void CheckSchemas()
 void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
                          core::Engine &engine)
 {
-    // std::cout << "--- InitVariablesFromDB ---" << std::endl;
+    std::cout << "--- InitVariablesFromDB ---" << std::endl;
     int err = 0;
     JDBType type;
     guint64 db_length = 0;

@@ -87,6 +87,7 @@ private:
     int m_Verbosity = 0; // change to 5 for debugging
     int m_Penguin = 0;   // change for debugging info from 0 to 42
     int m_ReaderRank;    // my rank in the readers' comm
+    int m_SizeMPI = 1;          ///< current MPI processes size
 
     bool m_CollectiveMetadata = true;
 
