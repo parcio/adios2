@@ -27,7 +27,6 @@ BP3Reader::BP3Reader(IO &io, const std::string &name, const Mode mode,
   m_FileManager(m_Comm), m_SubFileManager(m_Comm)
 {
     TAU_SCOPED_TIMER("BP3Reader::Open");
-        std::cout << "BP3 Reader Constructor " << m_BP3Deserializer.m_RankMPI << std::endl;
     Init();
 }
 
@@ -127,7 +126,6 @@ void BP3Reader::Init()
             " " + m_EndMessage);
     }
 
-    std::cout << "BP3 Reader " << m_BP3Deserializer.m_RankMPI << " Init()\n";
     InitTransports();
     InitBuffer();
 }
@@ -161,8 +159,6 @@ void BP3Reader::InitTransports()
 
 void BP3Reader::InitBuffer()
 {
-        std::cout << "BP3 Reader " << m_BP3Deserializer.m_RankMPI << " InitBuffer()\n";
-
     if (m_BP3Deserializer.m_RankMPI == 0)
     {
         const size_t fileSize = m_FileManager.GetFileSize();

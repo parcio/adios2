@@ -96,7 +96,7 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
                     bool isReadAsLocalValue, bool isRandomAccess,
                     bool isSingleValue)
 {
-    std::cout << "----- InitVariable --- " << varName << std::endl;
+    // std::cout << "----- InitVariable --- " << varName << std::endl;
     const std::string type(io->InquireVariableType(varName));
 
     int err = 0;
@@ -242,7 +242,7 @@ void DBDefineVariableInEngineIO(core::IO *io, const std::string varName,
     // variable->m_AvailableShapes[characteristics.Statistics.Step] = \
                 //     variable->m_Shape;                                         \
     
-    std::cout << "--- DBDefineVariableInEngineIO" <<std::endl;
+    // std::cout << "--- DBDefineVariableInEngineIO" <<std::endl;
     if (type == "compound")
     {
     }
@@ -287,7 +287,7 @@ void DBDefineVariableInInit(core::IO *io, const std::string varName,
                             Dims count, bool constantDims, bool isLocalValue)
 {
     const char *type = stringType.c_str();
-    std::cout << "------ DefineVariableInInit ----------" << std::endl;
+    // std::cout << "------ DefineVariableInInit ----------" << std::endl;
     // std::cout << "------ type  ---------- " << type << std::endl;
     // std::cout << "------ constantDims  ---------- " << constantDims
               // << std::endl;
@@ -529,7 +529,7 @@ void CheckSchemas()
 void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
                          core::Engine &engine)
 {
-    std::cout << "--- InitVariablesFromDB ---" << std::endl;
+    // std::cout << "--- InitVariablesFromDB ---" << std::endl;
     // int rank = engine.m_Comm.Rank();
     // int MPISize = engine.m_Comm.Size();
 
@@ -684,7 +684,6 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
         // {
         //     std::cout << "\n FIXME: time\n" << std::endl;
         // }
-        std::cout << "before DBDefineVariableInEngineIO: i = " << i << std::endl;
         DBDefineVariableInEngineIO(io, varName, varType, *shapeID, shape, start, count,
                                *isConstantDims, *isSingleValue);
         // DBDefineVariableInInit(io, varName, varType, shape, start, count,

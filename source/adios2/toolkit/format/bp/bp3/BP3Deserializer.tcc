@@ -766,7 +766,6 @@ void BP3Deserializer::DefineVariableInEngineIO(const ElementIndexHeader &header,
                                                const std::vector<char> &buffer,
                                                size_t position) const
 {
-    std::cout << "---BP3 Deserializer::DefineVariableInEngineIO: " << m_RankMPI << std::endl;
     const size_t initialPosition = position;
 
     const Characteristics<T> characteristics =

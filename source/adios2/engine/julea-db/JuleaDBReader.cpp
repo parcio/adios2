@@ -42,7 +42,6 @@ JuleaDBReader::JuleaDBReader(IO &io, const std::string &name, const Mode mode,
     // MPI_Comm_rank(mpiComm, &m_ReaderRank);
     m_ReaderRank = m_Comm.Rank();
     m_SizeMPI = m_Comm.Size();
-    std::cout << "Julea DB Reader Constructor " << m_ReaderRank << std::endl;
     // if (m_ReaderRank == 0)
     // {
         // std::cout << "Init - " << m_ReaderRank << std::endl;
@@ -236,8 +235,6 @@ void JuleaDBReader::Init()
     {
         std::cout << "Julea Reader " << m_ReaderRank << " Init()\n";
     }
-        std::cout << "Julea Reader " << m_ReaderRank << " Init()\n";
-
     m_JuleaSemantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
 
     // InitParameters();
