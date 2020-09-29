@@ -226,10 +226,10 @@ int main(int argc, char *argv[])
 
         MPI_Barrier(mpiReaderComm); //who knows maybe this helps for mariadb...
 
-        std::cout << "before open - rank: " << rank << std::endl;
+        // std::cout << "before open - rank: " << rank << std::endl;
         adios2::Engine reader =
             inIO.Open(settings.inputfile, adios2::Mode::Read, mpiReaderComm);
-        std::cout << "after open - rank: " << rank << std::endl;
+        // std::cout << "after open - rank: " << rank << std::endl;
 
         std::vector<double> Tin;
         std::vector<double> Tout;
