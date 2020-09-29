@@ -249,10 +249,10 @@ int main(int argc, char *argv[])
 
         while (true)
         {
-            if (firstStep)
-            {
-                std::cout << "rank: " << rank << std::endl;
-            }
+            // if (firstStep)
+            // {
+            //     std::cout << "rank: " << rank << std::endl;
+            // }
             adios2::StepStatus status =
                 reader.BeginStep(adios2::StepMode::Read);
             if (status != adios2::StepStatus::OK)
@@ -311,7 +311,7 @@ int main(int argc, char *argv[])
 
             if (!rank)
             {
-                std::cout << "Processing step " << step << std::endl;
+                // std::cout << "Processing step " << step << std::endl;
             }
 
             // Create a 2D selection for the subset
