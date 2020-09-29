@@ -530,6 +530,9 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
                          core::Engine &engine)
 {
     std::cout << "--- InitVariablesFromDB ---" << std::endl;
+    // int rank = engine.m_Comm.Rank();
+    // int MPISize = engine.m_Comm.Size();
+
     int err = 0;
     JDBType type;
     guint64 db_length = 0;
@@ -538,6 +541,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
     g_autoptr(JDBEntry) entry = NULL;
     g_autoptr(JDBIterator) iterator = NULL;
     g_autoptr(JDBSelector) selector = NULL;
+
 
     char *varName;
     char *varTypePtr;
@@ -572,6 +576,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
                             NULL);
     iterator = j_db_iterator_new(schema, selector, NULL);
 
+    int i = 0;
     while (j_db_iterator_next(iterator, NULL))
     {
         Dims shape;
@@ -679,7 +684,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
         // {
         //     std::cout << "\n FIXME: time\n" << std::endl;
         // }
-        std::cout << "before DBDefineVariableInEngineIO: " << std::endl;
+        std::cout << "before DBDefineVariableInEngineIO: i = " << i << std::endl;
         DBDefineVariableInEngineIO(io, varName, varType, *shapeID, shape, start, count,
                                *isConstantDims, *isSingleValue);
         // DBDefineVariableInInit(io, varName, varType, shape, start, count,
@@ -703,6 +708,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
         g_free(startSize);
         g_free(countSize);
         g_free(numberSteps);
+        i++;
     }
     // j_db_iterator_unref(iterator);
     // j_db_entry_unref(entry);
