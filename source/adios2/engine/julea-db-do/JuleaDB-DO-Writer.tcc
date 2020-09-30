@@ -82,8 +82,9 @@ void JuleaDB_DO_Writer::SetBlockID(Variable<T> &variable)
     if (variable.m_ShapeID == ShapeID::GlobalValue ||
         variable.m_ShapeID == ShapeID::GlobalArray)
     {
-        // std::cout << "GlobalValue/GlobalArray: m_CurrentBlockID = m_WriterRank"
-                  // << std::endl;
+        // std::cout << "GlobalValue/GlobalArray: m_CurrentBlockID =
+        // m_WriterRank"
+        // << std::endl;
         m_CurrentBlockID = m_WriterRank;
         variable.m_AvailableStepBlockIndexOffsets[m_CurrentStep].resize(
             m_Comm.Size());
@@ -164,9 +165,15 @@ void JuleaDB_DO_Writer::PutSyncToJulea(
         }
     }
 
-    /** updates the variable metadata as there is a new block now */
-    DB_DO_PutVariableMetadataToJulea(variable, m_Name, variable.m_Name,
-                                     m_CurrentStep, m_CurrentBlockID);
+    // TODO: check if there really is no case for global variables to have
+    // different
+    // features across different blocks
+    if (m_WriterRank == 0)
+    {
+        /** updates the variable metadata as there is a new block now */
+        DB_DO_PutVariableMetadataToJulea(variable, m_Name, variable.m_Name,
+                                         m_CurrentStep, m_CurrentBlockID);
+    }
 
     /** put block metadata to DB */
     DB_DO_PutBlockMetadataToJulea(variable, m_Name, variable.m_Name,

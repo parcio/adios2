@@ -291,7 +291,7 @@ void DB_DO_DefineVariableInInit(core::IO *io, const std::string varName,
     // std::cout << "------ DefineVariableInInit ----------" << std::endl;
     // std::cout << "------ type  ---------- " << type << std::endl;
     // std::cout << "------ constantDims  ---------- " << constantDims
-              // << std::endl;
+    // << std::endl;
 
     if (strcmp(type, "unknown") == 0)
     {
@@ -681,8 +681,11 @@ void InitVariablesFromDB_DO(const std::string nameSpace, core::IO *io,
         //     std::cout << "\n FIXME: time\n" << std::endl;
         // }
 
-        DB_DO_DefineVariableInInit(io, varName, varType, shape, start, count,
-                                   *isConstantDims, *isSingleValue);
+        DB_DO_DefineVariableInEngineIO(io, varName, varType, *shapeID, shape,
+                                       start, count, *isConstantDims,
+                                       *isSingleValue);
+        // DB_DO_DefineVariableInInit(io, varName, varType, shape, start, count,
+        //                            *isConstantDims, *isSingleValue);
         DB_DO_InitVariable(io, engine, nameSpace, varName, blocks, *numberSteps,
                            *shapeID, *isReadAsJoined, *isReadAsLocalValue,
                            *isRandomAccess, *isSingleValue);

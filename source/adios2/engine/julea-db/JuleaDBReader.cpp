@@ -44,9 +44,9 @@ JuleaDBReader::JuleaDBReader(IO &io, const std::string &name, const Mode mode,
     m_SizeMPI = m_Comm.Size();
     // if (m_ReaderRank == 0)
     // {
-        // std::cout << "Init - " << m_ReaderRank << std::endl;
-        Init();
-        // std::cout << "Init finished - " << m_ReaderRank << std::endl;
+    // std::cout << "Init - " << m_ReaderRank << std::endl;
+    Init();
+    // std::cout << "Init finished - " << m_ReaderRank << std::endl;
     // }
     // m_Comm.Barrier();
 
@@ -130,7 +130,7 @@ void JuleaDBReader::EndStep()
     if (m_DeferredVariables.size() > 0)
     {
         // std::cout << "m_DeferredVariables.size() = "
-                  // << m_DeferredVariables.size() << std::endl;
+        // << m_DeferredVariables.size() << std::endl;
         PerformGets();
     }
     ++m_CurrentStep;

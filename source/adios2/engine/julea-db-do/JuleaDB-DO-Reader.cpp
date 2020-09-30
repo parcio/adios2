@@ -122,7 +122,7 @@ void JuleaDB_DO_Reader::EndStep()
     if (m_DeferredVariables.size() > 0)
     {
         // std::cout << "m_DeferredVariables.size() = "
-                  // << m_DeferredVariables.size() << std::endl;
+        // << m_DeferredVariables.size() << std::endl;
         PerformGets();
     }
     ++m_CurrentStep;

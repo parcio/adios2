@@ -354,11 +354,11 @@ void JuleaDBReader::ReadVariableBlocks(Variable<T> &variable)
                     size_t step = stepPair.first - 1;
 
                     // std::cout << "stepPair.first: " << stepPair.first
-                              // << std::endl;
+                    // << std::endl;
 
                     // std::cout
-                        // << "unique entry ID: " << subStreamBoxInfo.SubStreamID
-                        // << std::endl;
+                    // << "unique entry ID: " << subStreamBoxInfo.SubStreamID
+                    // << std::endl;
 
                     // std::string entryID = subStreamBoxInfo.SubStreamID;
 
@@ -789,8 +789,10 @@ void JuleaDBReader::SetVariableBlockInfo(
 
         subStreamInfo.BlockBox = helper::StartEndBox(info.Start, info.Count);
         // std::cout << "BlockBox: (["
-        //           << helper::VectorToCSV(subStreamInfo.BlockBox.first) << "], ["
-        //           << helper::VectorToCSV(subStreamInfo.BlockBox.second) << "])"
+        //           << helper::VectorToCSV(subStreamInfo.BlockBox.first) << "],
+        //           ["
+        //           << helper::VectorToCSV(subStreamInfo.BlockBox.second) <<
+        //           "])"
         //           << std::endl;
         // std::cout << "selectionBox: (["
         //           << helper::VectorToCSV(selectionBox.first) << "], ["
@@ -843,7 +845,8 @@ void JuleaDBReader::SetVariableBlockInfo(
             sizeof(T) * helper::LinearIndex(subStreamInfo.BlockBox,
                                             subStreamInfo.IntersectionBox.first,
                                             isRowMajor);
-        // std::cout << "Seeks.first: " << subStreamInfo.Seeks.first << std::endl;
+        // std::cout << "Seeks.first: " << subStreamInfo.Seeks.first <<
+        // std::endl;
 
         subStreamInfo.Seeks.second =
             sizeof(T) * (helper::LinearIndex(
@@ -851,7 +854,7 @@ void JuleaDBReader::SetVariableBlockInfo(
                              subStreamInfo.IntersectionBox.second, isRowMajor) +
                          1);
         // std::cout << "Seeks.second: " << subStreamInfo.Seeks.second
-                  // << std::endl;
+        // << std::endl;
 
         //     const size_t payloadOffset =
         //         blockCharacteristics.Statistics.PayloadOffset;

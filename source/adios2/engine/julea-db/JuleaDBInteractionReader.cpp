@@ -241,7 +241,7 @@ void DBDefineVariableInEngineIO(core::IO *io, const std::string varName,
 {
     // variable->m_AvailableShapes[characteristics.Statistics.Step] = \
                 //     variable->m_Shape;                                         \
-    
+
     // std::cout << "--- DBDefineVariableInEngineIO" <<std::endl;
     if (type == "compound")
     {
@@ -290,7 +290,7 @@ void DBDefineVariableInInit(core::IO *io, const std::string varName,
     // std::cout << "------ DefineVariableInInit ----------" << std::endl;
     // std::cout << "------ type  ---------- " << type << std::endl;
     // std::cout << "------ constantDims  ---------- " << constantDims
-              // << std::endl;
+    // << std::endl;
 
     if (strcmp(type, "unknown") == 0)
     {
@@ -542,7 +542,6 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
     g_autoptr(JDBIterator) iterator = NULL;
     g_autoptr(JDBSelector) selector = NULL;
 
-
     char *varName;
     char *varTypePtr;
     std::string varType;
@@ -684,8 +683,8 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
         // {
         //     std::cout << "\n FIXME: time\n" << std::endl;
         // }
-        DBDefineVariableInEngineIO(io, varName, varType, *shapeID, shape, start, count,
-                               *isConstantDims, *isSingleValue);
+        DBDefineVariableInEngineIO(io, varName, varType, *shapeID, shape, start,
+                                   count, *isConstantDims, *isSingleValue);
         // DBDefineVariableInInit(io, varName, varType, shape, start, count,
         //                        *isConstantDims, *isSingleValue);
         DBInitVariable(io, engine, nameSpace, varName, blocks, *numberSteps,
