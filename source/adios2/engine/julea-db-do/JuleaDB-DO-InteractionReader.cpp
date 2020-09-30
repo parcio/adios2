@@ -1264,10 +1264,14 @@ void DB_DO_GetVariableDataFromJulea(Variable<T> &variable, T *data,
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
-    auto dataObject = j_object_new(stringDataObject, uniqueID);
+    auto distribution = j_distribution_new(J_DISTRIBUTION_ROUND_ROBIN);
+    j_distribution_set(distribution, "start-index", 0);
+
+
+    auto dataObject = j_distributed_object_new(stringDataObject, uniqueID, distribution);
     // auto dataObject = j_object_new(stringDataObject, stepBlockID.c_str());
 
-    j_object_read(dataObject, data, dataSize, offset, &bytesRead, batch);
+    j_distributed_object_read(dataObject, data, dataSize, offset, &bytesRead, batch);
     g_assert_true(j_batch_execute(batch) == true);
 
     if (bytesRead == dataSize)
@@ -1284,7 +1288,7 @@ void DB_DO_GetVariableDataFromJulea(Variable<T> &variable, T *data,
     j_batch_unref(batch);
     j_semantics_unref(semantics);
     g_free(stringDataObject);
-    j_object_unref(dataObject);
+    j_distributed_object_unref(dataObject);
 }
 
 #define variable_template_instantiation(T)                                     \
