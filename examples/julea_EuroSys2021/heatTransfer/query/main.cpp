@@ -24,18 +24,28 @@ using namespace std::chrono;
 #include <iostream>
 #include <math.h>
 #include <memory>
+#include <numeric>
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <math.h>
 
 #include "QueryPrintDataStep.h"
 #include "QuerySettings.h"
 
+void ComputeMean(const std::vector<double> &Tin, double &Mean)
+{
+    // TODO: why is there dt.Size in read?
+    for (size_t i = 0; i < Tin.size(); ++i)
+    {
+        auto sum = std::accumulate(Tin.begin(), Tin.end(), 0);
+        Mean = sum / Tin.size();
+    }
+}
 
 void printUsage()
 {
-    // std::cout << "Usage: heatTransfer  config   output  N  M   nx  ny   steps "
+    // std::cout << "Usage: heatTransfer  config   output  N  M   nx  ny   steps
+    // "
     //              "iterations\n"
     //           << "  config: XML config file to use\n"
     //           << "  output: name of output data file/stream\n"
@@ -44,7 +54,8 @@ void printUsage()
     //           << "  nx:     local array size in X dimension per processor\n"
     //           << "  ny:     local array size in Y dimension per processor\n"
     //           << "  steps:  the total number of steps to output\n"
-    //           << "  iterations: one step consist of this many iterations\n\n";
+    //           << "  iterations: one step consist of this many
+    //           iterations\n\n";
 }
 
 int main(int argc, char *argv[])
@@ -78,15 +89,16 @@ int main(int argc, char *argv[])
 
         adios2::IO inIO = ad.DeclareIO("queryInput");
         adios2::IO outIO = ad.DeclareIO("queryOutput");
-       
+
         std::cout << "This is actually called" << std::endl;
         adios2::Engine reader =
             inIO.Open(settings.inputfile, adios2::Mode::Read, mpiQueryComm);
-    
+
         // MPI_Barrier(mpiHeatTransferComm);
 
         std::vector<double> Tin;
         // std::vector<double> Tout;
+        double Tmean;
         std::vector<double> means;
         std::vector<double> diffMeanMax;
         std::vector<double> diffMeanMin;
@@ -105,8 +117,7 @@ int main(int argc, char *argv[])
 
         // computeDiffMeanMin()
 
-
-         auto startEndStep = high_resolution_clock::now();
+        auto startEndStep = high_resolution_clock::now();
         auto stopEndStep = high_resolution_clock::now();
 
         auto startGet = high_resolution_clock::now();
@@ -124,7 +135,7 @@ int main(int argc, char *argv[])
             {
                 break;
             }
-            
+
             MPI_Barrier(mpiQueryComm); // sync to avoid race conditions?!
 
             // Variable objects disappear between steps so we need this every
@@ -133,9 +144,9 @@ int main(int argc, char *argv[])
 
             if (!vTin)
             {
-                // std::cout << "Error: NO variable T found. Unable to proceed. "
-                             // "Exiting. "
-                          // << std::endl;
+                // std::cout << "Error: NO variable T found. Unable to proceed.
+                // " "Exiting. "
+                // << std::endl;
                 break;
             }
 
@@ -156,16 +167,20 @@ int main(int argc, char *argv[])
 
                 settings.DecomposeArray(gndx, gndy);
                 Tin.resize(settings.readsize[0] * settings.readsize[1]);
-        //         Tout.resize(settings.readsize[0] * settings.readsize[1]);
-        //         dT.resize(settings.readsize[0] * settings.readsize[1]);
+                //         Tout.resize(settings.readsize[0] *
+                //         settings.readsize[1]); dT.resize(settings.readsize[0]
+                //         * settings.readsize[1]);
 
-        //         /* Create output variables and open output stream */
-        //         vTout = outIO.DefineVariable<double>(
-        //             "T", {gndx, gndy}, settings.offset, settings.readsize);
-        //         vdT = outIO.DefineVariable<double>(
-        //             "dT", {gndx, gndy}, settings.offset, settings.readsize);
-        //         writer = outIO.Open(settings.outputfile, adios2::Mode::Write,
-        //                             mpiReaderComm);
+                //         /* Create output variables and open output stream */
+                //         vTout = outIO.DefineVariable<double>(
+                //             "T", {gndx, gndy}, settings.offset,
+                //             settings.readsize);
+                //         vdT = outIO.DefineVariable<double>(
+                //             "dT", {gndx, gndy}, settings.offset,
+                //             settings.readsize);
+                //         writer = outIO.Open(settings.outputfile,
+                //         adios2::Mode::Write,
+                //                             mpiReaderComm);
 
                 MPI_Barrier(mpiQueryComm); // sync processes just for stdout
                 if (rank == 0)
@@ -174,10 +189,10 @@ int main(int argc, char *argv[])
                 }
             }
 
-        //     if (!rank)
-        //     {
-        //         // std::cout << "Processing step " << step << std::endl;
-        //     }
+            //     if (!rank)
+            //     {
+            //         // std::cout << "Processing step " << step << std::endl;
+            //     }
 
             // Create a 2D selection for the subset
             vTin.SetSelection(
@@ -197,33 +212,38 @@ int main(int argc, char *argv[])
             reader.EndStep();
             stopEndStep = high_resolution_clock::now();
 
-        //     /* Compute dT from current T (Tin) and previous T (Tout)
-        //      * and save Tin in Tout for output and for future computation
-        //      */
-        //     Compute(Tin, Tout, dT, firstStep);
+            ComputeMean(Tin, Tmean);
+            double Tmin = vTin.Min();
+            double Tmax = vTin.Max();
 
-        //     /* Output Tout and dT */
-        //     writer.BeginStep();
+            // TODO: compute this for complete input vector!
+            double diffMeanMin = Tmean - Tmin;
+            double diffMeanMax = Tmax - Tmean;
 
-        //     if (vTout)
-        //         writer.Put<double>(vTout, Tout.data());
-        //     if (vdT)
-        //         writer.Put<double>(vdT, dT.data());
-        //     writer.EndStep();
+            //TODO: output/answer: coordinates of areas which where the coldest but heated up the fastest
 
-        //     printDurations(stopGet, startGet, stopEndStep, startEndStep, rank,
-        //                    nproc);
-        //     // printElements(inIO.EngineType(), Tin);
+            //     /* Output Tout and dT */
+            //     writer.BeginStep();
 
-        //     step++;
-        //     firstStep = false;
+            //     if (vTout)
+            //         writer.Put<double>(vTout, Tout.data());
+            //     if (vdT)
+            //         writer.Put<double>(vdT, dT.data());
+            //     writer.EndStep();
+
+            //     printDurations(stopGet, startGet, stopEndStep, startEndStep,
+            //     rank,
+            //                    nproc);
+            //     // printElements(inIO.EngineType(), Tin);
+
+            //     step++;
+            //     firstStep = false;
         }
         reader.Close();
         if (writer)
             writer.Close();
         // outFile.close();
         MPI_Barrier(mpiQueryComm);
-
 
         double timeEnd = MPI_Wtime();
         if (rank == 0)
