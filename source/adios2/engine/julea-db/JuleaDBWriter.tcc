@@ -18,6 +18,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <numeric>
 #include <string>
 #include <utility>
 
@@ -30,16 +31,21 @@ namespace engine
 
 template <class T>
 void JuleaDBSetMinMax(Variable<T> &variable, const T *data, T &blockMin,
-                      T &blockMax)
+                      T &blockMax, T &blockMean)
 {
     T min;
     T max;
+    T mean;
 
     auto number_elements = adios2::helper::GetTotalSize(variable.m_Count);
     adios2::helper::GetMinMax(data, number_elements, min, max);
 
+    // auto sum = std::accumulate(data.begin(), data.end(), 0);
+    // mean = sum / number_elements;
+
     blockMin = min;
     blockMax = max;
+    blockMean = mean;
 
     if (min < variable.m_Min)
     {
@@ -63,7 +69,7 @@ void JuleaDBSetMinMax(Variable<T> &variable, const T *data, T &blockMin,
 template <>
 void JuleaDBSetMinMax<std::complex<float>>(
     Variable<std::complex<float>> &variable, const std::complex<float> *data,
-    std::complex<float> &blockMin, std::complex<float> &blockMax)
+    std::complex<float> &blockMin, std::complex<float> &blockMax, std::complex<float> &blockMean)
 {
     // TODO implement?
 }
@@ -71,7 +77,7 @@ void JuleaDBSetMinMax<std::complex<float>>(
 template <>
 void JuleaDBSetMinMax<std::complex<double>>(
     Variable<std::complex<double>> &variable, const std::complex<double> *data,
-    std::complex<double> &blockMin, std::complex<double> &blockMax)
+    std::complex<double> &blockMin, std::complex<double> &blockMax,std::complex<double> &blockMean)
 {
     // TODO implement?
 }
@@ -133,9 +139,10 @@ void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     }
     T blockMin;
     T blockMax;
+    T blockMean;
     uint32_t entryID = 0;
 
-    JuleaDBSetMinMax(variable, data, blockMin, blockMax);
+    JuleaDBSetMinMax(variable, data, blockMin, blockMax, blockMean);
 
     auto stepBlockID =
         g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
@@ -169,6 +176,7 @@ void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     // features across different blocks
     if (m_WriterRank == 0)
     {
+        //TODO: add mean value to DB
         /** updates the variable metadata as there is a new block now */
         DBPutVariableMetadataToJulea(variable, m_Name, variable.m_Name,
                                      m_CurrentStep, m_CurrentBlockID);
