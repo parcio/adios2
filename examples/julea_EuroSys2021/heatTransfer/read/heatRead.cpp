@@ -346,8 +346,8 @@ int main(int argc, char *argv[])
             //     writer.Put<double>(vdT, dT.data());
             // writer.EndStep();
 
-            // printDurations(stopGet, startGet, stopEndStep, startEndStep, rank,
-            //                nproc);
+            printDurations(stopGet, startGet, stopEndStep, startEndStep, rank,
+                           nproc);
             // printElements(inIO.EngineType(), Tin);
 
             step++;
