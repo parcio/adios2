@@ -647,6 +647,7 @@ void DB_DO_PutVariableDataToJulea(Variable<T> &variable, const T *data,
     std::string objName = "variableblocks";
 
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    j_semantics_set(semantics, J_SEMANTICS_SAFETY, J_SEMANTICS_SAFETY_STORAGE);
     auto batch = j_batch_new(semantics);
 
     auto numberElements = adios2::helper::GetTotalSize(variable.m_Count);
