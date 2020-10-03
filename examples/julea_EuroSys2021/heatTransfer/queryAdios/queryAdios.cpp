@@ -257,7 +257,7 @@ int main(int argc, char *argv[])
                 if (rank == 0)
                 {
                     // std::cout << "\n# Mean \t Sdev \t Rank 0" << std::endl;
-                    std::cout << "# Read \t Compute \t Analysis" << std::endl;
+                    std::cout << "\n# Read \t Compute \t Analysis" << std::endl;
                 }
             }
 
