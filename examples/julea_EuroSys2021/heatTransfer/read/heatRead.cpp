@@ -115,7 +115,7 @@ void printDurations(
     // durationGet = duration_cast<microseconds>(stopGet - startGet);
     // durationEndStep =
     // duration_cast<microseconds>(stopEndStep - startEndStep);
-    durationRead = duration_cast<microseconds>(stopEndStep - startGet);
+    // durationRead = duration_cast<microseconds>(stopEndStep - startGet);
 
     size_t readSum = 0;
     size_t readSquareSum = 0;
@@ -335,20 +335,20 @@ int main(int argc, char *argv[])
             /* Compute dT from current T (Tin) and previous T (Tout)
              * and save Tin in Tout for output and for future computation
              */
-            // Compute(Tin, Tout, dT, firstStep);
+            Compute(Tin, Tout, dT, firstStep);
 
-            // /* Output Tout and dT */
-            // writer.BeginStep();
+            /* Output Tout and dT */
+            writer.BeginStep();
 
-            // if (vTout)
-            //     writer.Put<double>(vTout, Tout.data());
-            // if (vdT)
-            //     writer.Put<double>(vdT, dT.data());
-            // writer.EndStep();
+            if (vTout)
+                writer.Put<double>(vTout, Tout.data());
+            if (vdT)
+                writer.Put<double>(vdT, dT.data());
+            writer.EndStep();
 
             printDurations(stopGet, startGet, stopEndStep, startEndStep, rank,
                            nproc);
-            // printElements(inIO.EngineType(), Tin);
+            printElements(inIO.EngineType(), Tin);
 
             step++;
             firstStep = false;

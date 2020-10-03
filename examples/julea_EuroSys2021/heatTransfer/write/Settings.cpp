@@ -123,7 +123,7 @@ Settings::Settings(int argc, char *argv[], int rank, int nproc) : rank{rank}
         std::cout << "# outputfile: " << outputfile << "\n";
         std::cout << "# MPI_Comm_size: " << nproc << "\n";
 
-        std::cout << "# N \t M \t ny \t ny \t steps \t iterations" << std::endl;
+        std::cout << "# N \t M \t nx \t ny \t steps \t iterations" << std::endl;
         std::cout << npx << " \t " << npy << " \t " << ndx << " \t " << ndy
                   << " \t " << steps << " \t " << iterations << "\n"
                   << std::endl;
