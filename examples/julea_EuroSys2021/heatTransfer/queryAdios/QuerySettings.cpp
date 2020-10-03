@@ -36,7 +36,7 @@ static unsigned int convertToUint(std::string varName, char *arg)
 QuerySettings::QuerySettings(int argc, char *argv[], int rank, int nproc)
 : rank{rank}
 {
-    if (argc < 6)
+    if (argc < 5)
     {
         throw std::invalid_argument("Not enough arguments");
     }
@@ -44,14 +44,16 @@ QuerySettings::QuerySettings(int argc, char *argv[], int rank, int nproc)
 
     configfile = argv[1];
     inputfile = argv[2];
-    outputfile = argv[3];
-    npx = convertToUint("N", argv[4]);
-    npy = convertToUint("M", argv[5]);
+    // outputfile = argv[3];
+    // npx = convertToUint("N", argv[4]);
+    // npy = convertToUint("M", argv[5]);
 
-    if (npx * npy != static_cast<unsigned int>(this->nproc))
-    {
-        throw std::invalid_argument("N*M must equal the number of processes");
-    }
+    npx = convertToUint("N", argv[3]);
+    npy = convertToUint("M", argv[4]);
+    // if (npx * npy != static_cast<unsigned int>(this->nproc))
+    // {
+    //     throw std::invalid_argument("N*M must equal the number of processes");
+    // }
     posx = rank % npx;
     posy = rank / npx;
 
@@ -60,7 +62,7 @@ QuerySettings::QuerySettings(int argc, char *argv[], int rank, int nproc)
         std::cout << "\n# --- Query time in mikroseconds ---" << std::endl;
         std::cout << "# configfile: " << configfile << "\n";
         std::cout << "# inputfile: " << inputfile << "\n";
-        std::cout << "# outputfile: " << outputfile << "\n";
+        // std::cout << "# outputfile: " << outputfile << "\n";
         std::cout << "# MPI_Comm_size: " << nproc << "\n";
         std::cout << "# N \t M" << std::endl;
         std::cout << npx << " \t " << npy << "\n" << std::endl;
