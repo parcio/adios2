@@ -335,19 +335,19 @@ int main(int argc, char *argv[])
             /* Compute dT from current T (Tin) and previous T (Tout)
              * and save Tin in Tout for output and for future computation
              */
-            Compute(Tin, Tout, dT, firstStep);
+            // Compute(Tin, Tout, dT, firstStep);
 
-            /* Output Tout and dT */
-            writer.BeginStep();
+            // /* Output Tout and dT */
+            // writer.BeginStep();
 
-            if (vTout)
-                writer.Put<double>(vTout, Tout.data());
-            if (vdT)
-                writer.Put<double>(vdT, dT.data());
-            writer.EndStep();
+            // if (vTout)
+            //     writer.Put<double>(vTout, Tout.data());
+            // if (vdT)
+            //     writer.Put<double>(vdT, dT.data());
+            // writer.EndStep();
 
-            printDurations(stopGet, startGet, stopEndStep, startEndStep, rank,
-                           nproc);
+            // printDurations(stopGet, startGet, stopEndStep, startEndStep, rank,
+            //                nproc);
             // printElements(inIO.EngineType(), Tin);
 
             step++;
