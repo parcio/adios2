@@ -246,7 +246,15 @@ size_t FilePOSIX::GetSize()
     return static_cast<size_t>(fileStat.st_size);
 }
 
-void FilePOSIX::Flush() {}
+void FilePOSIX::Flush() 
+{
+    WaitForOpen();
+    if (fsync(m_FileDescriptor) == -1)
+    {
+        throw std::ios_base::failure("ERROR: couldn't fsync file " +
+                                     m_Name + "\n");
+    }
+}
 
 void FilePOSIX::Close()
 {
