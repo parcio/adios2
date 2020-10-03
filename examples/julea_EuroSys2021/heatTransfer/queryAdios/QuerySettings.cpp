@@ -59,13 +59,13 @@ QuerySettings::QuerySettings(int argc, char *argv[], int rank, int nproc)
 
     if (rank == 0)
     {
-        std::cout << "\n# --- Query time in mikroseconds ---" << std::endl;
-        std::cout << "# configfile: " << configfile << "\n";
-        std::cout << "# inputfile: " << inputfile << "\n";
-        // std::cout << "# outputfile: " << outputfile << "\n";
-        std::cout << "# MPI_Comm_size: " << nproc << "\n";
-        std::cout << "# N \t M" << std::endl;
-        std::cout << npx << " \t " << npy << "\n" << std::endl;
+        // std::cout << "\n# --- Query time in mikroseconds ---" << std::endl;
+        // std::cout << "# configfile: " << configfile << "\n";
+        // std::cout << "# inputfile: " << inputfile << "\n";
+        // // std::cout << "# outputfile: " << outputfile << "\n";
+        // std::cout << "# MPI_Comm_size: " << nproc << "\n";
+        // std::cout << "# N \t M" << std::endl;
+        // std::cout << npx << " \t " << npy << "\n" << std::endl;
 
         // std::cout << "# N: " << npx << "\n";
         // std::cout << "# M: " << npy << "\n";
