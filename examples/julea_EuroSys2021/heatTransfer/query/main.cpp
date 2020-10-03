@@ -20,6 +20,7 @@
 #include <chrono>
 using namespace std::chrono;
 #include <cstdint>
+#include <cstdlib>
 #include <iomanip>
 #include <iostream>
 #include <math.h>
@@ -32,30 +33,35 @@ using namespace std::chrono;
 #include "QueryPrintDataStep.h"
 #include "QuerySettings.h"
 
+void computeDistancesFromMean(const std::vector<double> &values,
+                              std::vector<double> &TdifferencesMean,
+                              double Tmean)
+{
+    std::cout << "compute distance" << std::endl;
+    for (size_t i = 0; i < values.size(); ++i)
+    {
+        TdifferencesMean[i] = std::abs(values[i] - Tmean);
+        std::cout << "Difference: " << TdifferencesMean[i] << " = " << values[i]
+                  << " - " << Tmean << std::endl;
+    }
+}
+
 void ComputeMean(const std::vector<double> &Tin, double &Mean)
 {
     // TODO: why is there dt.Size in read?
-    for (size_t i = 0; i < Tin.size(); ++i)
-    {
-        auto sum = std::accumulate(Tin.begin(), Tin.end(), 0);
-        Mean = sum / Tin.size();
-    }
+    auto sum = std::accumulate(Tin.begin(), Tin.end(), 0);
+    Mean = sum / Tin.size();
+    std::cout << "mean: " << Mean << std::endl;
 }
 
 void printUsage()
 {
-    // std::cout << "Usage: heatTransfer  config   output  N  M   nx  ny   steps
-    // "
-    //              "iterations\n"
-    //           << "  config: XML config file to use\n"
-    //           << "  output: name of output data file/stream\n"
-    //           << "  N:      number of processes in X dimension\n"
-    //           << "  M:      number of processes in Y dimension\n"
-    //           << "  nx:     local array size in X dimension per processor\n"
-    //           << "  ny:     local array size in Y dimension per processor\n"
-    //           << "  steps:  the total number of steps to output\n"
-    //           << "  iterations: one step consist of this many
-    //           iterations\n\n";
+    std::cout << "Usage: heatQuery  config  input  output N  M \n"
+              << "  config:  XML config file to use\n"
+              << "  input:   name of input data file/stream\n"
+              << "  output:  name of output data file/stream\n"
+              << "  N:       number of processes in X dimension\n"
+              << "  M:       number of processes in Y dimension\n\n";
 }
 
 int main(int argc, char *argv[])
@@ -73,7 +79,8 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &wrank);
     MPI_Comm_size(MPI_COMM_WORLD, &wnproc);
 
-    const unsigned int color = 1;
+    // const unsigned int color = 1;
+    const unsigned int color = 2;
     MPI_Comm mpiQueryComm;
     MPI_Comm_split(MPI_COMM_WORLD, color, wrank, &mpiQueryComm);
 
@@ -84,38 +91,34 @@ int main(int argc, char *argv[])
     try
     {
         double timeStart = MPI_Wtime();
+
         QuerySettings settings(argc, argv, rank, nproc);
+        std::cout << "configfile: " << settings.configfile << std::endl;
         adios2::ADIOS ad(settings.configfile, mpiQueryComm);
 
-        adios2::IO inIO = ad.DeclareIO("queryInput");
-        adios2::IO outIO = ad.DeclareIO("queryOutput");
+        adios2::IO inIO = ad.DeclareIO("readerInput");
+        adios2::IO outIO = ad.DeclareIO("readerOutput");
 
-        std::cout << "This is actually called" << std::endl;
+        std::cout << "This is called -- 1" << std::endl;
+        MPI_Barrier(mpiQueryComm); //who knows maybe this helps for mariadb...
+
         adios2::Engine reader =
             inIO.Open(settings.inputfile, adios2::Mode::Read, mpiQueryComm);
-
-        // MPI_Barrier(mpiHeatTransferComm);
+        std::cout << "This is called -- 2" << std::endl;
 
         std::vector<double> Tin;
         // std::vector<double> Tout;
         double Tmean;
-        std::vector<double> means;
-        std::vector<double> diffMeanMax;
-        std::vector<double> diffMeanMin;
+        // std::vector<double> means;
+        double diffMeanMax;
+        double diffMeanMin;
+        std::vector<double> TdifferencesMean;
         adios2::Variable<double> vTin;
         // adios2::Variable<double> vTout;
         // adios2::Variable<double> vdT;
         adios2::Engine writer;
         bool firstStep = true;
         int step = 0;
-
-        // read()
-
-        // computeMean()
-
-        // computeDiffMeanMax()
-
-        // computeDiffMeanMin()
 
         auto startEndStep = high_resolution_clock::now();
         auto stopEndStep = high_resolution_clock::now();
@@ -212,15 +215,23 @@ int main(int argc, char *argv[])
             reader.EndStep();
             stopEndStep = high_resolution_clock::now();
 
+            std::vector<double> testValues = {1, 2, 3, 4, 5, 6, 7, 42};
+            std::vector<double> testDifferences;
+            testDifferences.resize(testValues.size());
+            double TmeanTest = 0;
+            ComputeMean(testValues, TmeanTest);
+            computeDistancesFromMean(testValues, testDifferences, TmeanTest);
+
             ComputeMean(Tin, Tmean);
             double Tmin = vTin.Min();
             double Tmax = vTin.Max();
 
-            // TODO: compute this for complete input vector!
-            double diffMeanMin = Tmean - Tmin;
-            double diffMeanMax = Tmax - Tmean;
+            computeDistancesFromMean(Tin, TdifferencesMean, Tmean);
+            diffMeanMin = Tmean - Tmin;
+            diffMeanMax = Tmax - Tmean;
 
-            //TODO: output/answer: coordinates of areas which where the coldest but heated up the fastest
+            // TODO: output/answer: coordinates of areas which where the coldest
+            // but heated up the fastest
 
             //     /* Output Tout and dT */
             //     writer.BeginStep();

@@ -368,6 +368,17 @@ int main(int argc, char *argv[])
         std::cout << e.what() << std::endl;
         printUsage();
     }
+    // TODO: this comes from the heatWrite and is just a test
+    // catch (std::ios_base::failure &e) // I/O failure (e.g. file not found)
+    // {
+    //     std::cout << "I/O base exception caught\n";
+    //     std::cout << e.what() << std::endl;
+    // }
+    // catch (std::exception &e) // All other exceptions
+    // {
+    //     std::cout << "Exception caught\n";
+    //     std::cout << e.what() << std::endl;
+    // }
 
     MPI_Finalize();
     return 0;
