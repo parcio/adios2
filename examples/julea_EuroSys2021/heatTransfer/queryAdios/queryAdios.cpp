@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
 
         // std::cout << "This is called -- 1" << std::endl;
         MPI_Barrier(mpiQueryComm); //who knows maybe this helps for mariadb...
-        std::cout << settings.inputfile << std::endl;
+        // std::cout << settings.inputfile << std::endl;
         adios2::Engine reader =
             inIO.Open(settings.inputfile, adios2::Mode::Read, mpiQueryComm);
         // std::cout << "This is called -- 2" << std::endl;
@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
         {
             if (firstStep)
             {
-                std::cout << "rank: " << rank << std::endl;
+                // std::cout << "rank: " << rank << std::endl;
             }
             adios2::StepStatus status =
                 reader.BeginStep(adios2::StepMode::Read);
@@ -230,12 +230,12 @@ int main(int argc, char *argv[])
 
                 if (rank == 0)
                 {
-                    std::cout << "# gndx       = " << gndx << std::endl;
-                    std::cout << "# gndy       = " << gndy << std::endl;
+                    // std::cout << "# gndx       = " << gndx << std::endl;
+                    // std::cout << "# gndy       = " << gndy << std::endl;
                 }
 
                 settings.DecomposeArray(gndx, gndy);
-                std::cout << settings.readsize[0] << " " << settings.readsize[1] << std::endl;
+                // std::cout << settings.readsize[0] << " " << settings.readsize[1] << std::endl;
                 Tin.resize(settings.readsize[0] * settings.readsize[1]);
                 TdifferencesMean.resize(Tin.size());
                 //         Tout.resize(settings.readsize[0] *
@@ -257,7 +257,7 @@ int main(int argc, char *argv[])
                 if (rank == 0)
                 {
                     // std::cout << "\n# Mean \t Sdev \t Rank 0" << std::endl;
-                    std::cout << "\n# Read \t Compute \t Analysis" << std::endl;
+                    std::cout << "# Read \t Compute \t Analysis" << std::endl;
                 }
             }
 
