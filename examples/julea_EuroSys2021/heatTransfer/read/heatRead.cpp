@@ -285,8 +285,8 @@ int main(int argc, char *argv[])
 
                 if (rank == 0)
                 {
-                    std::cout << "# gndx       = " << gndx << std::endl;
-                    std::cout << "# gndy       = " << gndy << std::endl;
+                    // std::cout << "# gndx       = " << gndx << std::endl;
+                    // std::cout << "# gndy       = " << gndy << std::endl;
                 }
 
                 settings.DecomposeArray(gndx, gndy);
