@@ -23,6 +23,7 @@ using namespace std::chrono;
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
 #include <math.h>
 #include <memory>
 #include <numeric>
@@ -129,7 +130,7 @@ void printQueryDurations(
 }
 
 void JuleaReadMetadata(std::string fileName, std::string variableName,
-                       size_t step)
+                       size_t step, std::vector<double> &means)
 {
     size_t err = 0;
     size_t db_length = 0;
@@ -144,7 +145,7 @@ void JuleaReadMetadata(std::string fileName, std::string variableName,
     auto batch = j_batch_new(semantics);
 
     // schema = j_db_schema_new("adios2", "variable-metadata", NULL);
-    schema = j_db_schema_new("adios2", "variable-blockmetadata", NULL);
+    schema = j_db_schema_new("adios2", "block-metadata", NULL);
     j_db_schema_get(schema, batch, NULL);
     err = j_batch_execute(batch);
 
@@ -160,38 +161,38 @@ void JuleaReadMetadata(std::string fileName, std::string variableName,
     iterator = j_db_iterator_new(schema, selector, NULL);
 
     std::string adiosType = "double";
-    std::string minField = "min-float64";
-    std::string maxField = "max-float64";
-    std::string meanField = "mean";
- 
+    // std::string minField = "min_float64";
+    // std::string maxField = "max_float64";
+    std::string meanField = "mean_float64";
+
+    // std::vector<double> minima;
+    // std::vector<double> maxima;
+    // std::vector<double> means;
+    uint32_t *tmpID;
+
     // setMinMaxString(adiosType.c_str(), minField, maxField, valueField);
 
-    std::cout << "minField: " << minField << std::endl;
-    std::cout << "adiosType: " << adiosType << std::endl;
-
-    if (adiosType == "compound")
+    double *min;
+    double *max;
+    double *mean;
+    while (j_db_iterator_next(iterator, NULL))
     {
+        j_db_iterator_get_field(iterator, "_id", &type, (gpointer *)&tmpID,
+                                &db_length, NULL);
+        // j_db_iterator_get_field(iterator, minField.c_str(), &type,
+        //                         (gpointer *)&min, &db_length, NULL);
+        // j_db_iterator_get_field(iterator, maxField.c_str(), &type,
+        //                         (gpointer *)&max, &db_length, NULL);
+        j_db_iterator_get_field(iterator, meanField.c_str(), &type,
+                                (gpointer *)&mean, &db_length, NULL);
+        std::cout << "_id: " << *tmpID << std::endl;
+        // minima.push_back(*min);
+        // maxima.push_back(*max);
+        means.push_back(*mean);
+        // std::cout << "min: " << *min << std::endl;
+        // std::cout << "max: " << *max << std::endl;
+        std::cout << "mean: " << *mean << std::endl;
     }
-#define declare_type(T)                                                        \
-    else if (adiosType == adios2::GetType<T>())                                \
-    {                                                                          \
-        T *min;                                                                \
-        T *max;                                                                \
-        T *mean;                                                                \
-        while (j_db_iterator_next(iterator, NULL))                             \
-        {                                                                      \
-            j_db_iterator_get_field(iterator, minField.c_str(), &type,         \
-                                    (gpointer *)&min, &db_length, NULL);       \
-            j_db_iterator_get_field(iterator, maxField.c_str(), &type,         \
-                                    (gpointer *)&max, &db_length, NULL);       \
-        }                                                                      \
-    std::cout << "min: " << min << std::endl;                          \
-            std::cout << "max: " << max << std::endl;                          \
-    }
-    ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
-#undef declare_type
-            // j_db_iterator_get_field(iterator, meanField.c_str(), &type,         \
-            //                         (gpointer *)&mean, &db_length, NULL);       \
 
     j_db_schema_unref(schema);
     // j_db_iterator_unref(iterator);
@@ -231,10 +232,30 @@ int main(int argc, char *argv[])
         std::cout << settings.inputfile << std::endl;
         std::cout << "steps = " << settings.steps << std::endl;
 
-        for (size_t i = 0; i < settings.steps; ++i)
+        std::vector<double> means1;
+        std::vector<double> means5;
+        std::vector<double> diffMeans;
+
+        // for (size_t i = 0; i < settings.steps; ++i)
+        // {
+        // std::cout << "\ni: " << i << std::endl;
+        JuleaReadMetadata(settings.inputfile, "T", 1, means1);
+        JuleaReadMetadata(settings.inputfile, "T", 5, means5);
+
+        diffMeans.resize(means1.size());
+
+        // std::set_difference(means0.begin(), means0.end(), means5.begin(), means5.end(), std::inserter(diffMeans, diffMeans.begin()));
+        for (size_t i = 0; i < means1.size(); ++i)
         {
-            JuleaReadMetadata(settings.inputfile, "T", i);
+            diffMeans[i] = means5[i] - means1[i];
         }
+
+        size_t index = std::distance(diffMeans.begin(), std::max_element(diffMeans.begin(), diffMeans.end()));
+        std::cout << "max_element: " << *std::max_element(diffMeans.begin(), diffMeans.end()) << std::endl;
+        // std::cout << "index of block with max difference in mean value between step 0 and step 5. index = " << std::distance(diffMeans.begin(), std::max_element(diffMeans.begin(), diffMeans.end())) << std::endl;
+        std::cout << "index of block with max difference in mean value between step 0 and step 5. index = " << index << std::endl;
+
+        // }
 
         double timeEnd = MPI_Wtime();
         if (rank == 0)
