@@ -17,12 +17,14 @@
 
 #include "adios2.h"
 
+#include <algorithm>
 #include <chrono>
 using namespace std::chrono;
 #include <cstdint>
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
 #include <math.h>
 #include <memory>
 #include <numeric>
@@ -47,17 +49,24 @@ void computeDistancesFromMean(const std::vector<double> &values,
         {
             // std::cout << "i " << i << std::endl;
         }
-        // std::cout << "Difference: " << TdifferencesMean[i] << " = " << values[i]
-                  // << " - " << Tmean << std::endl;
+        // std::cout << "Difference: " << TdifferencesMean[i] << " = " <<
+        // values[i]
+        // << " - " << Tmean << std::endl;
     }
 }
 
 void ComputeMean(const std::vector<double> &Tin, double &Mean)
 {
     // TODO: why is there dt.Size in read?
-    auto sum = std::accumulate(Tin.begin(), Tin.end(), 0);
+    // auto sum = std::accumulate(Tin.begin(), Tin.end(), 0);
     // std::cout << "sum: " << sum << std::endl;
-    Mean = sum / (double) Tin.size();
+    double sum = 0;
+   for (size_t i = 0; i < Tin.size(); ++i)
+    {
+        sum += Tin[i];
+    }
+
+    Mean = sum / (double)Tin.size();
     // std::cout << "mean: " << Mean << std::endl;
     // std::cout << "Tin size: " << Tin.size() << std::endl;
 }
@@ -89,17 +98,18 @@ void printElements(std::vector<double> Tin)
     std::cout << "\n"
               << "sum: " << sum << std::endl;
     // outFile << "\n"
-            // << "sum: " << sum << std::endl;
+    // << "sum: " << sum << std::endl;
 }
 
 void printUsage()
 {
     std::cout << "Usage: heatQuery  config  input  output N  M \n"
               << "  config:  XML config file to use\n"
-              << "  input:   name of input data file/stream\n" << std::endl;
-              // << "  output:  name of output data file/stream\n"
-              // << "  N:       number of processes in X dimension\n"
-              // << "  M:       number of processes in Y dimension\n\n";
+              << "  input:   name of input data file/stream\n"
+              << std::endl;
+    // << "  output:  name of output data file/stream\n"
+    // << "  N:       number of processes in X dimension\n"
+    // << "  M:       number of processes in Y dimension\n\n";
 }
 
 void printQueryDurations(
@@ -114,10 +124,13 @@ void printQueryDurations(
     // deferred reads
     auto durationRead = duration_cast<microseconds>(stopEndStep - startGet);
 
-    auto durationAnalysis = duration_cast<microseconds>(stopAnalysis - startAnalysis);
-    auto durationCompute = duration_cast<microseconds>(stopCompute - startCompute);
+    auto durationAnalysis =
+        duration_cast<microseconds>(stopAnalysis - startAnalysis);
+    auto durationCompute =
+        duration_cast<microseconds>(stopCompute - startCompute);
 
-    std::cout << durationRead.count() << " \t " << durationCompute.count() << " \t " << durationAnalysis.count() << std::endl;
+    std::cout << durationRead.count() << " \t " << durationCompute.count()
+              << " \t " << durationAnalysis.count() << std::endl;
 }
 
 int main(int argc, char *argv[])
@@ -156,24 +169,19 @@ int main(int argc, char *argv[])
         adios2::IO outIO = ad.DeclareIO("readerOutput");
 
         // std::cout << "This is called -- 1" << std::endl;
-        MPI_Barrier(mpiQueryComm); //who knows maybe this helps for mariadb...
+        MPI_Barrier(mpiQueryComm); // who knows maybe this helps for mariadb...
         // std::cout << settings.inputfile << std::endl;
         adios2::Engine reader =
             inIO.Open(settings.inputfile, adios2::Mode::Read, mpiQueryComm);
         // std::cout << "This is called -- 2" << std::endl;
 
-        std::vector<double> Tin;
-        std::vector<double> dTin;
-        // std::vector<double> Tout;
-        double Tmean;
-        // std::vector<double> means;
-        double diffMeanMax;
-        double diffMeanMin;
-        std::vector<double> TdifferencesMean;
+        std::vector<double> Tin1;
+        std::vector<double> meansTin1;
+        std::vector<double> Tin5;
+        std::vector<double> meansTin5;
+        std::vector<double> diffMeans;
         adios2::Variable<double> vTin;
-        adios2::Variable<double> vdTin;
-        // adios2::Variable<double> vTout;
-        // adios2::Variable<double> vdT;
+
         adios2::Engine writer;
         bool firstStep = true;
         int step = 0;
@@ -181,152 +189,104 @@ int main(int argc, char *argv[])
         auto startEndStep = high_resolution_clock::now();
         auto stopEndStep = high_resolution_clock::now();
 
-        auto startGet = high_resolution_clock::now();
-        auto stopGet = high_resolution_clock::now();
+        auto startRead = high_resolution_clock::now();
+        auto stopRead = high_resolution_clock::now();
+        auto diffRead = stopRead - stopRead;
 
         auto startCompute = high_resolution_clock::now();
         auto stopCompute = high_resolution_clock::now();
+        auto diffCompute = stopCompute - stopCompute;
 
         auto startAnalysis = high_resolution_clock::now();
         auto stopAnalysis = high_resolution_clock::now();
 
+        vTin = inIO.InquireVariable<double>("T");
 
-        while (true)
+        auto blocksInfo = vTin.AllStepsBlocksInfo();
+
+        auto blocksInfo1 = blocksInfo[1];
+        auto blocksInfo5 = blocksInfo[5];
+
+        startAnalysis = high_resolution_clock::now();
+
+        for (size_t i = 0; i < blocksInfo1.size(); i++)
         {
-            if (firstStep)
-            {
-                // std::cout << "rank: " << rank << std::endl;
-            }
-            adios2::StepStatus status =
-                reader.BeginStep(adios2::StepMode::Read);
-            if (status != adios2::StepStatus::OK)
-            {
-                break;
-            }
+            double mean = 0;
+            std::vector<double> data;
 
-            MPI_Barrier(mpiQueryComm); // sync to avoid race conditions?!
+            vTin.SetStepSelection({1, 1});
+            vTin.SetBlockSelection(i);
+            data.resize(blocksInfo1[i].Count[0] * blocksInfo1[i].Count[1]);
 
-            // Variable objects disappear between steps so we need this every
-            // step
-            vTin = inIO.InquireVariable<double>("T");
-            // vdTin = inIO.InquireVariable<double>("dT");
-
-            if (!vTin)
-            {
-                // std::cout << "Error: NO variable T found. Unable to proceed.
-                // " "Exiting. "
-                // << std::endl;
-                break;
-            }
-
-            if (firstStep)
-            {
-                // Promise that we are not going to change the variable sizes
-                // nor add new variables
-                reader.LockReaderSelections();
-
-                unsigned int gndx = static_cast<unsigned int>(vTin.Shape()[0]);
-                unsigned int gndy = static_cast<unsigned int>(vTin.Shape()[1]);
-
-                if (rank == 0)
-                {
-                    // std::cout << "# gndx       = " << gndx << std::endl;
-                    // std::cout << "# gndy       = " << gndy << std::endl;
-                }
-
-                settings.DecomposeArray(gndx, gndy);
-                // std::cout << settings.readsize[0] << " " << settings.readsize[1] << std::endl;
-                Tin.resize(settings.readsize[0] * settings.readsize[1]);
-                TdifferencesMean.resize(Tin.size());
-                //         Tout.resize(settings.readsize[0] *
-                //         settings.readsize[1]); dT.resize(settings.readsize[0]
-                //         * settings.readsize[1]);
-
-                //         /* Create output variables and open output stream */
-                        // vTout = outIO.DefineVariable<double>(
-                        //     "T", {gndx, gndy}, settings.offset,
-                        //     settings.readsize);
-                        // vdT = outIO.DefineVariable<double>(
-                        //     "dT", {gndx, gndy}, settings.offset,
-                        //     settings.readsize);
-                //         writer = outIO.Open(settings.outputfile,
-                //         adios2::Mode::Write,
-                //                             mpiReaderComm);
-
-                MPI_Barrier(mpiQueryComm); // sync processes just for stdout
-                if (rank == 0)
-                {
-                    // std::cout << "\n# Mean \t Sdev \t Rank 0" << std::endl;
-                    std::cout << "\n# Read \t Compute \t Analysis" << std::endl;
-                }
-            }
-
-            //     if (!rank)
-            //     {
-            //         // std::cout << "Processing step " << step << std::endl;
-            //     }
-
-            // std::cout << settings.offset[0] << " " << settings.offset[1] << std::endl;
-
-            // Create a 2D selection for the subset
-            vTin.SetSelection(
-                adios2::Box<adios2::Dims>(settings.offset, settings.readsize));
-
-            startGet = high_resolution_clock::now();
-            startAnalysis = high_resolution_clock::now();
-
-            // Arrays are read by scheduling one or more of them
-            // and performing the reads at once
-            // reader.Get<double>(vTin, Tin.data());
-            reader.Get<double>(vTin, Tin.data(), adios2::Mode::Sync);
-            /*printDataStep(Tin.data(), settings.readsize.data(),
-                          settings.offset.data(), rank, step); */
-            stopGet = high_resolution_clock::now();
-
-            startEndStep = high_resolution_clock::now();
-            reader.EndStep();
-            stopEndStep = high_resolution_clock::now();
-
-            // printElements(Tin);
-
-            // std::vector<double> testValues = {1, 2, 3, 4, 5, 6, 7, 42};
-            // std::vector<double> testDifferences;
-            // testDifferences.resize(testValues.size());
-            // double TmeanTest = 0;
-            // ComputeMean(testValues, TmeanTest);
-            // computeDistancesFromMean(testValues, testDifferences, TmeanTest);
+            startRead = high_resolution_clock::now();
+            reader.Get<double>(vTin, data.data(), adios2::Mode::Sync);
+            stopRead = high_resolution_clock::now();
+            diffRead += stopRead - startRead;
 
             startCompute = high_resolution_clock::now();
-            ComputeMean(Tin, Tmean);
-            double Tmin = vTin.Min();
-            double Tmax = vTin.Max();
-
-            // auto TmeanMinus10 = Tmean * 10 / 100;
-            computeDistancesFromMean(Tin, TdifferencesMean, Tmean);
-            diffMeanMin = Tmean - Tmin;
-            diffMeanMax = Tmax - Tmean;
+            ComputeMean(data, mean);
             stopCompute = high_resolution_clock::now();
+            diffCompute = stopCompute - startCompute;
+            // std::cout << "mean: " << mean << std::endl;
+            // std::cout << "min: " << blocksInfo1[i].Min << std::endl;
+            // std::cout << "max: " << blocksInfo1[i].Max << std::endl;
 
-            stopAnalysis = high_resolution_clock::now();
-            // TODO: output/answer: coordinates of areas which where the coldest
-            // but heated up the fastest
-
-            //     /* Output Tout and dT */
-            //     writer.BeginStep();
-
-            //     if (vTout)
-            //         writer.Put<double>(vTout, Tout.data());
-            //     if (vdT)
-            //         writer.Put<double>(vdT, dT.data());
-            //     writer.EndStep();
-
-                printQueryDurations(stopGet, startGet, stopCompute, startCompute, stopAnalysis, startAnalysis);
-                // printDurations(stopGet, startGet, stopEndStep, startEndStep, rank, nproc);
-            //     // printElements(inIO.EngineType(), Tin);
-
-                step++;
-                firstStep = false;
+            meansTin1.push_back(mean);
         }
+        std::cout << std::endl;
+
+        for (size_t i = 0; i < blocksInfo5.size(); i++)
+        {
+            double mean = 0;
+            std::vector<double> data;
+
+            vTin.SetStepSelection({5, 1});
+            vTin.SetBlockSelection(i);
+            data.resize(blocksInfo5[i].Count[0] * blocksInfo5[i].Count[1]);
+
+            startRead = high_resolution_clock::now();
+            reader.Get<double>(vTin, data.data(), adios2::Mode::Sync);
+            stopRead = high_resolution_clock::now();
+            diffRead += stopRead - startRead;
+
+            startCompute = high_resolution_clock::now();
+            ComputeMean(data, mean);
+            stopCompute = high_resolution_clock::now();
+            diffCompute = stopCompute - startCompute;
+            // std::cout << "mean: " << mean << std::endl;
+            // std::cout << "min: " << blocksInfo5[i].Min << std::endl;
+            // std::cout << "max: " << blocksInfo5[i].Max << std::endl;
+
+            meansTin5.push_back(mean);
+        }
+
+        diffMeans.resize(meansTin1.size());
+
+        startCompute = high_resolution_clock::now();
+        for (size_t i = 0; i < meansTin1.size(); ++i)
+        {
+            diffMeans[i] = meansTin5[i] - meansTin1[i];
+        }
+
+        size_t index =
+            std::distance(diffMeans.begin(),
+                          std::max_element(diffMeans.begin(), diffMeans.end()));
+        stopCompute = high_resolution_clock::now();
+        diffCompute = stopCompute - startCompute;
+
+        // std::cout << "index: " << index << "\tdiff: " << diffMeans[index]
+                  // << std::endl;
+
+        stopAnalysis = high_resolution_clock::now();
+        auto durationAnalysis =
+            duration_cast<microseconds>(stopAnalysis - startAnalysis);
+        auto durationRead = duration_cast<microseconds>(diffRead);
+        auto durationCompute = duration_cast<microseconds>(diffCompute);
+
+        std::cout << "\n# Read \t Compute \t Analysis" << std::endl;
+        std::cout << durationRead.count() << " \t " << durationCompute.count()
+                  << " \t " << durationAnalysis.count() << std::endl;
+
         reader.Close();
         if (writer)
             writer.Close();

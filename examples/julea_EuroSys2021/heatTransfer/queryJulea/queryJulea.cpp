@@ -37,36 +37,6 @@ using namespace std::chrono;
 #include <julea-db.h>
 #include <julea.h>
 
-void computeDistancesFromMean(const std::vector<double> &values,
-                              std::vector<double> &TdifferencesMean,
-                              double Tmean)
-{
-    // std::cout << "compute distance" << std::endl;
-    for (size_t i = 0; i < values.size(); ++i)
-    {
-        // std::cout << "i = " << i << std::endl;
-        TdifferencesMean[i] = std::abs(values[i] - Tmean);
-
-        if (TdifferencesMean[i] < (Tmean * 0.1))
-        {
-            // std::cout << "i " << i << std::endl;
-        }
-        // std::cout << "Difference: " << TdifferencesMean[i] << " = " <<
-        // values[i]
-        // << " - " << Tmean << std::endl;
-    }
-}
-
-void ComputeMean(const std::vector<double> &Tin, double &Mean)
-{
-    // TODO: why is there dt.Size in read?
-    auto sum = std::accumulate(Tin.begin(), Tin.end(), 0);
-    // std::cout << "sum: " << sum << std::endl;
-    Mean = sum / (double)Tin.size();
-    // std::cout << "mean: " << Mean << std::endl;
-    // std::cout << "Tin size: " << Tin.size() << std::endl;
-}
-
 void printElements(std::vector<double> Tin)
 {
     // std::ofstream outFile;
@@ -109,16 +79,14 @@ void printUsage()
 }
 
 void printQueryDurations(
-    std::chrono::time_point<std::chrono::high_resolution_clock> stopEndStep,
-    std::chrono::time_point<std::chrono::high_resolution_clock> startGet,
+    std::chrono::time_point<std::chrono::high_resolution_clock> stopRead,
+    std::chrono::time_point<std::chrono::high_resolution_clock> startRead,
     std::chrono::time_point<std::chrono::high_resolution_clock> stopCompute,
     std::chrono::time_point<std::chrono::high_resolution_clock> startCompute,
     std::chrono::time_point<std::chrono::high_resolution_clock> stopAnalysis,
     std::chrono::time_point<std::chrono::high_resolution_clock> startAnalysis)
 {
-    // right before GET and right after ENDSTEP; complete write time for
-    // deferred reads
-    auto durationRead = duration_cast<microseconds>(stopEndStep - startGet);
+    auto durationRead = duration_cast<microseconds>(stopRead - startRead);
 
     auto durationAnalysis =
         duration_cast<microseconds>(stopAnalysis - startAnalysis);
@@ -141,10 +109,15 @@ void JuleaReadMetadata(std::string fileName, std::string variableName,
     JDBIterator *iterator = NULL;
     JDBSelector *selector = NULL;
 
+    std::string adiosType = "double";
+    std::string meanField = "mean_float64";
+
+    uint32_t *tmpID;
+    double *mean;
+
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
-    // schema = j_db_schema_new("adios2", "variable-metadata", NULL);
     schema = j_db_schema_new("adios2", "block-metadata", NULL);
     j_db_schema_get(schema, batch, NULL);
     err = j_batch_execute(batch);
@@ -160,45 +133,21 @@ void JuleaReadMetadata(std::string fileName, std::string variableName,
                             sizeof(step), NULL);
     iterator = j_db_iterator_new(schema, selector, NULL);
 
-    std::string adiosType = "double";
-    // std::string minField = "min_float64";
-    // std::string maxField = "max_float64";
-    std::string meanField = "mean_float64";
 
-    // std::vector<double> minima;
-    // std::vector<double> maxima;
-    // std::vector<double> means;
-    uint32_t *tmpID;
-
-    // setMinMaxString(adiosType.c_str(), minField, maxField, valueField);
-
-    double *min;
-    double *max;
-    double *mean;
+    // TODO sort after blockID not entryID
     while (j_db_iterator_next(iterator, NULL))
     {
         j_db_iterator_get_field(iterator, "_id", &type, (gpointer *)&tmpID,
                                 &db_length, NULL);
-        // j_db_iterator_get_field(iterator, minField.c_str(), &type,
-        //                         (gpointer *)&min, &db_length, NULL);
-        // j_db_iterator_get_field(iterator, maxField.c_str(), &type,
-        //                         (gpointer *)&max, &db_length, NULL);
         j_db_iterator_get_field(iterator, meanField.c_str(), &type,
                                 (gpointer *)&mean, &db_length, NULL);
-        std::cout << "_id: " << *tmpID << std::endl;
-        // minima.push_back(*min);
-        // maxima.push_back(*max);
+        // std::cout << "_id: " << *tmpID << std::endl;
         means.push_back(*mean);
-        // std::cout << "min: " << *min << std::endl;
-        // std::cout << "max: " << *max << std::endl;
-        std::cout << "mean: " << *mean << std::endl;
+        // std::cout << "mean: " << *mean << std::endl;
     }
 
     j_db_schema_unref(schema);
-    // j_db_iterator_unref(iterator);
     j_db_selector_unref(selector);
-    // j_batch_unref(batch);
-    // j_db_entry_unref(entry);
 }
 
 int main(int argc, char *argv[])
@@ -225,37 +174,58 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(mpiQueryComm, &rank);
     MPI_Comm_size(mpiQueryComm, &nproc);
 
+    auto startRead = high_resolution_clock::now();
+    auto stopRead = high_resolution_clock::now();
+
+    auto startCompute = high_resolution_clock::now();
+    auto stopCompute = high_resolution_clock::now();
+
+    auto startAnalysis = high_resolution_clock::now();
+    auto stopAnalysis = high_resolution_clock::now();
+
     try
     {
         double timeStart = MPI_Wtime();
         JuleaQuerySettings settings(argc, argv, rank, nproc);
-        std::cout << settings.inputfile << std::endl;
-        std::cout << "steps = " << settings.steps << std::endl;
+        // std::cout << settings.inputfile << std::endl;
+        // std::cout << "steps = " << settings.steps << std::endl;
 
         std::vector<double> means1;
         std::vector<double> means5;
         std::vector<double> diffMeans;
 
-        // for (size_t i = 0; i < settings.steps; ++i)
-        // {
-        // std::cout << "\ni: " << i << std::endl;
+        if (rank == 0)
+        {
+            std::cout << "\n# Read \t Compute \t Analysis" << std::endl;
+        }
+
+        startAnalysis = high_resolution_clock::now();
+        startRead = high_resolution_clock::now();
+
         JuleaReadMetadata(settings.inputfile, "T", 1, means1);
         JuleaReadMetadata(settings.inputfile, "T", 5, means5);
+        stopRead = high_resolution_clock::now();
 
         diffMeans.resize(means1.size());
 
-        // std::set_difference(means0.begin(), means0.end(), means5.begin(), means5.end(), std::inserter(diffMeans, diffMeans.begin()));
+        startCompute = high_resolution_clock::now();
         for (size_t i = 0; i < means1.size(); ++i)
         {
             diffMeans[i] = means5[i] - means1[i];
         }
 
-        size_t index = std::distance(diffMeans.begin(), std::max_element(diffMeans.begin(), diffMeans.end()));
-        std::cout << "max_element: " << *std::max_element(diffMeans.begin(), diffMeans.end()) << std::endl;
-        // std::cout << "index of block with max difference in mean value between step 0 and step 5. index = " << std::distance(diffMeans.begin(), std::max_element(diffMeans.begin(), diffMeans.end())) << std::endl;
-        std::cout << "index of block with max difference in mean value between step 0 and step 5. index = " << index << std::endl;
+        size_t index =
+            std::distance(diffMeans.begin(),
+                          std::max_element(diffMeans.begin(), diffMeans.end()));
+        stopCompute = high_resolution_clock::now();
+        stopAnalysis = high_resolution_clock::now();
+        // std::cout << "max_element: " << *std::max_element(diffMeans.begin(),
+        // diffMeans.end()) << std::endl; 
+        // std::cout << "index of block with max difference in mean value between step 0 and step 5. index = " <<
+        // index << std::endl;
 
-        // }
+        printQueryDurations(stopRead, startRead, stopCompute, startCompute,
+                            stopAnalysis, startAnalysis);
 
         double timeEnd = MPI_Wtime();
         if (rank == 0)
