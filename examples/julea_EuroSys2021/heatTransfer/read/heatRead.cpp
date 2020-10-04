@@ -361,7 +361,7 @@ int main(int argc, char *argv[])
 
         double timeEnd = MPI_Wtime();
         if (rank == 0)
-            std::cout << "Total runtime = " << timeEnd - timeStart << "s\n";
+            std::cout << "Total runtime = " << timeEnd - timeStart << "s\n" << std::endl;
     }
     catch (std::invalid_argument &e) // command-line argument errors
     {
