@@ -116,6 +116,7 @@ void DB_DO_addFieldsForBlockMD(JDBSchema *schema)
     gchar const *maxFloatIndex[] = {"variableName", NULL};
     gchar const *minDoubleIndex[] = {"variableName", NULL};
     gchar const *maxDoubleIndex[] = {"variableName", NULL};
+    gchar const *meanDoubleIndex[] = {"variableName", NULL};
     //    gchar const *minIndex[] = {"min_blob", NULL};
     //    gchar const *maxIndex[] = {"max_blob", NULL};
 
@@ -166,6 +167,7 @@ void DB_DO_addFieldsForBlockMD(JDBSchema *schema)
     j_db_schema_add_field(schema, "min_float64", J_DB_TYPE_FLOAT64, NULL);
     j_db_schema_add_field(schema, "max_float64", J_DB_TYPE_FLOAT64, NULL);
     j_db_schema_add_field(schema, "value_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "mean_float64", J_DB_TYPE_FLOAT64, NULL);
 
     // j_db_schema_add_field(schema, "min_string", J_DB_TYPE_STRING, NULL);
     // j_db_schema_add_field(schema, "max_string", J_DB_TYPE_STRING, NULL);
@@ -183,6 +185,7 @@ void DB_DO_addFieldsForBlockMD(JDBSchema *schema)
     j_db_schema_add_index(schema, maxFloatIndex, NULL);
     j_db_schema_add_index(schema, minDoubleIndex, NULL);
     j_db_schema_add_index(schema, maxDoubleIndex, NULL);
+    j_db_schema_add_index(schema, meanDoubleIndex, NULL);
     //    j_db_schema_add_index(schema, minIndex, NULL);
     //    j_db_schema_add_index(schema, maxIndex, NULL);
 }
@@ -315,8 +318,9 @@ void DB_DO_addEntriesForVariableMD(Variable<T> &variable,
     std::string minField;
     std::string maxField;
     std::string valueField;
+     std::string meanField;
 
-    DB_DO_setMinMaxValueFields(&minField, &maxField, &valueField, varType);
+    DB_DO_setMinMaxValueFields(&minField, &maxField, &valueField, &meanField, varType);
 
     j_db_entry_set_field(entry, minField.c_str(), &variable.m_Min,
                          sizeof(variable.m_Min), NULL);
@@ -331,7 +335,7 @@ void DB_DO_addEntriesForBlockMD(Variable<T> &variable,
                                 size_t block,
                                 const typename Variable<T>::Info &blockInfo,
                                 JDBSchema *schema, JDBEntry *entry, T &blockMin,
-                                T &blockMax)
+                                T &blockMax, T &blockMean)
 {
     size_t shapeSize = variable.m_Shape.size();
     size_t startSize = variable.m_Start.size();
@@ -342,6 +346,7 @@ void DB_DO_addEntriesForBlockMD(Variable<T> &variable,
     size_t minLen = sizeof(blockMin);
     size_t maxLen = sizeof(blockMax);
     size_t valueLen = sizeof(variable.m_Value);
+    size_t meanLen = sizeof(blockMean);
 
     size_t stepsStart = blockInfo.StepsStart;
     size_t stepsCount = blockInfo.StepsCount;
@@ -429,11 +434,13 @@ void DB_DO_addEntriesForBlockMD(Variable<T> &variable,
     std::string minField;
     std::string maxField;
     std::string valueField;
+    std::string meanField;
 
-    DB_DO_setMinMaxValueFields(&minField, &maxField, &valueField, varType);
+    DB_DO_setMinMaxValueFields(&minField, &maxField, &valueField, &meanField, varType);
 
     j_db_entry_set_field(entry, minField.c_str(), &blockMin, minLen, NULL);
     j_db_entry_set_field(entry, maxField.c_str(), &blockMax, maxLen, NULL);
+    j_db_entry_set_field(entry, meanField.c_str(), &blockMean, meanLen, NULL);
 
     j_db_entry_set_field(entry, "isValue", &tmp, sizeof(tmp), NULL);
 
@@ -456,6 +463,8 @@ void DB_DO_addEntriesForBlockMD(Variable<T> &variable,
                          NULL);
     j_db_entry_set_field(entry, "blockID", &blockID, sizeof(blockID), NULL);
 }
+
+
 void InitDB_DO_Schemas()
 {
     // std::cout << "--- InitDBSchemas ---" << std::endl;
@@ -567,7 +576,7 @@ void DB_DO_PutBlockMetadataToJulea(Variable<T> &variable,
                                    const std::string varName, size_t step,
                                    size_t block,
                                    const typename Variable<T>::Info &blockInfo,
-                                   T &blockMin, T &blockMax, uint32_t &entryID)
+                                   T &blockMin, T &blockMax, T &blockMean, uint32_t &entryID)
 {
     int err = 0;
     g_autoptr(JDBSchema) schema = NULL;
@@ -590,7 +599,7 @@ void DB_DO_PutBlockMetadataToJulea(Variable<T> &variable,
 
     entry = j_db_entry_new(schema, NULL);
     DB_DO_addEntriesForBlockMD(variable, nameSpace, varName, step, block,
-                               blockInfo, schema, entry, blockMin, blockMax);
+                               blockInfo, schema, entry, blockMin, blockMax, blockMean);
 
     /** check whether blcock needs to be updated or inserted */
     selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
@@ -980,7 +989,7 @@ void DB_DO_PutAttributeMetadataToJulea(Attribute<T> &attribute,
     template void DB_DO_PutBlockMetadataToJulea(                               \
         Variable<T> &variable, const std::string nameSpace,                    \
         const std::string varName, size_t step, size_t block,                  \
-        const typename Variable<T>::Info &blockInfo, T &blockMin, T &blockMax, \
+        const typename Variable<T>::Info &blockInfo, T &blockMin, T &blockMax, T &blockMean, \
         uint32_t &entryID);                                                    \
                                                                                \
     template void DB_DO_PutAttributeDataToJulea(Attribute<T> &attribute,       \

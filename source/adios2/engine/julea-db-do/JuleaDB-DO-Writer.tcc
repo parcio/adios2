@@ -30,16 +30,31 @@ namespace engine
 
 template <class T>
 void JuleaDB_DO_SetMinMax(Variable<T> &variable, const T *data, T &blockMin,
-                          T &blockMax)
+                          T &blockMax, T &blockMean)
 {
-    T min;
-    T max;
+     T min = 0;
+    T max = 0;
+    T sum = 0;
+    T mean = 0;
 
     auto number_elements = adios2::helper::GetTotalSize(variable.m_Count);
     adios2::helper::GetMinMax(data, number_elements, min, max);
 
+    for (size_t i = 0; i < number_elements; ++i)
+    {
+        sum += data[i];
+        // std::cout << "data[i] = " << data[i] << std::endl;
+    }
+
+    //TODO: cast to T ?
+    std::cout << "sum: " << sum << std::endl;
+    std::cout << "number_elements: " << number_elements << std::endl;
+
+    mean = sum / (double) number_elements;
+
     blockMin = min;
     blockMax = max;
+    blockMean = mean;
 
     if (min < variable.m_Min)
     {
@@ -51,7 +66,7 @@ void JuleaDB_DO_SetMinMax(Variable<T> &variable, const T *data, T &blockMin,
         // std::cout << "updated global max" << std::endl;
         variable.m_Max = max;
     }
-    if (false)
+    if (true)
     {
         std::cout << "min: " << min << std::endl;
         std::cout << "global min: " << variable.m_Min << std::endl;
@@ -61,9 +76,18 @@ void JuleaDB_DO_SetMinMax(Variable<T> &variable, const T *data, T &blockMin,
 }
 
 template <>
+void JuleaDB_DO_SetMinMax<std::string>(
+    Variable<std::string> &variable, const std::string *data,
+    std::string &blockMin, std::string &blockMax, std::string &blockMean)
+{
+    // TODO implement?
+}
+
+
+template <>
 void JuleaDB_DO_SetMinMax<std::complex<float>>(
     Variable<std::complex<float>> &variable, const std::complex<float> *data,
-    std::complex<float> &blockMin, std::complex<float> &blockMax)
+    std::complex<float> &blockMin, std::complex<float> &blockMax, std::complex<float> &blockMean)
 {
     // TODO implement?
 }
@@ -71,7 +95,7 @@ void JuleaDB_DO_SetMinMax<std::complex<float>>(
 template <>
 void JuleaDB_DO_SetMinMax<std::complex<double>>(
     Variable<std::complex<double>> &variable, const std::complex<double> *data,
-    std::complex<double> &blockMin, std::complex<double> &blockMax)
+    std::complex<double> &blockMin, std::complex<double> &blockMax, std::complex<double> &blockMean)
 {
     // TODO implement?
 }
@@ -134,9 +158,12 @@ void JuleaDB_DO_Writer::PutSyncToJulea(
     }
     T blockMin;
     T blockMax;
+    T blockMean;
     uint32_t entryID = 0;
 
-    JuleaDB_DO_SetMinMax(variable, data, blockMin, blockMax);
+    JuleaDB_DO_SetMinMax(variable, data, blockMin, blockMax, blockMean);
+
+    std::cout << "mean: " << blockMean << std::endl;
 
     auto stepBlockID =
         g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
@@ -178,7 +205,7 @@ void JuleaDB_DO_Writer::PutSyncToJulea(
     /** put block metadata to DB */
     DB_DO_PutBlockMetadataToJulea(variable, m_Name, variable.m_Name,
                                   m_CurrentStep, m_CurrentBlockID, blockInfo,
-                                  blockMin, blockMax, entryID);
+                                  blockMin, blockMax, blockMean, entryID);
     // std::cout << "entryID: " << entryID << std::endl;
     /** put data to object store */
     DB_DO_PutVariableDataToJulea(variable, data, m_Name, entryID);
