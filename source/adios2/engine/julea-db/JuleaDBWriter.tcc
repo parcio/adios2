@@ -33,15 +33,22 @@ template <class T>
 void JuleaDBSetMinMax(Variable<T> &variable, const T *data, T &blockMin,
                       T &blockMax, T &blockMean)
 {
-    T min;
-    T max;
-    T mean;
+    T min = 0;
+    T max = 0;
+    T sum = 0;
+    T mean = 0;
 
     auto number_elements = adios2::helper::GetTotalSize(variable.m_Count);
     adios2::helper::GetMinMax(data, number_elements, min, max);
 
-    // auto sum = std::accumulate(data.begin(), data.end(), 0);
-    // mean = sum / number_elements;
+    for (size_t i = 0; i < number_elements; ++i)
+    {
+        sum += data[i];
+    }
+
+        //TODO: cast to T ?
+
+    mean = sum / (double) number_elements;
 
     blockMin = min;
     blockMax = max;
@@ -64,6 +71,14 @@ void JuleaDBSetMinMax(Variable<T> &variable, const T *data, T &blockMin,
         std::cout << "max: " << max << std::endl;
         std::cout << "global max: " << variable.m_Max << std::endl;
     }
+}
+
+template <>
+void JuleaDBSetMinMax<std::string>(
+    Variable<std::string> &variable, const std::string *data,
+    std::string &blockMin, std::string &blockMax, std::string &blockMean)
+{
+    // TODO implement?
 }
 
 template <>
@@ -184,7 +199,7 @@ void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
 
     /** put block metadata to DB */
     DBPutBlockMetadataToJulea(variable, m_Name, variable.m_Name, m_CurrentStep,
-                              m_CurrentBlockID, blockInfo, blockMin, blockMax,
+                              m_CurrentBlockID, blockInfo, blockMin, blockMax, blockMean,
                               entryID);
 
     // std::cout << "entryID: " << entryID << std::endl;

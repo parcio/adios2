@@ -33,7 +33,7 @@ namespace engine
 {
 
 void setMinMaxValueFields(std::string *minField, std::string *maxField,
-                          std::string *valueField, const char *varType)
+                          std::string *valueField,  std::string *meanField, const char *varType)
 {
 
     if ((strcmp(varType, "char") == 0) || (strcmp(varType, "int8_t") == 0) ||
@@ -74,6 +74,7 @@ void setMinMaxValueFields(std::string *minField, std::string *maxField,
         *minField = "min_float64";
         *maxField = "max_float64";
         *valueField = "value_float64";
+        *meanField = "mean_float64";
     }
     else if (strcmp(varType, "string") == 0)
     {
@@ -129,6 +130,7 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
     std::string minField;
     std::string maxField;
     std::string valueField;
+    std::string meanField;
 
     /** AvailableStepBlockIndexOffsets stores the entries (= blocks) _id (= line
      * in the sql table) */
@@ -176,7 +178,7 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
             var->m_AvailableStepsCount++;                                      \
         }                                                                      \
                                                                                \
-        setMinMaxValueFields(&minField, &maxField, &valueField, type.c_str()); \
+        setMinMaxValueFields(&minField, &maxField, &valueField, &meanField, type.c_str()); \
         g_autoptr(JDBSelector) selector =                                      \
             j_db_selector_new(varSchema, J_DB_SELECTOR_MODE_AND, NULL);        \
                                                                                \
@@ -917,8 +919,9 @@ void DBGetBlockMetadataNEW(Variable<T> &variable,
         std::string minField;
         std::string maxField;
         std::string valueField;
+        std::string meanField;
 
-        setMinMaxValueFields(&minField, &maxField, &valueField, varType);
+        setMinMaxValueFields(&minField, &maxField, &valueField, &meanField, varType);
 
         j_db_iterator_get_field(iterator, minField.c_str(), &type,
                                 (gpointer *)&min, &db_length, NULL);
@@ -1122,6 +1125,7 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
         std::string minField;
         std::string maxField;
         std::string valueField;
+        std::string meanField;
 
         // if ((strcmp(varType, "char") == 0) ||
         //     (strcmp(varType, "int8_t") == 0) ||
@@ -1177,7 +1181,7 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
         //     maxField = "max_blob";
         //     valueField = "value_blob";
         // }
-        setMinMaxValueFields(&minField, &maxField, &valueField, varType);
+        setMinMaxValueFields(&minField, &maxField, &valueField, &meanField, varType);
         // std::cout << "minField: " << minField << std::endl;
         // std::cout << "maxField: " << maxField << std::endl;
         // std::cout << "valueField: " << valueField << std::endl;

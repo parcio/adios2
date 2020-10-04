@@ -46,10 +46,10 @@ void JuleaDB_DO_SetMinMax(Variable<T> &variable, const T *data, T &blockMin,
         // std::cout << "data[i] = " << data[i] << std::endl;
     }
 
-    //TODO: cast to T ?
-    std::cout << "sum: " << sum << std::endl;
-    std::cout << "number_elements: " << number_elements << std::endl;
+    // std::cout << "sum: " << sum << std::endl;
+    // std::cout << "number_elements: " << number_elements << std::endl;
 
+    //TODO: cast to T ?
     mean = sum / (double) number_elements;
 
     blockMin = min;
@@ -66,7 +66,7 @@ void JuleaDB_DO_SetMinMax(Variable<T> &variable, const T *data, T &blockMin,
         // std::cout << "updated global max" << std::endl;
         variable.m_Max = max;
     }
-    if (true)
+    if (false)
     {
         std::cout << "min: " << min << std::endl;
         std::cout << "global min: " << variable.m_Min << std::endl;
