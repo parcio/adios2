@@ -133,7 +133,6 @@ void JuleaReadMetadata(std::string fileName, std::string variableName,
                             sizeof(step), NULL);
     iterator = j_db_iterator_new(schema, selector, NULL);
 
-
     // TODO sort after blockID not entryID
     while (j_db_iterator_next(iterator, NULL))
     {
@@ -220,9 +219,9 @@ int main(int argc, char *argv[])
         stopCompute = high_resolution_clock::now();
         stopAnalysis = high_resolution_clock::now();
         // std::cout << "max_element: " << *std::max_element(diffMeans.begin(),
-        // diffMeans.end()) << std::endl; 
-        // std::cout << "index of block with max difference in mean value between step 0 and step 5. index = " <<
-        // index << std::endl;
+        // diffMeans.end()) << std::endl;
+        // std::cout << "index of block with max difference in mean value
+        // between step 0 and step 5. index = " << index << std::endl;
 
         printQueryDurations(stopRead, startRead, stopCompute, startCompute,
                             stopAnalysis, startAnalysis);

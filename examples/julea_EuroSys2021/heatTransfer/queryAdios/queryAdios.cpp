@@ -61,7 +61,7 @@ void ComputeMean(const std::vector<double> &Tin, double &Mean)
     // auto sum = std::accumulate(Tin.begin(), Tin.end(), 0);
     // std::cout << "sum: " << sum << std::endl;
     double sum = 0;
-   for (size_t i = 0; i < Tin.size(); ++i)
+    for (size_t i = 0; i < Tin.size(); ++i)
     {
         sum += Tin[i];
     }
@@ -275,7 +275,7 @@ int main(int argc, char *argv[])
         diffCompute = stopCompute - startCompute;
 
         // std::cout << "index: " << index << "\tdiff: " << diffMeans[index]
-                  // << std::endl;
+        // << std::endl;
 
         stopAnalysis = high_resolution_clock::now();
         auto durationAnalysis =
