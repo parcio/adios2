@@ -163,7 +163,7 @@ void JuleaDB_DO_Writer::PutSyncToJulea(
 
     JuleaDB_DO_SetMinMax(variable, data, blockMin, blockMax, blockMean);
 
-    std::cout << "mean: " << blockMean << std::endl;
+    // std::cout << "mean: " << blockMean << std::endl;
 
     auto stepBlockID =
         g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
