@@ -60,11 +60,11 @@ JuleaQuerySettings::JuleaQuerySettings(int argc, char *argv[], int rank, int npr
 
     if (rank == 0)
     {
-        std::cout << "\n# --- Query time in mikroseconds ---" << std::endl;
-        std::cout << "# configfile: " << configfile << "\n";
-        std::cout << "# inputfile: " << inputfile << "\n";
-        // std::cout << "# outputfile: " << outputfile << "\n";
-        std::cout << "# MPI_Comm_size: " << nproc << "\n";
+        // std::cout << "\n# --- Query time in mikroseconds ---" << std::endl;
+        // std::cout << "# configfile: " << configfile << "\n";
+        // std::cout << "# inputfile: " << inputfile << "\n";
+        // // std::cout << "# outputfile: " << outputfile << "\n";
+        // std::cout << "# MPI_Comm_size: " << nproc << "\n";
         // std::cout << "# N \t M" << std::endl;
         // std::cout << npx << " \t " << npy << "\n" << std::endl;ZZ
 
