@@ -48,23 +48,42 @@ size_t BP4Deserializer::ParseMetadata(const BufferSTL &bufferSTL,
     size_t lastposition = 0;
     /* parse the metadata step by step using the pointers saved in the metadata
     index table */
+    auto itStepsString = engine.m_IO.m_Parameters.find(engine.m_Name);
+    std::vector<size_t> selectedSteps;
+    if (itStepsString != engine.m_IO.m_Parameters.end())
+    {
+        std::string selectedStepsStr = engine.m_IO.m_Parameters[engine.m_Name];
+        std::stringstream ss(selectedStepsStr);
+        std::string item;
+
+        while (std::getline(ss, item, ','))
+        {
+            selectedSteps.push_back(std::stoi(item));
+        }
+    }
     for (size_t i = oldSteps; i < allSteps; i++)
     {
-        ParsePGIndexPerStep(bufferSTL, engine.m_IO.m_HostLanguage, 0, i + 1);
-        ParseVariablesIndexPerStep(bufferSTL, engine, 0, i + 1);
-        ParseAttributesIndexPerStep(bufferSTL, engine, 0, i + 1);
-        lastposition = m_MetadataIndexTable[0][i + 1][3];
+        if (selectedSteps.size() == 0 ||
+            std::find(selectedSteps.begin(), selectedSteps.end(), i) !=
+                selectedSteps.end())
+        {
+            ParsePGIndexPerStep(bufferSTL, engine.m_IO.m_HostLanguage, 0,
+                                i + 1);
+            ParseVariablesIndexPerStep(bufferSTL, engine, 0, i + 1);
+            ParseAttributesIndexPerStep(bufferSTL, engine, 0, i + 1);
+            lastposition = m_MetadataIndexTable[0][i + 1][3];
+        }
     }
     return lastposition;
 }
 
-void BP4Deserializer::ParseMetadataIndex(const BufferSTL &bufferSTL,
+void BP4Deserializer::ParseMetadataIndex(BufferSTL &bufferSTL,
                                          const size_t absoluteStartPos,
-                                         const bool hasHeader)
+                                         const bool hasHeader,
+                                         const bool oneStepOnly)
 {
     const auto &buffer = bufferSTL.m_Buffer;
-    const size_t bufferSize = buffer.size();
-    size_t position = 0;
+    size_t &position = bufferSTL.m_Position;
 
     if (hasHeader)
     {
@@ -113,7 +132,7 @@ void BP4Deserializer::ParseMetadataIndex(const BufferSTL &bufferSTL,
     }
 
     // Read each record now
-    while (position < bufferSize)
+    do
     {
         std::vector<uint64_t> ptrs;
         const uint64_t currentStep = helper::ReadValue<uint64_t>(
@@ -137,7 +156,7 @@ void BP4Deserializer::ParseMetadataIndex(const BufferSTL &bufferSTL,
         ptrs.push_back(currentTimeStamp);
         m_MetadataIndexTable[mpiRank][currentStep] = ptrs;
         position += 8;
-    }
+    } while (!oneStepOnly && position < buffer.size());
 }
 
 const helper::BlockOperationInfo &BP4Deserializer::InitPostOperatorBlockData(
@@ -589,13 +608,13 @@ BP4Deserializer::PerformGetsVariablesSubFileInfo(core::IO &io)
     for (auto &subFileInfoPair : m_DeferredVariablesMap)
     {
         const std::string variableName(subFileInfoPair.first);
-        const std::string type(io.InquireVariableType(variableName));
+        const DataType type(io.InquireVariableType(variableName));
 
-        if (type == "compound")
+        if (type == DataType::Compound)
         {
         }
 #define declare_type(T)                                                        \
-    else if (type == helper::GetType<T>())                                     \
+    else if (type == helper::GetDataType<T>())                                 \
     {                                                                          \
         subFileInfoPair.second =                                               \
             GetSubFileInfo(*io.InquireVariable<T>(variableName));              \
@@ -611,13 +630,13 @@ void BP4Deserializer::ClipMemory(const std::string &variableName, core::IO &io,
                                  const Box<Dims> &blockBox,
                                  const Box<Dims> &intersectionBox) const
 {
-    const std::string type(io.InquireVariableType(variableName));
+    const DataType type(io.InquireVariableType(variableName));
 
-    if (type == "compound")
+    if (type == DataType::Compound)
     {
     }
 #define declare_type(T)                                                        \
-    else if (type == helper::GetType<T>())                                     \
+    else if (type == helper::GetDataType<T>())                                 \
     {                                                                          \
         core::Variable<T> *variable = io.InquireVariable<T>(variableName);     \
         if (variable != nullptr)                                               \

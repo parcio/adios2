@@ -44,6 +44,18 @@ inline void InlineReader::GetSyncCommon(Variable<T> &variable, T *data)
 }
 
 template <class T>
+void InlineReader::Get(core::Variable<T> &variable, T **data) const
+{
+    if (m_Verbosity == 5)
+    {
+        std::cout << "Inline Reader " << m_ReaderRank << "     Get("
+                  << variable.m_Name << ")\n";
+    }
+    auto blockInfo = variable.m_BlocksInfo.back();
+    *data = blockInfo.Data;
+}
+
+template <class T>
 void InlineReader::GetDeferredCommon(Variable<T> &variable, T *data)
 {
     throw std::runtime_error(
@@ -55,8 +67,6 @@ template <class T>
 inline typename Variable<T>::Info *
 InlineReader::GetBlockSyncCommon(Variable<T> &variable)
 {
-    InlineWriter &writer =
-        dynamic_cast<InlineWriter &>(m_IO.GetEngine(m_WriterID));
     if (variable.m_BlockID >= variable.m_BlocksInfo.size())
     {
         throw std::invalid_argument(
@@ -79,8 +89,6 @@ template <class T>
 inline typename Variable<T>::Info *
 InlineReader::GetBlockDeferredCommon(Variable<T> &variable)
 {
-    InlineWriter &writer =
-        dynamic_cast<InlineWriter &>(m_IO.GetEngine(m_WriterID));
     if (variable.m_BlockID >= variable.m_BlocksInfo.size())
     {
         throw std::invalid_argument(

@@ -264,6 +264,21 @@ void Engine::Get(const std::string &variableName,
 }
 
 template <class T>
+void Engine::Get(Variable<T> variable, T **data) const
+{
+    if (m_Engine->m_EngineType != "InlineReader")
+    {
+        throw std::domain_error(
+            "Get calls with T** are only supported with the InlineReader.");
+    }
+
+    using IOType = typename TypeInfo<T>::IOType;
+    m_Engine->Get<IOType>(*variable.m_Variable,
+                          reinterpret_cast<IOType **>(data));
+    return;
+}
+
+template <class T>
 std::map<size_t, std::vector<typename Variable<T>::Info>>
 Engine::AllStepsBlocksInfo(const Variable<T> variable) const
 {
@@ -321,6 +336,24 @@ Engine::BlocksInfo(const Variable<T> variable, const size_t step) const
     const auto blocksInfo =
         m_Engine->BlocksInfo<IOType>(*variable.m_Variable, step);
     return ToBlocksInfo<T>(blocksInfo);
+}
+
+template <class T>
+std::vector<size_t> Engine::GetAbsoluteSteps(const Variable<T> variable) const
+{
+    using IOType = typename TypeInfo<T>::IOType;
+    adios2::helper::CheckForNullptr(
+        m_Engine, "for Engine in call to Engine::GetAbsoluteSteps");
+    if (m_Engine->m_EngineType == "NULL")
+    {
+        return std::vector<size_t>();
+    }
+
+    adios2::helper::CheckForNullptr(
+        variable.m_Variable,
+        "for variable in call to Engine::GetAbsoluteSteps");
+
+    return m_Engine->GetAbsoluteSteps<IOType>(*variable.m_Variable);
 }
 
 } // end namespace adios2

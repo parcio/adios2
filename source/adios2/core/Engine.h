@@ -344,6 +344,9 @@ public:
     typename Variable<T>::Info *Get(const std::string &variableName,
                                     const Mode launch = Mode::Deferred);
 
+    template <class T>
+    void Get(core::Variable<T> &, T **) const;
+
     /**
      * Reader application indicates that no more data will be read from the
      * current stream before advancing.
@@ -413,6 +416,14 @@ public:
     std::vector<typename Variable<T>::Info>
     BlocksInfo(const Variable<T> &variable, const size_t step) const;
 
+    /**
+     * Get the absolute steps of a variable in a file. This is for
+     * information purposes only, because absolute steps cannot be used
+     * in any ADIOS2 calls.
+     */
+    template <class T>
+    std::vector<size_t> GetAbsoluteSteps(const Variable<T> &variable) const;
+
     template <class T>
     T *BufferData(const size_t payloadOffset,
                   const size_t bufferID = 0) noexcept;
@@ -435,6 +446,9 @@ public:
      * utilized by the input Engine to optimize data flow.
      */
     void LockReaderSelections() noexcept;
+
+    /* for adios2 internal testing */
+    virtual size_t DebugGetDataBufferSize() const;
 
 protected:
     /** from ADIOS class passed to Engine created with Open
@@ -467,7 +481,6 @@ protected:
     virtual void DoPut(Variable<T> &variable,                                  \
                        typename Variable<T>::Span &span, const size_t blockID, \
                        const T &value);
-
     ADIOS2_FOREACH_PRIMITIVE_STDTYPE_1ARG(declare_type)
 #undef declare_type
 
@@ -506,7 +519,9 @@ protected:
     DoAllRelativeStepsBlocksInfo(const Variable<T> &variable) const;           \
                                                                                \
     virtual std::vector<typename Variable<T>::Info> DoBlocksInfo(              \
-        const Variable<T> &variable, const size_t step) const;
+        const Variable<T> &variable, const size_t step) const;                 \
+    virtual std::vector<size_t> DoGetAbsoluteSteps(                            \
+        const Variable<T> &variable) const;
 
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
@@ -592,15 +607,18 @@ private:
     Engine::AllRelativeStepsBlocksInfo(const Variable<T> &) const;             \
                                                                                \
     extern template std::vector<typename Variable<T>::Info>                    \
-    Engine::BlocksInfo(const Variable<T> &, const size_t) const;
+    Engine::BlocksInfo(const Variable<T> &, const size_t) const;               \
+                                                                               \
+    extern template std::vector<size_t> Engine::GetAbsoluteSteps(              \
+        const Variable<T> &) const;
 
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
 
 #define declare_template_instantiation(T)                                      \
     extern template typename Variable<T>::Span &Engine::Put(                   \
-        Variable<T> &, const size_t, const T &);
-
+        Variable<T> &, const size_t, const T &);                               \
+    extern template void Engine::Get(Variable<T> &, T **) const;
 ADIOS2_FOREACH_PRIMITIVE_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
 

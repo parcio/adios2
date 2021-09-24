@@ -20,7 +20,8 @@ namespace engine
 DataManWriter::DataManWriter(IO &io, const std::string &name,
                              const Mode openMode, helper::Comm comm)
 : Engine("DataManWriter", io, name, openMode, std::move(comm)),
-  m_Serializer(m_Comm, helper::IsRowMajor(io.m_HostLanguage))
+  m_Serializer(m_Comm, helper::IsRowMajor(io.m_HostLanguage)), m_SentSteps(0),
+  m_ReplyThreadActive(true), m_PublishThreadActive(true)
 {
 
     m_MpiRank = m_Comm.Rank();
@@ -34,6 +35,7 @@ DataManWriter::DataManWriter(IO &io, const std::string &name,
                          m_RendezvousReaderCount);
     helper::GetParameter(m_IO.m_Parameters, "DoubleBuffer", m_DoubleBuffer);
     helper::GetParameter(m_IO.m_Parameters, "TransportMode", m_TransportMode);
+    helper::GetParameter(m_IO.m_Parameters, "Monitor", m_MonitorActive);
 
     if (m_IPAddress.empty())
     {
@@ -85,6 +87,7 @@ DataManWriter::DataManWriter(IO &io, const std::string &name,
 
     if (m_RendezvousReaderCount == 0 || m_TransportMode == "reliable")
     {
+        m_ReplyThreadActive = true;
         m_ReplyThread = std::thread(&DataManWriter::ReplyThread, this);
     }
     else
@@ -95,6 +98,7 @@ DataManWriter::DataManWriter(IO &io, const std::string &name,
 
     if (m_DoubleBuffer && m_TransportMode == "fast")
     {
+        m_PublishThreadActive = true;
         m_PublishThread = std::thread(&DataManWriter::PublishThread, this);
     }
 }
@@ -111,6 +115,16 @@ StepStatus DataManWriter::BeginStep(StepMode mode, const float timeout_sec)
 {
     ++m_CurrentStep;
     m_Serializer.NewWriterBuffer(m_SerializerBufferSize);
+
+    if (m_MonitorActive)
+    {
+        m_Monitor.BeginStep(m_CurrentStep);
+    }
+
+    if (m_Verbosity >= 10)
+    {
+        std::cout << "DataManWriter::BeginStep " << m_CurrentStep << std::endl;
+    }
 
     return StepStatus::OK;
 }
@@ -133,6 +147,11 @@ void DataManWriter::EndStep()
         m_SerializerBufferSize = buffer->size();
     }
 
+    if (m_MonitorActive)
+    {
+        m_Monitor.BeginTransport(m_CurrentStep);
+    }
+
     if (m_DoubleBuffer || m_TransportMode == "reliable")
     {
         PushBufferQueue(buffer);
@@ -140,6 +159,20 @@ void DataManWriter::EndStep()
     else
     {
         m_Publisher.Send(buffer);
+        if (m_MonitorActive)
+        {
+            m_Monitor.EndTransport();
+        }
+    }
+
+    if (m_MonitorActive)
+    {
+        m_Monitor.EndStep(m_CurrentStep);
+    }
+
+    if (m_Verbosity >= 10)
+    {
+        std::cout << "DataManWriter::EndStep " << m_CurrentStep << std::endl;
     }
 }
 
@@ -162,7 +195,7 @@ ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 void DataManWriter::DoClose(const int transportIndex)
 {
     nlohmann::json endSignal;
-    endSignal["FinalStep"] = m_CurrentStep;
+    endSignal["FinalStep"] = static_cast<int64_t>(m_CurrentStep);
     std::string s = endSignal.dump() + '\0';
     auto cvp = std::make_shared<std::vector<char>>(s.size());
     std::memcpy(cvp->data(), s.c_str(), s.size());
@@ -176,8 +209,15 @@ void DataManWriter::DoClose(const int transportIndex)
         m_Publisher.Send(cvp);
     }
 
-    m_ReplyThreadActive = false;
     m_PublishThreadActive = false;
+
+    if (m_ReplyThreadActive)
+    {
+        while (m_SentSteps < m_CurrentStep + 2)
+        {
+        }
+        m_ReplyThreadActive = false;
+    }
 
     if (m_ReplyThread.joinable())
     {
@@ -190,18 +230,10 @@ void DataManWriter::DoClose(const int transportIndex)
     }
 
     m_IsClosed = true;
-}
 
-bool DataManWriter::CheckBufferQueue()
-{
-    std::lock_guard<std::mutex> l(m_BufferQueueMutex);
-    if (m_BufferQueue.empty())
+    if (m_Verbosity >= 10)
     {
-        return false;
-    }
-    else
-    {
-        return true;
+        std::cout << "DataManWriter::DoClose " << m_CurrentStep << std::endl;
     }
 }
 
@@ -228,12 +260,16 @@ std::shared_ptr<std::vector<char>> DataManWriter::PopBufferQueue()
 
 void DataManWriter::PublishThread()
 {
-    while (m_PublishThreadActive || CheckBufferQueue())
+    while (m_PublishThreadActive)
     {
         auto buffer = PopBufferQueue();
         if (buffer != nullptr && buffer->size() > 0)
         {
             m_Publisher.Send(buffer);
+            if (m_MonitorActive)
+            {
+                m_Monitor.EndTransport();
+            }
         }
     }
 }
@@ -241,10 +277,10 @@ void DataManWriter::PublishThread()
 void DataManWriter::ReplyThread()
 {
     int readerCount = 0;
-    while (m_ReplyThreadActive || CheckBufferQueue())
+    while (m_ReplyThreadActive)
     {
         auto request = m_Replier.ReceiveRequest();
-        if (request && request->size() > 0)
+        if (request != nullptr && request->size() > 0)
         {
             std::string r(request->begin(), request->end());
             if (r == "Address")
@@ -262,25 +298,15 @@ void DataManWriter::ReplyThread()
                 auto buffer = PopBufferQueue();
                 while (buffer == nullptr)
                 {
-                    auto buffer = PopBufferQueue();
+                    buffer = PopBufferQueue();
                 }
-                if (buffer != nullptr && buffer->size() > 0)
+                if (buffer->size() > 0)
                 {
                     m_Replier.SendReply(buffer);
-                    if (buffer->size() < 64)
+                    ++m_SentSteps;
+                    if (m_MonitorActive)
                     {
-                        try
-                        {
-                            auto jmsg = nlohmann::json::parse(buffer->data());
-                            auto finalStep = jmsg["FinalStep"].get<size_t>();
-                            if (finalStep == m_CurrentStep)
-                            {
-                                m_ReplyThreadActive = false;
-                            }
-                        }
-                        catch (...)
-                        {
-                        }
+                        m_Monitor.EndTransport();
                     }
                 }
             }

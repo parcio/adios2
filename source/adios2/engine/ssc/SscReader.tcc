@@ -23,66 +23,68 @@ namespace core
 namespace engine
 {
 
+template <class T>
+void SscReader::GetDeferredDeltaCommon(Variable<T> &variable, T *data)
+{
+    TAU_SCOPED_TIMER_FUNC();
+
+    Dims vStart = variable.m_Start;
+    Dims vCount = variable.m_Count;
+    Dims vShape = variable.m_Shape;
+
+    if (!helper::IsRowMajor(m_IO.m_HostLanguage))
+    {
+        std::reverse(vStart.begin(), vStart.end());
+        std::reverse(vCount.begin(), vCount.end());
+        std::reverse(vShape.begin(), vShape.end());
+    }
+
+    m_LocalReadPattern.emplace_back();
+    auto &b = m_LocalReadPattern.back();
+    b.name = variable.m_Name;
+    b.type = helper::GetDataType<T>();
+    b.shapeId = variable.m_ShapeID;
+    b.start = vStart;
+    b.count = vCount;
+    b.shape = vShape;
+    b.bufferStart = 0;
+    b.bufferCount = 0;
+    b.data = data;
+    b.performed = false;
+
+    for (const auto &d : b.count)
+    {
+        if (d == 0)
+        {
+            throw(std::runtime_error(
+                "SetSelection count dimensions cannot be 0"));
+        }
+    }
+}
+
 template <>
 void SscReader::GetDeferredCommon(Variable<std::string> &variable,
                                   std::string *data)
 {
     TAU_SCOPED_TIMER_FUNC();
     variable.SetData(data);
-    if (m_CurrentStep == 0)
+
+    if (m_CurrentStep == 0 || m_WriterDefinitionsLocked == false ||
+        m_ReaderSelectionsLocked == false)
     {
-        m_LocalReadPattern.emplace_back();
-        auto &b = m_LocalReadPattern.back();
-        b.name = variable.m_Name;
-        b.count = variable.m_Count;
-        b.start = variable.m_Start;
-        b.shape = variable.m_Shape;
-        b.type = "string";
-
-        m_LocalReadPatternJson["Variables"].emplace_back();
-        auto &jref = m_LocalReadPatternJson["Variables"].back();
-        jref["Name"] = b.name;
-        jref["Type"] = b.type;
-        jref["ShapeID"] = variable.m_ShapeID;
-        jref["Start"] = b.start;
-        jref["Count"] = b.count;
-        jref["Shape"] = b.shape;
-        jref["BufferStart"] = 0;
-        jref["BufferCount"] = 0;
-
-        ssc::JsonToBlockVecVec(m_GlobalWritePatternJson, m_GlobalWritePattern);
-        m_AllReceivingWriterRanks =
-            ssc::CalculateOverlap(m_GlobalWritePattern, m_LocalReadPattern);
-        CalculatePosition(m_GlobalWritePattern, m_AllReceivingWriterRanks);
-        size_t totalDataSize = 0;
-        for (auto i : m_AllReceivingWriterRanks)
-        {
-            totalDataSize += i.second.second;
-        }
-        m_Buffer.resize(totalDataSize);
-        std::vector<MPI_Request> requests;
+        GetDeferredDeltaCommon(variable, data);
+    }
+    else
+    {
         for (const auto &i : m_AllReceivingWriterRanks)
         {
-            requests.emplace_back();
-            MPI_Rget(m_Buffer.data() + i.second.first, i.second.second,
-                     MPI_CHAR, i.first, 0, i.second.second, MPI_CHAR, m_MpiWin,
-                     &requests.back());
-        }
-        MPI_Status statuses[requests.size()];
-        MPI_Waitall(requests.size(), requests.data(), statuses);
-    }
-
-    for (const auto &i : m_AllReceivingWriterRanks)
-    {
-        const auto &v = m_GlobalWritePattern[i.first];
-        for (const auto &b : v)
-        {
-            if (b.name == variable.m_Name)
+            const auto &v = m_GlobalWritePattern[i.first];
+            for (const auto &b : v)
             {
-                std::vector<char> str(b.bufferCount);
-                std::memcpy(str.data(), m_Buffer.data() + b.bufferStart,
-                            b.bufferCount);
-                *data = std::string(str.begin(), str.end());
+                if (b.name == variable.m_Name)
+                {
+                    *data = std::string(b.value.begin(), b.value.end());
+                }
             }
         }
     }
@@ -92,7 +94,6 @@ template <class T>
 void SscReader::GetDeferredCommon(Variable<T> &variable, T *data)
 {
     TAU_SCOPED_TIMER_FUNC();
-
     variable.SetData(data);
 
     Dims vStart = variable.m_Start;
@@ -106,82 +107,52 @@ void SscReader::GetDeferredCommon(Variable<T> &variable, T *data)
         std::reverse(vShape.begin(), vShape.end());
     }
 
-    if (m_CurrentStep == 0)
+    if (m_CurrentStep == 0 || m_WriterDefinitionsLocked == false ||
+        m_ReaderSelectionsLocked == false)
     {
-        m_LocalReadPattern.emplace_back();
-        auto &b = m_LocalReadPattern.back();
-        b.name = variable.m_Name;
-        b.count = vCount;
-        b.start = vStart;
-        b.shape = vShape;
-        b.type = helper::GetType<T>();
+        GetDeferredDeltaCommon(variable, data);
+    }
+    else
+    {
 
-        for (const auto &d : b.count)
-        {
-            if (d == 0)
-            {
-                throw(std::runtime_error(
-                    "SetSelection count dimensions cannot be 0"));
-            }
-        }
-
-        m_LocalReadPatternJson["Variables"].emplace_back();
-        auto &jref = m_LocalReadPatternJson["Variables"].back();
-        jref["Name"] = variable.m_Name;
-        jref["Type"] = helper::GetType<T>();
-        jref["ShapeID"] = variable.m_ShapeID;
-        jref["Start"] = vStart;
-        jref["Count"] = vCount;
-        jref["Shape"] = vShape;
-        jref["BufferStart"] = 0;
-        jref["BufferCount"] = 0;
-
-        ssc::JsonToBlockVecVec(m_GlobalWritePatternJson, m_GlobalWritePattern);
-        m_AllReceivingWriterRanks =
-            ssc::CalculateOverlap(m_GlobalWritePattern, m_LocalReadPattern);
-        CalculatePosition(m_GlobalWritePattern, m_AllReceivingWriterRanks);
-        size_t totalDataSize = 0;
-        for (auto i : m_AllReceivingWriterRanks)
-        {
-            totalDataSize += i.second.second;
-        }
-        m_Buffer.resize(totalDataSize);
-        std::vector<MPI_Request> requests;
         for (const auto &i : m_AllReceivingWriterRanks)
         {
-            requests.emplace_back();
-            MPI_Rget(m_Buffer.data() + i.second.first, i.second.second,
-                     MPI_CHAR, i.first, 0, i.second.second, MPI_CHAR, m_MpiWin,
-                     &requests.back());
-        }
-        MPI_Status statuses[requests.size()];
-        MPI_Waitall(requests.size(), requests.data(), statuses);
-    }
-
-    for (const auto &i : m_AllReceivingWriterRanks)
-    {
-        const auto &v = m_GlobalWritePattern[i.first];
-        for (const auto &b : v)
-        {
-            if (b.name == variable.m_Name)
+            const auto &v = m_GlobalWritePattern[i.first];
+            for (const auto &b : v)
             {
-                if (b.shapeId == ShapeID::GlobalArray ||
-                    b.shapeId == ShapeID::LocalArray)
+                if (b.name == variable.m_Name)
                 {
-                    helper::NdCopy<T>(m_Buffer.data() + b.bufferStart, b.start,
-                                      b.count, true, true,
-                                      reinterpret_cast<char *>(data), vStart,
-                                      vCount, true, true);
-                }
-                else if (b.shapeId == ShapeID::GlobalValue ||
-                         b.shapeId == ShapeID::LocalValue)
-                {
-                    std::memcpy(data, m_Buffer.data() + b.bufferStart,
-                                b.bufferCount);
-                }
-                else
-                {
-                    throw(std::runtime_error("ShapeID not supported"));
+                    bool empty = false;
+                    for (const auto c : b.count)
+                    {
+                        if (c == 0)
+                        {
+                            empty = true;
+                        }
+                    }
+                    if (empty)
+                    {
+                        continue;
+                    }
+
+                    if (b.shapeId == ShapeID::GlobalArray ||
+                        b.shapeId == ShapeID::LocalArray)
+                    {
+                        helper::NdCopy<T>(m_Buffer.data() + b.bufferStart,
+                                          b.start, b.count, true, true,
+                                          reinterpret_cast<char *>(data),
+                                          vStart, vCount, true, true);
+                    }
+                    else if (b.shapeId == ShapeID::GlobalValue ||
+                             b.shapeId == ShapeID::LocalValue)
+                    {
+                        std::memcpy(data, m_Buffer.data() + b.bufferStart,
+                                    b.bufferCount);
+                    }
+                    else
+                    {
+                        throw(std::runtime_error("ShapeID not supported"));
+                    }
                 }
             }
         }
@@ -221,7 +192,9 @@ SscReader::BlocksInfoCommon(const Variable<T> &variable,
                     v.shapeId == ShapeID::LocalValue)
                 {
                     b.IsValue = true;
-                    if (m_CurrentStep == 0)
+                    if (m_CurrentStep == 0 ||
+                        m_WriterDefinitionsLocked == false ||
+                        m_ReaderSelectionsLocked == false)
                     {
                         std::memcpy(&b.Value, v.value.data(), v.value.size());
                     }

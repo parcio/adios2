@@ -1,10 +1,10 @@
 # Disable warnings in thirdparty code
 if(CMAKE_C_COMPILER_ID MATCHES
-    "^(GNU|Clang|AppleClang|XLClang|XL|VisualAge|SunPro|HP|Intel)$")
+    "^(GNU|Clang|AppleClang|XLClang|XL|VisualAge|SunPro|HP|Intel|PGI|NVIDIA)$")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -w")
 endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES
-    "^(GNU|Clang|AppleClang|XLClang|XL|VisualAge|SunPro|HP|Intel)$")
+    "^(GNU|Clang|AppleClang|XLClang|XL|VisualAge|SunPro|HP|Intel|PGI|NVIDIA)$")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
 endif()
 
@@ -41,7 +41,7 @@ if(BUILD_TESTING)
     adios2_add_thirdparty_target(gtest GTest::GTest)
   else()
     add_subdirectory(GTest)
-    adios2_add_thirdparty_target(gtest gtest_interface)
+    adios2_add_thirdparty_target(gtest gtest)
   endif()
 endif()
 

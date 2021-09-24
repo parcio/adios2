@@ -25,6 +25,10 @@ namespace core
 namespace engine
 {
 
+// The inline reader needs to know about the writer, and vice versa.
+// Break cyclic dependency via a forward declaration:
+class InlineWriter;
+
 class InlineReader : public Engine
 {
 public:
@@ -50,7 +54,11 @@ public:
 
     bool IsInsideStep() const;
 
+    template <typename T>
+    void Get(Variable<T> &, T **) const;
+
 private:
+    const InlineWriter *GetWriter() const;
     int m_Verbosity = 0;
     int m_ReaderRank; // my rank in the readers' comm
 
@@ -58,8 +66,6 @@ private:
     size_t m_CurrentStep = static_cast<size_t>(-1);
     bool m_InsideStep = false;
     std::vector<std::string> m_DeferredVariables;
-
-    std::string m_WriterID;
 
     void Init() final; ///< called from constructor, gets the selected Inline
                        /// transport method from settings
@@ -100,6 +106,11 @@ private:
 
     void SetDeferredVariablePointers();
 };
+
+#define declare_type(T)                                                        \
+    extern template void InlineReader::Get<T>(Variable<T> &, T **) const;
+ADIOS2_FOREACH_PRIMITIVE_STDTYPE_1ARG(declare_type)
+#undef declare_type
 
 } // end namespace engine
 } // end namespace core

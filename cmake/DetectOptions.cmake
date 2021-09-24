@@ -177,6 +177,28 @@ endif()
 if(CMAKE_Fortran_COMPILER_LOADED)
   set(ADIOS2_HAVE_Fortran TRUE)
   list(APPEND mpi_find_components Fortran)
+
+  include(CheckFortranSourceCompiles)
+  check_fortran_source_compiles("
+    program testargs
+      integer :: n
+      character(len=256) :: v
+      n = command_argument_count()
+      call get_command_argument(0, v)
+    end program testargs"
+    ADIOS2_HAVE_FORTRAN_F03_ARGS
+    SRC_EXT F90
+  )
+  check_fortran_source_compiles("
+    program testargs
+      integer :: n
+      character(len=256) :: v
+      n = iargc()
+      call getarg(0, v)
+    end program testargs"
+    ADIOS2_HAVE_FORTRAN_GNU_ARGS
+    SRC_EXT F90
+  )
 endif()
 
 # MPI
@@ -201,37 +223,29 @@ if(ZeroMQ_FOUND)
 endif()
 
 # DataMan
-# DataMan currently breaks the PGI compiler
-if(NOT (CMAKE_CXX_COMPILER_ID STREQUAL "PGI") AND NOT MSVC)
-    if(ZeroMQ_FOUND)
-        if(ADIOS2_USE_DataMan STREQUAL AUTO)
-            set(ADIOS2_HAVE_DataMan TRUE)
-        elseif(ADIOS2_USE_DataMan)
-            set(ADIOS2_HAVE_DataMan TRUE)
-        endif()
+if(ZeroMQ_FOUND)
+    if(ADIOS2_USE_DataMan STREQUAL AUTO)
+        set(ADIOS2_HAVE_DataMan TRUE)
+    elseif(ADIOS2_USE_DataMan)
+        set(ADIOS2_HAVE_DataMan TRUE)
     endif()
 endif()
 
 # SSC
-# SSC currently breaks the PGI compiler
-if(NOT (CMAKE_CXX_COMPILER_ID STREQUAL "PGI") AND NOT MSVC)
-    if(ADIOS2_HAVE_MPI)
-        if(ADIOS2_USE_SSC STREQUAL AUTO)
-            set(ADIOS2_HAVE_SSC TRUE)
-        elseif(ADIOS2_USE_SSC)
-            set(ADIOS2_HAVE_SSC TRUE)
-        endif()
+if(ADIOS2_HAVE_MPI)
+    if(ADIOS2_USE_SSC STREQUAL AUTO)
+        set(ADIOS2_HAVE_SSC TRUE)
+    elseif(ADIOS2_USE_SSC)
+        set(ADIOS2_HAVE_SSC TRUE)
     endif()
 endif()
 
 # Table
-if(NOT (CMAKE_CXX_COMPILER_ID STREQUAL "PGI") AND NOT MSVC)
-    if(ZeroMQ_FOUND)
-        if(ADIOS2_USE_Table STREQUAL AUTO)
-            set(ADIOS2_HAVE_Table TRUE)
-        elseif(ADIOS2_USE_Table)
-            set(ADIOS2_HAVE_Table TRUE)
-        endif()
+if(ZeroMQ_FOUND)
+    if(ADIOS2_USE_Table STREQUAL AUTO)
+        set(ADIOS2_HAVE_Table TRUE)
+    elseif(ADIOS2_USE_Table)
+        set(ADIOS2_HAVE_Table TRUE)
     endif()
 endif()
 
@@ -293,12 +307,12 @@ if(NOT SHARED_LIBS_SUPPORTED)
 endif()
 
 if(ADIOS2_USE_Python STREQUAL AUTO)
-  find_package(Python COMPONENTS Interpreter Development NumPy)
+  find_package(Python 3 COMPONENTS Interpreter Development NumPy)
   if(Python_FOUND AND ADIOS2_HAVE_MPI)
     find_package(PythonModule COMPONENTS mpi4py mpi4py/mpi4py.h)
   endif()
 elseif(ADIOS2_USE_Python)
-  find_package(Python REQUIRED COMPONENTS Interpreter Development NumPy)
+  find_package(Python 3 REQUIRED COMPONENTS Interpreter Development NumPy)
   if(ADIOS2_HAVE_MPI)
     find_package(PythonModule REQUIRED COMPONENTS mpi4py mpi4py/mpi4py.h)
   endif()
@@ -314,7 +328,7 @@ if(Python_FOUND)
 endif()
 
 # Even if no python support, we still want the interpreter for tests
-if(NOT Python_Interpreter_FOUND)
+if(BUILD_TESTING AND NOT Python_Interpreter_FOUND)
   find_package(Python REQUIRED COMPONENTS Interpreter)
 endif()
 
@@ -347,11 +361,6 @@ if(ADIOS2_USE_SST AND NOT MSVC)
     if(CrayDRC_FOUND)
       set(ADIOS2_SST_HAVE_CRAY_DRC TRUE)
     endif()
-  endif()
-  find_package(NVStream)
-  if(NVStream_FOUND)
-    find_package(Boost OPTIONAL_COMPONENTS thread log filesystem system)
-    set(ADIOS2_SST_HAVE_NVStream TRUE)
   endif()
 endif()
 

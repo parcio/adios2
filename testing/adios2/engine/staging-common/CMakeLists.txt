@@ -9,6 +9,10 @@ gtest_add_tests_helper(StagingMPMD MPI_ONLY "" Engine.Staging. ".InSituMPI" EXTR
 if(ADIOS2_HAVE_SST)
   gtest_add_tests_helper(StagingMPMD MPI_ONLY "" Engine.Staging. ".SST.FFS" EXTRA_ARGS "SST" "MarshalMethod=FFS")
   gtest_add_tests_helper(StagingMPMD MPI_ONLY "" Engine.Staging. ".SST.BP" EXTRA_ARGS "SST" "MarshalMethod=BP")
+  gtest_add_tests_helper(Threads MPI_NONE "" Engine.Staging. ".SST.FFS" EXTRA_ARGS "SST"  "--engine_params" "MarshalMethod=FFS")
+  gtest_add_tests_helper(Threads MPI_NONE "" Engine.Staging. ".SST.BP" EXTRA_ARGS "SST"  "--engine_params" "MarshalMethod=BP")
+  gtest_add_tests_helper(Threads MPI_NONE "" Engine.Staging. ".BP4_stream" EXTRA_ARGS "BP4"  "--engine_params" "OpenTimeoutSecs=5")
+  gtest_add_tests_helper(Threads MPI_NONE "" Engine.Staging. ".FileStream" EXTRA_ARGS "FileStream")
 endif()
 
 foreach(helper
@@ -50,8 +54,16 @@ if(ADIOS2_HAVE_Fortran)
     TestCommonReadF.F90
     $<TARGET_OBJECTS:TestCommonData_f>
   )
+  target_compile_definitions(TestCommonRead_f PRIVATE
+    $<$<BOOL:${ADIOS2_HAVE_FORTRAN_F03_ARGS}>:ADIOS2_HAVE_FORTRAN_F03_ARGS>
+    $<$<BOOL:${ADIOS2_HAVE_FORTRAN_GNU_ARGS}>:ADIOS2_HAVE_FORTRAN_GNU_ARGS>
+  )
   set_target_properties(TestCommonWrite_f TestCommonRead_f PROPERTIES
     LINKER_LANGUAGE Fortran
+  )
+  target_compile_definitions(TestCommonWrite_f PRIVATE
+    $<$<BOOL:${ADIOS2_HAVE_FORTRAN_F03_ARGS}>:ADIOS2_HAVE_FORTRAN_F03_ARGS>
+    $<$<BOOL:${ADIOS2_HAVE_FORTRAN_GNU_ARGS}>:ADIOS2_HAVE_FORTRAN_GNU_ARGS>
   )
   if(ADIOS2_HAVE_MPI)
     target_link_libraries(TestCommonWrite_f adios2_fortran_mpi MPI::MPI_Fortran)
@@ -91,7 +103,7 @@ if(ADIOS2_HAVE_MPI AND MPIEXEC_EXECUTABLE)
    endforeach()
 endif()
 
-set (SIMPLE_TESTS "1x1;NoReaderNoWait;TimeoutOnOpen;1x1.NoData;1x1.Modes;1x1.Attrs;1x1.Local;1x1.SharedNothing;1x1.SharedIO;1x1.SharedVar;1x1.SharedNothingSync;1x1.SharedIOSync;1x1.SharedVarSync;1x1EarlyExit")
+set (SIMPLE_TESTS "1x1;NoReaderNoWait;TimeoutOnOpen;1x1.NoData;1x1.Modes;1x1.Attrs;1x1.Local;1x1.SharedNothing;1x1.SharedIO;1x1.SharedVar;1x1.SharedNothingSync;1x1.SharedIOSync;1x1.SharedVarSync;1x1EarlyExit;CumulativeAttr.1x1")
 
 set (SIMPLE_FORTRAN_TESTS "")
 if(ADIOS2_HAVE_Fortran)
@@ -122,12 +134,18 @@ endif()
 set (ALL_SIMPLE_TESTS "")
 list (APPEND ALL_SIMPLE_TESTS ${SIMPLE_TESTS} ${SIMPLE_FORTRAN_TESTS} ${SIMPLE_MPI_TESTS} ${SIMPLE_ZFP_TESTS})
 
+set (SST_SPECIFIC_TESTS  "")
+list (APPEND SST_SPECIFIC_TESTS  "1x1.SstRUDP;1x1.LocalMultiblock")
+if (ADIOS2_HAVE_MPI)
+  list (APPEND SST_SPECIFIC_TESTS  "2x3.SstRUDP;2x1.LocalMultiblock;5x3.LocalMultiblock;")
+endif()
+
 #
 #   Setup tests for SST engine
 #
 SET (BASIC_SST_TESTS "")
 if(ADIOS2_HAVE_SST)
-    list (APPEND BASIC_SST_TESTS ${ALL_SIMPLE_TESTS} ${SPECIAL_TESTS})
+  list (APPEND BASIC_SST_TESTS ${ALL_SIMPLE_TESTS} ${SPECIAL_TESTS} ${SST_SPECIFIC_TESTS})
 endif()
 
 
@@ -154,7 +172,7 @@ endforeach()
 #
 #   Setup tests for InSituMPI engine
 #
-if(ADIOS2_HAVE_MPI AND ADIOS2_RUN_MPMD_TESTS)
+if(ADIOS2_HAVE_MPI AND ADIOS2_RUN_MPI_MPMD_TESTS)
     set (SIMPLE_IMPI_TESTS "1x1;TimeoutOnOpen;1x1.Modes;1x1.Attrs;1x1.Local;1x1.SharedNothing;1x1.SharedIO;1x1.SharedVar;1x1.SharedNothingSync;1x1.SharedIOSync;1x1.SharedVarSync;2x1.SharedNothing;2x1.SharedIO;2x1.SharedVar;2x1.SharedNothingSync;2x1.SharedIOSync;2x1.SharedVarSync")
     set (INSITU_TESTS ${SIMPLE_IMPI_TESTS} ${SIMPLE_FORTRAN_TESTS} ${SIMPLE_MPI_TESTS} ${SIMPLE_ZFP_TESTS})
     # Tests that don't work for InSitu
@@ -184,8 +202,8 @@ if(ADIOS2_HAVE_MPI AND ADIOS2_RUN_MPMD_TESTS)
     endforeach()
 endif()
 
-if(ADIOS2_HAVE_SSC AND ADIOS2_RUN_MPMD_TESTS)
-    set (SSC_BASE_TESTS "1x1;1x1.Attrs;2x1;1x2;2x1ZeroDataVar;2x1ZeroDataR64;3x5;5x3;3x5LockGeometry;TimeoutOnOpen")
+if(ADIOS2_HAVE_SSC AND ADIOS2_RUN_MPI_MPMD_TESTS)
+    set (SSC_BASE_TESTS "1x1;1x1.Attrs;2x1;1x2;2x1ZeroDataVar;2x1ZeroDataR64;3x5;5x3;3x5LockGeometry")
     set (SSC_TESTS  ${SIMPLE_FORTRAN_TESTS} ${SIMPLE_MPI_FORTRAN_TESTS} ${SSC_BASE_TESTS})
     foreach(test ${SSC_TESTS})
         add_common_test(${test} SSC)
@@ -221,7 +239,7 @@ endif()
 if(NOT MSVC)    # not on windows
     # BP4 streaming tests start with all the simple tests, but with a timeout added on open
     LIST (APPEND BP4_STREAM_TESTS ${ALL_SIMPLE_TESTS} ${SPECIAL_TESTS})
-    MutateTestSet( BP4_STREAM_TESTS "BPS" reader "OpenTimeoutSecs=10" "${BP4_STREAM_TESTS}")
+    MutateTestSet( BP4_STREAM_TESTS "BPS" reader "OpenTimeoutSecs=10,BeginStepPollingFrequencySecs=0.1" "${BP4_STREAM_TESTS}")
     # SharedVars fail with BP4_streaming*
     list (FILTER BP4_STREAM_TESTS EXCLUDE REGEX ".*SharedVar.BPS$")
     # Discard not a feature of BP4
@@ -236,6 +254,8 @@ if(NOT MSVC)    # not on windows
     list (FILTER BP4_STREAM_TESTS EXCLUDE REGEX ".*Preload.*BPS$")
     # KillWriter fails with BP4
     list (FILTER BP4_STREAM_TESTS EXCLUDE REGEX ".*KillWriter.*BPS$")
+    # KillReaders  We swear this isn't necessary for BP4 streaming
+    list (FILTER BP4_STREAM_TESTS EXCLUDE REGEX ".*KillReaders.*BPS$")
     # SharedVars fail with BP4_streaming*
     list (FILTER BP4_STREAM_TESTS EXCLUDE REGEX ".*SharedVar.BPS$")
     # Local fail with BP4_streaming*
@@ -243,7 +263,7 @@ if(NOT MSVC)    # not on windows
     # Fortran scalar reads don't work for BP4 streaming
     list (FILTER BP4_STREAM_TESTS EXCLUDE REGEX "(FtoF|CtoF).*")
     # Local Vars have a heisen failure for BP4 streaming
-    list (FILTER BP4_STREAM_TESTS EXCLUDE REGEX ".*LocalVarying.BPS$")
+#list (FILTER BP4_STREAM_TESTS EXCLUDE REGEX ".*LocalVarying.BPS$")
     # The nobody-writes-data-in-a-timestep tests don't work for any BP file engine
     list (FILTER BP4_STREAM_TESTS EXCLUDE REGEX ".*NoData.BPS$")
     
@@ -257,6 +277,37 @@ if(NOT MSVC)    # not on windows
         add_common_test(${test} BP4_stream)
     endforeach()
     
+endif()
+
+#
+#   Setup streaming tests for FileStream virtual engine (BP4+StreamReader=true)
+#
+if(NOT MSVC)    # not on windows
+    # FileStream streaming tests start with all the simple tests, but with a timeout added on open
+    LIST (APPEND FILESTREAM_TESTS ${SIMPLE_TESTS} ${SIMPLE_MPI_TESTS})
+    MutateTestSet( FILESTREAM_TESTS "FS" reader "OpenTimeoutSecs=10,BeginStepPollingFrequencySecs=0.1" "${FILESTREAM_TESTS}")
+    # SharedVars fail with file_streaming*
+    list (FILTER FILESTREAM_TESTS EXCLUDE REGEX ".*SharedVar.FS$")
+    # SharedVars fail with file_streaming*
+    list (FILTER FILESTREAM_TESTS EXCLUDE REGEX ".*SharedVar.FS$")
+    # Local fail with file_streaming*
+    list (FILTER FILESTREAM_TESTS EXCLUDE REGEX ".*Local.FS$")
+    # The nobody-writes-data-in-a-timestep tests don't work for any BP-file based engine
+    list (FILTER FILESTREAM_TESTS EXCLUDE REGEX ".*NoData.FS$")
+    # Don't need to repeat tests that are identical for BP4 and FileStream
+    list (FILTER FILESTREAM_TESTS EXCLUDE REGEX ".*NoReaderNoWait.FS$")
+    list (FILTER FILESTREAM_TESTS EXCLUDE REGEX ".*TimeoutOnOpen.FS$")
+    list (FILTER FILESTREAM_TESTS EXCLUDE REGEX ".*NoReaderNoWait.FS$")
+
+    foreach(test ${FILESTREAM_TESTS})
+        add_common_test(${test} FileStream)
+    endforeach()
+
+    MutateTestSet( FileStream_BBSTREAM_TESTS "BB" writer "BurstBufferPath=bb,BurstBufferVerbose=2" "${FILESTREAM_TESTS}")
+    foreach(test ${FileStream_BBSTREAM_TESTS})
+        add_common_test(${test} FileStream)
+    endforeach()
+
 endif()
 
 #

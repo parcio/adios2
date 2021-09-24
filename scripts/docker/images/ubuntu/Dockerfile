@@ -16,9 +16,9 @@
 # 	$ cd /path/to/adios2-src/scripts/docker/images
 # 	$ docker build -f ubuntu/Dockerfile -t adios2:master-ubuntu1804
 #
-#   ADIOS v2.6.0 on Ubuntu 19.10
+#   ADIOS v2.7.1 on Ubuntu 19.10
 # 	$ cd /path/to/adios2-src/scripts/docker/images
-# 	$ docker build -f ubuntu/Dockerfile -t adios2:2.6.0-ubuntu1910 --build-arg ubuntu_ver=19.10 --build-arg adios_ver=v2.6.0
+# 	$ docker build -f ubuntu/Dockerfile -t adios2:2.7.1-ubuntu1910 --build-arg ubuntu_ver=19.10 --build-arg adios_ver=v2.7.1
 ###############################################################################
 
 ARG ubuntu_ver=18.04
@@ -118,7 +118,7 @@ RUN git clone https://github.com/ornladios/adios2.git source && \
     . /etc/profile && \
     cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=/opt/adios/${adios_ver_dir} \
-      -DADIOS2_BUILD_TESTING=OFF \
+      -DBUILD_TESTING=OFF \
       -DADIOS2_BUILD_EXAMPLES=OFF \
       ../source && \
     make -j$(grep -c '^processor' /proc/cpuinfo) install && \

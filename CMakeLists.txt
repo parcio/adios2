@@ -14,7 +14,7 @@ endif()
 
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/ADIOSFunctions.cmake)
 
-setup_version(2.6.0)
+setup_version(2.7.1)
 
 project(ADIOS2 VERSION ${ADIOS2_VERSION})
 
@@ -88,14 +88,12 @@ mark_as_advanced(ADIOS2_LIBRARY_SUFFIX ADIOS2_EXECUTABLE_SUFFIX)
 
 # Use meta-compile features if available, otherwise use specific language
 # features
-if(CMAKE_VERSION VERSION_LESS 3.9 OR
-   CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Intel|Clang|AppleClang|MSVC)$")
+if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Intel|Clang|AppleClang|MSVC)$")
   set(ADIOS2_CXX11_FEATURES cxx_auto_type cxx_nullptr)
 else()
   set(ADIOS2_CXX11_FEATURES cxx_std_11)
 endif()
-if(CMAKE_VERSION VERSION_LESS 3.9 OR
-   CMAKE_C_COMPILER_ID MATCHES "^(GNU|Intel|Clang|AppleClang|MSVC)$")
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Intel|Clang|AppleClang|MSVC)$")
   set(ADIOS2_C99_FEATURES c_restrict)
 else()
   set(ADIOS2_C99_FEATURES c_std_99)
@@ -115,6 +113,8 @@ mark_as_advanced(BUILD_SHARED_LIBS)
 if((NOT BUILD_SHARED_LIBS) AND (NOT DEFINED CMAKE_POSITION_INDEPENDENT_CODE))
   set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
+
+include(CTest)
 
 adios_option(Blosc     "Enable support for Blosc transforms" AUTO)
 adios_option(BZip2     "Enable support for BZip2 transforms" AUTO)
@@ -150,7 +150,7 @@ if(ADIOS2_HAVE_MPI)
 endif()
 
 set(ADIOS2_CONFIG_OPTS
-    Blosc BZip2 ZFP SZ MGARD PNG MPI DataMan Table SSC SST DataSpaces ZeroMQ HDF5 IME Python Fortran SysVShMem Profiling Endian_Reverse JULEA
+    Blosc BZip2 ZFP SZ MGARD PNG MPI DataMan Table SSC SST DataSpaces ZeroMQ HDF5 HDF5_VOL IME Python Fortran SysVShMem Profiling Endian_Reverse JULEA
 )
 GenerateADIOSHeaderConfig(${ADIOS2_CONFIG_OPTS})
 configure_file(
@@ -225,22 +225,11 @@ endif()
 #------------------------------------------------------------------------------#
 # Testing
 #------------------------------------------------------------------------------#
-if(DEFINED BUILD_TESTING)
-  set(ADIOS2_BUILD_TESTING_DEFAULT ${BUILD_TESTING})
-else()
-  set(ADIOS2_BUILD_TESTING_DEFAULT ON)
-endif()
-unset(BUILD_TESTING)
-option(ADIOS2_BUILD_TESTING "Build the ADIOS2 testing tree"
-  ${ADIOS2_BUILD_TESTING_DEFAULT})
-
 cmake_dependent_option(ADIOS2_RUN_MPI_MPMD_TESTS
   "Enable the parallel MPMD tests" ON
-  "ADIOS2_BUILD_TESTING;ADIOS2_HAVE_MPI" OFF)
-mark_as_advanced(ADIOS2_RUN_MPMD_TESTS)
+  "BUILD_TESTING;ADIOS2_HAVE_MPI" OFF)
+mark_as_advanced(ADIOS2_RUN_MPI_MPMD_TESTS)
 
-include(CTest)
-set(BUILD_TESTING ${ADIOS2_BUILD_TESTING})
 if(BUILD_TESTING)
   find_program(DIFF_EXECUTABLE diff)
   if(DIFF_EXECUTABLE)
@@ -321,7 +310,8 @@ foreach(opt IN LISTS ADIOS2_CONFIG_OPTS)
     message("${label}: OFF")
   endif()
 endforeach()
-if (ADIOS2_HAVE_SST AND ADIOS2_SST_HAVE_LIBFABRIC)
+
+if (ADIOS2_HAVE_SST AND ADIOS2_SST_HAVE_LIBFABRIC) 
 message("    RDMA Transport for Staging: Available")
 else()
 message("    RDMA Transport for Staging: Unconfigured")

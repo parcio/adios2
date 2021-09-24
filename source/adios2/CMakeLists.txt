@@ -29,6 +29,7 @@ add_library(adios2_core
   core/Variable.cpp core/Variable.tcc
   core/VariableBase.cpp
   core/VariableCompound.cpp core/VariableCompound.tcc
+  core/Group.cpp core/Group.tcc
 
 #operator callback
   operator/callback/Signature1.cpp
@@ -223,6 +224,7 @@ endif()
 
 if(ADIOS2_HAVE_DataMan)
     target_sources(adios2_core PRIVATE
+        engine/dataman/DataManMonitor.cpp
         engine/dataman/DataManReader.cpp
         engine/dataman/DataManReader.tcc
         engine/dataman/DataManWriter.cpp

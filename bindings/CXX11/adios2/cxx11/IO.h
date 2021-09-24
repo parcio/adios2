@@ -13,9 +13,9 @@
 
 #include "Attribute.h"
 #include "Engine.h"
+#include "Group.h"
 #include "Operator.h"
 #include "Variable.h"
-
 #if ADIOS2_USE_MPI
 #include <mpi.h>
 #endif
@@ -252,10 +252,17 @@ public:
      * Open an Engine to start heavy-weight input/output operations.
      * @param name unique engine identifier
      * @param mode adios2::Mode::Write, adios2::Mode::Read, or
-     *             adios2::Mode::Append (not yet support)
+     *             adios2::Mode::Append (BP4 only)
      * @return engine object
      */
     Engine Open(const std::string &name, const Mode mode);
+    /**
+     * Return a Group object for hierarchical reading.
+     * @param name starting path
+     * @param a delimiter to separate groups in a string representation
+     * @return Group object
+     */
+    Group InquireGroup(const std::string &path, char delimiter = '/');
 
 #if ADIOS2_USE_MPI
     /**
@@ -265,7 +272,7 @@ public:
      * MPI Collective function as it calls MPI_Comm_dup
      * @param name unique engine identifier within IO
      * @param mode adios2::Mode::Write, adios2::Mode::Read, or
-     *             adios2::Mode::Append (not yet support)
+     *             adios2::Mode::Append (BP4 only)
      * @param comm new communicator other than ADIOS object's communicator
      * @return engine object
      */
@@ -276,16 +283,19 @@ public:
     void FlushAll();
 
     /**
-     * Returns a map with variable information
-     * @return map:
-     * <pre>
-     * key: variable name
-     * value: Params
-     * 		string key: variable info key
-     *      string value: variable info value
-     * </pre>
+     * Returns a map with variable information.
+     * - key: variable name
+     * - value: Params is a map<string,string>
+     * 	 - key: "Type", "Shape", "AvailableStepsCount", "Min", "Max",
+     * "SingleValue"
+     *   - value: variable info value as string
+     *
+     * @param namesOnly: returns a map with the variable names but with no
+     * Parameters. Use this if you only need the list of variable names
+     * and call VariableType() and InquireVariable() on the names individually.
+     * @return map<string, map<string, string>>
      */
-    std::map<std::string, Params> AvailableVariables();
+    std::map<std::string, Params> AvailableVariables(bool namesOnly = false);
 
     /**
      * Returns a map with available attributes information associated to a
@@ -322,8 +332,8 @@ public:
      * Inspects attribute type. This function can be used in conjunction with
      * MACROS in an else if (type == adios2::GetType<T>() ) {} loop
      * @param name unique attribute name identifier in current IO
-     * @return type as in adios2::GetType<T>() (e.g. "double", "float"), empty
-     * std::string if attribute not found
+     * @return type as in adios2::GetType<T>() (e.g. "double", "float"),
+     * empty std::string if attribute not found
      */
     std::string AttributeType(const std::string &name) const;
 

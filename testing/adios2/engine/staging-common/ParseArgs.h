@@ -33,9 +33,11 @@ int LongFirstDelay = 0;
 int FirstTimestepMustBeZero = 0;
 int LockGeometry = 0;
 bool VaryingDataSize = false;
+bool AdvancingAttrs = false;
 int NoData = 0;
 int NoDataNode = -1;
 int EarlyExit = 0;
+int LocalCount = 1;
 
 std::string shutdown_name = "DieTest";
 adios2::Mode GlobalWriteMode = adios2::Mode::Deferred;
@@ -218,6 +220,10 @@ static void ParseArgs(int argc, char **argv)
         {
             VaryingDataSize = true;
         }
+        else if (std::string(argv[1]) == "--advancing_attributes")
+        {
+            AdvancingAttrs = true;
+        }
         else if (std::string(argv[1]) == "--long_first_delay")
         {
             LongFirstDelay = 1;
@@ -247,6 +253,15 @@ static void ParseArgs(int argc, char **argv)
             std::istringstream ss(argv[2]);
             if (!(ss >> NoDataNode))
                 std::cerr << "Invalid number for --no_data_node argument"
+                          << argv[1] << '\n';
+            argv++;
+            argc--;
+        }
+        else if (std::string(argv[1]) == "--local_count")
+        {
+            std::istringstream ss(argv[2]);
+            if (!(ss >> LocalCount))
+                std::cerr << "Invalid number for --local_count argument"
                           << argv[1] << '\n';
             argv++;
             argc--;

@@ -100,6 +100,7 @@ typedef enum
     adios2_type_uint16_t = 10,
     adios2_type_uint32_t = 11,
     adios2_type_uint64_t = 12,
+    adios2_type_long_double = 13 // junmin added
 } adios2_type;
 
 typedef enum
@@ -138,7 +139,7 @@ typedef enum
     adios2_shapeid_local_array = 4
 } adios2_shapeid;
 
-static size_t adios2_string_array_element_max_size = 4096;
+static const size_t adios2_string_array_element_max_size = 4096;
 
 static const uint64_t adios2_local_value_dim = ULLONG_MAX - 2;
 

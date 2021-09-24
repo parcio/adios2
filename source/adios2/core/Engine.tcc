@@ -15,6 +15,7 @@
 
 #include <stdexcept>
 
+#include "adios2/engine/inline/InlineReader.h"
 #include "adios2/helper/adiosFunctions.h" // CheckforNullptr
 
 namespace adios2
@@ -131,6 +132,22 @@ void Engine::Get(Variable<T> &variable, std::vector<T> &dataV,
 }
 
 template <class T>
+void Engine::Get(core::Variable<T> &variable, T **data) const
+{
+    const auto *eng =
+        dynamic_cast<const adios2::core::engine::InlineReader *>(this);
+    if (eng)
+    {
+        eng->Get(variable, data);
+    }
+    else
+    {
+        throw std::runtime_error("Currently, only the inline engine implements "
+                                 "Get(core::Variable<T>&, T**)");
+    }
+}
+
+template <class T>
 void Engine::Get(const std::string &variableName, std::vector<T> &dataV,
                  const Mode launch)
 {
@@ -190,6 +207,19 @@ std::vector<typename Variable<T>::Info>
 Engine::BlocksInfo(const Variable<T> &variable, const size_t step) const
 {
     return DoBlocksInfo(variable, step);
+}
+
+template <class T>
+std::vector<size_t> Engine::GetAbsoluteSteps(const Variable<T> &variable) const
+{
+    const auto &m = variable.m_AvailableStepBlockIndexOffsets;
+    std::vector<size_t> keys;
+    keys.reserve(m.size());
+    for (auto it = m.cbegin(); it != m.cend(); ++it)
+    {
+        keys.push_back(it->first - 1);
+    }
+    return keys;
 }
 
 #define declare_type(T, L)                                                     \

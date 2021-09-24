@@ -11,10 +11,12 @@
 #ifndef ADIOS2_ENGINE_DATAMAN_DATAMANWRITER_H_
 #define ADIOS2_ENGINE_DATAMAN_DATAMANWRITER_H_
 
+#include "DataManMonitor.h"
 #include "adios2/core/Engine.h"
 #include "adios2/toolkit/format/dataman/DataManSerializer.tcc"
 #include "adios2/toolkit/zmq/zmqpubsub/ZmqPubSub.h"
 #include "adios2/toolkit/zmq/zmqreqrep/ZmqReqRep.h"
+#include <atomic>
 
 namespace adios2
 {
@@ -46,31 +48,34 @@ private:
     int m_Verbosity = 0;
     bool m_DoubleBuffer = false;
     std::string m_TransportMode = "fast";
+    bool m_MonitorActive = false;
 
     std::string m_AllAddresses;
     std::string m_PublisherAddress;
     std::string m_ReplierAddress;
     int m_MpiRank;
     int m_MpiSize;
+    size_t m_SerializerBufferSize = 1024 * 1024;
     int64_t m_CurrentStep = -1;
-    size_t m_SerializerBufferSize = 128 * 1024 * 1024;
+    std::atomic<size_t> m_SentSteps;
 
     format::DataManSerializer m_Serializer;
 
     zmq::ZmqPubSub m_Publisher;
     zmq::ZmqReqRep m_Replier;
 
+    DataManMonitor m_Monitor;
+
     std::thread m_ReplyThread;
     std::thread m_PublishThread;
-    bool m_ReplyThreadActive = true;
-    bool m_PublishThreadActive = true;
+    std::atomic<bool> m_ReplyThreadActive;
+    bool m_PublishThreadActive;
 
     std::queue<std::shared_ptr<std::vector<char>>> m_BufferQueue;
     std::mutex m_BufferQueueMutex;
 
     void PushBufferQueue(std::shared_ptr<std::vector<char>> buffer);
     std::shared_ptr<std::vector<char>> PopBufferQueue();
-    bool CheckBufferQueue();
 
     void ReplyThread();
     void PublishThread();

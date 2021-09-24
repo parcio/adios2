@@ -165,6 +165,7 @@ Engine::Engine(core::Engine *engine) : m_Engine(engine) {}
     template typename Variable<T>::Span Engine::Put(Variable<T>, const size_t, \
                                                     const T &);                \
                                                                                \
+    template void Engine::Get<T>(Variable<T>, T **) const;                     \
     template typename Variable<T>::Span Engine::Put(Variable<T>);
 
 ADIOS2_FOREACH_PRIMITIVE_TYPE_1ARG(declare_template_instantiation)
@@ -194,10 +195,24 @@ ADIOS2_FOREACH_PRIMITIVE_TYPE_1ARG(declare_template_instantiation)
     Engine::AllStepsBlocksInfo(const Variable<T> variable) const;              \
                                                                                \
     template std::vector<typename Variable<T>::Info> Engine::BlocksInfo(       \
-        const Variable<T> variable, const size_t step) const;
+        const Variable<T> variable, const size_t step) const;                  \
+                                                                               \
+    template std::vector<size_t> Engine::GetAbsoluteSteps(                     \
+        const Variable<T> variable) const;
 
 ADIOS2_FOREACH_TYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
+
+size_t Engine::DebugGetDataBufferSize() const
+{
+    helper::CheckForNullptr(m_Engine,
+                            "in call to Engine::DebugGetDataBufferSize");
+    if (m_Engine->m_EngineType == "NULL")
+    {
+        return 0;
+    }
+    return m_Engine->DebugGetDataBufferSize();
+}
 
 std::string ToString(const Engine &engine)
 {

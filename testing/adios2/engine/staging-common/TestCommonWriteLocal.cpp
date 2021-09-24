@@ -160,6 +160,14 @@ TEST_F(CommonWriteTest, ADIOS2CommonWrite)
         engine.Put(var_i32, data_I32.data(), sync);
         engine.Put(var_i64, data_I64.data(), sync);
         engine.Put(var_r32, data_R32.data(), sync);
+        for (int index = 1; index < LocalCount; index++)
+        {
+            for (int i = 0; i < data_R32.size(); i++)
+            {
+                data_R32[i] += 1000.0;
+            }
+            engine.Put(var_r32, data_R32.data(), sync);
+        }
         engine.Put(var_r64, data_R64.data(), sync);
         engine.Put(var_c32, data_C32.data(), sync);
         engine.Put(var_c64, data_C64.data(), sync);
@@ -192,7 +200,7 @@ int main(int argc, char **argv)
     int result;
     ::testing::InitGoogleTest(&argc, argv);
 
-    DelayMS = 0; // zero for common writer
+    DelayMS = 0; // zero default for common writer
 
     ParseArgs(argc, argv);
 

@@ -89,6 +89,12 @@ void Engine::LockReaderSelections() noexcept
     m_ReaderSelectionsLocked = true;
 }
 
+size_t Engine::DebugGetDataBufferSize() const
+{
+    ThrowUp("DebugGetDataBufferSize");
+    return 0;
+}
+
 // PROTECTED
 void Engine::Init() {}
 void Engine::InitParameters() {}
@@ -101,7 +107,6 @@ void Engine::InitTransports() {}
     {                                                                          \
         ThrowUp("DoPut");                                                      \
     }
-
 ADIOS2_FOREACH_PRIMITIVE_STDTYPE_1ARG(declare_type)
 #undef declare_type
 
@@ -153,6 +158,12 @@ ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
     {                                                                          \
         ThrowUp("DoBlocksInfo");                                               \
         return std::vector<typename Variable<T>::Info>();                      \
+    }                                                                          \
+    std::vector<size_t> Engine::DoGetAbsoluteSteps(                            \
+        const Variable<T> &variable) const                                     \
+    {                                                                          \
+        ThrowUp("DoGetAbsoluteSteps");                                         \
+        return std::vector<size_t>();                                          \
     }
 
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
@@ -171,7 +182,7 @@ ADIOS2_FOREACH_PRIMITVE_STDTYPE_2ARGS(declare_type)
 
 size_t Engine::DoSteps() const
 {
-    ThrowUp("DoPut");
+    ThrowUp("DoSteps");
     return MaxSizeT;
 }
 
@@ -227,14 +238,17 @@ void Engine::CheckOpenModes(const std::set<Mode> &modes,
     Engine::AllRelativeStepsBlocksInfo(const Variable<T> &) const;             \
                                                                                \
     template std::vector<typename Variable<T>::Info> Engine::BlocksInfo(       \
-        const Variable<T> &, const size_t) const;
+        const Variable<T> &, const size_t) const;                              \
+    template std::vector<size_t> Engine::GetAbsoluteSteps(const Variable<T> &) \
+        const;
 
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
 
 #define declare_template_instantiation(T)                                      \
     template typename Variable<T>::Span &Engine::Put(Variable<T> &,            \
-                                                     const size_t, const T &);
+                                                     const size_t, const T &); \
+    template void Engine::Get<T>(core::Variable<T> &, T **) const;
 
 ADIOS2_FOREACH_PRIMITIVE_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation

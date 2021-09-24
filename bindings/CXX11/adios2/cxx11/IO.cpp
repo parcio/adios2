@@ -109,17 +109,27 @@ Engine IO::Open(const std::string &name, const Mode mode)
                             "for engine " + name + ", in call to IO::Open");
     return Engine(&m_IO->Open(name, mode));
 }
-
+Group IO::InquireGroup(const std::string &path, char delimiter)
+{
+    return Group(&m_IO->CreateGroup(path, delimiter));
+};
 void IO::FlushAll()
 {
     helper::CheckForNullptr(m_IO, "in call to IO::FlushAll");
     m_IO->FlushAll();
 }
 
-std::map<std::string, Params> IO::AvailableVariables()
+std::map<std::string, Params> IO::AvailableVariables(bool namesOnly)
 {
     helper::CheckForNullptr(m_IO, "in call to IO::AvailableVariables");
-    return m_IO->GetAvailableVariables();
+    if (namesOnly)
+    {
+        return m_IO->GetAvailableVariables({"name"});
+    }
+    else
+    {
+        return m_IO->GetAvailableVariables();
+    }
 }
 
 std::map<std::string, Params>
@@ -133,13 +143,13 @@ IO::AvailableAttributes(const std::string &variableName,
 std::string IO::VariableType(const std::string &name) const
 {
     helper::CheckForNullptr(m_IO, "in call to IO::VariableType");
-    return m_IO->InquireVariableType(name);
+    return ToString(m_IO->InquireVariableType(name));
 }
 
 std::string IO::AttributeType(const std::string &name) const
 {
     helper::CheckForNullptr(m_IO, "in call to IO::AttributeType");
-    return m_IO->InquireAttributeType(name);
+    return ToString(m_IO->InquireAttributeType(name));
 }
 
 size_t IO::AddOperation(const Operator op, const Params &parameters)

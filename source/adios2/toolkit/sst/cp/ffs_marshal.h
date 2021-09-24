@@ -1,3 +1,23 @@
+enum DataType
+{
+    None,
+    Int8,
+    Int16,
+    Int32,
+    Int64,
+    UInt8,
+    UInt16,
+    UInt32,
+    UInt64,
+    Float,
+    Double,
+    LongDouble,
+    FloatComplex,
+    DoubleComplex,
+    String,
+    Compound
+};
+
 typedef struct _FFSWriterRec
 {
     void *Key;
@@ -5,7 +25,7 @@ typedef struct _FFSWriterRec
     size_t DataOffset;
     size_t MetaOffset;
     int DimCount;
-    char *Type;
+    int Type;
 } * FFSWriterRec;
 
 struct FFSWriterMarshalBase
@@ -32,12 +52,13 @@ typedef struct FFSVarRec
 {
     void *Variable;
     char *VarName;
-    FMFieldList *PerWriterMetaFieldDesc;
-    FMFieldList *PerWriterDataFieldDesc;
+    size_t *PerWriterMetaFieldOffset;
     size_t DimCount;
-    char *Type;
+    int Type;
     int ElementSize;
     size_t *GlobalDims;
+    size_t *PerWriterBlockStart;
+    size_t *PerWriterBlockCount;
     size_t **PerWriterStart;
     size_t **PerWriterCounts;
     void **PerWriterIncomingData;
@@ -54,7 +75,7 @@ typedef struct FFSArrayRequest
 {
     FFSVarRec VarRec;
     enum FFSRequestTypeEnum RequestType;
-    size_t NodeID;
+    size_t BlockID;
     size_t *Start;
     size_t *Count;
     void *Data;
@@ -76,10 +97,28 @@ typedef struct FFSReaderPerWriterRec
     DP_CompletionHandle ReadHandle;
 } FFSReaderPerWriterRec;
 
+struct ControlStruct
+{
+    int FieldIndex;
+    int FieldOffset;
+    FFSVarRec VarRec;
+    int IsArray;
+    int Type;
+    int ElementSize;
+};
+
+struct ControlInfo
+{
+    FMFormat Format;
+    int ControlCount;
+    struct ControlInfo *Next;
+    struct ControlStruct Controls[1];
+};
+
 struct FFSReaderMarshalBase
 {
     int VarCount;
-    FFSVarRec VarList;
+    FFSVarRec *VarList;
     FMContext LocalFMContext;
     FFSArrayRequest PendingVarRequests;
 
@@ -90,12 +129,13 @@ struct FFSReaderMarshalBase
     FMFieldList *DataFieldLists;
 
     FFSReaderPerWriterRec *WriterInfo;
+    struct ControlInfo *ControlBlocks;
 };
 
-extern char *FFS_ZFPCompress(SstStream Stream, const size_t DimCount,
-                             char *Type, void *Data, const size_t *Count,
+extern char *FFS_ZFPCompress(SstStream Stream, const size_t DimCount, int Type,
+                             void *Data, const size_t *Count,
                              size_t *ByteCountP);
 extern void *FFS_ZFPDecompress(SstStream Stream, const size_t DimCount,
-                               char *Type, void *bufferIn, const size_t sizeIn,
+                               int Type, void *bufferIn, const size_t sizeIn,
                                const size_t *Dimensions, attr_list Parameters);
-extern int ZFPcompressionPossible(const char *Type, const int DimCount);
+extern int ZFPcompressionPossible(const int Type, const int DimCount);

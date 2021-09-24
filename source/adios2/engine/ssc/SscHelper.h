@@ -14,7 +14,8 @@
 #include "adios2/common/ADIOSTypes.h"
 #include "adios2/core/IO.h"
 #include "nlohmann/json.hpp"
-#include <map>
+#include <mpi.h>
+#include <unordered_map>
 #include <vector>
 
 namespace adios2
@@ -28,7 +29,7 @@ namespace ssc
 struct BlockInfo
 {
     std::string name;
-    std::string type;
+    DataType type;
     ShapeID shapeId;
     Dims shape;
     Dims start;
@@ -36,10 +37,12 @@ struct BlockInfo
     size_t bufferStart;
     size_t bufferCount;
     std::vector<char> value;
+    void *data;
+    bool performed;
 };
 using BlockVec = std::vector<BlockInfo>;
 using BlockVecVec = std::vector<BlockVec>;
-using RankPosMap = std::map<int, std::pair<size_t, size_t>>;
+using RankPosMap = std::unordered_map<int, std::pair<size_t, size_t>>;
 using MpiInfo = std::vector<std::vector<int>>;
 
 void PrintDims(const Dims &dims, const std::string &label = std::string());
@@ -54,8 +57,7 @@ void PrintMpiInfo(const MpiInfo &writersInfo, const MpiInfo &readersInfo);
 
 size_t GetTypeSize(const std::string &type);
 
-size_t TotalDataSize(const Dims &dims, const std::string &type,
-                     const ShapeID &shapeId);
+size_t TotalDataSize(const Dims &dims, DataType type, const ShapeID &shapeId);
 size_t TotalDataSize(const BlockVec &bv);
 
 RankPosMap CalculateOverlap(BlockVecVec &globalPattern,
@@ -70,6 +72,22 @@ void LocalJsonToGlobalJson(const std::vector<char> &input,
 void JsonToBlockVecVec(const nlohmann::json &input, BlockVecVec &output);
 void JsonToBlockVecVec(const std::vector<char> &input, BlockVecVec &output);
 void JsonToBlockVecVec(const std::string &input, BlockVecVec &output);
+
+void MPI_Gatherv64OneSidedPush(
+    const void *sendbuf, uint64_t sendcount, MPI_Datatype sendtype,
+    void *recvbuf, const uint64_t *recvcounts, const uint64_t *displs,
+    MPI_Datatype recvtype, int root, MPI_Comm comm,
+    const int chunksize = std::numeric_limits<int>::max());
+void MPI_Gatherv64OneSidedPull(
+    const void *sendbuf, uint64_t sendcount, MPI_Datatype sendtype,
+    void *recvbuf, const uint64_t *recvcounts, const uint64_t *displs,
+    MPI_Datatype recvtype, int root, MPI_Comm comm,
+    const int chunksize = std::numeric_limits<int>::max());
+void MPI_Gatherv64(const void *sendbuf, uint64_t sendcount,
+                   MPI_Datatype sendtype, void *recvbuf,
+                   const uint64_t *recvcounts, const uint64_t *displs,
+                   MPI_Datatype recvtype, int root, MPI_Comm comm,
+                   const int chunksize = std::numeric_limits<int>::max());
 
 bool AreSameDims(const Dims &a, const Dims &b);
 

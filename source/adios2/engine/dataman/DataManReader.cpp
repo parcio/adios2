@@ -21,7 +21,9 @@ namespace engine
 DataManReader::DataManReader(IO &io, const std::string &name,
                              const Mode openMode, helper::Comm comm)
 : Engine("DataManReader", io, name, openMode, std::move(comm)),
-  m_Serializer(m_Comm, helper::IsRowMajor(io.m_HostLanguage))
+  m_Serializer(m_Comm, helper::IsRowMajor(io.m_HostLanguage)),
+  m_RequesterThreadActive(true), m_SubscriberThreadActive(true),
+  m_FinalStep(std::numeric_limits<size_t>::max())
 {
     m_MpiRank = m_Comm.Rank();
     m_MpiSize = m_Comm.Size();
@@ -31,6 +33,7 @@ DataManReader::DataManReader(IO &io, const std::string &name,
     helper::GetParameter(m_IO.m_Parameters, "Verbose", m_Verbosity);
     helper::GetParameter(m_IO.m_Parameters, "DoubleBuffer", m_DoubleBuffer);
     helper::GetParameter(m_IO.m_Parameters, "TransportMode", m_TransportMode);
+    helper::GetParameter(m_IO.m_Parameters, "Monitor", m_MonitorActive);
 
     m_Requesters.emplace_back();
     m_Requesters[0].OpenRequester(m_Timeout, m_ReceiverBufferSize);
@@ -170,7 +173,7 @@ StepStatus DataManReader::BeginStep(StepMode stepMode,
         if (m_Verbosity >= 5)
         {
             std::cout << "DataManReader::BeginStep() Rank " << m_MpiRank
-                      << "returned EndOfStream due "
+                      << " returned EndOfStream due "
                          "to timeout"
                       << std::endl;
         }
@@ -183,12 +186,12 @@ StepStatus DataManReader::BeginStep(StepMode stepMode,
     {
         if (i.step == m_CurrentStep)
         {
-            if (i.type.empty())
+            if (i.type == DataType::None)
             {
                 throw("unknown data type");
             }
 #define declare_type(T)                                                        \
-    else if (i.type == helper::GetType<T>())                                   \
+    else if (i.type == helper::GetDataType<T>())                               \
     {                                                                          \
         CheckIOVariable<T>(i.name, i.shape, i.start, i.count);                 \
     }
@@ -204,6 +207,11 @@ StepStatus DataManReader::BeginStep(StepMode stepMode,
                   << ", Step " << m_CurrentStep << std::endl;
     }
 
+    if (m_MonitorActive)
+    {
+        m_Monitor.BeginStep(m_CurrentStep);
+    }
+
     return StepStatus::OK;
 }
 
@@ -215,6 +223,11 @@ void DataManReader::EndStep()
 {
     m_Serializer.Erase(m_CurrentStep, true);
     m_CurrentStepMetadata = nullptr;
+
+    if (m_MonitorActive)
+    {
+        m_Monitor.EndStep(m_CurrentStep);
+    }
 }
 
 void DataManReader::Flush(const int transportIndex) {}
@@ -234,7 +247,7 @@ void DataManReader::RequestThread(zmq::ZmqReqRep &requester)
                 {
                     auto jmsg = nlohmann::json::parse(buffer->data());
                     m_FinalStep = jmsg["FinalStep"].get<size_t>();
-                    continue;
+                    return;
                 }
                 catch (...)
                 {

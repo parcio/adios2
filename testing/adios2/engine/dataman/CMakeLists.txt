@@ -3,14 +3,36 @@
 # accompanying file Copyright.txt for details.
 #------------------------------------------------------------------------------#
 
-if(ADIOS2_HAVE_MPI)
-  gtest_add_tests_helper(1D MPI_NOEXEC DataMan Engine.DataMan. "")
-  gtest_add_tests_helper(2DMemSelect MPI_NOEXEC DataMan Engine.DataMan. "")
-  gtest_add_tests_helper(3DMemSelect MPI_NOEXEC DataMan Engine.DataMan. "")
-  gtest_add_tests_helper(WriterDoubleBuffer MPI_NOEXEC DataMan Engine.DataMan. "")
-  gtest_add_tests_helper(WriterSingleBuffer MPI_NOEXEC DataMan Engine.DataMan. "")
-  gtest_add_tests_helper(ReaderDoubleBuffer MPI_NOEXEC DataMan Engine.DataMan. "")
-  gtest_add_tests_helper(ReaderSingleBuffer MPI_NOEXEC DataMan Engine.DataMan. "")
-# Turning off DataMan.Reliable test as unstable - May 27, 2020
-#  gtest_add_tests_helper(Reliable MPI_NOEXEC DataMan Engine.DataMan. "")
+foreach(tst IN ITEMS
+  1D
+  2DMemSelect 3DMemSelect
+  WriterDoubleBuffer WriterSingleBuffer
+  ReaderDoubleBuffer ReaderSingleBuffer
+  Reliable
+  )
+  gtest_add_tests_helper(${tst} MPI_NONE DataMan Engine.DataMan. "")
+  set_tests_properties(${Test.Engine.DataMan.${tst}-TESTS}
+    PROPERTIES RUN_SERIAL TRUE
+  )
+endforeach()
+
+if(ADIOS2_HAVE_ZFP)
+    gtest_add_tests_helper(2DZfp MPI_NONE DataMan Engine.DataMan. "")
+    set_tests_properties(${Test.Engine.DataMan.2DZfp-TESTS}
+        PROPERTIES RUN_SERIAL TRUE
+        )
+endif()
+
+if(ADIOS2_HAVE_BZip2)
+    gtest_add_tests_helper(2DBzip2 MPI_NONE DataMan Engine.DataMan. "")
+    set_tests_properties(${Test.Engine.DataMan.2DBzip2-TESTS}
+        PROPERTIES RUN_SERIAL TRUE
+        )
+endif()
+
+if(ADIOS2_HAVE_SZ)
+    gtest_add_tests_helper(2DSz MPI_NONE DataMan Engine.DataMan. "")
+    set_tests_properties(${Test.Engine.DataMan.2DSz-TESTS}
+        PROPERTIES RUN_SERIAL TRUE
+        )
 endif()

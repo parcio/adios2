@@ -11,9 +11,9 @@
 # Modify at your convenience.
 #
 # Usage examples:
-#   ADIOS v2.6.0 on CentOS 8
+#   ADIOS v2.7.1 on CentOS 8
 # 	$ cd /path/to/adios2-src/scripts/docker/images
-# 	$ docker build -t adios2:2.6.0-centos8 --build-arg adios_ver=v2.6.0 centos8
+# 	$ docker build -t adios2:2.7.1-centos8 --build-arg adios_ver=v2.7.1 centos8
 ###############################################################################
 
 FROM centos:centos8
@@ -116,7 +116,7 @@ RUN git clone https://github.com/ornladios/adios2.git source && \
     module load mpi && \
     cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=/opt/adios/${adios_ver_dir} \
-      -DADIOS2_BUILD_TESTING=OFF \
+      -DBUILD_TESTING=OFF \
       -DADIOS2_BUILD_EXAMPLES=OFF \
       ../source && \
     make -j$(grep -c '^processor' /proc/cpuinfo) install && \

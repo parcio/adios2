@@ -10,6 +10,8 @@
 
 #include "BufferSTL.h"
 #include "BufferSTL.tcc"
+#include <cstdlib>
+#include <cstring>
 
 namespace adios2
 {
@@ -51,7 +53,24 @@ void BufferSTL::Reset(const bool resetAbsolutePosition,
     }
     if (zeroInitialize)
     {
-        m_Buffer.assign(m_Buffer.size(), '\0');
+        std::fill(m_Buffer.begin(), m_Buffer.end(), 0);
+    }
+    else
+    {
+        // just zero out the first and last 1kb
+        const size_t bufsize = m_Buffer.size();
+        size_t s = (bufsize < 1024 ? bufsize : 1024);
+        std::fill_n(m_Buffer.begin(), s, 0);
+        if (bufsize > 1024)
+        {
+            size_t pos = bufsize - 1024;
+            if (pos < 1024)
+            {
+                pos = 1024;
+            }
+            s = bufsize - pos;
+            std::fill_n(next(m_Buffer.begin(), pos), s, 0);
+        }
     }
 }
 
@@ -67,6 +86,8 @@ ADIOS2_FOREACH_PRIMITIVE_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
 
 void BufferSTL::Delete() { std::vector<char>().swap(m_Buffer); }
+
+size_t BufferSTL::DebugGetSize() const { return m_Buffer.size(); };
 
 } // end namespace format
 } // end namespace adios2

@@ -343,6 +343,13 @@ public:
     void Get(const std::string &variableName, typename Variable<T>::Info &info,
              const Mode launch = Mode::Deferred);
 
+    /**
+     * Assign the value of data to the start of the internal ADIOS buffer for
+     *variable variable. The value is immediately available.
+     **/
+    template <class T>
+    void Get(Variable<T> variable, T **data) const;
+
     /** Perform all Get calls in Deferred mode up to this point */
     void PerformGets();
 
@@ -396,6 +403,14 @@ public:
     BlocksInfo(const Variable<T> variable, const size_t step) const;
 
     /**
+     * Get the absolute steps of a variable in a file. This is for
+     * information purposes only, because absolute steps cannot be used
+     * in any ADIOS2 calls.
+     */
+    template <class T>
+    std::vector<size_t> GetAbsoluteSteps(const Variable<T> variable) const;
+
+    /**
      * Inspect total number of available steps, use for file engines in read
      * mode only
      * @return available steps in engine
@@ -419,6 +434,9 @@ public:
      */
     void LockReaderSelections();
 
+    /* Debug function for adios2 testing framework */
+    size_t DebugGetDataBufferSize() const;
+
 private:
     Engine(core::Engine *engine);
     core::Engine *m_Engine = nullptr;
@@ -429,7 +447,8 @@ private:
     extern template typename Variable<T>::Span Engine::Put(                    \
         Variable<T>, const size_t, const T &);                                 \
                                                                                \
-    extern template typename Variable<T>::Span Engine::Put(Variable<T>);
+    extern template typename Variable<T>::Span Engine::Put(Variable<T>);       \
+    extern template void Engine::Get(Variable<T>, T **) const;
 
 ADIOS2_FOREACH_PRIMITIVE_TYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation

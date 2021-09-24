@@ -166,9 +166,16 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
             hisLength);
 
         var_r32.SetBlockSelection(rankToRead);
-        ASSERT_EQ(
-            engine.BlocksInfo(var_r32, currentStep).at(rankToRead).Count[0],
-            hisLength);
+        for (int index = 0; index < LocalCount; index++)
+        {
+            int indexToRead = rankToRead * LocalCount;
+            std::cout << "Testing blocks info for var_r32 at index "
+                      << indexToRead << std::endl;
+            ASSERT_EQ(engine.BlocksInfo(var_r32, currentStep)
+                          .at(indexToRead)
+                          .Count[0],
+                      hisLength);
+        }
         var_r64.SetBlockSelection(rankToRead);
         ASSERT_EQ(
             engine.BlocksInfo(var_r64, currentStep).at(rankToRead).Count[0],
@@ -219,10 +226,21 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
         var_time.SetSelection(sel_time);
 
         in_I8.resize(hisLength);
+        if (LocalCount == 1)
+        {
+            in_R32.resize(hisLength);
+        }
+        else
+        {
+            in_R32_blocks.resize(LocalCount);
+            for (int index = 0; index < LocalCount; index++)
+            {
+                in_R32_blocks[index].resize(hisLength);
+            }
+        }
         in_I16.resize(hisLength);
         in_I32.resize(hisLength);
         in_I64.resize(hisLength);
-        in_R32.resize(hisLength);
         in_R64.resize(hisLength);
         in_C32.resize(hisLength);
         in_C64.resize(hisLength);
@@ -233,9 +251,22 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
         engine.Get(var_i32, in_I32.data());
         engine.Get(var_i64, in_I64.data());
 
+        if (LocalCount == 1)
+        {
+            engine.Get(var_r32, in_R32.data());
+        }
+        else
+        {
+            for (int index = 0; index < LocalCount; index++)
+            {
+                int indexToRead = rankToRead * LocalCount + index;
+                auto block = in_R32_blocks[index];
+                var_r32.SetBlockSelection(indexToRead);
+                engine.Get(var_r32, in_R32_blocks[index].data());
+            }
+        }
         engine.Get(scalar_r64, in_scalar_R64);
 
-        engine.Get(var_r32, in_R32.data());
         engine.Get(var_r64, in_R64.data());
         if (var_c32)
             engine.Get(var_c32, in_C32.data());
@@ -249,9 +280,14 @@ TEST_F(CommonReadTest, ADIOS2CommonRead1D8)
         engine.Get(var_time, (int64_t *)&write_time);
         engine.EndStep();
 
-        EXPECT_EQ(validateCommonTestData(hisStart, hisLength, t, !var_c32,
-                                         VaryingDataSize, rankToRead),
-                  0);
+        int result = validateCommonTestData(hisStart, hisLength, t, !var_c32,
+                                            VaryingDataSize, rankToRead);
+        if (result != 0)
+        {
+            std::cout << "Read Data Validation failed on node " << mpiRank
+                      << " timestep " << t << std::endl;
+        }
+        EXPECT_EQ(result, 0);
         write_times.push_back(write_time);
         ++t;
     }

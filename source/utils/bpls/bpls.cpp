@@ -20,10 +20,12 @@
 #include "bpls.h"
 #include "verinfo.h"
 
+#include <chrono>
 #include <cinttypes>
 #include <cstdio>
 #include <fstream>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include <errno.h>
@@ -81,13 +83,13 @@ std::string format;       // format string for one data element (e.g. %6.2f)
 // Flags from arguments or defaults
 bool dump; // dump data not just list info(flag == 1)
 bool output_xml;
-bool use_regexp; // use varmasks as regular expressions
-bool sortnames;  // sort names before listing
-bool listattrs;  // do list attributes too
-bool listmeshes; // do list meshes too
-bool attrsonly;  // do list attributes only
-bool longopt;    // -l is turned on
-bool timestep;
+bool use_regexp;       // use varmasks as regular expressions
+bool sortnames;        // sort names before listing
+bool listattrs;        // do list attributes too
+bool listmeshes;       // do list meshes too
+bool attrsonly;        // do list attributes only
+bool longopt;          // -l is turned on
+bool timestep;         // read step by step
 bool noindex;          // do no print array indices with data
 bool printByteAsChar;  // print 8 bit integer arrays as string
 bool plot;             // dump histogram related information
@@ -133,7 +135,8 @@ void display_help()
         /*
         "  --sort      | -r           Sort names before listing\n"
         */
-        "  --timestep  | -t           Print values of timestep elements\n"
+        "  --timestep  | -t           Read content step by step (stream "
+        "reading)\n"
         "  --dump      | -d           Dump matched variables/attributes\n"
         "                               To match attributes too, add option "
         "-a\n"
@@ -781,6 +784,9 @@ void printSettings(void)
         printf("      -D : show decomposition of variables in the file\n");
     if (show_version)
         printf("      -V : show binary version info of file\n");
+    if (timestep)
+        printf("      -t : read step-by-step\n");
+
     if (hidden_attrs)
     {
         printf("         : show hidden attributes in the file\n");
@@ -820,7 +826,7 @@ template <class T>
 int printAttributeValue(core::Engine *fp, core::IO *io,
                         core::Attribute<T> *attribute)
 {
-    enum ADIOS_DATATYPES adiosvartype = type_to_enum(attribute->m_Type);
+    DataType adiosvartype = attribute->m_Type;
     if (attribute->m_IsSingleValue)
     {
         print_data((void *)&attribute->m_DataSingleValue, 0, adiosvartype,
@@ -848,7 +854,7 @@ template <>
 int printAttributeValue(core::Engine *fp, core::IO *io,
                         core::Attribute<std::string> *attribute)
 {
-    enum ADIOS_DATATYPES adiosvartype = type_to_enum(attribute->m_Type);
+    DataType adiosvartype = attribute->m_Type;
     bool xmlprint = helper::EndsWith(attribute->m_Name, "xml", false);
     bool printDataAnyway = true;
 
@@ -898,8 +904,8 @@ int nEntriesMatched = 0;
 int doList_vars(core::Engine *fp, core::IO *io)
 {
 
-    const core::DataMap &variables = io->GetVariablesDataMap();
-    const core::DataMap &attributes = io->GetAttributesDataMap();
+    const core::VarMap &variables = io->GetVariables();
+    const core::AttrMap &attributes = io->GetAttributes();
 
     // make a sorted list of all variables and attributes
     EntryMap entries;
@@ -907,15 +913,25 @@ int doList_vars(core::Engine *fp, core::IO *io)
     {
         for (const auto &vpair : variables)
         {
-            Entry e(true, vpair.second.first, vpair.second.second);
-            entries.emplace(vpair.first, e);
+            Entry e(vpair.second->m_Type, vpair.second.get());
+            bool valid = true;
+            if (timestep)
+            {
+                valid = e.var->IsValidStep(fp->CurrentStep() + 1);
+                // fprintf(stdout, "Entry: ptr = %p valid = %d\n", e.var,
+                // valid);
+            }
+            if (valid)
+            {
+                entries.emplace(vpair.first, e);
+            }
         }
     }
     if (listattrs)
     {
         for (const auto &apair : attributes)
         {
-            Entry e(false, apair.second.first, apair.second.second);
+            Entry e(apair.second->m_Type, apair.second.get());
             entries.emplace(apair.first, e);
         }
     }
@@ -931,7 +947,7 @@ int doList_vars(core::Engine *fp, core::IO *io)
         int len = static_cast<int>(entrypair.first.size());
         if (len > maxlen)
             maxlen = len;
-        len = static_cast<int>(entrypair.second.typeName.size());
+        len = static_cast<int>(ToString(entrypair.second.typeName).size());
         if (len > maxtypelen)
             maxtypelen = len;
     }
@@ -949,21 +965,21 @@ int doList_vars(core::Engine *fp, core::IO *io)
 
             // print definition of variable
             fprintf(outf, "%c %-*s  %-*s", commentchar, maxtypelen,
-                    entry.typeName.c_str(), maxlen, name.c_str());
+                    ToString(entry.typeName).c_str(), maxlen, name.c_str());
             if (!entry.isVar)
             {
                 // list (and print) attribute
                 if (longopt || dump)
                 {
                     fprintf(outf, "  attr   = ");
-                    if (entry.typeName == "compound")
+                    if (entry.typeName == DataType::Compound)
                     {
                         // not supported
                     }
 #define declare_template_instantiation(T)                                      \
-    else if (entry.typeName == helper::GetType<T>())                           \
+    else if (entry.typeName == helper::GetDataType<T>())                       \
     {                                                                          \
-        core::Attribute<T> *a = io->InquireAttribute<T>(name);                 \
+        core::Attribute<T> *a = static_cast<core::Attribute<T> *>(entry.attr); \
         retval = printAttributeValue(fp, io, a);                               \
     }
                     ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(
@@ -979,14 +995,14 @@ int doList_vars(core::Engine *fp, core::IO *io)
             }
             else
             {
-                if (entry.typeName == "compound")
+                if (entry.typeName == DataType::Compound)
                 {
                     // not supported
                 }
 #define declare_template_instantiation(T)                                      \
-    else if (entry.typeName == helper::GetType<T>())                           \
+    else if (entry.typeName == helper::GetDataType<T>())                       \
     {                                                                          \
-        core::Variable<T> *v = io->InquireVariable<T>(name);                   \
+        core::Variable<T> *v = static_cast<core::Variable<T> *>(entry.var);    \
         retval = printVariableInfo(fp, io, v);                                 \
     }
                 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
@@ -1007,7 +1023,11 @@ int printVariableInfo(core::Engine *fp, core::IO *io,
                       core::Variable<T> *variable)
 {
     size_t nsteps = variable->GetAvailableStepsCount();
-    enum ADIOS_DATATYPES adiosvartype = type_to_enum(variable->m_Type);
+    if (timestep)
+    {
+        nsteps = 1;
+    }
+    DataType adiosvartype = variable->m_Type;
     int retval = 0;
 
     bool isGlobalValue = (nsteps == 1);
@@ -1128,11 +1148,11 @@ int printVariableInfo(core::Engine *fp, core::IO *io,
                 /* End - Print the headers of statistics first */
 
                 void *min, *max, *avg, *std_dev;
-                enum ADIOS_DATATYPES vt = vartype;
+                DataType vt = vartype;
                 struct ADIOS_STAT_STEP *s = vi->statistics->steps;
-                if (vi->type == adios_complex ||
-                    vi->type == adios_double_complex)
-                    vt = adios_double;
+                if (vi->type == DataType::FloatComplex ||
+                    vi->type == DataType::DoubleComplex)
+                    vt = DataType::Double;
                 fprintf(outf, "\n%-*sglobal:", indent_len, indent_char);
                 print_data_characteristics(
                     vi->statistics->min, vi->statistics->max,
@@ -1165,14 +1185,21 @@ int printVariableInfo(core::Engine *fp, core::IO *io,
 
         if (show_decomp)
         {
-            print_decomp(fp, io, variable);
+            if (timestep)
+            {
+                print_decomp_singlestep(fp, io, variable);
+            }
+            else
+            {
+                print_decomp(fp, io, variable);
+            }
         }
     }
     else
     {
         // single GlobalValue without timesteps
         fprintf(outf, "  scalar");
-        if (longopt)
+        if (longopt && !timestep)
         {
             fprintf(outf, " = ");
             print_data(&variable->m_Value, 0, adiosvartype, false);
@@ -1181,7 +1208,14 @@ int printVariableInfo(core::Engine *fp, core::IO *io,
 
         if (show_decomp)
         {
-            print_decomp(fp, io, variable);
+            if (timestep)
+            {
+                print_decomp_singlestep(fp, io, variable);
+            }
+            else
+            {
+                print_decomp(fp, io, variable);
+            }
         }
     }
 
@@ -1190,7 +1224,14 @@ int printVariableInfo(core::Engine *fp, core::IO *io,
         // print variable content
         if (variable->m_ShapeID == ShapeID::LocalArray)
         {
-            print_decomp(fp, io, variable);
+            if (timestep)
+            {
+                print_decomp_singlestep(fp, io, variable);
+            }
+            else
+            {
+                print_decomp(fp, io, variable);
+            }
         }
         else
         {
@@ -1458,6 +1499,11 @@ int doList(const char *path)
 
     core::ADIOS adios("C++");
     core::IO &io = adios.DeclareIO("bpls");
+    if (timestep)
+    {
+        // BP4 can process metadata in chuncks to conserve memory
+        io.SetParameter("StreamReader", "true");
+    }
     core::Engine *fp = nullptr;
     std::vector<std::string> engineList = getEnginesList(path);
     for (auto &engineName : engineList)
@@ -1490,13 +1536,9 @@ int doList(const char *path)
         // ntsteps = fp->tidx_stop - fp->tidx_start + 1;
         if (verbose)
         {
-            const std::map<std::string, Params> &variablesInfo =
-                io.GetAvailableVariables();
-            const std::map<std::string, Params> &attributesInfo =
-                io.GetAvailableAttributes();
             printf("File info:\n");
-            printf("  of variables:  %zu\n", variablesInfo.size());
-            printf("  of attributes: %zu\n", attributesInfo.size());
+            printf("  of variables:  %zu\n", io.GetVariables().size());
+            printf("  of attributes: %zu\n", io.GetAttributes().size());
             // printf("  of meshes:     %d\n", fp->nmeshes);
             // print_file_size(fp->file_size);
             // printf("  bp version:    %d\n", fp->version);
@@ -1513,7 +1555,37 @@ int doList(const char *path)
             printMeshes(fp);
         }
 
-        doList_vars(fp, &io);
+        if (timestep)
+        {
+            while (true)
+            {
+                adios2::StepStatus status =
+                    fp->BeginStep(adios2::StepMode::Read);
+                if (status == adios2::StepStatus::EndOfStream)
+                {
+                    break;
+                }
+                else if (status == adios2::StepStatus::NotReady)
+                {
+                    std::this_thread::sleep_for(
+                        std::chrono::milliseconds(1000));
+                    continue;
+                }
+                else if (status == adios2::StepStatus::OtherError)
+                {
+                    fprintf(stderr,
+                            "\nError: Cannot read more steps due to errors\n");
+                    break;
+                }
+                fprintf(stdout, "Step %zu:\n", fp->CurrentStep());
+                doList_vars(fp, &io);
+                fp->EndStep();
+            }
+        }
+        else
+        {
+            doList_vars(fp, &io);
+        }
 
         if (nmasks > 0 && nEntriesMatched == 0)
         {
@@ -1657,62 +1729,58 @@ void mergeLists(int nV, char **listV, int nA, char **listA, char **mlist,
     }
 }
 
-int getTypeInfo(enum ADIOS_DATATYPES adiosvartype, int *elemsize)
+int getTypeInfo(DataType adiosvartype, int *elemsize)
 {
     switch (adiosvartype)
     {
-    case adios_unsigned_byte:
+    case DataType::UInt8:
         *elemsize = 1;
         break;
-    case adios_byte:
+    case DataType::Int8:
         *elemsize = 1;
         break;
-    case adios_string:
+    case DataType::String:
         *elemsize = 1;
         break;
 
-    case adios_unsigned_short:
+    case DataType::UInt16:
         *elemsize = 2;
         break;
-    case adios_short:
+    case DataType::Int16:
         *elemsize = 2;
         break;
 
-    case adios_unsigned_integer:
+    case DataType::UInt32:
         *elemsize = 4;
         break;
-    case adios_integer:
-        *elemsize = 4;
-        break;
-
-    case adios_unsigned_long:
-        *elemsize = 8;
-        break;
-    case adios_long:
-        *elemsize = 8;
-        break;
-
-    case adios_real:
+    case DataType::Int32:
         *elemsize = 4;
         break;
 
-    case adios_double:
+    case DataType::UInt64:
+        *elemsize = 8;
+        break;
+    case DataType::Int64:
         *elemsize = 8;
         break;
 
-    case adios_complex:
+    case DataType::Float:
+        *elemsize = 4;
+        break;
+
+    case DataType::Double:
         *elemsize = 8;
         break;
 
-    case adios_double_complex:
+    case DataType::FloatComplex:
+        *elemsize = 8;
+        break;
+
+    case DataType::DoubleComplex:
         *elemsize = 16;
         break;
 
-    case adios_long_double_complex:
-        *elemsize = 32;
-        break;
-
-    case adios_long_double: // do not know how to print
+    case DataType::LongDouble: // do not know how to print
     //*elemsize = 16;
     default:
         return 1;
@@ -1745,7 +1813,8 @@ int readVar(core::Engine *fp, core::IO *io, core::Variable<T> *variable)
     int ndigits_dims[32];     // # of digits (to print) of each dimension
 
     const size_t elemsize = variable->m_ElementSize;
-    const int nsteps = static_cast<int>(variable->GetAvailableStepsCount());
+    const int nsteps =
+        (timestep ? 1 : static_cast<int>(variable->GetAvailableStepsCount()));
     const int ndim = static_cast<int>(variable->m_Shape.size());
     // create the counter arrays with the appropriate lengths
     // transfer start and count arrays to format dependent arrays
@@ -1755,7 +1824,7 @@ int readVar(core::Engine *fp, core::IO *io, core::Variable<T> *variable)
     stepStart = 0;
     stepCount = 1;
 
-    if (nsteps > 1)
+    if (!timestep && nsteps > 1)
     {
         // user selection must start with step selection
         // calculate the starting step and number of steps requested
@@ -1797,7 +1866,15 @@ int readVar(core::Engine *fp, core::IO *io, core::Variable<T> *variable)
     size_t absstep = relative_to_absolute_step(variable, stepStart);
 
     // Get the shape of the variable for the starting step
-    auto shape = variable->Shape(absstep);
+    Dims shape;
+    if (timestep)
+    {
+        shape = variable->Shape();
+    }
+    else
+    {
+        shape = variable->Shape(absstep);
+    }
     if (verbose > 2)
     {
         printf("    starting step=%" PRIu64 " absolute step=%zu"
@@ -1889,7 +1966,7 @@ int readVar(core::Engine *fp, core::IO *io, core::Variable<T> *variable)
         maxreadn = nelems;
 
     // special case: string. Need to use different elemsize
-    /*if (vi->type == adios_string)
+    /*if (vi->type == DataType::String)
     {
         if (vi->value)
             elemsize = strlen(vi->value) + 1;
@@ -2062,7 +2139,8 @@ int readVarBlock(core::Engine *fp, core::IO *io, core::Variable<T> *variable,
     int ndigits_dims[32];     // # of digits (to print) of each dimension
 
     const size_t elemsize = variable->m_ElementSize;
-    const int nsteps = static_cast<int>(variable->GetAvailableStepsCount());
+    const int nsteps =
+        (timestep ? 1 : static_cast<int>(variable->GetAvailableStepsCount()));
     const int ndim = static_cast<int>(variable->m_Count.size());
     // create the counter arrays with the appropriate lengths
     // transfer start and count arrays to format dependent arrays
@@ -2410,44 +2488,15 @@ void print_slice_info(core::VariableBase *variable, bool timed, uint64_t *s,
     }
 }
 
-const std::map<std::string, enum ADIOS_DATATYPES> adios_types_map = {
-    {"uint8_t", adios_unsigned_byte},
-    {"int32_t", adios_integer},
-    {"float", adios_real},
-    {"double", adios_double},
-    {"float complex", adios_complex},
-    {"double complex", adios_double_complex},
-    {"int8_t", adios_byte},
-    {"int16_t", adios_short},
-    {"int64_t", adios_long},
-    {"int64_t", adios_long},
-    {"string", adios_string},
-    {"uint8_t", adios_unsigned_byte},
-    {"uint16_t", adios_unsigned_short},
-    {"uint32_t", adios_unsigned_integer},
-    {"uint64_t", adios_unsigned_long},
-    {"uint64_t", adios_unsigned_long}};
-
-enum ADIOS_DATATYPES type_to_enum(std::string type)
-{
-    auto itType = adios_types_map.find(type);
-    if (itType == adios_types_map.end())
-    {
-        return adios_unknown;
-    }
-    return itType->second;
-}
-
-int print_data_as_string(const void *data, int maxlen,
-                         enum ADIOS_DATATYPES adiosvartype)
+int print_data_as_string(const void *data, int maxlen, DataType adiosvartype)
 {
     const char *str = (const char *)data;
     int len = maxlen;
     switch (adiosvartype)
     {
-    case adios_unsigned_byte:
-    case adios_byte:
-    case adios_string:
+    case DataType::UInt8:
+    case DataType::Int8:
+    case DataType::String:
         while (str[len - 1] == 0)
         {
             len--;
@@ -2473,15 +2522,15 @@ int print_data_as_string(const void *data, int maxlen,
         fprintf(stderr,
                 "Error in bpls code: cannot use print_data_as_string() "
                 "for type \"%d\"\n",
-                adiosvartype);
+                static_cast<typename std::underlying_type<DataType>::type>(
+                    adiosvartype));
         return -1;
     }
     return 0;
 }
 
 int print_data_characteristics(void *min, void *max, double *avg,
-                               double *std_dev,
-                               enum ADIOS_DATATYPES adiosvartype,
+                               double *std_dev, DataType adiosvartype,
                                bool allowformat)
 {
     bool f = format.size() && allowformat;
@@ -2489,7 +2538,7 @@ int print_data_characteristics(void *min, void *max, double *avg,
 
     switch (adiosvartype)
     {
-    case adios_unsigned_byte:
+    case DataType::UInt8:
         if (min)
             fprintf(outf, (f ? fmt : "%10hhu  "), *((unsigned char *)min));
         else
@@ -2507,7 +2556,7 @@ int print_data_characteristics(void *min, void *max, double *avg,
         else
             fprintf(outf, "      null  ");
         break;
-    case adios_byte:
+    case DataType::Int8:
         if (min)
             fprintf(outf, (f ? fmt : "%10hhd  "), *((char *)min));
         else
@@ -2525,10 +2574,10 @@ int print_data_characteristics(void *min, void *max, double *avg,
         else
             fprintf(outf, "      null  ");
         break;
-    case adios_string:
+    case DataType::String:
         break;
 
-    case adios_unsigned_short:
+    case DataType::UInt16:
         if (min)
             fprintf(outf, (f ? fmt : "%10hu  "), (*(unsigned short *)min));
         else
@@ -2546,7 +2595,7 @@ int print_data_characteristics(void *min, void *max, double *avg,
         else
             fprintf(outf, "      null  ");
         break;
-    case adios_short:
+    case DataType::Int16:
         if (min)
             fprintf(outf, (f ? fmt : "%10hd  "), (*(short *)min));
         else
@@ -2565,7 +2614,7 @@ int print_data_characteristics(void *min, void *max, double *avg,
             fprintf(outf, "      null  ");
         break;
 
-    case adios_unsigned_integer:
+    case DataType::UInt32:
         if (min)
             fprintf(outf, (f ? fmt : "%10u  "), (*(unsigned int *)min));
         else
@@ -2583,7 +2632,7 @@ int print_data_characteristics(void *min, void *max, double *avg,
         else
             fprintf(outf, "      null  ");
         break;
-    case adios_integer:
+    case DataType::Int32:
         if (min)
             fprintf(outf, (f ? fmt : "%10d  "), (*(int *)min));
         else
@@ -2602,7 +2651,7 @@ int print_data_characteristics(void *min, void *max, double *avg,
             fprintf(outf, "      null  ");
         break;
 
-    case adios_unsigned_long:
+    case DataType::UInt64:
         if (min)
             fprintf(outf, (f ? fmt : "%10llu  "), (*(unsigned long long *)min));
         else
@@ -2620,7 +2669,7 @@ int print_data_characteristics(void *min, void *max, double *avg,
         else
             fprintf(outf, "      null  ");
         break;
-    case adios_long:
+    case DataType::Int64:
         if (min)
             fprintf(outf, (f ? fmt : "%10lld  "), (*(long long *)min));
         else
@@ -2639,7 +2688,7 @@ int print_data_characteristics(void *min, void *max, double *avg,
             fprintf(outf, "      null  ");
         break;
 
-    case adios_real:
+    case DataType::Float:
         if (min)
             fprintf(outf, (f ? fmt : "%10.2g  "), (*(float *)min));
         else
@@ -2657,7 +2706,7 @@ int print_data_characteristics(void *min, void *max, double *avg,
         else
             fprintf(outf, "      null  ");
         break;
-    case adios_double:
+    case DataType::Double:
         if (min)
             fprintf(outf, (f ? fmt : "%10.2g  "), (*(double *)min));
         else
@@ -2676,17 +2725,17 @@ int print_data_characteristics(void *min, void *max, double *avg,
             fprintf(outf, "      null  ");
         break;
 
-    case adios_long_double:
+    case DataType::LongDouble:
         fprintf(outf, "????????");
         break;
 
     // TO DO
     /*
-       case adios_complex:
+       case DataType::FloatComplex:
        fprintf(outf,(f ? format : "(%g,i%g) "), ((float *) data)[2*item],
        ((float *) data)[2*item+1]);
        break;
-       case adios_double_complex:
+       case DataType::DoubleComplex:
        fprintf(outf,(f ? format : "(%g,i%g)" ), ((double *) data)[2*item],
        ((double *) data)[2*item+1]);
        break;
@@ -2718,7 +2767,7 @@ bool print_data_xml(const char *s, const size_t length)
     return false;
 }
 
-int print_data(const void *data, int item, enum ADIOS_DATATYPES adiosvartype,
+int print_data(const void *data, int item, DataType adiosvartype,
                bool allowformat)
 {
     bool f = format.size() && allowformat;
@@ -2731,14 +2780,14 @@ int print_data(const void *data, int item, enum ADIOS_DATATYPES adiosvartype,
     // print next data item
     switch (adiosvartype)
     {
-    case adios_unsigned_byte:
+    case DataType::UInt8:
         fprintf(outf, (f ? fmt : "%hhu"), ((unsigned char *)data)[item]);
         break;
-    case adios_byte:
+    case DataType::Int8:
         fprintf(outf, (f ? fmt : "%hhd"), ((signed char *)data)[item]);
         break;
 
-    case adios_string:
+    case DataType::String:
     {
         // fprintf(outf, (f ? fmt : "\"%s\""), ((char *)data) + item);
         const std::string *dataStr =
@@ -2746,58 +2795,49 @@ int print_data(const void *data, int item, enum ADIOS_DATATYPES adiosvartype,
         fprintf(outf, (f ? fmt : "\"%s\""), dataStr[item].c_str());
         break;
     }
-    case adios_string_array:
-        // we expect one elemet of the array here
-        fprintf(outf, (f ? fmt : "\"%s\""), *((char **)data + item));
-        break;
 
-    case adios_unsigned_short:
+    case DataType::UInt16:
         fprintf(outf, (f ? fmt : "%hu"), ((unsigned short *)data)[item]);
         break;
-    case adios_short:
+    case DataType::Int16:
         fprintf(outf, (f ? fmt : "%hd"), ((signed short *)data)[item]);
         break;
 
-    case adios_unsigned_integer:
+    case DataType::UInt32:
         fprintf(outf, (f ? fmt : "%u"), ((unsigned int *)data)[item]);
         break;
-    case adios_integer:
+    case DataType::Int32:
         fprintf(outf, (f ? fmt : "%d"), ((signed int *)data)[item]);
         break;
 
-    case adios_unsigned_long:
+    case DataType::UInt64:
         fprintf(outf, (f ? fmt : "%llu"), ((unsigned long long *)data)[item]);
         break;
-    case adios_long:
+    case DataType::Int64:
         fprintf(outf, (f ? fmt : "%lld"), ((signed long long *)data)[item]);
         break;
 
-    case adios_real:
+    case DataType::Float:
         fprintf(outf, (f ? fmt : "%g"), ((float *)data)[item]);
         break;
 
-    case adios_double:
+    case DataType::Double:
         fprintf(outf, (f ? fmt : "%g"), ((double *)data)[item]);
         break;
 
-    case adios_long_double:
+    case DataType::LongDouble:
         fprintf(outf, (f ? fmt : "%Lg"), ((long double *)data)[item]);
         // fprintf(outf,(f ? fmt : "????????"));
         break;
 
-    case adios_complex:
+    case DataType::FloatComplex:
         fprintf(outf, (f ? fmt : "(%g,i%g)"), ((float *)data)[2 * item],
                 ((float *)data)[2 * item + 1]);
         break;
 
-    case adios_double_complex:
+    case DataType::DoubleComplex:
         fprintf(outf, (f ? fmt : "(%g,i%g)"), ((double *)data)[2 * item],
                 ((double *)data)[2 * item + 1]);
-        break;
-
-    case adios_long_double_complex:
-        fprintf(outf, (f ? fmt : "(%Lg,i%Lg)"), ((long double *)data)[2 * item],
-                ((long double *)data)[2 * item + 1]);
         break;
 
     default:
@@ -2806,14 +2846,14 @@ int print_data(const void *data, int item, enum ADIOS_DATATYPES adiosvartype,
     return 0;
 }
 
-int print_dataset(const void *data, const std::string vartype, uint64_t *s,
+int print_dataset(const void *data, const DataType vartype, uint64_t *s,
                   uint64_t *c, int tdims, int *ndigits)
 {
     int i, item, steps;
     char idxstr[128], buf[16];
     uint64_t ids[MAX_DIMS]; // current indices
     bool roll;
-    enum ADIOS_DATATYPES adiosvartype = type_to_enum(vartype);
+    DataType adiosvartype = vartype;
 
     // init current indices
     steps = 1;
@@ -2847,7 +2887,7 @@ int print_dataset(const void *data, const std::string vartype, uint64_t *s,
         // print item
         fprintf(outf, "%s", idxstr);
         if (printByteAsChar &&
-            (adiosvartype == adios_byte || adiosvartype == adios_unsigned_byte))
+            (adiosvartype == DataType::Int8 || adiosvartype == DataType::UInt8))
         {
             /* special case: k-D byte array printed as (k-1)D array of
              * strings
@@ -2936,38 +2976,45 @@ Dims get_global_array_signature(core::Engine *fp, core::IO *io,
                                 core::Variable<T> *variable)
 {
     const size_t ndim = variable->m_Shape.size();
-    const size_t nsteps = variable->GetAvailableStepsCount();
     Dims dims(ndim, 0);
-    bool firstStep = true;
-
-    // looping over the absolute step indexes
-    // is not supported by a simple API function
-    const std::map<size_t, std::vector<size_t>> &indices =
-        variable->m_AvailableStepBlockIndexOffsets;
-    auto itStep = indices.begin();
-
-    for (size_t step = 0; step < nsteps; step++)
+    if (timestep)
     {
-        const size_t absstep = itStep->first;
-        Dims d = variable->Shape(absstep - 1);
-        if (d.empty())
-        {
-            continue;
-        }
+        dims = variable->Shape();
+    }
+    else
+    {
+        const size_t nsteps = variable->GetAvailableStepsCount();
+        bool firstStep = true;
 
-        for (size_t k = 0; k < ndim; k++)
+        // looping over the absolute step indexes
+        // is not supported by a simple API function
+        const std::map<size_t, std::vector<size_t>> &indices =
+            variable->m_AvailableStepBlockIndexOffsets;
+        auto itStep = indices.begin();
+
+        for (size_t step = 0; step < nsteps; step++)
         {
-            if (firstStep)
+            const size_t absstep = itStep->first;
+            Dims d = variable->Shape(absstep - 1);
+            if (d.empty())
             {
-                dims[k] = d[k];
+                continue;
             }
-            else if (dims[k] != d[k])
+
+            for (size_t k = 0; k < ndim; k++)
             {
-                dims[k] = 0;
+                if (firstStep)
+                {
+                    dims[k] = d[k];
+                }
+                else if (dims[k] != d[k])
+                {
+                    dims[k] = 0;
+                }
             }
+            firstStep = false;
+            ++itStep;
         }
-        firstStep = false;
-        ++itStep;
     }
     return dims;
 }
@@ -2980,27 +3027,14 @@ std::pair<size_t, Dims> get_local_array_signature(core::Engine *fp,
     const size_t ndim = variable->m_Count.size();
     size_t nblocks = 0;
     Dims dims(ndim, 0);
-    std::map<size_t, std::vector<typename core::Variable<T>::Info>> allblocks =
-        fp->AllStepsBlocksInfo(*variable);
 
-    bool firstStep = true;
-    bool firstBlock = true;
-
-    for (auto &blockpair : allblocks)
+    if (timestep)
     {
-        std::vector<typename adios2::core::Variable<T>::Info> &blocks =
-            blockpair.second;
-        const size_t blocksSize = blocks.size();
-        if (firstStep)
-        {
-            nblocks = blocksSize;
-        }
-        else if (nblocks != blocksSize)
-        {
-            nblocks = 0;
-        }
-
-        for (size_t j = 0; j < blocksSize; j++)
+        std::vector<typename core::Variable<T>::Info> blocks =
+            fp->BlocksInfo(*variable, fp->CurrentStep());
+        nblocks = blocks.size();
+        bool firstBlock = true;
+        for (size_t j = 0; j < nblocks; j++)
         {
             for (size_t k = 0; k < ndim; k++)
             {
@@ -3015,7 +3049,46 @@ std::pair<size_t, Dims> get_local_array_signature(core::Engine *fp,
             }
             firstBlock = false;
         }
-        firstStep = false;
+    }
+    else
+    {
+        std::map<size_t, std::vector<typename core::Variable<T>::Info>>
+            allblocks = fp->AllStepsBlocksInfo(*variable);
+
+        bool firstStep = true;
+        bool firstBlock = true;
+
+        for (auto &blockpair : allblocks)
+        {
+            std::vector<typename adios2::core::Variable<T>::Info> &blocks =
+                blockpair.second;
+            const size_t blocksSize = blocks.size();
+            if (firstStep)
+            {
+                nblocks = blocksSize;
+            }
+            else if (nblocks != blocksSize)
+            {
+                nblocks = 0;
+            }
+
+            for (size_t j = 0; j < blocksSize; j++)
+            {
+                for (size_t k = 0; k < ndim; k++)
+                {
+                    if (firstBlock)
+                    {
+                        dims[k] = blocks[j].Count[k];
+                    }
+                    else if (dims[k] != blocks[j].Count[k])
+                    {
+                        dims[k] = 0;
+                    }
+                }
+                firstBlock = false;
+            }
+            firstStep = false;
+        }
     }
     return std::make_pair(nblocks, dims);
 }
@@ -3024,7 +3097,7 @@ template <class T>
 void print_decomp(core::Engine *fp, core::IO *io, core::Variable<T> *variable)
 {
     /* Print block info */
-    enum ADIOS_DATATYPES adiosvartype = type_to_enum(variable->m_Type);
+    DataType adiosvartype = variable->m_Type;
     std::map<size_t, std::vector<typename core::Variable<T>::Info>> allblocks =
         fp->AllStepsBlocksInfo(*variable);
     if (allblocks.empty())
@@ -3173,6 +3246,144 @@ void print_decomp(core::Engine *fp, core::IO *io, core::Variable<T> *variable)
             }
             ++stepRelative;
         }
+    }
+}
+
+template <class T>
+void print_decomp_singlestep(core::Engine *fp, core::IO *io,
+                             core::Variable<T> *variable)
+{
+    /* Print block info */
+    DataType adiosvartype = variable->m_Type;
+    std::vector<typename core::Variable<T>::Info> blocks =
+        fp->BlocksInfo(*variable, fp->CurrentStep());
+
+    if (blocks.empty())
+    {
+        return;
+    }
+
+    const size_t blocksSize = blocks.size();
+    const int ndigits_nblocks = ndigits(blocksSize - 1);
+
+    if (variable->m_ShapeID == ShapeID::GlobalValue ||
+        variable->m_ShapeID == ShapeID::LocalValue)
+    {
+        // scalars
+        if (dump)
+        {
+            int col = 0;
+            int maxcols = ncols;
+            if (adiosvartype == DataType::String)
+            {
+                maxcols = 1;
+            }
+            for (size_t j = 0; j < blocksSize; j++)
+            {
+                if (col == 0 && !noindex)
+                {
+                    fprintf(outf, "    (%*zu)    ", ndigits_nblocks, j);
+                }
+                print_data(&blocks[j].Value, 0, adiosvartype, true);
+                ++col;
+                if (j < blocks.size() - 1)
+                {
+                    if (col < maxcols)
+                    {
+                        fprintf(outf, " ");
+                    }
+                    else
+                    {
+                        col = 0;
+                        fprintf(outf, "\n");
+                    }
+                }
+            }
+            fprintf(outf, "\n");
+        }
+        return;
+    }
+    else
+    {
+        // arrays
+        size_t ndim = variable->m_Count.size();
+        int ndigits_dims[32] = {
+            8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+            8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+        };
+        for (size_t k = 0; k < ndim; k++)
+        {
+            // get digit lengths for each dimension
+            if (variable->m_ShapeID == ShapeID::GlobalArray)
+            {
+                ndigits_dims[k] = ndigits(variable->m_Shape[k] - 1);
+            }
+            else
+            {
+                ndigits_dims[k] = ndigits(variable->m_Count[k] - 1);
+            }
+        }
+
+        size_t stepRelative = 0;
+        size_t stepAbsolute = fp->CurrentStep();
+
+        for (size_t j = 0; j < blocksSize; j++)
+        {
+            fprintf(outf, "%c         block %*zu: [", commentchar,
+                    ndigits_nblocks, j);
+
+            // just in case ndim for a block changes in LocalArrays:
+            ndim = variable->m_Count.size();
+
+            for (size_t k = 0; k < ndim; k++)
+            {
+                if (blocks[j].Count[k])
+                {
+                    if (variable->m_ShapeID == ShapeID::GlobalArray)
+                    {
+                        fprintf(outf, "%*zu:%*zu", ndigits_dims[k],
+                                blocks[j].Start[k], ndigits_dims[k],
+                                blocks[j].Start[k] + blocks[j].Count[k] - 1);
+                    }
+                    else
+                    {
+                        // blockStart is empty vector for LocalArrays
+                        fprintf(outf, "0:%*zu", ndigits_dims[k],
+                                blocks[j].Count[k] - 1);
+                    }
+                }
+                else
+                {
+                    fprintf(outf, "%-*s", 2 * ndigits_dims[k] + 1, "null");
+                }
+                if (k < ndim - 1)
+                    fprintf(outf, ", ");
+            }
+            fprintf(outf, "]");
+
+            /* Print per-block statistics if available */
+            if (longopt)
+            {
+                if (true /* TODO: variable->has_minmax */)
+                {
+                    fprintf(outf, " = ");
+                    print_data(&blocks[j].Min, 0, adiosvartype, false);
+
+                    fprintf(outf, " / ");
+                    print_data(&blocks[j].Max, 0, adiosvartype, false);
+                }
+                else
+                {
+                    fprintf(outf, "N/A / N/A");
+                }
+            }
+            fprintf(outf, "\n");
+            if (dump)
+            {
+                readVarBlock(fp, io, variable, stepRelative, j, blocks[j]);
+            }
+        }
+        ++stepRelative;
     }
 }
 
