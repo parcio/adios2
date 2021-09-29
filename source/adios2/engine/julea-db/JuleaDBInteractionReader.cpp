@@ -98,7 +98,7 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
                     bool isSingleValue)
 {
     // std::cout << "----- InitVariable --- " << varName << std::endl;
-    const std::string type(io->InquireVariableType(varName));
+    const DataType type(io->InquireVariableType(varName));
 
     int err = 0;
     uint32_t entryID = 0;
@@ -134,11 +134,11 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
 
     /** AvailableStepBlockIndexOffsets stores the entries (= blocks) _id (= line
      * in the sql table) */
-    if (type == "compound")
+    if (type == DataType::Compound)
     {
     }
 #define declare_type(T)                                                        \
-    else if (type == helper::GetType<T>())                                     \
+    else if (type == helper::GetDataType<T>())                                 \
     {                                                                          \
         auto var = io->InquireVariable<T>(varName);                            \
         var->m_ShapeID = shapeID;                                              \

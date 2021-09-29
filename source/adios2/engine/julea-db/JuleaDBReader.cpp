@@ -154,16 +154,16 @@ void JuleaDBReader::PerformGets()
     /** Call GetSyncCommon for every variable that has been deferred */
     for (const std::string &variableName : m_DeferredVariables)
     {
-        const std::string type = m_IO.InquireVariableType(variableName);
+        const DataType type = m_IO.InquireVariableType(variableName);
 
-        if (type == "compound")
+        if (type == DataType::Compound)
         {
             // not supported
             std::cout << "Julea Reader " << m_ReaderRank << "     PerformGets()"
                       << "compound variable type not supported \n";
         }
 #define declare_type(T)                                                        \
-    else if (type == helper::GetType<T>())                                     \
+    else if (type == helper::GetDataType<T>())                                     \
     {                                                                          \
         Variable<T> &variable = FindVariable<T>(                               \
             variableName, "in call to PerformGets, EndStep or Close");         \
