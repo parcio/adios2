@@ -156,8 +156,8 @@ void JuleaDB_DO_Writer::PerformPuts()
     /** Call PutSyncCommon for every variable that has been deferred */
     for (const std::string &variableName : m_DeferredVariables)
     {
-        const std::string type = m_IO.InquireVariableType(variableName);
-        if (type == "compound")
+        const DataType type = m_IO.InquireVariableType(variableName);
+        if (type == DataType::Compound)
         {
             // not supported
             std::cout << "Julea DB Writer " << m_WriterRank
@@ -165,7 +165,7 @@ void JuleaDB_DO_Writer::PerformPuts()
                       << "compound variable type not supported \n";
         }
 #define declare_template_instantiation(T)                                      \
-    else if (type == helper::GetType<T>())                                     \
+    else if (type == helper::GetDataType<T>())                                     \
     {                                                                          \
         Variable<T> &variable = FindVariable<T>(                               \
             variableName, "in call to PerformPuts, EndStep or Close");         \
