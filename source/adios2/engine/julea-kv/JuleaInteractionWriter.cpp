@@ -79,7 +79,7 @@ void PutNameToJulea(std::string paramName, std::string nameSpace,
                   // << " already in kv store. " << std::endl;
     }
 
-    namesBuf = g_memdup(bson_get_data(bsonNames), bsonNames->len);
+    namesBuf = g_memdup2(bson_get_data(bsonNames), bsonNames->len);
     j_kv_put(kvObjectNames, namesBuf, bsonNames->len, g_free, batch2);
     // err = j_batch_execute(batch2);
     g_assert_true(j_batch_execute(batch2) == true);
@@ -112,7 +112,7 @@ void PutVariableMetadataToJulea(const std::string nameSpace, gpointer buffer,
     // std::cout << "--- WriteVarMetadataToJuleaKV --- kv: " << stringMetadataKV
               // << " --- key: " << varName.c_str() << " --- " << std::endl;
 
-    metaDataBuf = g_memdup(buffer, bufferLen);
+    metaDataBuf = g_memdup2(buffer, bufferLen);
 
     j_kv_put(kvVarMetadata, metaDataBuf, bufferLen, g_free, batch);
     g_assert_true(j_batch_execute(batch) == true);
@@ -136,7 +136,7 @@ void PutBlockMetadataToJulea(const std::string nameSpace,
     // std::cout << "PutBlockMetadataToJulea: " << stringMetadataKV <<
     // std::endl;
 
-    metaDataBuf = g_memdup(buffer, bufferLen);
+    metaDataBuf = g_memdup2(buffer, bufferLen);
     auto kvObjectMetadata = j_kv_new(stringMetadataKV, stepBlockID.c_str());
 
     j_kv_put(kvObjectMetadata, metaDataBuf, bufferLen, g_free, batch);
@@ -450,8 +450,8 @@ void PutAttributeMetadataToJulea(Attribute<T> &attribute, bson_t *bsonMetaData,
     auto stringMetadataKV = g_strdup_printf("attributes_%s", nameSpace.c_str());
     auto kvObjectMetadata = j_kv_new(stringMetadataKV, attrName);
 
-    metaDataBuf = g_memdup(bson_get_data(bsonMetaData), bsonMetaData->len);
-    namesBuf = g_memdup(bson_get_data(bsonNames), bsonNames->len);
+    metaDataBuf = g_memdup2(bson_get_data(bsonMetaData), bsonMetaData->len);
+    namesBuf = g_memdup2(bson_get_data(bsonNames), bsonNames->len);
 
     j_kv_put(kvObjectMetadata, metaDataBuf, bsonMetaData->len, g_free, batch2);
     j_kv_put(kvObjectNames, namesBuf, bsonNames->len, g_free, batch2);

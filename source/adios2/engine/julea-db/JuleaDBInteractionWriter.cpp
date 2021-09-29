@@ -969,8 +969,8 @@ void DBPutAttributeMetadataToJulea(Attribute<T> &attribute,
     auto stringMetadataKV = g_strdup_printf("attributes_%s", nameSpace.c_str());
     auto kvObjectMetadata = j_kv_new(stringMetadataKV, attrName);
 
-    metaDataBuf = g_memdup(bson_get_data(bsonMetaData), bsonMetaData->len);
-    namesBuf = g_memdup(bson_get_data(bsonNames), bsonNames->len);
+    metaDataBuf = g_memdup2(bson_get_data(bsonMetaData), bsonMetaData->len);
+    namesBuf = g_memdup2(bson_get_data(bsonNames), bsonNames->len);
 
     j_kv_put(kvObjectMetadata, metaDataBuf, bsonMetaData->len, g_free, batch2);
     j_kv_put(kvObjectNames, namesBuf, bsonNames->len, g_free, batch2);
