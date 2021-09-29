@@ -38,15 +38,15 @@ void InitVariable(core::IO *io, core::Engine &engine, std::string varName,
                   size_t *blocks, size_t numberSteps, ShapeID shapeID)
 {
     // std::cout << "----- InitVariable ---" << std::endl;
-    const std::string type(io->InquireVariableType(varName));
+    const DataType type(io->InquireVariableType(varName));
 
     /** no sensible information yet to store in AvailableStepBlockIndexOffsets.
      * So it is filled with dummy values. (42 + BlockID) */
-    if (type == "compound")
+    if (type == DataType::Compound)
     {
     }
 #define declare_type(T)                                                        \
-    else if (type == helper::GetType<T>())                                     \
+    else if (type == helper::GetDataType<T>())                                     \
     {                                                                          \
         auto var = io->InquireVariable<T>(varName);                            \
         var->m_ShapeID = shapeID;                                              \

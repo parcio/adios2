@@ -140,15 +140,15 @@ void JuleaKVReader::PerformGets()
     /** Call GetSyncCommon for every variable that has been deferred */
     for (const std::string &variableName : m_DeferredVariables)
     {
-        const std::string type = m_IO.InquireVariableType(variableName);
-        if (type == "compound")
+        const DataType type = m_IO.InquireVariableType(variableName);
+        if (type == DataType::Compound)
         {
             // not supported
             std::cout << "Julea Reader " << m_ReaderRank << "     PerformGets()"
                       << "compound variable type not supported \n";
         }
 #define declare_type(T)                                                        \
-    else if (type == helper::GetType<T>())                                     \
+    else if (type == helper::GetDataType<T>())                                     \
     {                                                                          \
         Variable<T> &variable = FindVariable<T>(                               \
             variableName,"in call to PerformGets, EndStep or Close");         \
@@ -331,7 +331,7 @@ void JuleaKVReader::InitAttributes()
 
     while (bson_iter_next(&b_iter))
     {
-        std::string typeString;
+        // std::string typeString;
         // bson_t *bsonMetadata;
         attrCount = 0;
         completeSize = 0;
@@ -354,12 +354,12 @@ void JuleaKVReader::InitAttributes()
                                       &dataSizes);
         // std::cout << "Data size = " << completeSize << std::endl;
 
-        GetAdiosTypeString(type, &typeString);
+        // GetAdiosTypeString(type, &typeString);
 
 #define declare_attribute_type(T)                                              \
-    if (typeString == helper::GetType<T>())                                    \
+    if (type == helper::GetDataType<T>())                                    \
     {                                                                          \
-        if (typeString == "string")                                            \
+        if (typeString == DataType::String)                                            \
         {                                                                      \
             char *data = new char[completeSize];                               \
             GetAttributeStringDataFromJulea(attrName, data, nameSpace,         \
