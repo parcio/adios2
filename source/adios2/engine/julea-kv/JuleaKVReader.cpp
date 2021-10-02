@@ -291,7 +291,8 @@ void JuleaKVReader::InitVariables()
             InitVariable(&m_IO, *this, varName, blocks, numberSteps, shapeID);
             delete[] blocks;
 
-            const std::string testtype = m_IO.InquireVariableType(varName);
+            // TODO necessary? 2.10.21 does not seem so
+            // const std::string testtype = m_IO.InquireVariableType(varName);
         }
         bson_destroy(bsonNames);
     }
