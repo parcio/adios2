@@ -381,7 +381,9 @@ void JuleaDBWriter::PutAttributes(core::IO &io)
     // std::cout << "\n______________PutAttributes_____________________"
     // << std::endl;
 
-    const auto attributesDataMap = io.GetAttributesDataMap();
+    // const auto attributesDataMap = io.GetAttributesDataMap();
+    // const auto attributesDataMap = io.GetAttributes();
+    const auto attributesDataMap = io.GetAvailableAttributes();
 
     // count is known ahead of time
     const uint32_t attributesCount =
@@ -392,7 +394,8 @@ void JuleaDBWriter::PutAttributes(core::IO &io)
     for (const auto &attributePair : attributesDataMap)
     {
         unsigned int dataSize = 0;
-        const std::string type(attributePair.second.first);
+        // FIXME: where are the types stored now?
+        // const std::string type(attributePair.second.first);
         const std::string name(attributePair.first);
 
         auto bsonMetadata = bson_new();
@@ -410,7 +413,8 @@ void JuleaDBWriter::PutAttributes(core::IO &io)
         //     continue;
         // }
 
-        if (type == "unknown")
+        //TODO update the following code
+        // if (type == "unknown")
         {
             std::cout << "Attribute type is 'unknown' " << std::endl;
         }

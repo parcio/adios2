@@ -32,63 +32,127 @@ namespace core
 namespace engine
 {
 
+// void setMinMaxValueFields(std::string *minField, std::string *maxField,
+//                           std::string *valueField,  std::string *meanField, const char *varType)
+// {
+
+//         std::cout << "just some output to see if functions is called" << std::endl;
+// //     if ((strcmp(varType, "char") == 0) || (strcmp(varType, "int8_t") == 0) ||
+// //         (strcmp(varType, "uint8_t") == 0) ||
+// //         (strcmp(varType, "int16_t") == 0) ||
+// //         (strcmp(varType, "uint16_t") == 0) || (strcmp(varType, "int32_t") == 0))
+// //     {
+// //         *minField = "min_sint32";
+// //         *maxField = "max_sint32";
+// //         *valueField = "value_sint32";
+// //     }
+// //     else if (strcmp(varType, "uint32_t") == 0)
+// //     {
+// //         *minField = "min_uint32";
+// //         *maxField = "max_uint32";
+// //         *valueField = "value_uint32";
+// //     }
+// //     else if (strcmp(varType, "int64_t") == 0)
+// //     {
+// //         *minField = "min_sint64";
+// //         *maxField = "max_sint64";
+// //         *valueField = "value_sint64";
+// //     }
+// //     else if (strcmp(varType, "uint64_t") == 0)
+// //     {
+// //         *minField = "min_uint64";
+// //         *maxField = "max_uint64";
+// //         *valueField = "value_uint64";
+// //     }
+// //     else if (strcmp(varType, "float") == 0)
+// //     {
+// //         *minField = "min_float32";
+// //         *maxField = "max_float32";
+// //         *valueField = "value_float32";
+// //     }
+// //     else if (strcmp(varType, "double") == 0)
+// //     {
+// //         *minField = "min_float64";
+// //         *maxField = "max_float64";
+// //         *valueField = "value_float64";
+// //         *meanField = "mean_float64";
+// //     }
+// //     else if (strcmp(varType, "string") == 0)
+// //     {
+// //         *valueField = "value_sint32";
+// //     }
+
+// //     else if ((strcmp(varType, "long double") == 0) ||
+// //              (strcmp(varType, "float complex") == 0) ||
+// //              (strcmp(varType, "double complex") == 0))
+// //     {
+// //         *minField = "min_blob";
+// //         *maxField = "max_blob";
+// //         *valueField = "value_blob";
+// //     }
+// }
+
+// void setMinMaxValueFields(std::string *minField, std::string *maxField,
+//                           std::string *valueField,  std::string *meanField, const adios2::DataType varType)
 void setMinMaxValueFields(std::string *minField, std::string *maxField,
-                          std::string *valueField,  std::string *meanField, const char *varType)
+                          std::string *valueField,  std::string *meanField, const int varType)                          
 {
-
-    if ((strcmp(varType, "char") == 0) || (strcmp(varType, "int8_t") == 0) ||
-        (strcmp(varType, "uint8_t") == 0) ||
-        (strcmp(varType, "int16_t") == 0) ||
-        (strcmp(varType, "uint16_t") == 0) || (strcmp(varType, "int32_t") == 0))
+        // std::cout << "just some output" << std::endl;
+//     // switch(varType) 
+    switch(varType) 
     {
-        *minField = "min_sint32";
-        *maxField = "max_sint32";
-        *valueField = "value_sint32";
-    }
-    else if (strcmp(varType, "uint32_t") == 0)
-    {
-        *minField = "min_uint32";
-        *maxField = "max_uint32";
-        *valueField = "value_uint32";
-    }
-    else if (strcmp(varType, "int64_t") == 0)
-    {
-        *minField = "min_sint64";
-        *maxField = "max_sint64";
-        *valueField = "value_sint64";
-    }
-    else if (strcmp(varType, "uint64_t") == 0)
-    {
-        *minField = "min_uint64";
-        *maxField = "max_uint64";
-        *valueField = "value_uint64";
-    }
-    else if (strcmp(varType, "float") == 0)
-    {
-        *minField = "min_float32";
-        *maxField = "max_float32";
-        *valueField = "value_float32";
-    }
-    else if (strcmp(varType, "double") == 0)
-    {
-        *minField = "min_float64";
-        *maxField = "max_float64";
-        *valueField = "value_float64";
-        *meanField = "mean_float64";
-    }
-    else if (strcmp(varType, "string") == 0)
-    {
-        *valueField = "value_sint32";
-    }
-
-    else if ((strcmp(varType, "long double") == 0) ||
-             (strcmp(varType, "float complex") == 0) ||
-             (strcmp(varType, "double complex") == 0))
-    {
-        *minField = "min_blob";
-        *maxField = "max_blob";
-        *valueField = "value_blob";
-    }
+        case static_cast<int>(adios2::DataType::None):
+            //TODO: Do something?
+            break;
+        case static_cast<int>(adios2::DataType::Int8):
+        case static_cast<int>(adios2::DataType::UInt8):
+        case static_cast<int>(adios2::DataType::Int16):
+        case static_cast<int>(adios2::DataType::UInt16):
+        case static_cast<int>(adios2::DataType::Int32):
+            *minField = "min_sint32";
+            *maxField = "max_sint32";
+            *valueField = "value_sint32";
+            break;
+        case static_cast<int>(adios2::DataType::UInt32):
+            *minField = "min_uint32";
+            *maxField = "max_uint32";
+            *valueField = "value_uint32";
+            break;
+        case static_cast<int>(adios2::DataType::Int64):
+            *minField = "min_sint64";
+            *maxField = "max_sint64";
+            *valueField = "value_sint64";
+            break;
+        case static_cast<int>(adios2::DataType::UInt64):
+           *minField = "min_uint64";
+            *maxField = "max_uint64";
+            *valueField = "value_uint64";
+            break;
+        case static_cast<int>(adios2::DataType::Float):
+            *minField = "min_float32";
+            *maxField = "max_float32";
+            *valueField = "value_float32";
+            break;
+        case static_cast<int>(adios2::DataType::Double):
+            *minField = "min_float64";
+            *maxField = "max_float64";
+            *valueField = "value_float64";
+            *meanField = "mean_float64";
+            break;
+        case static_cast<int>(adios2::DataType::LongDouble):
+        case static_cast<int>(adios2::DataType::FloatComplex):
+        case static_cast<int>(adios2::DataType::DoubleComplex):
+            *minField = "min_blob";
+            *maxField = "max_blob";
+            *valueField = "value_blob";
+            break;
+        case static_cast<int>(adios2::DataType::String):
+            *valueField = "value_sint32";
+            break;
+        case static_cast<int>(adios2::DataType::Compound):
+            std::cout << "Compound variables not supported";
+            break;    
+        }
 }
 
 void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
@@ -178,7 +242,6 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
             var->m_AvailableStepsCount++;                                      \
         }                                                                      \
                                                                                \
-        setMinMaxValueFields(&minField, &maxField, &valueField, &meanField, type.c_str()); \
         g_autoptr(JDBSelector) selector =                                      \
             j_db_selector_new(varSchema, J_DB_SELECTOR_MODE_AND, NULL);        \
                                                                                \
@@ -236,8 +299,12 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
     j_semantics_unref(semantics);
 }
 
+// void DBDefineVariableInEngineIO(core::IO *io, const std::string varName,
+//                                 std::string type, ShapeID shapeID, Dims shape,
+//                                 Dims start, Dims count, bool constantDims,
+//                                 bool isLocalValue)
 void DBDefineVariableInEngineIO(core::IO *io, const std::string varName,
-                                std::string type, ShapeID shapeID, Dims shape,
+                                adios2::DataType type, ShapeID shapeID, Dims shape,
                                 Dims start, Dims count, bool constantDims,
                                 bool isLocalValue)
 {
@@ -245,11 +312,11 @@ void DBDefineVariableInEngineIO(core::IO *io, const std::string varName,
                 //     variable->m_Shape;                                         \
 
     // std::cout << "--- DBDefineVariableInEngineIO" <<std::endl;
-    if (type == "compound")
+    if (type == DataType::Compound)
     {
     }
 #define declare_type(T)                                                        \
-    else if (type == helper::GetType<T>())                                     \
+    else if (type == helper::GetDataType<T>())                                 \
     {                                                                          \
         core::Variable<T> *variable = nullptr;                                 \
         {                                                                      \
@@ -547,6 +614,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
     char *varName;
     char *varTypePtr;
     std::string varType;
+    int varTypeAsInt;
 
     // bool localValue;
     bool *isConstantDims;
@@ -563,6 +631,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
     size_t *countSize;
 
     ShapeID *shapeID;
+    adios2::DataType typeInt;
 
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
@@ -601,9 +670,12 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
 
         j_db_iterator_get_field(iterator, "shapeID", &type,
                                 (gpointer *)&shapeID, &db_length, NULL);
-        j_db_iterator_get_field(iterator, "type", &type,
+        j_db_iterator_get_field(iterator, "typeString", &type,
                                 (gpointer *)&varTypePtr, &db_length, NULL);
         std::string varType(varTypePtr);
+
+        j_db_iterator_get_field(iterator, "typeInt", &type,
+                                (gpointer *)&typeInt, &db_length, NULL);
 
         j_db_iterator_get_field(iterator, "shapeSize", &type,
                                 (gpointer *)&shapeSize, &db_length, NULL);
@@ -685,7 +757,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
         // {
         //     std::cout << "\n FIXME: time\n" << std::endl;
         // }
-        DBDefineVariableInEngineIO(io, varName, varType, *shapeID, shape, start,
+        DBDefineVariableInEngineIO(io, varName, typeInt, *shapeID, shape, start,
                                    count, *isConstantDims, *isSingleValue);
         // DBDefineVariableInInit(io, varName, varType, shape, start, count,
         //                        *isConstantDims, *isSingleValue);
@@ -915,7 +987,7 @@ void DBGetBlockMetadataNEW(Variable<T> &variable,
 
         // std::string variableType = variable.m_Type;
         // const char *varType = variableType.c_str();
-        const char *varType = variable.m_Type.c_str();
+        const int varType = static_cast<int>(variable.m_Type);
         std::string minField;
         std::string maxField;
         std::string valueField;
@@ -1121,7 +1193,9 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
         }
 
         // std::string variableType = variable.m_Type;
-        const char *varType = variable.m_Type.c_str();
+        // const char *varType = variable.m_Type.c_str();
+        // const char *varType = "hello_world";
+        const int varType = static_cast<int>(variable.m_Type);
         std::string minField;
         std::string maxField;
         std::string valueField;
@@ -1182,6 +1256,7 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
         //     valueField = "value_blob";
         // }
         setMinMaxValueFields(&minField, &maxField, &valueField, &meanField, varType);
+        // setMinMaxValueFields(&minField, &maxField, &valueField, &meanField, varType);
         // std::cout << "minField: " << minField << std::endl;
         // std::cout << "maxField: " << maxField << std::endl;
         // std::cout << "valueField: " << valueField << std::endl;

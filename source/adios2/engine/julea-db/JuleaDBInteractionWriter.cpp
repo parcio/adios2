@@ -50,7 +50,9 @@ void addFieldsForVariableMD(JDBSchema *schema)
     j_db_schema_add_field(schema, "isSingleValue", J_DB_TYPE_UINT32, NULL);
 
     j_db_schema_add_field(schema, "shapeID", J_DB_TYPE_UINT32, NULL);
-    j_db_schema_add_field(schema, "type", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "typeString", J_DB_TYPE_STRING, NULL);
+    // TODO: Check whether this renaming screws up anything in init
+    j_db_schema_add_field(schema, "typeInt", J_DB_TYPE_UINT32, NULL);
     // TODO: needed?
     // j_db_schema_add_field(schema, "typeLen", J_DB_TYPE_UINT64, NULL);
 
@@ -211,14 +213,17 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
 
     int shapeID = (int)variable.m_ShapeID;
 
-    const char *type = variable.m_Type.c_str();
+    // const char *type = variable.m_Type.c_str();
+    const int type =  static_cast<int>(variable.m_Type);
     size_t shapeSize = variable.m_Shape.size();
     size_t startSize = variable.m_Start.size();
     size_t countSize = variable.m_Count.size();
     size_t numberSteps = currStep + 1;
 
     size_t shapeIDLen = sizeof(int);
-    size_t typeLen = sizeof(variable.m_Type.c_str());
+    //TODO: typeLen no longer needed; 
+    //FIXME: wherever used
+    // size_t typeLen = sizeof(variable.m_Type.c_str());
 
     size_t shapeBuffer[shapeSize];
     for (uint i = 0; i < shapeSize; i++)
@@ -260,7 +265,7 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
     }
     if (false)
     {
-        std::cout << "typeLen: " << typeLen << std::endl;
+        // std::cout << "typeLen: " << typeLen << std::endl;
         std::cout << "variable.m_ShapeID: " << variable.m_ShapeID << std::endl;
         std::cout << "shapeID: " << shapeID << std::endl;
         std::cout << "constantDims: " << isConstantDims << std::endl;
@@ -296,8 +301,10 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
     j_db_entry_set_field(entry, "isSingleValue", &tmp5, sizeof(tmp5), NULL);
 
     j_db_entry_set_field(entry, "shapeID", &shapeID, sizeof(shapeID), NULL);
-    j_db_entry_set_field(entry, "type", type, strlen(type) + 1, NULL);
-    j_db_entry_set_field(entry, "typeLen", &typeLen, typeLen, NULL);
+    // j_db_entry_set_field(entry, "typeString", type, strlen(type) + 1, NULL);
+    j_db_entry_set_field(entry, "typeInt", &type,  sizeof(type), NULL);
+    // TODO typeLen no longer needed
+    // j_db_entry_set_field(entry, "typeLen", &typeLen, typeLen, NULL);
 
     j_db_entry_set_field(entry, "shapeSize", &shapeSize, sizeof(shapeSize),
                          NULL);
@@ -316,7 +323,8 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
                          sizeof(numberSteps), NULL);
     j_db_entry_set_field(entry, "blockArray", blocks, sizeof(blocks), NULL);
 
-    const char *varType = variable.m_Type.c_str();
+    // const char *varType = variable.m_Type.c_str();
+    const int varType = static_cast<int>(variable.m_Type);
     std::string minField;
     std::string maxField;
     std::string valueField;
@@ -431,7 +439,8 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
     j_db_entry_set_field(entry, "memoryCount", &memoryCountBuffer,
                          sizeof(memoryCountBuffer), NULL);
 
-    const char *varType = variable.m_Type.c_str();
+    // const char *varType = variable.m_Type.c_str();
+    const int varType = static_cast<int>(variable.m_Type);
     std::string minField;
     std::string maxField;
     std::string valueField;
