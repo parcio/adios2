@@ -121,14 +121,14 @@ std::unordered_map<std::string, IO::EngineFactoryEntry> Factory = {
                        "Sst library, can't use Sst engine\n")
 #endif
     },
-    {"julea-kv",
-#ifdef ADIOS2_HAVE_JULEA
-     {IO::MakeEngine<engine::JuleaKVReader>, IO::MakeEngine<engine::JuleaKVWriter>}
-#else
-     IO::NoEngineEntry("ERROR: this version didn't compile with "
-                       "JULEA library, can't use JULEA key-value (julea-kv) engine\n")
-#endif
-    },
+//     {"julea-kv",
+// #ifdef ADIOS2_HAVE_JULEA
+//      {IO::MakeEngine<engine::JuleaKVReader>, IO::MakeEngine<engine::JuleaKVWriter>}
+// #else
+//      IO::NoEngineEntry("ERROR: this version didn't compile with "
+//                        "JULEA library, can't use JULEA key-value (julea-kv) engine\n")
+// #endif
+//     },
     {"julea-db",
 #ifdef ADIOS2_HAVE_JULEA
      {IO::MakeEngine<engine::JuleaDBReader>, IO::MakeEngine<engine::JuleaDBWriter>}
@@ -137,14 +137,14 @@ std::unordered_map<std::string, IO::EngineFactoryEntry> Factory = {
                        "JULEA library, can't use JULEA database (julea-db) engine\n")
 #endif
     },
-    {"julea-db-do",
-#ifdef ADIOS2_HAVE_JULEA
-     {IO::MakeEngine<engine::JuleaDB_DO_Reader>, IO::MakeEngine<engine::JuleaDB_DO_Writer>}
-#else
-     IO::NoEngineEntry("ERROR: this version didn't compile with "
-                       "JULEA library, can't use JULEA database (julea-db-do) engine\n")
-#endif
-    },
+//     {"julea-db-do",
+// #ifdef ADIOS2_HAVE_JULEA
+//      {IO::MakeEngine<engine::JuleaDB_DO_Reader>, IO::MakeEngine<engine::JuleaDB_DO_Writer>}
+// #else
+//      IO::NoEngineEntry("ERROR: this version didn't compile with "
+//                        "JULEA library, can't use JULEA database (julea-db-do) engine\n")
+// #endif
+//     },
     {"dataspaces",
      IO::NoEngineEntry("ERROR: this version didn't compile with "
                        "DataSpaces library, can't use DataSpaces engine\n")},
