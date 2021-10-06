@@ -382,7 +382,8 @@ void JuleaDB_DO_Writer::PutAttributes(core::IO &io)
     // std::cout << "\n______________PutAttributes_____________________"
     // << std::endl;
 
-    const auto attributesDataMap = io.GetAttributesDataMap();
+    // const auto attributesDataMap = io.GetAttributesDataMap();
+    const auto attributesDataMap = io.GetAttributes();
 
     // count is known ahead of time
     const uint32_t attributesCount =

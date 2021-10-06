@@ -341,6 +341,7 @@ void JuleaKVReader::InitAttributes()
         // *attrName = strdup(bson_iter_key(&b_iter));
         std::string attrName(bson_iter_key(&b_iter));
         int type = 0;
+        // DataType type;
         size_t numberElements = 0;
         bool IsSingleValue = false;
 
@@ -360,7 +361,7 @@ void JuleaKVReader::InitAttributes()
 #define declare_attribute_type(T)                                              \
     if (type == helper::GetDataType<T>())                                    \
     {                                                                          \
-        if (typeString == DataType::String)                                            \
+        if (typeString == static_cast<int>(DataType::String))                                            \
         {                                                                      \
             char *data = new char[completeSize];                               \
             GetAttributeStringDataFromJulea(attrName, data, nameSpace,         \

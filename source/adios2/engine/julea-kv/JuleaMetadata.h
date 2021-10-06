@@ -49,6 +49,29 @@ enum variable_type
 };
 typedef enum variable_type variable_type;
 
+/* ADIOS Data Types in ADIOS2-2.7.0 */
+enum data_type
+{
+    None,
+    Int8,
+    Int16,
+    Int32,
+    Int64,
+    UInt8,
+    UInt16,
+    UInt32,
+    UInt64,
+    Float,
+    Double,
+    LongDouble,
+    FloatComplex,
+    DoubleComplex,
+    String,
+    Compound
+};
+typedef enum data_type data_type;
+
+
 union value_type
 {
     // char *string; // TODO: needed? what would be the "minimum" of a string
@@ -99,7 +122,8 @@ struct CMetadata
     size_t available_steps_start; // VariableBase.h TODO
     size_t available_steps_count; // VariableBase.h TODO
 
-    variable_type var_type;
+    // variable_type var_type;
+    data_type d_type;
 
     value_type min_value;  // not for strings
     value_type max_value;  // not for strings
@@ -133,7 +157,8 @@ struct AttributeMetadata
     bool is_single_value;
 
     unsigned int data_size;
-    variable_type attr_type;
+    // variable_type attr_type;
+    data_type attr_type;
 };
 typedef struct AttributeMetadata AttributeMetadata;
 
