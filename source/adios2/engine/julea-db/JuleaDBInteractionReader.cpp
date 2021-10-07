@@ -161,8 +161,10 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
                     bool isReadAsLocalValue, bool isRandomAccess,
                     bool isSingleValue)
 {
-    // std::cout << "----- InitVariable --- " << varName << std::endl;
-    const DataType type(io->InquireVariableType(varName));
+    std::cout << "----- InitVariable --- " << varName << std::endl;
+    const adios2::DataType type(io->InquireVariableType(varName));
+
+    std::cout << "type(io->InquireVariableType(varName): " << type << std::endl;
 
     int err = 0;
     uint32_t entryID = 0;
@@ -201,10 +203,96 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
     if (type == DataType::Compound)
     {
     }
+    else if (type == DataType::Float)
+    {
+        auto var = io->InquireVariable<float>(varName);                            
+        if (var)
+        {
+        var->m_ShapeID = shapeID;                                              
+        for (size_t i = 0; i < numberSteps; i++)                               
+        {                                                                      
+            for (size_t j = 0; j < blocks[i]; j++)                             
+            {                                                                  
+                step = i;                                                      
+                block = j;                                                     
+                g_autoptr(JDBSelector) selector = j_db_selector_new(           
+                    blockSchema, J_DB_SELECTOR_MODE_AND, NULL);                
+                j_db_selector_add_field(                                       
+                    selector, "file", J_DB_SELECTOR_OPERATOR_EQ,               
+                    nameSpace.c_str(), strlen(nameSpace.c_str()) + 1, NULL);   
+                j_db_selector_add_field(                                       
+                    selector, "variableName", J_DB_SELECTOR_OPERATOR_EQ,       
+                    varName.c_str(), strlen(varName.c_str()) + 1, NULL);       
+                j_db_selector_add_field(selector, "step",                      
+                                        J_DB_SELECTOR_OPERATOR_EQ, &step,      
+                                        sizeof(step), NULL);                   
+                j_db_selector_add_field(selector, "block",                     
+                                        J_DB_SELECTOR_OPERATOR_EQ, &block,     
+                                        sizeof(block), NULL);                  
+                g_autoptr(JDBIterator) iterator =                              
+                    j_db_iterator_new(blockSchema, selector, NULL);            
+                while (j_db_iterator_next(iterator, NULL))                     
+                {                                                              
+                    j_db_iterator_get_field(iterator, "_id", &jdbType,         
+                                            (gpointer *)&tmpID, &db_length,    
+                                            NULL);                             
+                    entryID = *tmpID;                                          
+                }                                                              
+                var->m_AvailableStepBlockIndexOffsets[i + 1].push_back(        
+                    entryID);                                                  
+                g_free(tmpID);                                                 
+            }                                                                  
+            var->m_AvailableStepsCount++;                                      
+        }                                                                      
+                                                                               
+        g_autoptr(JDBSelector) selector =                                      
+            j_db_selector_new(varSchema, J_DB_SELECTOR_MODE_AND, NULL);        
+                                                                               
+        j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,   
+                                nameSpace.c_str(),                             
+                                strlen(nameSpace.c_str()) + 1, NULL);          
+        j_db_selector_add_field(selector, "variableName",                      
+                                J_DB_SELECTOR_OPERATOR_EQ, varName.c_str(),    
+                                strlen(varName.c_str()) + 1, NULL);            
+                                                                               
+        g_autoptr(JDBIterator) iterator =                                      
+            j_db_iterator_new(varSchema, selector, NULL);                      
+        while (j_db_iterator_next(iterator, NULL))                             
+        {                                                                      
+            float *min;                                                            
+            float *max;                                                            
+            j_db_iterator_get_field(iterator, minField.c_str(), &jdbType,      
+                                    (gpointer *)&min, &db_length, NULL);       
+            var->m_Min = *min;                                                 
+            j_db_iterator_get_field(iterator, maxField.c_str(), &jdbType,      
+                                    (gpointer *)&max, &db_length, NULL);       
+            var->m_Max = *max;                                                 
+            g_free(min);                                                       
+            g_free(max);                                                       
+        }                                                                      
+                                                                               
+        var->m_AvailableStepsStart = 0;                                        
+        var->m_StepsStart = 0;                                                 
+        var->m_Engine = &engine;                                               
+        var->m_FirstStreamingStep = true;                                      
+        var->m_ReadAsJoined = isReadAsJoined;                                  
+        var->m_ReadAsLocalValue = isReadAsLocalValue;                          
+        var->m_RandomAccess = isRandomAccess;                                  
+        var->m_SingleValue = isSingleValue;                                    
+                                                                               
+        if (var->m_ShapeID == ShapeID::LocalValue)                             
+        {                                                                      
+            var->m_ShapeID = ShapeID::GlobalArray;                             
+            var->m_SingleValue = true;                                         
+        }                                                                      
+        }
+    }
 #define declare_type(T)                                                        \
     else if (type == helper::GetDataType<T>())                                 \
     {                                                                          \
         auto var = io->InquireVariable<T>(varName);                            \
+        if (var)\
+        {\
         var->m_ShapeID = shapeID;                                              \
         for (size_t i = 0; i < numberSteps; i++)                               \
         {                                                                      \
@@ -282,6 +370,7 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
             var->m_ShapeID = ShapeID::GlobalArray;                             \
             var->m_SingleValue = true;                                         \
         }                                                                      \
+        }\
     }
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
@@ -311,7 +400,7 @@ void DBDefineVariableInEngineIO(core::IO *io, const std::string varName,
     // variable->m_AvailableShapes[characteristics.Statistics.Step] = \
                 //     variable->m_Shape;                                         \
 
-    // std::cout << "--- DBDefineVariableInEngineIO" <<std::endl;
+    std::cout << "--- DBDefineVariableInEngineIO" <<std::endl;
     if (type == DataType::Compound)
     {
     }
@@ -598,7 +687,7 @@ void CheckSchemas()
 void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
                          core::Engine &engine)
 {
-    // std::cout << "--- InitVariablesFromDB ---" << std::endl;
+    std::cout << "--- InitVariablesFromDB ---" << std::endl;
     // int rank = engine.m_Comm.Rank();
     // int MPISize = engine.m_Comm.Size();
 
@@ -612,9 +701,8 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
     g_autoptr(JDBSelector) selector = NULL;
 
     char *varName;
-    char *varTypePtr;
-    std::string varType;
-    int varTypeAsInt;
+    // char *varTypePtr;
+    // std::string varType;
 
     // bool localValue;
     bool *isConstantDims;
@@ -632,6 +720,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
 
     ShapeID *shapeID;
     adios2::DataType typeInt;
+    int *varTypeAsInt;
 
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
@@ -670,12 +759,17 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
 
         j_db_iterator_get_field(iterator, "shapeID", &type,
                                 (gpointer *)&shapeID, &db_length, NULL);
-        j_db_iterator_get_field(iterator, "typeString", &type,
-                                (gpointer *)&varTypePtr, &db_length, NULL);
-        std::string varType(varTypePtr);
+        // j_db_iterator_get_field(iterator, "typeString", &type,
+                                // (gpointer *)&varTypePtr, &db_length, NULL);
+        // std::string varType(varTypePtr);
 
+        // j_db_iterator_get_field(iterator, "typeInt", &type,
+                                // (gpointer *)&typeInt, &db_length, NULL);
         j_db_iterator_get_field(iterator, "typeInt", &type,
-                                (gpointer *)&typeInt, &db_length, NULL);
+                                (gpointer *)&varTypeAsInt, &db_length, NULL);
+
+        // std::cout << "typeInt: " << varTypeAsInt << std::endl;
+        std::cout << "typeInt: " << *varTypeAsInt << std::endl;
 
         j_db_iterator_get_field(iterator, "shapeSize", &type,
                                 (gpointer *)&shapeSize, &db_length, NULL);
@@ -739,7 +833,8 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
             std::cout << "isRandomAccess: " << *isRandomAccess << std::endl;
             std::cout << "isSingleValue: " << *isSingleValue << std::endl;
             std::cout << "shapeID: " << *shapeID << std::endl;
-            std::cout << "varType2: " << varTypePtr << std::endl;
+            std::cout << "varType: " << *varTypeAsInt << std::endl;
+            // std::cout << "varType2: " << varTypePtr << std::endl;
             std::cout << "shapeSize: " << *shapeSize << std::endl;
             std::cout << "startSize: " << *startSize << std::endl;
             std::cout << "countSize: " << *countSize << std::endl;
@@ -757,7 +852,14 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
         // {
         //     std::cout << "\n FIXME: time\n" << std::endl;
         // }
-        DBDefineVariableInEngineIO(io, varName, typeInt, *shapeID, shape, start,
+
+        adios2::DataType adiosType{static_cast<adios2::DataType>(*varTypeAsInt)};
+
+        std::cout << "adiosType: " << adiosType << std::endl;
+
+        // DBDefineVariableInEngineIO(io, varName, typeInt, *shapeID, shape, start,
+        // DBDefineVariableInEngineIO(io, varName, varTypeAsInt, *shapeID, shape, start,
+        DBDefineVariableInEngineIO(io, varName, adiosType, *shapeID, shape, start,
                                    count, *isConstantDims, *isSingleValue);
         // DBDefineVariableInInit(io, varName, varType, shape, start, count,
         //                        *isConstantDims, *isSingleValue);
@@ -775,7 +877,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
         g_free(isSingleValue);
         g_free(varName);
         g_free(shapeID);
-        g_free(varTypePtr);
+        // g_free(varTypePtr);
         g_free(shapeSize);
         g_free(startSize);
         g_free(countSize);
@@ -1352,6 +1454,9 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
 
     if (bytesRead == dataSize)
     {
+        std::cout << "Data[0] = " << data[0] << std::endl;
+        std::cout << "Data[1] = " << data[1] << std::endl;
+        std::cout << "Data[2] = " << data[2] << std::endl;
         // std::cout << "++ Julea Interaction Reader: Read data for variable "
         // << varName << std::endl;
     }

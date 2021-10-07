@@ -50,11 +50,12 @@ void addFieldsForVariableMD(JDBSchema *schema)
     j_db_schema_add_field(schema, "isSingleValue", J_DB_TYPE_UINT32, NULL);
 
     j_db_schema_add_field(schema, "shapeID", J_DB_TYPE_UINT32, NULL);
-    j_db_schema_add_field(schema, "typeString", J_DB_TYPE_STRING, NULL);
+    // TODO: needed?
+    // j_db_schema_add_field(schema, "typeString", J_DB_TYPE_STRING, NULL);
+    // j_db_schema_add_field(schema, "typeLen", J_DB_TYPE_UINT64, NULL);
+    
     // TODO: Check whether this renaming screws up anything in init
     j_db_schema_add_field(schema, "typeInt", J_DB_TYPE_UINT32, NULL);
-    // TODO: needed?
-    // j_db_schema_add_field(schema, "typeLen", J_DB_TYPE_UINT64, NULL);
 
     /** all vectors need to store their size */
     j_db_schema_add_field(schema, "shapeSize", J_DB_TYPE_UINT64, NULL);

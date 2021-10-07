@@ -154,7 +154,8 @@ void JuleaDBReader::PerformGets()
     /** Call GetSyncCommon for every variable that has been deferred */
     for (const std::string &variableName : m_DeferredVariables)
     {
-        const DataType type = m_IO.InquireVariableType(variableName);
+        const adios2::DataType type = m_IO.InquireVariableType(variableName);
+        std::cout << "the data type in PerfomGets() is: " << type << std::endl;
 
         if (type == DataType::Compound)
         {
@@ -197,6 +198,7 @@ void JuleaDBReader::PerformGets()
 #define declare_type(T)                                                        \
     void JuleaDBReader::DoGetSync(Variable<T> &variable, T *data)              \
     {                                                                          \
+        std::cout << "CHECK WHETHER ANYTHING COULD BE READ" << std::endl;\
         GetSyncCommon(variable, data);                                         \
     }                                                                          \
     void JuleaDBReader::DoGetDeferred(Variable<T> &variable, T *data)          \
