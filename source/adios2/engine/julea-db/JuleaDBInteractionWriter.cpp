@@ -225,27 +225,29 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
     //FIXME: wherever used
     // size_t typeLen = sizeof(variable.m_Type.c_str());
 
-    size_t shapeBuffer[shapeSize];
-    for (uint i = 0; i < shapeSize; i++)
-    {
-        shapeBuffer[i] = variable.m_Shape.data()[i];
-    }
+    //check if shapeSize
 
-    size_t startBuffer[startSize];
-    for (uint i = 0; i < startSize; i++)
-    {
-        startBuffer[i] = variable.m_Start.data()[i];
-    }
+    // size_t shapeBuffer[shapeSize];
+    // for (uint i = 0; i < shapeSize; i++)
+    // {
+    //     shapeBuffer[i] = variable.m_Shape.data()[i];
+    // }
 
-    size_t countBuffer[countSize];
+    // size_t startBuffer[startSize];
+    // for (uint i = 0; i < startSize; i++)
+    // {
+    //     startBuffer[i] = variable.m_Start.data()[i];
+    // }
+
+    // size_t countBuffer[countSize];
     // std::cout << "countSize: " << countSize << std::endl;
-    for (uint i = 0; i < countSize; i++)
-    {
-        countBuffer[i] = variable.m_Count.data()[i];
+    // for (uint i = 0; i < countSize; i++)
+    // {
+        // countBuffer[i] = variable.m_Count.data()[i];
         // std::cout << "countBuffer[i]:" << countBuffer[i] << std::endl;
         // std::cout << "sizeof(countBuffer): " << sizeof(countBuffer)
         // << std::endl;
-    }
+    // }
 
     size_t blocks[numberSteps];
 
@@ -308,15 +310,15 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
 
     j_db_entry_set_field(entry, "shapeSize", &shapeSize, sizeof(shapeSize),
                          NULL);
-    j_db_entry_set_field(entry, "shape", shapeBuffer, sizeof(shapeBuffer),
+    j_db_entry_set_field(entry, "shape", variable.m_Shape.data(), sizeof(variable.m_Shape.data()),
                          NULL);
     j_db_entry_set_field(entry, "startSize", &startSize, sizeof(startSize),
                          NULL);
-    j_db_entry_set_field(entry, "start", startBuffer, sizeof(startBuffer),
+    j_db_entry_set_field(entry, "start", variable.m_Start.data(), sizeof(variable.m_Start.data()),
                          NULL);
     j_db_entry_set_field(entry, "countSize", &countSize, sizeof(countSize),
                          NULL);
-    j_db_entry_set_field(entry, "count", countBuffer, sizeof(countBuffer),
+    j_db_entry_set_field(entry, "count", variable.m_Count.data(), sizeof(variable.m_Count.data()),
                          NULL);
 
     j_db_entry_set_field(entry, "numberSteps", &numberSteps,
@@ -365,34 +367,34 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
     bool isValue = blockInfo.IsValue;
     int tmp = isValue ? 1 : 0;
 
-    size_t shapeBuffer[shapeSize];
-    for (uint i = 0; i < shapeSize; i++)
-    {
-        shapeBuffer[i] = variable.m_Shape.data()[i];
-    }
+    // size_t shapeBuffer[shapeSize];
+    // for (uint i = 0; i < shapeSize; i++)
+    // {
+    //     shapeBuffer[i] = variable.m_Shape.data()[i];
+    // }
 
-    size_t startBuffer[startSize];
-    for (uint i = 0; i < startSize; i++)
-    {
-        startBuffer[i] = variable.m_Start.data()[i];
-    }
+    // size_t startBuffer[startSize];
+    // for (uint i = 0; i < startSize; i++)
+    // {
+    //     startBuffer[i] = variable.m_Start.data()[i];
+    // }
 
-    size_t countBuffer[countSize];
-    for (uint i = 0; i < countSize; i++)
-    {
-        countBuffer[i] = variable.m_Count.data()[i];
-    }
+    // size_t countBuffer[countSize];
+    // for (uint i = 0; i < countSize; i++)
+    // {
+    //     countBuffer[i] = variable.m_Count.data()[i];
+    // }
 
-    size_t memoryStartBuffer[memoryStartSize];
-    for (uint i = 0; i < memoryStartSize; i++)
-    {
-        memoryStartBuffer[i] = blockInfo.MemoryStart.data()[i];
-    }
-    size_t memoryCountBuffer[memoryCountSize];
-    for (uint i = 0; i < memoryCountSize; i++)
-    {
-        memoryCountBuffer[i] = blockInfo.MemoryCount.data()[i];
-    }
+    // size_t memoryStartBuffer[memoryStartSize];
+    // for (uint i = 0; i < memoryStartSize; i++)
+    // {
+    //     memoryStartBuffer[i] = blockInfo.MemoryStart.data()[i];
+    // }
+    // size_t memoryCountBuffer[memoryCountSize];
+    // for (uint i = 0; i < memoryCountSize; i++)
+    // {
+    //     memoryCountBuffer[i] = blockInfo.MemoryCount.data()[i];
+    // }
 
     if (false)
     {
@@ -420,24 +422,24 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
 
     j_db_entry_set_field(entry, "shapeSize", &shapeSize, sizeof(shapeSize),
                          NULL);
-    j_db_entry_set_field(entry, "shape", shapeBuffer, sizeof(shapeBuffer),
+    j_db_entry_set_field(entry, "shape", variable.m_Shape.data(), sizeof(variable.m_Shape.data()),
                          NULL);
     j_db_entry_set_field(entry, "startSize", &startSize, sizeof(startSize),
                          NULL);
-    j_db_entry_set_field(entry, "start", startBuffer, sizeof(startBuffer),
+    j_db_entry_set_field(entry, "start", variable.m_Start.data(), sizeof(variable.m_Start.data()),
                          NULL);
     j_db_entry_set_field(entry, "countSize", &countSize, sizeof(countSize),
                          NULL);
-    j_db_entry_set_field(entry, "count", countBuffer, sizeof(countBuffer),
+    j_db_entry_set_field(entry, "count", variable.m_Count.data(), sizeof(variable.m_Count.data()),
                          NULL);
     j_db_entry_set_field(entry, "memoryStartSize", &memoryStartSize,
                          sizeof(memoryStartSize), NULL);
-    j_db_entry_set_field(entry, "memoryStart", &memoryStartBuffer,
-                         sizeof(memoryStartBuffer), NULL);
+    j_db_entry_set_field(entry, "memoryStart", blockInfo.MemoryStart.data(),
+                         sizeof(blockInfo.MemoryStart.data()), NULL);
     j_db_entry_set_field(entry, "memoryCountSize", &memoryCountSize,
                          sizeof(memoryCountSize), NULL);
-    j_db_entry_set_field(entry, "memoryCount", &memoryCountBuffer,
-                         sizeof(memoryCountBuffer), NULL);
+    j_db_entry_set_field(entry, "memoryCount", blockInfo.MemoryCount.data(),
+                         sizeof(blockInfo.MemoryCount.data()), NULL);
 
     // const char *varType = variable.m_Type.c_str();
     // const int varType = static_cast<int>(variable.m_Type);
