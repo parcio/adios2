@@ -24,7 +24,7 @@ namespace engine
 //                           std::string *valueField, std::string *meanField,  const char *varType);
 
 void setMinMaxValueFields(std::string *minField, std::string *maxField,
-                          std::string *valueField, std::string *meanField, const int varType);
+                          std::string *valueField, std::string *meanField, const adios2::DataType varType);
 
 void DBDefineVariableInInit(core::IO *io, const std::string varName,
                             std::string type, Dims shape, Dims start,

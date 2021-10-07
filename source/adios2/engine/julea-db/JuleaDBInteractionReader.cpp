@@ -93,63 +93,63 @@ namespace engine
 // }
 
 // void setMinMaxValueFields(std::string *minField, std::string *maxField,
-//                           std::string *valueField,  std::string *meanField, const adios2::DataType varType)
+                        //   std::string *valueField,  std::string *meanField, const int varType)                          
 void setMinMaxValueFields(std::string *minField, std::string *maxField,
-                          std::string *valueField,  std::string *meanField, const int varType)                          
+                          std::string *valueField,  std::string *meanField, const adios2::DataType varType)
 {
         // std::cout << "just some output" << std::endl;
 //     // switch(varType) 
     switch(varType) 
     {
-        case static_cast<int>(adios2::DataType::None):
+        case adios2::DataType::None:
             //TODO: Do something?
             break;
-        case static_cast<int>(adios2::DataType::Int8):
-        case static_cast<int>(adios2::DataType::UInt8):
-        case static_cast<int>(adios2::DataType::Int16):
-        case static_cast<int>(adios2::DataType::UInt16):
-        case static_cast<int>(adios2::DataType::Int32):
+        case adios2::DataType::Int8:
+        case adios2::DataType::UInt8:
+        case adios2::DataType::Int16:
+        case adios2::DataType::UInt16:
+        case adios2::DataType::Int32:
             *minField = "min_sint32";
             *maxField = "max_sint32";
             *valueField = "value_sint32";
             break;
-        case static_cast<int>(adios2::DataType::UInt32):
+        case adios2::DataType::UInt32:
             *minField = "min_uint32";
             *maxField = "max_uint32";
             *valueField = "value_uint32";
             break;
-        case static_cast<int>(adios2::DataType::Int64):
+        case adios2::DataType::Int64:
             *minField = "min_sint64";
             *maxField = "max_sint64";
             *valueField = "value_sint64";
             break;
-        case static_cast<int>(adios2::DataType::UInt64):
+        case adios2::DataType::UInt64:
            *minField = "min_uint64";
             *maxField = "max_uint64";
             *valueField = "value_uint64";
             break;
-        case static_cast<int>(adios2::DataType::Float):
+        case adios2::DataType::Float:
             *minField = "min_float32";
             *maxField = "max_float32";
             *valueField = "value_float32";
             break;
-        case static_cast<int>(adios2::DataType::Double):
+        case adios2::DataType::Double:
             *minField = "min_float64";
             *maxField = "max_float64";
             *valueField = "value_float64";
             *meanField = "mean_float64";
             break;
-        case static_cast<int>(adios2::DataType::LongDouble):
-        case static_cast<int>(adios2::DataType::FloatComplex):
-        case static_cast<int>(adios2::DataType::DoubleComplex):
+        case adios2::DataType::LongDouble:
+        case adios2::DataType::FloatComplex:
+        case adios2::DataType::DoubleComplex:
             *minField = "min_blob";
             *maxField = "max_blob";
             *valueField = "value_blob";
             break;
-        case static_cast<int>(adios2::DataType::String):
+        case adios2::DataType::String:
             *valueField = "value_sint32";
             break;
-        case static_cast<int>(adios2::DataType::Compound):
+        case adios2::DataType::Compound:
             std::cout << "Compound variables not supported";
             break;    
         }
@@ -987,13 +987,13 @@ void DBGetBlockMetadataNEW(Variable<T> &variable,
 
         // std::string variableType = variable.m_Type;
         // const char *varType = variableType.c_str();
-        const int varType = static_cast<int>(variable.m_Type);
+        // const int varType = static_cast<int>(variable.m_Type);
         std::string minField;
         std::string maxField;
         std::string valueField;
         std::string meanField;
 
-        setMinMaxValueFields(&minField, &maxField, &valueField, &meanField, varType);
+        setMinMaxValueFields(&minField, &maxField, &valueField, &meanField, variable.m_Type);
 
         j_db_iterator_get_field(iterator, minField.c_str(), &type,
                                 (gpointer *)&min, &db_length, NULL);
@@ -1195,7 +1195,7 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
         // std::string variableType = variable.m_Type;
         // const char *varType = variable.m_Type.c_str();
         // const char *varType = "hello_world";
-        const int varType = static_cast<int>(variable.m_Type);
+        // const int varType = static_cast<int>(variable.m_Type);
         std::string minField;
         std::string maxField;
         std::string valueField;
@@ -1255,7 +1255,7 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
         //     maxField = "max_blob";
         //     valueField = "value_blob";
         // }
-        setMinMaxValueFields(&minField, &maxField, &valueField, &meanField, varType);
+        setMinMaxValueFields(&minField, &maxField, &valueField, &meanField, variable.m_Type);
         // setMinMaxValueFields(&minField, &maxField, &valueField, &meanField, varType);
         // std::cout << "minField: " << minField << std::endl;
         // std::cout << "maxField: " << maxField << std::endl;

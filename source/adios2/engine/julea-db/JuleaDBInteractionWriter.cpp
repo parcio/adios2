@@ -324,13 +324,13 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
     j_db_entry_set_field(entry, "blockArray", blocks, sizeof(blocks), NULL);
 
     // const char *varType = variable.m_Type.c_str();
-    const int varType = static_cast<int>(variable.m_Type);
+    // const int varType = static_cast<int>(variable.m_Type);
     std::string minField;
     std::string maxField;
     std::string valueField;
     std::string meanField;
 
-    setMinMaxValueFields(&minField, &maxField, &valueField, &meanField, varType);
+    setMinMaxValueFields(&minField, &maxField, &valueField, &meanField, variable.m_Type);
 
     j_db_entry_set_field(entry, minField.c_str(), &variable.m_Min,
                          sizeof(variable.m_Min), NULL);
@@ -440,13 +440,13 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
                          sizeof(memoryCountBuffer), NULL);
 
     // const char *varType = variable.m_Type.c_str();
-    const int varType = static_cast<int>(variable.m_Type);
+    // const int varType = static_cast<int>(variable.m_Type);
     std::string minField;
     std::string maxField;
     std::string valueField;
     std::string meanField;
 
-    setMinMaxValueFields(&minField, &maxField, &valueField, &meanField, varType);
+    setMinMaxValueFields(&minField, &maxField, &valueField, &meanField, variable.m_Type);
 
     j_db_entry_set_field(entry, minField.c_str(), &blockMin, minLen, NULL);
     j_db_entry_set_field(entry, maxField.c_str(), &blockMax, maxLen, NULL);
