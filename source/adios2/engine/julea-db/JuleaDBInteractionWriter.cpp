@@ -224,31 +224,6 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
     //TODO: typeLen no longer needed; 
     //FIXME: wherever used
     // size_t typeLen = sizeof(variable.m_Type.c_str());
-
-    //check if shapeSize
-
-    // size_t shapeBuffer[shapeSize];
-    // for (uint i = 0; i < shapeSize; i++)
-    // {
-    //     shapeBuffer[i] = variable.m_Shape.data()[i];
-    // }
-
-    // size_t startBuffer[startSize];
-    // for (uint i = 0; i < startSize; i++)
-    // {
-    //     startBuffer[i] = variable.m_Start.data()[i];
-    // }
-
-    // size_t countBuffer[countSize];
-    // std::cout << "countSize: " << countSize << std::endl;
-    // for (uint i = 0; i < countSize; i++)
-    // {
-        // countBuffer[i] = variable.m_Count.data()[i];
-        // std::cout << "countBuffer[i]:" << countBuffer[i] << std::endl;
-        // std::cout << "sizeof(countBuffer): " << sizeof(countBuffer)
-        // << std::endl;
-    // }
-
     size_t blocks[numberSteps];
 
     // if the entry does not exist in the map it will be added. This is actually
@@ -366,35 +341,6 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
 
     bool isValue = blockInfo.IsValue;
     int tmp = isValue ? 1 : 0;
-
-    // size_t shapeBuffer[shapeSize];
-    // for (uint i = 0; i < shapeSize; i++)
-    // {
-    //     shapeBuffer[i] = variable.m_Shape.data()[i];
-    // }
-
-    // size_t startBuffer[startSize];
-    // for (uint i = 0; i < startSize; i++)
-    // {
-    //     startBuffer[i] = variable.m_Start.data()[i];
-    // }
-
-    // size_t countBuffer[countSize];
-    // for (uint i = 0; i < countSize; i++)
-    // {
-    //     countBuffer[i] = variable.m_Count.data()[i];
-    // }
-
-    // size_t memoryStartBuffer[memoryStartSize];
-    // for (uint i = 0; i < memoryStartSize; i++)
-    // {
-    //     memoryStartBuffer[i] = blockInfo.MemoryStart.data()[i];
-    // }
-    // size_t memoryCountBuffer[memoryCountSize];
-    // for (uint i = 0; i < memoryCountSize; i++)
-    // {
-    //     memoryCountBuffer[i] = blockInfo.MemoryCount.data()[i];
-    // }
 
     if (false)
     {
