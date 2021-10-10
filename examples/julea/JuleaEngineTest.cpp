@@ -35,6 +35,7 @@ void TestWriteVariableSync()
     adios2::IO juleaIO = adios.DeclareIO("juleaIO");
     // juleaIO.SetEngine("julea-kv");
     juleaIO.SetEngine("julea-db");
+    // juleaIO.SetEngine("bp3");
 
     /** global array: name, { shape (total dimensions) }, { start (local) },
      * { count (local) }, all are constant dimensions */
@@ -68,11 +69,11 @@ void TestWriteVariableSync()
 void TestReadVariableSync()
 {
     /** Application variable */
-    std::vector<float> myFloats = {-42, -42, -42, -42, -42,
+    std::vector<float> myFloats = {112, -42, -42, -42, -42,
                                    -42, -42, -42, -42, -42};
     // std::vector<float> myFloats2 = {-42, -42, -42, -42, -42, -42, -42, -42,
     // -42, -42};
-    std::vector<int> myInts = {-42, -42, -42, -42, -42,
+    std::vector<int> myInts = {113, -42, -42, -42, -42,
                                -42, -42, -42, -42, -42};
     // std::vector<int> myInts2 = {-42, -42, -42, -42, -42, -42, -42, -42, -42,
     // -42};
@@ -87,6 +88,7 @@ void TestReadVariableSync()
     adios2::IO juleaIO = adios.DeclareIO("juleaIO");
     // juleaIO.SetEngine("julea-kv");
     juleaIO.SetEngine("julea-db");
+    // juleaIO.SetEngine("bp3");
 
     /** Engine derived class, spawned to start IO operations */
     adios2::Engine juleaReader = juleaIO.Open("testFile", adios2::Mode::Read);
@@ -99,6 +101,8 @@ void TestReadVariableSync()
      * { count (local) }, all are constant dimensions */
     adios2::Variable<float> juleaFloats =
         juleaIO.InquireVariable<float>("juleaFloats");
+    std::cout << "juleaFloats: " << juleaFloats << std::endl;
+    
     // adios2::Variable<float> juleaFloats2 = juleaIO.InquireVariable<float>(
     // "juleaFloats2");
     adios2::Variable<int> juleaInts = juleaIO.InquireVariable<int>("juleaInts");
@@ -107,6 +111,7 @@ void TestReadVariableSync()
 
     if (juleaFloats)
     {
+        std::cout << "Right before reading" << std::endl;
         juleaReader.Get<float>(juleaFloats, myFloats.data(),
                                adios2::Mode::Sync);
         // juleaReader.Get<float>(juleaFloats2,
@@ -344,9 +349,9 @@ int main(int argc, char *argv[])
         TestWriteVariableSync();
         std::cout << "\n JuleaEngineTest :) Write variable finished \n"
                   << std::endl;
-        // TestReadVariableSync();
-        // std::cout << "\n JuleaEngineTest :) Read variable finished \n"
-                  // << std::endl;
+        TestReadVariableSync();
+        std::cout << "\n JuleaEngineTest :) Read variable finished \n"
+                  << std::endl;
         // TestWriteAttribute();
         // std::cout << "\n JuleaEngineTest :) Write attribute finished \n"
                   // << std::endl;
