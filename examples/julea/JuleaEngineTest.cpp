@@ -33,7 +33,7 @@ void TestWriteVariableSync()
     /*** IO class object: settings and factory of Settings: Variables,
      * Parameters, Transports, and Execution: Engines */
     adios2::IO juleaIO = adios.DeclareIO("juleaIO");
-    
+
     // juleaIO.SetEngine("julea-kv");
     juleaIO.SetEngine("julea-db");
     // juleaIO.SetEngine("bp3");
@@ -51,10 +51,10 @@ void TestWriteVariableSync()
         "juleaInts2", {Nx3}, {0}, {Nx3}, adios2::ConstantDims);
 
     /** Engine derived class, spawned to start IO operations */
-    adios2::Engine juleaWriter = juleaIO.Open("testFile", adios2::Mode::Write);
+    adios2::Engine juleaWriter = juleaIO.Open("testFile.jb", adios2::Mode::Write);
 
     /** Write variable for buffering */
-    juleaWriter.Put<float>(juleaFloats, myFloats.data(), adios2::Mode::Sync);
+    juleaWriter.Put<float>(juleaFloats, myFloats.data(), adios2::Mode::Deferred);
     // juleaWriter.Put<float>(juleaFloats,
     // myFloats.data(),adios2::Mode::Deferred);
     // juleaWriter.Put<float>(juleaFloats2,
@@ -94,7 +94,7 @@ void TestReadVariableSync()
     // juleaIO.SetEngine("bp3");
 
     /** Engine derived class, spawned to start IO operations */
-    adios2::Engine juleaReader = juleaIO.Open("testFile", adios2::Mode::Read);
+    adios2::Engine juleaReader = juleaIO.Open("testFile.jb", adios2::Mode::Read);
 
     // for(int i = 0; i <10; i++)
     // {
