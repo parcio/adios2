@@ -166,7 +166,7 @@ void JuleaDBWriter::PerformPuts()
                       << "compound variable type not supported \n";
         }
 #define declare_template_instantiation(T)                                      \
-    else if (type == helper::GetDataType<T>())                                     \
+    else if (type == helper::GetDataType<T>())                                 \
     {                                                                          \
         Variable<T> &variable = FindVariable<T>(                               \
             variableName, "in call to PerformPuts, EndStep or Close");         \
@@ -413,7 +413,7 @@ void JuleaDBWriter::PutAttributes(core::IO &io)
         //     continue;
         // }
 
-        //TODO update the following code
+        // TODO update the following code
         // if (type == "unknown")
         {
             std::cout << "Attribute type is 'unknown' " << std::endl;

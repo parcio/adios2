@@ -40,7 +40,10 @@ cmake ..
 -- Found MPI: TRUE (found version "3.1") found components: C Fortran CXX 
 -- Found ZeroMQ: /usr/lib/libzmq.so (found suitable version "4.3.4", minimum required is "4.1") 
 -- Could NOT find DataSpaces (missing: DATASPACES_VERSION DATASPACES_INCLUDE_DIR DATASPACES_LIBRARIES DSPACES_LIBRARY) (Required is at least version "1.8")
--- Found HDF5: /usr/lib/libhdf5.so;/usr/lib/libsz.so;/usr/lib/libz.so;/usr/lib/libdl.so;/usr/lib/libm.so (found version "1.12.0") found components: C 
+-- Found HDF5: /usr/lib/libhdf5.so;
+/ usr / lib / libsz.so;
+/ usr / lib / libz.so;
+/ usr / lib / libdl.so;/usr/lib/libm.so (found version "1.12.0") found components: C 
 -- Could NOT find IME (missing: IME_LIBRARY IME_INCLUDE_DIR) 
 -- Found Python: /usr/bin/python3.9 (found suitable version "3.9.7", minimum required is "3") found components: Interpreter Development NumPy Development.Module Development.Embed 
 -- Could NOT find PythonModule_mpi4py (missing: PythonModule_mpi4py_PATH) 

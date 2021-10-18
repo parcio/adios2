@@ -53,7 +53,7 @@ void addFieldsForVariableMD(JDBSchema *schema)
     // TODO: needed?
     // j_db_schema_add_field(schema, "typeString", J_DB_TYPE_STRING, NULL);
     // j_db_schema_add_field(schema, "typeLen", J_DB_TYPE_UINT64, NULL);
-    
+
     // TODO: Check whether this renaming screws up anything in init
     j_db_schema_add_field(schema, "typeInt", J_DB_TYPE_UINT32, NULL);
 
@@ -109,7 +109,7 @@ void addFieldsForVariableMD(JDBSchema *schema)
     j_db_schema_add_index(schema, maxFloatIndex, NULL);
     j_db_schema_add_index(schema, minDoubleIndex, NULL);
     j_db_schema_add_index(schema, maxDoubleIndex, NULL);
-     j_db_schema_add_index(schema, meanDoubleIndex, NULL);
+    j_db_schema_add_index(schema, meanDoubleIndex, NULL);
 }
 
 void addFieldsForBlockMD(JDBSchema *schema)
@@ -215,15 +215,15 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
     int shapeID = (int)variable.m_ShapeID;
 
     // const char *type = variable.m_Type.c_str();
-    const int type =  static_cast<int>(variable.m_Type);
+    const int type = static_cast<int>(variable.m_Type);
     size_t shapeSize = variable.m_Shape.size();
     size_t startSize = variable.m_Start.size();
     size_t countSize = variable.m_Count.size();
     size_t numberSteps = currStep + 1;
 
     size_t shapeIDLen = sizeof(int);
-    //TODO: typeLen no longer needed; 
-    //FIXME: wherever used
+    // TODO: typeLen no longer needed;
+    // FIXME: wherever used
     // size_t typeLen = sizeof(variable.m_Type.c_str());
     size_t blocks[numberSteps];
 
@@ -280,22 +280,22 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
 
     j_db_entry_set_field(entry, "shapeID", &shapeID, sizeof(shapeID), NULL);
     // j_db_entry_set_field(entry, "typeString", type, strlen(type) + 1, NULL);
-    j_db_entry_set_field(entry, "typeInt", &type,  sizeof(type), NULL);
+    j_db_entry_set_field(entry, "typeInt", &type, sizeof(type), NULL);
     // TODO typeLen no longer needed
     // j_db_entry_set_field(entry, "typeLen", &typeLen, typeLen, NULL);
 
     j_db_entry_set_field(entry, "shapeSize", &shapeSize, sizeof(shapeSize),
                          NULL);
-    j_db_entry_set_field(entry, "shape", variable.m_Shape.data(), sizeof(variable.m_Shape.data()),
-                         NULL);
+    j_db_entry_set_field(entry, "shape", variable.m_Shape.data(),
+                         sizeof(variable.m_Shape.data()), NULL);
     j_db_entry_set_field(entry, "startSize", &startSize, sizeof(startSize),
                          NULL);
-    j_db_entry_set_field(entry, "start", variable.m_Start.data(), sizeof(variable.m_Start.data()),
-                         NULL);
+    j_db_entry_set_field(entry, "start", variable.m_Start.data(),
+                         sizeof(variable.m_Start.data()), NULL);
     j_db_entry_set_field(entry, "countSize", &countSize, sizeof(countSize),
                          NULL);
-    j_db_entry_set_field(entry, "count", variable.m_Count.data(), sizeof(variable.m_Count.data()),
-                         NULL);
+    j_db_entry_set_field(entry, "count", variable.m_Count.data(),
+                         sizeof(variable.m_Count.data()), NULL);
 
     j_db_entry_set_field(entry, "numberSteps", &numberSteps,
                          sizeof(numberSteps), NULL);
@@ -308,7 +308,8 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
     std::string valueField;
     std::string meanField;
 
-    setMinMaxValueFields(&minField, &maxField, &valueField, &meanField, variable.m_Type);
+    setMinMaxValueFields(&minField, &maxField, &valueField, &meanField,
+                         variable.m_Type);
 
     j_db_entry_set_field(entry, minField.c_str(), &variable.m_Min,
                          sizeof(variable.m_Min), NULL);
@@ -369,16 +370,16 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
 
     j_db_entry_set_field(entry, "shapeSize", &shapeSize, sizeof(shapeSize),
                          NULL);
-    j_db_entry_set_field(entry, "shape", variable.m_Shape.data(), sizeof(variable.m_Shape.data()),
-                         NULL);
+    j_db_entry_set_field(entry, "shape", variable.m_Shape.data(),
+                         sizeof(variable.m_Shape.data()), NULL);
     j_db_entry_set_field(entry, "startSize", &startSize, sizeof(startSize),
                          NULL);
-    j_db_entry_set_field(entry, "start", variable.m_Start.data(), sizeof(variable.m_Start.data()),
-                         NULL);
+    j_db_entry_set_field(entry, "start", variable.m_Start.data(),
+                         sizeof(variable.m_Start.data()), NULL);
     j_db_entry_set_field(entry, "countSize", &countSize, sizeof(countSize),
                          NULL);
-    j_db_entry_set_field(entry, "count", variable.m_Count.data(), sizeof(variable.m_Count.data()),
-                         NULL);
+    j_db_entry_set_field(entry, "count", variable.m_Count.data(),
+                         sizeof(variable.m_Count.data()), NULL);
     j_db_entry_set_field(entry, "memoryStartSize", &memoryStartSize,
                          sizeof(memoryStartSize), NULL);
     j_db_entry_set_field(entry, "memoryStart", blockInfo.MemoryStart.data(),
@@ -395,7 +396,8 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
     std::string valueField;
     std::string meanField;
 
-    setMinMaxValueFields(&minField, &maxField, &valueField, &meanField, variable.m_Type);
+    setMinMaxValueFields(&minField, &maxField, &valueField, &meanField,
+                         variable.m_Type);
 
     j_db_entry_set_field(entry, minField.c_str(), &blockMin, minLen, NULL);
     j_db_entry_set_field(entry, maxField.c_str(), &blockMax, maxLen, NULL);
@@ -422,7 +424,6 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
                          NULL);
     j_db_entry_set_field(entry, "blockID", &blockID, sizeof(blockID), NULL);
 }
-
 
 void InitDBSchemas()
 {
@@ -535,7 +536,8 @@ void DBPutBlockMetadataToJulea(Variable<T> &variable,
                                const std::string varName, size_t step,
                                size_t block,
                                const typename Variable<T>::Info &blockInfo,
-                               T &blockMin, T &blockMax, T &blockMean, uint32_t &entryID)
+                               T &blockMin, T &blockMax, T &blockMean,
+                               uint32_t &entryID)
 {
     int err = 0;
     g_autoptr(JDBSchema) schema = NULL;
@@ -958,8 +960,8 @@ void DBPutAttributeMetadataToJulea(Attribute<T> &attribute,
     template void DBPutBlockMetadataToJulea(                                   \
         Variable<T> &variable, const std::string nameSpace,                    \
         const std::string varName, size_t step, size_t block,                  \
-        const typename Variable<T>::Info &blockInfo, T &blockMin, T &blockMax,  T &blockMean, \
-        uint32_t &entryID);                                                    \
+        const typename Variable<T>::Info &blockInfo, T &blockMin, T &blockMax, \
+        T &blockMean, uint32_t &entryID);                                      \
                                                                                \
     template void DBPutAttributeDataToJulea(Attribute<T> &attribute,           \
                                             const std::string nameSpace);      \

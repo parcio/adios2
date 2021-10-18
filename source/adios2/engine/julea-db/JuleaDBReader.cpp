@@ -155,7 +155,8 @@ void JuleaDBReader::PerformGets()
     for (const std::string &variableName : m_DeferredVariables)
     {
         const adios2::DataType type = m_IO.InquireVariableType(variableName);
-        // std::cout << "the data type in PerfomGets() is: " << type << std::endl;
+        // std::cout << "the data type in PerfomGets() is: " << type <<
+        // std::endl;
 
         if (type == DataType::Compound)
         {
@@ -164,7 +165,7 @@ void JuleaDBReader::PerformGets()
                       << "compound variable type not supported \n";
         }
 #define declare_type(T)                                                        \
-    else if (type == helper::GetDataType<T>())                                     \
+    else if (type == helper::GetDataType<T>())                                 \
     {                                                                          \
         Variable<T> &variable = FindVariable<T>(                               \
             variableName, "in call to PerformGets, EndStep or Close");         \

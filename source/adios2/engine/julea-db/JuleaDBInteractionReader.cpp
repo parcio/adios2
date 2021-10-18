@@ -31,64 +31,65 @@ namespace core
 {
 namespace engine
 {
-                 
+
 void setMinMaxValueFields(std::string *minField, std::string *maxField,
-                          std::string *valueField,  std::string *meanField, const adios2::DataType varType)
+                          std::string *valueField, std::string *meanField,
+                          const adios2::DataType varType)
 {
-    switch(varType) 
+    switch (varType)
     {
-        case adios2::DataType::None:
-            //TODO: Do something?
-            break;
-        case adios2::DataType::Int8:
-        case adios2::DataType::UInt8:
-        case adios2::DataType::Int16:
-        case adios2::DataType::UInt16:
-        case adios2::DataType::Int32:
-            *minField = "min_sint32";
-            *maxField = "max_sint32";
-            *valueField = "value_sint32";
-            break;
-        case adios2::DataType::UInt32:
-            *minField = "min_uint32";
-            *maxField = "max_uint32";
-            *valueField = "value_uint32";
-            break;
-        case adios2::DataType::Int64:
-            *minField = "min_sint64";
-            *maxField = "max_sint64";
-            *valueField = "value_sint64";
-            break;
-        case adios2::DataType::UInt64:
-           *minField = "min_uint64";
-            *maxField = "max_uint64";
-            *valueField = "value_uint64";
-            break;
-        case adios2::DataType::Float:
-            *minField = "min_float32";
-            *maxField = "max_float32";
-            *valueField = "value_float32";
-            break;
-        case adios2::DataType::Double:
-            *minField = "min_float64";
-            *maxField = "max_float64";
-            *valueField = "value_float64";
-            *meanField = "mean_float64";
-            break;
-        case adios2::DataType::LongDouble:
-        case adios2::DataType::FloatComplex:
-        case adios2::DataType::DoubleComplex:
-            *minField = "min_blob";
-            *maxField = "max_blob";
-            *valueField = "value_blob";
-            break;
-        case adios2::DataType::String:
-            *valueField = "value_sint32";
-            break;
-        case adios2::DataType::Compound:
-            std::cout << "Compound variables not supported";
-            break;    
-        }
+    case adios2::DataType::None:
+        // TODO: Do something?
+        break;
+    case adios2::DataType::Int8:
+    case adios2::DataType::UInt8:
+    case adios2::DataType::Int16:
+    case adios2::DataType::UInt16:
+    case adios2::DataType::Int32:
+        *minField = "min_sint32";
+        *maxField = "max_sint32";
+        *valueField = "value_sint32";
+        break;
+    case adios2::DataType::UInt32:
+        *minField = "min_uint32";
+        *maxField = "max_uint32";
+        *valueField = "value_uint32";
+        break;
+    case adios2::DataType::Int64:
+        *minField = "min_sint64";
+        *maxField = "max_sint64";
+        *valueField = "value_sint64";
+        break;
+    case adios2::DataType::UInt64:
+        *minField = "min_uint64";
+        *maxField = "max_uint64";
+        *valueField = "value_uint64";
+        break;
+    case adios2::DataType::Float:
+        *minField = "min_float32";
+        *maxField = "max_float32";
+        *valueField = "value_float32";
+        break;
+    case adios2::DataType::Double:
+        *minField = "min_float64";
+        *maxField = "max_float64";
+        *valueField = "value_float64";
+        *meanField = "mean_float64";
+        break;
+    case adios2::DataType::LongDouble:
+    case adios2::DataType::FloatComplex:
+    case adios2::DataType::DoubleComplex:
+        *minField = "min_blob";
+        *maxField = "max_blob";
+        *valueField = "value_blob";
+        break;
+    case adios2::DataType::String:
+        *valueField = "value_sint32";
+        break;
+    case adios2::DataType::Compound:
+        std::cout << "Compound variables not supported";
+        break;
+    }
 }
 
 void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
@@ -100,7 +101,8 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
     // std::cout << "----- InitVariable --- " << varName << std::endl;
     const adios2::DataType type(io->InquireVariableType(varName));
 
-    // std::cout << "type(io->InquireVariableType(varName): " << type << std::endl;
+    // std::cout << "type(io->InquireVariableType(varName): " << type <<
+    // std::endl;
 
     int err = 0;
     uint32_t entryID = 0;
@@ -143,87 +145,89 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
     else if (type == helper::GetDataType<T>())                                 \
     {                                                                          \
         auto var = io->InquireVariable<T>(varName);                            \
-        if (var)\
-        {\
-        var->m_ShapeID = shapeID;                                              \
-        for (size_t i = 0; i < numberSteps; i++)                               \
+        if (var)                                                               \
         {                                                                      \
-            for (size_t j = 0; j < blocks[i]; j++)                             \
+            var->m_ShapeID = shapeID;                                          \
+            for (size_t i = 0; i < numberSteps; i++)                           \
             {                                                                  \
-                step = i;                                                      \
-                block = j;                                                     \
-                g_autoptr(JDBSelector) selector = j_db_selector_new(           \
-                    blockSchema, J_DB_SELECTOR_MODE_AND, NULL);                \
-                j_db_selector_add_field(                                       \
-                    selector, "file", J_DB_SELECTOR_OPERATOR_EQ,               \
-                    nameSpace.c_str(), strlen(nameSpace.c_str()) + 1, NULL);   \
-                j_db_selector_add_field(                                       \
-                    selector, "variableName", J_DB_SELECTOR_OPERATOR_EQ,       \
-                    varName.c_str(), strlen(varName.c_str()) + 1, NULL);       \
-                j_db_selector_add_field(selector, "step",                      \
-                                        J_DB_SELECTOR_OPERATOR_EQ, &step,      \
-                                        sizeof(step), NULL);                   \
-                j_db_selector_add_field(selector, "block",                     \
-                                        J_DB_SELECTOR_OPERATOR_EQ, &block,     \
-                                        sizeof(block), NULL);                  \
-                g_autoptr(JDBIterator) iterator =                              \
-                    j_db_iterator_new(blockSchema, selector, NULL);            \
-                while (j_db_iterator_next(iterator, NULL))                     \
+                for (size_t j = 0; j < blocks[i]; j++)                         \
                 {                                                              \
-                    j_db_iterator_get_field(iterator, "_id", &jdbType,         \
-                                            (gpointer *)&tmpID, &db_length,    \
-                                            NULL);                             \
-                    entryID = *tmpID;                                          \
+                    step = i;                                                  \
+                    block = j;                                                 \
+                    g_autoptr(JDBSelector) selector = j_db_selector_new(       \
+                        blockSchema, J_DB_SELECTOR_MODE_AND, NULL);            \
+                    j_db_selector_add_field(                                   \
+                        selector, "file", J_DB_SELECTOR_OPERATOR_EQ,           \
+                        nameSpace.c_str(), strlen(nameSpace.c_str()) + 1,      \
+                        NULL);                                                 \
+                    j_db_selector_add_field(                                   \
+                        selector, "variableName", J_DB_SELECTOR_OPERATOR_EQ,   \
+                        varName.c_str(), strlen(varName.c_str()) + 1, NULL);   \
+                    j_db_selector_add_field(selector, "step",                  \
+                                            J_DB_SELECTOR_OPERATOR_EQ, &step,  \
+                                            sizeof(step), NULL);               \
+                    j_db_selector_add_field(selector, "block",                 \
+                                            J_DB_SELECTOR_OPERATOR_EQ, &block, \
+                                            sizeof(block), NULL);              \
+                    g_autoptr(JDBIterator) iterator =                          \
+                        j_db_iterator_new(blockSchema, selector, NULL);        \
+                    while (j_db_iterator_next(iterator, NULL))                 \
+                    {                                                          \
+                        j_db_iterator_get_field(iterator, "_id", &jdbType,     \
+                                                (gpointer *)&tmpID,            \
+                                                &db_length, NULL);             \
+                        entryID = *tmpID;                                      \
+                    }                                                          \
+                    var->m_AvailableStepBlockIndexOffsets[i + 1].push_back(    \
+                        entryID);                                              \
+                    g_free(tmpID);                                             \
                 }                                                              \
-                var->m_AvailableStepBlockIndexOffsets[i + 1].push_back(        \
-                    entryID);                                                  \
-                g_free(tmpID);                                                 \
+                var->m_AvailableStepsCount++;                                  \
             }                                                                  \
-            var->m_AvailableStepsCount++;                                      \
+                                                                               \
+            setMinMaxValueFields(&minField, &maxField, &valueField,            \
+                                 &meanField, type);                            \
+            g_autoptr(JDBSelector) selector =                                  \
+                j_db_selector_new(varSchema, J_DB_SELECTOR_MODE_AND, NULL);    \
+                                                                               \
+            j_db_selector_add_field(                                           \
+                selector, "file", J_DB_SELECTOR_OPERATOR_EQ,                   \
+                nameSpace.c_str(), strlen(nameSpace.c_str()) + 1, NULL);       \
+            j_db_selector_add_field(                                           \
+                selector, "variableName", J_DB_SELECTOR_OPERATOR_EQ,           \
+                varName.c_str(), strlen(varName.c_str()) + 1, NULL);           \
+                                                                               \
+            g_autoptr(JDBIterator) iterator =                                  \
+                j_db_iterator_new(varSchema, selector, NULL);                  \
+            while (j_db_iterator_next(iterator, NULL))                         \
+            {                                                                  \
+                T *min;                                                        \
+                T *max;                                                        \
+                j_db_iterator_get_field(iterator, minField.c_str(), &jdbType,  \
+                                        (gpointer *)&min, &db_length, NULL);   \
+                var->m_Min = *min;                                             \
+                j_db_iterator_get_field(iterator, maxField.c_str(), &jdbType,  \
+                                        (gpointer *)&max, &db_length, NULL);   \
+                var->m_Max = *max;                                             \
+                g_free(min);                                                   \
+                g_free(max);                                                   \
+            }                                                                  \
+                                                                               \
+            var->m_AvailableStepsStart = 0;                                    \
+            var->m_StepsStart = 0;                                             \
+            var->m_Engine = &engine;                                           \
+            var->m_FirstStreamingStep = true;                                  \
+            var->m_ReadAsJoined = isReadAsJoined;                              \
+            var->m_ReadAsLocalValue = isReadAsLocalValue;                      \
+            var->m_RandomAccess = isRandomAccess;                              \
+            var->m_SingleValue = isSingleValue;                                \
+                                                                               \
+            if (var->m_ShapeID == ShapeID::LocalValue)                         \
+            {                                                                  \
+                var->m_ShapeID = ShapeID::GlobalArray;                         \
+                var->m_SingleValue = true;                                     \
+            }                                                                  \
         }                                                                      \
-                                                                               \
-        setMinMaxValueFields(&minField, &maxField, &valueField, &meanField, type);\
-        g_autoptr(JDBSelector) selector =                                      \
-            j_db_selector_new(varSchema, J_DB_SELECTOR_MODE_AND, NULL);        \
-                                                                               \
-        j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,   \
-                                nameSpace.c_str(),                             \
-                                strlen(nameSpace.c_str()) + 1, NULL);          \
-        j_db_selector_add_field(selector, "variableName",                      \
-                                J_DB_SELECTOR_OPERATOR_EQ, varName.c_str(),    \
-                                strlen(varName.c_str()) + 1, NULL);            \
-                                                                               \
-        g_autoptr(JDBIterator) iterator =                                      \
-            j_db_iterator_new(varSchema, selector, NULL);                      \
-        while (j_db_iterator_next(iterator, NULL))                             \
-        {                                                                      \
-            T *min;                                                            \
-            T *max;                                                            \
-            j_db_iterator_get_field(iterator, minField.c_str(), &jdbType,      \
-                                    (gpointer *)&min, &db_length, NULL); \
-            var->m_Min = *min;                                                 \
-            j_db_iterator_get_field(iterator, maxField.c_str(), &jdbType,      \
-                                    (gpointer *)&max, &db_length, NULL);       \
-            var->m_Max = *max;                                                 \
-            g_free(min);                                                       \
-            g_free(max);                                                       \
-        }                                                                      \
-                                                                               \
-        var->m_AvailableStepsStart = 0;                                        \
-        var->m_StepsStart = 0;                                                 \
-        var->m_Engine = &engine;                                               \
-        var->m_FirstStreamingStep = true;                                      \
-        var->m_ReadAsJoined = isReadAsJoined;                                  \
-        var->m_ReadAsLocalValue = isReadAsLocalValue;                          \
-        var->m_RandomAccess = isRandomAccess;                                  \
-        var->m_SingleValue = isSingleValue;                                    \
-                                                                               \
-        if (var->m_ShapeID == ShapeID::LocalValue)                             \
-        {                                                                      \
-            var->m_ShapeID = ShapeID::GlobalArray;                             \
-            var->m_SingleValue = true;                                         \
-        }                                                                      \
-        }\
     }
     ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 #undef declare_type
@@ -241,16 +245,15 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
     j_semantics_unref(semantics);
 }
 
-
 void DBDefineVariableInEngineIO(core::IO *io, const std::string varName,
-                                adios2::DataType type, ShapeID shapeID, Dims shape,
-                                Dims start, Dims count, bool constantDims,
-                                bool isLocalValue)
+                                adios2::DataType type, ShapeID shapeID,
+                                Dims shape, Dims start, Dims count,
+                                bool constantDims, bool isLocalValue)
 {
     // variable->m_AvailableShapes[characteristics.Statistics.Step] = \
                 //     variable->m_Shape;                                         \
 
-    std::cout << "--- DBDefineVariableInEngineIO" <<std::endl;
+    std::cout << "--- DBDefineVariableInEngineIO" << std::endl;
     if (type == DataType::Compound)
     {
     }
@@ -262,24 +265,24 @@ void DBDefineVariableInEngineIO(core::IO *io, const std::string varName,
             switch (shapeID)                                                   \
             {                                                                  \
             case (ShapeID::GlobalValue): {                                     \
-                std::cout << "ShapeID = GlobalValue" << std::endl;\
+                std::cout << "ShapeID = GlobalValue" << std::endl;             \
                 variable = &io->DefineVariable<T>(varName);                    \
                 break;                                                         \
             }                                                                  \
             case (ShapeID::GlobalArray): {                                     \
-                std::cout << "ShapeID = GlobalArray" << std::endl;\
+                std::cout << "ShapeID = GlobalArray" << std::endl;             \
                 variable = &io->DefineVariable<T>(                             \
                     varName, shape, Dims(shape.size(), 0), shape);             \
                 break;                                                         \
             }                                                                  \
             case (ShapeID::LocalValue): {                                      \
-                std::cout << "ShapeID = LocalValue" << std::endl;\
+                std::cout << "ShapeID = LocalValue" << std::endl;              \
                 variable = &io->DefineVariable<T>(varName, {1}, {0}, {1});     \
                 variable->m_ShapeID = ShapeID::LocalValue;                     \
                 break;                                                         \
             }                                                                  \
             case (ShapeID::LocalArray): {                                      \
-                std::cout << "ShapeID = LocalArray" << std::endl;\
+                std::cout << "ShapeID = LocalArray" << std::endl;              \
                 variable = &io->DefineVariable<T>(varName, {}, {}, count);     \
                 break;                                                         \
             }                                                                  \
@@ -614,11 +617,11 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
         j_db_iterator_get_field(iterator, "shapeID", &type,
                                 (gpointer *)&shapeID, &db_length, NULL);
         // j_db_iterator_get_field(iterator, "typeString", &type,
-                                // (gpointer *)&varTypePtr, &db_length, NULL);
+        // (gpointer *)&varTypePtr, &db_length, NULL);
         // std::string varType(varTypePtr);
 
         // j_db_iterator_get_field(iterator, "typeInt", &type,
-                                // (gpointer *)&typeInt, &db_length, NULL);
+        // (gpointer *)&typeInt, &db_length, NULL);
         j_db_iterator_get_field(iterator, "typeInt", &type,
                                 (gpointer *)&varTypeAsInt, &db_length, NULL);
 
@@ -707,14 +710,17 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
         //     std::cout << "\n FIXME: time\n" << std::endl;
         // }
 
-        adios2::DataType adiosType{static_cast<adios2::DataType>(*varTypeAsInt)};
+        adios2::DataType adiosType{
+            static_cast<adios2::DataType>(*varTypeAsInt)};
 
         std::cout << "adiosType: " << adiosType << std::endl;
 
-        // DBDefineVariableInEngineIO(io, varName, typeInt, *shapeID, shape, start,
-        // DBDefineVariableInEngineIO(io, varName, varTypeAsInt, *shapeID, shape, start,
-        DBDefineVariableInEngineIO(io, varName, adiosType, *shapeID, shape, start,
-                                   count, *isConstantDims, *isSingleValue);
+        // DBDefineVariableInEngineIO(io, varName, typeInt, *shapeID, shape,
+        // start, DBDefineVariableInEngineIO(io, varName, varTypeAsInt,
+        // *shapeID, shape, start,
+        DBDefineVariableInEngineIO(io, varName, adiosType, *shapeID, shape,
+                                   start, count, *isConstantDims,
+                                   *isSingleValue);
         // DBDefineVariableInInit(io, varName, varType, shape, start, count,
         //                        *isConstantDims, *isSingleValue);
         DBInitVariable(io, engine, nameSpace, varName, blocks, *numberSteps,
@@ -949,7 +955,8 @@ void DBGetBlockMetadataNEW(Variable<T> &variable,
         std::string valueField;
         std::string meanField;
 
-        setMinMaxValueFields(&minField, &maxField, &valueField, &meanField, variable.m_Type);
+        setMinMaxValueFields(&minField, &maxField, &valueField, &meanField,
+                             variable.m_Type);
 
         j_db_iterator_get_field(iterator, minField.c_str(), &type,
                                 (gpointer *)&min, &db_length, NULL);
@@ -1211,9 +1218,10 @@ DBGetBlockMetadata(const core::Variable<T> &variable,
         //     maxField = "max_blob";
         //     valueField = "value_blob";
         // }
-        setMinMaxValueFields(&minField, &maxField, &valueField, &meanField, variable.m_Type);
-        // setMinMaxValueFields(&minField, &maxField, &valueField, &meanField, varType);
-        // std::cout << "minField: " << minField << std::endl;
+        setMinMaxValueFields(&minField, &maxField, &valueField, &meanField,
+                             variable.m_Type);
+        // setMinMaxValueFields(&minField, &maxField, &valueField, &meanField,
+        // varType); std::cout << "minField: " << minField << std::endl;
         // std::cout << "maxField: " << maxField << std::endl;
         // std::cout << "valueField: " << valueField << std::endl;
         // std::cout << "varType: " << varType << std::endl;
