@@ -98,7 +98,7 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
                     bool isReadAsLocalValue, bool isRandomAccess,
                     bool isSingleValue)
 {
-    // std::cout << "----- InitVariable --- " << varName << std::endl;
+    std::cout << "----- InitVariable --- " << varName << std::endl;
     const adios2::DataType type(io->InquireVariableType(varName));
 
     // std::cout << "type(io->InquireVariableType(varName): " << type <<
@@ -626,7 +626,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
                                 (gpointer *)&varTypeAsInt, &db_length, NULL);
 
         // std::cout << "typeInt: " << varTypeAsInt << std::endl;
-        std::cout << "typeInt: " << *varTypeAsInt << std::endl;
+        // std::cout << "typeInt: " << *varTypeAsInt << std::endl;
 
         j_db_iterator_get_field(iterator, "shapeSize", &type,
                                 (gpointer *)&shapeSize, &db_length, NULL);
@@ -713,7 +713,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
         adios2::DataType adiosType{
             static_cast<adios2::DataType>(*varTypeAsInt)};
 
-        std::cout << "adiosType: " << adiosType << std::endl;
+        // std::cout << "adiosType: " << adiosType << std::endl;
 
         // DBDefineVariableInEngineIO(io, varName, typeInt, *shapeID, shape,
         // start, DBDefineVariableInEngineIO(io, varName, varTypeAsInt,
@@ -1316,9 +1316,9 @@ void DBGetVariableDataFromJulea(Variable<T> &variable, T *data,
 
     if (bytesRead == dataSize)
     {
-        std::cout << "Data[0] = " << data[0] << std::endl;
-        std::cout << "Data[1] = " << data[1] << std::endl;
-        std::cout << "Data[2] = " << data[2] << std::endl;
+        // std::cout << "Data[0] = " << data[0] << std::endl;
+        // std::cout << "Data[1] = " << data[1] << std::endl;
+        // std::cout << "Data[2] = " << data[2] << std::endl;
         // std::cout << "++ Julea Interaction Reader: Read data for variable "
         // << varName << std::endl;
     }

@@ -254,7 +254,6 @@ void JuleaDBReader::Init()
 // template <class T>
 void JuleaDBReader::InitVariables()
 {
-
     InitVariablesFromDB(m_Name, &m_IO, *this);
 }
 

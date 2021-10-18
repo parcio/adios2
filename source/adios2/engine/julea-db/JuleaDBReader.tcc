@@ -368,11 +368,39 @@ void JuleaDBReader::ReadVariableBlocks(Variable<T> &variable)
                     // std::cout << "stepBlockID: " << stepBlockID << std::endl;
 
                     // variable.m_AvailableStepBlockIndexOffsets
+
+                    //FIXME: 18.10.2021
+                    //is there still a difference whether data is read by bpls or a "normal" read call?
+                    // there was a difference in how some ID was increased. No idea whether this is still the case
                     if (m_UseKeysForBPLS)
                     {
+                        // std::cout << "--- m_UseKeysForBPLS ---" << std::endl;
                         // DBGetVariableDataFromJulea(
                         //     variable, data, nameSpace, dataSize,
                         //     variable.m_StepsStart, variable.m_BlockID);
+
+                        //TODO: the following is just the else copied
+                        dataSize = subStreamBoxInfo.Seeks.second -
+                                   subStreamBoxInfo.Seeks.first;
+                        // std::cout << "dataSize: " << dataSize << std::endl;
+
+                        // T data[dataSize];
+                        std::vector<T> data = std::vector<T>(dataSize);
+                        DBGetVariableDataFromJulea(
+                            variable, data.data(), nameSpace, offset, dataSize,
+                            subStreamBoxInfo.SubStreamID);
+
+                        const Dims blockInfoStart =
+                            (variable.m_ShapeID == ShapeID::LocalArray &&
+                             blockInfo.Start.empty())
+                                ? Dims(blockInfo.Count.size(), 0)
+                                : blockInfo.Start;
+
+                        helper::ClipContiguousMemory(
+                            blockInfo.Data, blockInfoStart, blockInfo.Count,
+                            (char *)data.data(), subStreamBoxInfo.BlockBox,
+                            subStreamBoxInfo.IntersectionBox, true, false,
+                            false);
                     }
                     else
                     {
