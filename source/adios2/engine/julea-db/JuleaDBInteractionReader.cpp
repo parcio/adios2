@@ -31,74 +31,10 @@ namespace core
 {
 namespace engine
 {
-
-// void setMinMaxValueFields(std::string *minField, std::string *maxField,
-//                           std::string *valueField,  std::string *meanField, const char *varType)
-// {
-
-//         std::cout << "just some output to see if functions is called" << std::endl;
-// //     if ((strcmp(varType, "char") == 0) || (strcmp(varType, "int8_t") == 0) ||
-// //         (strcmp(varType, "uint8_t") == 0) ||
-// //         (strcmp(varType, "int16_t") == 0) ||
-// //         (strcmp(varType, "uint16_t") == 0) || (strcmp(varType, "int32_t") == 0))
-// //     {
-// //         *minField = "min_sint32";
-// //         *maxField = "max_sint32";
-// //         *valueField = "value_sint32";
-// //     }
-// //     else if (strcmp(varType, "uint32_t") == 0)
-// //     {
-// //         *minField = "min_uint32";
-// //         *maxField = "max_uint32";
-// //         *valueField = "value_uint32";
-// //     }
-// //     else if (strcmp(varType, "int64_t") == 0)
-// //     {
-// //         *minField = "min_sint64";
-// //         *maxField = "max_sint64";
-// //         *valueField = "value_sint64";
-// //     }
-// //     else if (strcmp(varType, "uint64_t") == 0)
-// //     {
-// //         *minField = "min_uint64";
-// //         *maxField = "max_uint64";
-// //         *valueField = "value_uint64";
-// //     }
-// //     else if (strcmp(varType, "float") == 0)
-// //     {
-// //         *minField = "min_float32";
-// //         *maxField = "max_float32";
-// //         *valueField = "value_float32";
-// //     }
-// //     else if (strcmp(varType, "double") == 0)
-// //     {
-// //         *minField = "min_float64";
-// //         *maxField = "max_float64";
-// //         *valueField = "value_float64";
-// //         *meanField = "mean_float64";
-// //     }
-// //     else if (strcmp(varType, "string") == 0)
-// //     {
-// //         *valueField = "value_sint32";
-// //     }
-
-// //     else if ((strcmp(varType, "long double") == 0) ||
-// //              (strcmp(varType, "float complex") == 0) ||
-// //              (strcmp(varType, "double complex") == 0))
-// //     {
-// //         *minField = "min_blob";
-// //         *maxField = "max_blob";
-// //         *valueField = "value_blob";
-// //     }
-// }
-
-// void setMinMaxValueFields(std::string *minField, std::string *maxField,
-                        //   std::string *valueField,  std::string *meanField, const int varType)                          
+                 
 void setMinMaxValueFields(std::string *minField, std::string *maxField,
                           std::string *valueField,  std::string *meanField, const adios2::DataType varType)
 {
-        // std::cout << "just some output" << std::endl;
-//     // switch(varType) 
     switch(varType) 
     {
         case adios2::DataType::None:
