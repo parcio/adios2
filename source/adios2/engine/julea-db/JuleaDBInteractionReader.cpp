@@ -241,10 +241,7 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
     j_semantics_unref(semantics);
 }
 
-// void DBDefineVariableInEngineIO(core::IO *io, const std::string varName,
-//                                 std::string type, ShapeID shapeID, Dims shape,
-//                                 Dims start, Dims count, bool constantDims,
-//                                 bool isLocalValue)
+
 void DBDefineVariableInEngineIO(core::IO *io, const std::string varName,
                                 adios2::DataType type, ShapeID shapeID, Dims shape,
                                 Dims start, Dims count, bool constantDims,
