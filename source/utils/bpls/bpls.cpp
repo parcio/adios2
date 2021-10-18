@@ -1022,6 +1022,7 @@ template <class T>
 int printVariableInfo(core::Engine *fp, core::IO *io,
                       core::Variable<T> *variable)
 {
+    std::cout << "printVariableInfo" << std::endl;
     size_t nsteps = variable->GetAvailableStepsCount();
     if (timestep)
     {
@@ -1043,6 +1044,7 @@ int printVariableInfo(core::Engine *fp, core::IO *io,
 
         if (variable->m_ShapeID == ShapeID::GlobalArray)
         {
+            std::cout << "is Global Array" << std::endl;
             Dims d = get_global_array_signature(fp, io, variable);
             fprintf(outf, "{%s",
                     d[0] > 0 ? std::to_string(d[0]).c_str() : "__");
@@ -1090,6 +1092,7 @@ int printVariableInfo(core::Engine *fp, core::IO *io,
             if (timestep == false)
             {
                 fprintf(outf, " = ");
+                std::cout << "min:" << std::endl;
                 print_data(&variable->m_Min, 0, adiosvartype, false);
                 fprintf(outf, " / ");
                 print_data(&variable->m_Max, 0, adiosvartype, false);
@@ -1794,6 +1797,7 @@ int getTypeInfo(DataType adiosvartype, int *elemsize)
 template <class T>
 int readVar(core::Engine *fp, core::IO *io, core::Variable<T> *variable)
 {
+    std::cout << "--- ReadVar ---" << std::endl;
     int i, j;
     uint64_t start_t[MAX_DIMS],
         count_t[MAX_DIMS]; // processed <0 values in start/count
@@ -2075,6 +2079,8 @@ int readVar(core::Engine *fp, core::IO *io, core::Variable<T> *variable)
         }
 
         dataV.resize(variable->SelectionSize());
+
+        std::cout << "Get the data" << std::endl;
         fp->Get(*variable, dataV, adios2::Mode::Sync);
 
         // print slice
@@ -2121,6 +2127,7 @@ int readVarBlock(core::Engine *fp, core::IO *io, core::Variable<T> *variable,
                  size_t step, size_t blockid,
                  typename core::Variable<T>::Info &blockinfo)
 {
+    std::cout << "--- readVarBlock --- " << std::endl;
     int i, j;
     uint64_t start_t[MAX_DIMS],
         count_t[MAX_DIMS]; // processed <0 values in start/count
@@ -2338,6 +2345,7 @@ int readVarBlock(core::Engine *fp, core::IO *io, core::Variable<T> *variable,
         }
 
         dataV.resize(variable->SelectionSize());
+         std::cout << "Get the data" << std::endl;
         fp->Get(*variable, dataV, adios2::Mode::Sync);
         // print slice
         print_dataset(dataV.data(), variable->m_Type, s, c, ndim, ndigits_dims);
