@@ -20,6 +20,7 @@ namespace core
 {
 namespace engine
 {
+
 void setMinMaxValueFields(std::string *minField, std::string *maxField,
                           std::string *valueField, std::string *meanField, const adios2::DataType varType);
 

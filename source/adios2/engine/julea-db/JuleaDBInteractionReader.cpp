@@ -97,10 +97,10 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
                     bool isReadAsLocalValue, bool isRandomAccess,
                     bool isSingleValue)
 {
-    std::cout << "----- InitVariable --- " << varName << std::endl;
+    // std::cout << "----- InitVariable --- " << varName << std::endl;
     const adios2::DataType type(io->InquireVariableType(varName));
 
-    std::cout << "type(io->InquireVariableType(varName): " << type << std::endl;
+    // std::cout << "type(io->InquireVariableType(varName): " << type << std::endl;
 
     int err = 0;
     uint32_t entryID = 0;
