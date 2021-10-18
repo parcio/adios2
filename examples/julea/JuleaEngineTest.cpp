@@ -33,6 +33,7 @@ void TestWriteVariableSync()
     /*** IO class object: settings and factory of Settings: Variables,
      * Parameters, Transports, and Execution: Engines */
     adios2::IO juleaIO = adios.DeclareIO("juleaIO");
+    
     // juleaIO.SetEngine("julea-kv");
     juleaIO.SetEngine("julea-db");
     // juleaIO.SetEngine("bp3");
@@ -40,13 +41,14 @@ void TestWriteVariableSync()
     /** global array: name, { shape (total dimensions) }, { start (local) },
      * { count (local) }, all are constant dimensions */
     adios2::Variable<float> juleaFloats = juleaIO.DefineVariable<float>(
-        "juleaFloats", {}, {}, {Nx}, adios2::ConstantDims);
+        "juleaFloats", {Nx}, {0}, {Nx}, adios2::ConstantDims);
+        
     // adios2::Variable<float> juleaFloats2 = juleaIO.DefineVariable<float>(
     // "juleaFloats2", {}, {}, {Nx}, adios2::ConstantDims);
     adios2::Variable<int> juleaInts = juleaIO.DefineVariable<int>(
-        "juleaInts", {}, {}, {Nx2}, adios2::ConstantDims);
+        "juleaInts", {Nx2}, {0}, {Nx2}, adios2::ConstantDims);
     adios2::Variable<int> juleaInts2 = juleaIO.DefineVariable<int>(
-        "juleaInts2", {}, {}, {Nx3}, adios2::ConstantDims);
+        "juleaInts2", {Nx3}, {0}, {Nx3}, adios2::ConstantDims);
 
     /** Engine derived class, spawned to start IO operations */
     adios2::Engine juleaWriter = juleaIO.Open("testFile", adios2::Mode::Write);
@@ -75,8 +77,8 @@ void TestReadVariableSync()
     // -42, -42};
     std::vector<int> myInts = {113, -42, -42, -42, -42,
                                -42, -42, -42, -42, -42};
-    // std::vector<int> myInts2 = {-42, -42, -42, -42, -42, -42, -42, -42, -42,
-    // -42};
+    std::vector<int> myInts2 = {-42, -42, -42, -42, -42, -42, -42, -42, -42,
+    -42};
     const std::size_t Nx = myFloats.size();
     const std::size_t Nx2 = myInts.size();
 
@@ -86,6 +88,7 @@ void TestReadVariableSync()
     /*** IO class object: settings and factory of Settings: Variables,
      * Parameters, Transports, and Execution: Engines */
     adios2::IO juleaIO = adios.DeclareIO("juleaIO");
+
     // juleaIO.SetEngine("julea-kv");
     juleaIO.SetEngine("julea-db");
     // juleaIO.SetEngine("bp3");
@@ -106,8 +109,8 @@ void TestReadVariableSync()
     // adios2::Variable<float> juleaFloats2 = juleaIO.InquireVariable<float>(
     // "juleaFloats2");
     adios2::Variable<int> juleaInts = juleaIO.InquireVariable<int>("juleaInts");
-    // adios2::Variable<int> juleaInts2 = juleaIO.InquireVariable<int>(
-    // "juleaInts2");
+    adios2::Variable<int> juleaInts2 = juleaIO.InquireVariable<int>(
+    "juleaInts2");
 
     if (juleaFloats)
     {
@@ -118,7 +121,7 @@ void TestReadVariableSync()
         // myFloats2.data(),adios2::Mode::Sync);
         juleaReader.Get<int>(juleaInts, myInts.data(), adios2::Mode::Sync);
         // std::cout << "Data : " << juleaFloats.GetData() << std::endl;
-        // juleaReader.Get<int>(juleaInts2, myInts2.data(),adios2::Mode::Sync);
+        juleaReader.Get<int>(juleaInts2, myInts2.data(),adios2::Mode::Sync);
     }
 
     // std::cout << "Data: " << juleaFloats.Name() << std::endl;
@@ -131,8 +134,18 @@ void TestReadVariableSync()
         std::cout << "juleaFloats contains now: " << myFloats[i] << std::endl;
         // std::cout << "juleaFloats2 contains now: " << myFloats2[i] <<
         // std::endl;
+    }
+    std::cout << "\n____________________________" << std::endl;
+
+    for (int i = 0; i < 10; i++)
+    {
         std::cout << "juleaInts contains now: " << myInts[i] << std::endl;
-        // std::cout << "juleaInts2 contains now: " << myInts2[i] << std::endl;
+    }
+    std::cout << "\n____________________________" << std::endl;
+
+    for (int i = 0; i < 10; i++)
+    {
+        std::cout << "juleaInts2 contains now: " << myInts2[i] << std::endl;
     }
     std::cout << std::endl;
     /** Create bp file, engine becomes unreachable after this*/
