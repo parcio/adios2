@@ -308,6 +308,10 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
     std::string valueField;
     std::string meanField;
 
+    std::cout << "writing min: " << &variable.m_Min << std::endl;
+    std::cout << "writing min: " << variable.m_Min << std::endl;
+    std::cout << "writing max: " << &variable.m_Max << std::endl;
+
     setMinMaxValueFields(&minField, &maxField, &valueField, &meanField,
                          variable.m_Type);
 

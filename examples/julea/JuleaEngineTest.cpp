@@ -20,7 +20,7 @@ void TestWriteVariableSync()
     /** Application variable */
     std::vector<float> myFloats = {12345.6, 1, 2, 3, 4, 5, 6, 7, 8, -42.333};
     // std::vector<float> myFloats2 = {-6666.6, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    std::vector<int> myInts = {555, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    std::vector<int> myInts = {333, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     std::vector<int> myInts2 = {777, 42, 4242, 424242};
     const std::size_t Nx = myFloats.size();
     const std::size_t Nx2 = myInts.size();
