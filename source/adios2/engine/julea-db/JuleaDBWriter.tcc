@@ -31,7 +31,7 @@ namespace engine
 
 template <class T>
 void JuleaDBSetMinMax(Variable<T> &variable, const T *data, T &blockMin,
-                      T &blockMax, T &blockMean)
+                      T &blockMax, T &blockMean, size_t currentStep, size_t currentBlockID)
 {
     T min = 0;
     T max = 0;
@@ -47,26 +47,33 @@ void JuleaDBSetMinMax(Variable<T> &variable, const T *data, T &blockMin,
     }
 
     // TODO: cast to T ?
-
     mean = sum / (double)number_elements;
 
     blockMin = min;
     blockMax = max;
     blockMean = mean;
 
-    std::cout << "blockMin: " << min << std::endl;
-    std::cout << "variable.m_Min: " << variable.m_Min << std::endl;
+    //TODO: check whether this is incorrect
+    // there may be some cases where this is not working
+    /*  the global min and max will be set to the first min and max, so
+      that they are not still initialized with something like 0*/
+    if ((currentStep == 0) && (currentBlockID == 0))
+    {
+        variable.m_Min = min;
+        variable.m_Max = max;
+    }
+
     if (min < variable.m_Min)
     {
-        std::cout << "updated global min" << std::endl;
+        // std::cout << "updated global min" << std::endl;
         variable.m_Min = min;
     }
     if (max > variable.m_Max)
     {
-        std::cout << "updated global max" << std::endl;
+        // std::cout << "updated global max" << std::endl;
         variable.m_Max = max;
     }
-    if (true)
+    if (false)
     {
         std::cout << "min: " << min << std::endl;
         std::cout << "global min: " << variable.m_Min << std::endl;
@@ -79,7 +86,7 @@ template <>
 void JuleaDBSetMinMax<std::string>(Variable<std::string> &variable,
                                    const std::string *data,
                                    std::string &blockMin, std::string &blockMax,
-                                   std::string &blockMean)
+                                   std::string &blockMean, size_t currentStep, size_t currentBlockID)
 {
     // TODO implement?
 }
@@ -88,7 +95,7 @@ template <>
 void JuleaDBSetMinMax<std::complex<float>>(
     Variable<std::complex<float>> &variable, const std::complex<float> *data,
     std::complex<float> &blockMin, std::complex<float> &blockMax,
-    std::complex<float> &blockMean)
+    std::complex<float> &blockMean, size_t currentStep, size_t currentBlockID)
 {
     // TODO implement?
 }
@@ -97,7 +104,7 @@ template <>
 void JuleaDBSetMinMax<std::complex<double>>(
     Variable<std::complex<double>> &variable, const std::complex<double> *data,
     std::complex<double> &blockMin, std::complex<double> &blockMax,
-    std::complex<double> &blockMean)
+    std::complex<double> &blockMean, size_t currentStep, size_t currentBlockID)
 {
     // TODO implement?
 }
@@ -162,7 +169,7 @@ void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     T blockMean;
     uint32_t entryID = 0;
 
-    JuleaDBSetMinMax(variable, data, blockMin, blockMax, blockMean);
+    JuleaDBSetMinMax(variable, data, blockMin, blockMax, blockMean, m_CurrentStep, m_CurrentBlockID);
 
     auto stepBlockID =
         g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);

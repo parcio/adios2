@@ -203,15 +203,12 @@ void DBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
             {                                                                  \
                 T *min;                                                        \
                 T *max;                                                        \
-                j_db_iterator_get_field(iterator, maxField.c_str(), &jdbType,  \
-                                        (gpointer *)&max, &db_length, NULL);   \
-                var->m_Max = *max;                                             \
-                std::cout << "max: " << *max << std::endl;\
                 j_db_iterator_get_field(iterator, minField.c_str(), &jdbType,  \
                                         (gpointer *)&min, &db_length, NULL);   \
                 var->m_Min = *min;                                             \
-                std::cout << "minField.c_str()" << minField.c_str() << std::endl;\
-                std::cout << "min: " << *min << std::endl;\
+                j_db_iterator_get_field(iterator, maxField.c_str(), &jdbType,  \
+                                        (gpointer *)&max, &db_length, NULL);   \
+                var->m_Max = *max;                                             \
                 g_free(min);                                                   \
                 g_free(max);                                                   \
             }                                                                  \
