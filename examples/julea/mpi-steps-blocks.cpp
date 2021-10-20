@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &nproc);
 #endif
-    const int NSTEPS = 1;
+    const int NSTEPS = 5;
 
 #if ADIOS2_USE_MPI
     adios2::ADIOS adios(MPI_COMM_WORLD);
@@ -88,7 +88,8 @@ int main(int argc, char *argv[])
 
             for (size_t i = 0; i < Nx; i++)
             {
-                row[i] = step * Nx * nproc * 1.0 + rank * Nx * 1.0 + (double)i;
+                row2[i] = step * Nx * nproc * 1.0 + rank * Nx * 1.0 + (double)i;
+                std::cout << "row2: " << row2[i] << std::endl;
             }
 
             // Make a 2D selection to describe the local dimensions of the
@@ -102,26 +103,27 @@ int main(int argc, char *argv[])
             {
                 sleep(10);
                 row2[0] = 42;
-                writer.Put<double>(varGlobalArray, row2.data(), adios2::Mode::Sync);
+                // writer.Put<double>(varGlobalArray, row2.data(), adios2::Mode::Sync);
+                writer.Put<double>(varGlobalArray, row2.data(), adios2::Mode::Deferred);
             }
 
             if (rank == 1)
             {
                 row2[0] = 1337;
                 sleep(10);
-                writer.Put<double>(varGlobalArray, row2.data(),adios2::Mode::Sync);
+                writer.Put<double>(varGlobalArray, row2.data(),adios2::Mode::Deferred);
             }
             if (rank == 2)
             {
                 row2[0] = 666;
                 sleep(10);
-                writer.Put<double>(varGlobalArray, row2.data(),adios2::Mode::Sync);
+                writer.Put<double>(varGlobalArray, row2.data(),adios2::Mode::Deferred);
             }
             if (rank == 3)
             {
                 row2[0] = 424242;
                 sleep(10);
-                writer.Put<double>(varGlobalArray, row2.data(),adios2::Mode::Sync);
+                writer.Put<double>(varGlobalArray, row2.data(),adios2::Mode::Deferred);
             }
 
             // Indicate we are done for this step.
