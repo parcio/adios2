@@ -66,9 +66,6 @@ void JuleaDBWriter::JuleaDBSetMinMax(Variable<T> &variable, const T *data,
         first min/max for the first block of the first step */
     if ((currentStep == 0) && (currentBlockID == 0))
     {
-        std::cout << "Set global min/max to local min/max of first block of "
-                     "first step "
-                  << std::endl;
         variable.m_Min = min;
         variable.m_Max = max;
     }
