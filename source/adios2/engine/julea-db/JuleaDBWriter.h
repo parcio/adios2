@@ -99,13 +99,6 @@ private:
     /** statistics verbosity, only 0 is supported */
     unsigned int m_StatsLevel = 0;
 
-    // this is the kind of map I would like to have; unfortunately I do not know
-    // whether there is some magic that can make that work when the class is not of type T (s. Variable.h)
-    // std::map<size_t,T> minMap;
-
-    std::map<int, double> m_MinMap;
-    std::map<int, double> m_MaxMap;
-
     void Init() final;
 
     /** Parses parameters from IO SetParameters */
