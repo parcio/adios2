@@ -134,7 +134,8 @@ private:
 
     template <class T>
     void JuleaDBSetMinMax(Variable<T> &variable, const T *data, T &blockMin,
-                      T &blockMax, T &blockMean, size_t currentStep, size_t currentBlockID);
+                          T &blockMax, T &blockMean, size_t currentStep,
+                          size_t currentBlockID);
 
     /**
      * Closes a single transport or all transports

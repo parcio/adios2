@@ -369,9 +369,11 @@ void JuleaDBReader::ReadVariableBlocks(Variable<T> &variable)
 
                     // variable.m_AvailableStepBlockIndexOffsets
 
-                    //FIXME: 18.10.2021
-                    //is there still a difference whether data is read by bpls or a "normal" read call?
-                    // there was a difference in how some ID was increased. No idea whether this is still the case
+                    // FIXME: 18.10.2021
+                    // is there still a difference whether data is read by bpls
+                    // or a "normal" read call?
+                    // there was a difference in how some ID was increased. No
+                    // idea whether this is still the case
                     if (m_UseKeysForBPLS)
                     {
                         // std::cout << "--- m_UseKeysForBPLS ---" << std::endl;
@@ -379,7 +381,7 @@ void JuleaDBReader::ReadVariableBlocks(Variable<T> &variable)
                         //     variable, data, nameSpace, dataSize,
                         //     variable.m_StepsStart, variable.m_BlockID);
 
-                        //TODO: the following is just the else copied
+                        // TODO: the following is just the else copied
                         dataSize = subStreamBoxInfo.Seeks.second -
                                    subStreamBoxInfo.Seeks.first;
                         // std::cout << "dataSize: " << dataSize << std::endl;

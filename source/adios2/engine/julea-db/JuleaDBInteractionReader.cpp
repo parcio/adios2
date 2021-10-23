@@ -646,8 +646,10 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
                                     NULL);
             std::cout << "got shape " << std::endl;
             std::cout << "db_length: " << db_length << std::endl;
-            std::cout << "tmpShapeBuffer[0] = " << tmpShapeBuffer[0] << std::endl;
-            std::cout << "tmpShapeBuffer[1] = " << tmpShapeBuffer[1] << std::endl;
+            std::cout << "tmpShapeBuffer[0] = " << tmpShapeBuffer[0]
+                      << std::endl;
+            std::cout << "tmpShapeBuffer[1] = " << tmpShapeBuffer[1]
+                      << std::endl;
 
             Dims tmpShape(tmpShapeBuffer, tmpShapeBuffer + *shapeSize);
             shape = tmpShape;
@@ -668,7 +670,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
             g_free(tmpStartBuffer);
         }
         std::cout << "Read start" << std::endl;
-        
+
         j_db_iterator_get_field(iterator, "countSize", &type,
                                 (gpointer *)&countSize, &db_length, NULL);
         if (*countSize > 0)
