@@ -96,31 +96,6 @@ void JuleaDBWriter::JuleaDBSetMinMax(Variable<T> &variable, const T *data, T &bl
         variable.m_Max = max;
     }
 
-//     template <typename T>
-// void Comm::Reduce(const T *sendbuf, T *recvbuf, size_t count, Op op, int root,
-//                   const std::string &hint) const
-    // Comm::Reduce(sendbuf, recvbuf, count, op, root, hint);
-
-    // m_Comm.Reduce(nReaderPerWriter.data(), nReaderPerWriter.data(),
-    //                   nReaderPerWriter.size(), helper::Comm::Op::Sum,
-    //                   m_ReaderRootRank);
-
-    // sendbuf;
-    // recvbuf;
-
-
-    //     template <typename T>
-    // void Reduce(const T *sendbuf, T *recvbuf, size_t count, Op op, int root,
-    //             const std::string &hint = std::string()) const;
-
-    // MPI_Reduce(&localMax, &globalMax, 1, MPI_DOUBLE, MPI_MAX, m_Comm);
-    // MPI_Reduce(&localMax, &globalMax, 1, MPI_DOUBLE, MPI_MAX, comm);
-
-     // Writer ID -> number of peer readers
-    // std::vector<int> nReaderPerWriter(m_RankAllPeers.size());
-    // m_Comm.Reduce(&globalMax, &globalMax, 1, MPI_DOUBLE, MPI_MAX, m_Comm);
-    // m_Comm.Reduce(&max, &globalMax, 1,helper::CommImpl::ToMPI(variable.m_Type),helper::Comm::Op::Max, m_Comm);
-    
     // m_Comm.Reduce(&max, &globalMax, 1, helper::Comm::Op::Max, 0);
     m_Comm.Reduce(&blockMin, &variable.m_Min, 1, helper::Comm::Op::Min, 0);
     m_Comm.Reduce(&blockMax, &variable.m_Max, 1, helper::Comm::Op::Max, 0);
@@ -132,38 +107,6 @@ void JuleaDBWriter::JuleaDBSetMinMax(Variable<T> &variable, const T *data, T &bl
     // double globalMax = 0;
     // m_Comm.Reduce(&localMax, &globalMax, 1, helper::Comm::Op::Max, 0);
     // m_Comm.Reduce(&localMin, &globalMin, 1, helper::Comm::Op::Min, 0);
-
-    // std::cout << "globalMax = " << globalMax << std::endl;
-    std::cout << "variable.m_Max = " << variable.m_Max << std::endl;
-    std::cout << "globalMin = " << globalMin << std::endl;
-    // m_Comm.Reduce(&localMax, &globalMax, 1,variable.m_Type,helper::Comm::Op::Max);
-    // m_Comm.Reduce(&localMax, &globalMax, 1,variable.m_Type,helper::Comm::Op::Max, m_Comm);
-
-    // m_Comm.Reduce(&globalMax, &globalMax, 1,MPI_DOUBLE,helper::Comm::Op::Max, m_Comm);
-    // m_Comm.Reduce(&globalMax, &globalMax, 1, helper::Comm::ToMPI(variable.m_Type),helper::Comm::Op::Max, m_Comm);
-    // m_Comm.Reduce(&globalMax, &globalMax, 1, helper::ToMPI(variable.m_Type),helper::Comm::Op::Max, m_Comm);
-
-    // MPI_Allreduce(&writeTime, &maxWriteTime, 1, MPI_DOUBLE, MPI_MAX, comm);
-
-    // m_MaxMap.insert(std::make_pair(m_WriterRank,(double) variable.m_Max));
-    // m_MinMap.insert(std::make_pair(m_WriterRank,(double) variable.m_Min));
-
-    // m_Comm.Barrier();
-
-    // if (m_WriterRank == 0)
-    // {
-    //      std::map<int, double>::iterator it;
-    //     std::map<int, double>::iterator it2;
-
-    //     for(it=m_MaxMap.begin(); it!=m_MaxMap.end(); ++it)
-    //     {
-    //         std::cout << it->first << " => " << it->second << '\n';
-    //         if (it->second > variable.m_Max)
-    //         {
-    //             variable.m_Max = it->second;
-    //         }
-    //     }
-    // }
 
     if (false)
     {
