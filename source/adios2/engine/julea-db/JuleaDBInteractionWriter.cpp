@@ -287,15 +287,16 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
     j_db_entry_set_field(entry, "shapeSize", &shapeSize, sizeof(shapeSize),
                          NULL);
     j_db_entry_set_field(entry, "shape", variable.m_Shape.data(),
-                         sizeof(variable.m_Shape.data()), NULL);
+                         sizeof(*variable.m_Shape.data()) * variable.m_Shape.size(), NULL);
+                        //  sizeof(variable.m_Shape.data()), NULL);
     j_db_entry_set_field(entry, "startSize", &startSize, sizeof(startSize),
                          NULL);
     j_db_entry_set_field(entry, "start", variable.m_Start.data(),
-                         sizeof(variable.m_Start.data()), NULL);
+                         sizeof(*variable.m_Start.data()) * variable.m_Start.size(), NULL);
     j_db_entry_set_field(entry, "countSize", &countSize, sizeof(countSize),
                          NULL);
     j_db_entry_set_field(entry, "count", variable.m_Count.data(),
-                         sizeof(variable.m_Count.data()), NULL);
+                         sizeof(*variable.m_Count.data()) * variable.m_Count.size(), NULL);
 
     j_db_entry_set_field(entry, "numberSteps", &numberSteps,
                          sizeof(numberSteps), NULL);
@@ -364,6 +365,13 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
         std::cout << "blockID: " << blockID << std::endl;
     }
 
+    size_t shapeBuffer[shapeSize];
+    for (uint i = 0; i < shapeSize; i++)
+    {
+        shapeBuffer[i] = variable.m_Shape.data()[i];
+    }
+
+
     j_db_entry_set_field(entry, "file", nameSpace.c_str(),
                          strlen(nameSpace.c_str()) + 1, NULL);
     j_db_entry_set_field(entry, "variableName", varName.c_str(),
@@ -372,26 +380,32 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
     j_db_entry_set_field(entry, "step", &stepID, sizeof(stepID), NULL);
     j_db_entry_set_field(entry, "block", &blockID, sizeof(blockID), NULL);
 
+    std::cout << "shapeSize: " << shapeSize << std::endl;
+    std::cout << "shapeBufferSize: " << sizeof(shapeBuffer) << std::endl;
+
     j_db_entry_set_field(entry, "shapeSize", &shapeSize, sizeof(shapeSize),
                          NULL);
+    // j_db_entry_set_field(entry, "shape", shapeBuffer, sizeof(shapeBuffer),
+    //                      NULL);
     j_db_entry_set_field(entry, "shape", variable.m_Shape.data(),
-                         sizeof(variable.m_Shape.data()), NULL);
+                         sizeof(*variable.m_Shape.data()) * variable.m_Shape.size(), NULL);
     j_db_entry_set_field(entry, "startSize", &startSize, sizeof(startSize),
                          NULL);
     j_db_entry_set_field(entry, "start", variable.m_Start.data(),
-                         sizeof(variable.m_Start.data()), NULL);
+                         sizeof(*variable.m_Start.data()) * variable.m_Start.size(), NULL);
     j_db_entry_set_field(entry, "countSize", &countSize, sizeof(countSize),
                          NULL);
     j_db_entry_set_field(entry, "count", variable.m_Count.data(),
-                         sizeof(variable.m_Count.data()), NULL);
+                        sizeof(*variable.m_Count.data()) * variable.m_Count.size(), NULL);
+
     j_db_entry_set_field(entry, "memoryStartSize", &memoryStartSize,
                          sizeof(memoryStartSize), NULL);
     j_db_entry_set_field(entry, "memoryStart", blockInfo.MemoryStart.data(),
-                         sizeof(blockInfo.MemoryStart.data()), NULL);
+                         sizeof(*blockInfo.MemoryStart.data()) * blockInfo.MemoryStart.size(), NULL);
     j_db_entry_set_field(entry, "memoryCountSize", &memoryCountSize,
                          sizeof(memoryCountSize), NULL);
     j_db_entry_set_field(entry, "memoryCount", blockInfo.MemoryCount.data(),
-                         sizeof(blockInfo.MemoryCount.data()), NULL);
+                         sizeof(*blockInfo.MemoryCount.data()) * blockInfo.MemoryCount.size(), NULL);
 
     // const char *varType = variable.m_Type.c_str();
     // const int varType = static_cast<int>(variable.m_Type);

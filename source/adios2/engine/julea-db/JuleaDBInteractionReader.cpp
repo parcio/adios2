@@ -595,6 +595,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
     int i = 0;
     while (j_db_iterator_next(iterator, NULL))
     {
+        std::cout << "Reached outer while" << std::endl;
         Dims shape;
         Dims start;
         Dims count;
@@ -614,6 +615,7 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
         j_db_iterator_get_field(iterator, "isSingleValue", &type,
                                 (gpointer *)&isSingleValue, &db_length, NULL);
 
+        std::cout << "Read Bools " << std::endl;
         j_db_iterator_get_field(iterator, "shapeID", &type,
                                 (gpointer *)&shapeID, &db_length, NULL);
         // j_db_iterator_get_field(iterator, "typeString", &type,
@@ -626,20 +628,32 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
                                 (gpointer *)&varTypeAsInt, &db_length, NULL);
 
         // std::cout << "typeInt: " << varTypeAsInt << std::endl;
-        // std::cout << "typeInt: " << *varTypeAsInt << std::endl;
+        std::cout << "typeInt: " << *varTypeAsInt << std::endl;
 
         j_db_iterator_get_field(iterator, "shapeSize", &type,
                                 (gpointer *)&shapeSize, &db_length, NULL);
+        std::cout << "shapeSize: " << *shapeSize << std::endl;
+
+        db_length = 42;
+
         if (*shapeSize > 0)
         {
             size_t *tmpShapeBuffer;
+            // size_t tmpShapeBuffer[2];
+            std::cout << "Trying to get shape" << std::endl;
             j_db_iterator_get_field(iterator, "shape", &type,
                                     (gpointer *)&tmpShapeBuffer, &db_length,
                                     NULL);
+            std::cout << "got shape " << std::endl;
+            std::cout << "db_length: " << db_length << std::endl;
+            std::cout << "tmpShapeBuffer[0] = " << tmpShapeBuffer[0] << std::endl;
+            std::cout << "tmpShapeBuffer[1] = " << tmpShapeBuffer[1] << std::endl;
+
             Dims tmpShape(tmpShapeBuffer, tmpShapeBuffer + *shapeSize);
             shape = tmpShape;
             g_free(tmpShapeBuffer);
         }
+        std::cout << "Read shape" << std::endl;
 
         j_db_iterator_get_field(iterator, "startSize", &type,
                                 (gpointer *)&startSize, &db_length, NULL);
@@ -653,6 +667,8 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
             start = tmpStart;
             g_free(tmpStartBuffer);
         }
+        std::cout << "Read start" << std::endl;
+        
         j_db_iterator_get_field(iterator, "countSize", &type,
                                 (gpointer *)&countSize, &db_length, NULL);
         if (*countSize > 0)
@@ -666,6 +682,8 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
             count = tmpCount;
             g_free(tmpCountBuffer);
         }
+        std::cout << "Read count" << std::endl;
+
         j_db_iterator_get_field(iterator, "numberSteps", &type,
                                 (gpointer *)&numberSteps, &db_length, NULL);
         size_t *tmpblocks[*numberSteps];
@@ -676,8 +694,9 @@ void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
             blocks = *tmpblocks;
             // memcpy(blocks, *tmpblocks, sizeof(*tmpblocks));
         }
+        std::cout << "Read numberSteps" << std::endl;
 
-        if (false)
+        if (true)
         {
             // std::cout << "numberSteps: " << blocks[0] << std::endl;
             // std::cout << "numberSteps: " << blocks[1] << std::endl;
