@@ -288,7 +288,6 @@ void addEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
                          NULL);
     j_db_entry_set_field(entry, "shape", variable.m_Shape.data(),
                          sizeof(*variable.m_Shape.data()) * variable.m_Shape.size(), NULL);
-                        //  sizeof(variable.m_Shape.data()), NULL);
     j_db_entry_set_field(entry, "startSize", &startSize, sizeof(startSize),
                          NULL);
     j_db_entry_set_field(entry, "start", variable.m_Start.data(),
@@ -365,28 +364,15 @@ void addEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
         std::cout << "blockID: " << blockID << std::endl;
     }
 
-    size_t shapeBuffer[shapeSize];
-    for (uint i = 0; i < shapeSize; i++)
-    {
-        shapeBuffer[i] = variable.m_Shape.data()[i];
-    }
-
-
     j_db_entry_set_field(entry, "file", nameSpace.c_str(),
                          strlen(nameSpace.c_str()) + 1, NULL);
     j_db_entry_set_field(entry, "variableName", varName.c_str(),
                          strlen(varName.c_str()) + 1, NULL);
-
     j_db_entry_set_field(entry, "step", &stepID, sizeof(stepID), NULL);
     j_db_entry_set_field(entry, "block", &blockID, sizeof(blockID), NULL);
 
-    std::cout << "shapeSize: " << shapeSize << std::endl;
-    std::cout << "shapeBufferSize: " << sizeof(shapeBuffer) << std::endl;
-
     j_db_entry_set_field(entry, "shapeSize", &shapeSize, sizeof(shapeSize),
                          NULL);
-    // j_db_entry_set_field(entry, "shape", shapeBuffer, sizeof(shapeBuffer),
-    //                      NULL);
     j_db_entry_set_field(entry, "shape", variable.m_Shape.data(),
                          sizeof(*variable.m_Shape.data()) * variable.m_Shape.size(), NULL);
     j_db_entry_set_field(entry, "startSize", &startSize, sizeof(startSize),
