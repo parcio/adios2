@@ -75,8 +75,8 @@ void JuleaDBWriter::JuleaDBSetMinMax(Variable<T> &variable, const T *data, T &bl
 
     //TODO: check whether this is incorrect
     // there may be some cases where this is not working
-    /*  the global min and max will be set to the first min and max, so
-      that they are not still initialized with something like 0*/
+    /*  to initialize the global min/max, they are set to the
+        first min/max for the first block of the first step */
     if ((currentStep == 0) && (currentBlockID == 0))
     {
         std::cout << "Set Min/Max to 0 " << std::endl;
@@ -233,58 +233,12 @@ void JuleaDBWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
         }
     }
 
-
-//     // const DataType type = T;
-//     const DataType type = variable.m_Type;
-//      if (type == DataType::Compound || type == DataType::None)
-//     {
-//     }
-//     else if(type == DataType::FloatComplex)
-//     {
-
-//     } 
-//     else if (type == DataType::DoubleComplex)
-//     {
-
-//     }
-//     else if (type == DataType::String)
-//     {
-//         std::cout << "DataType not supported" << std::endl;
-//     }
-// #define declare_type(T)                                                        \
-//     else if (type == helper::GetDataType<T>())                                 \
-//     {                                 \
-//         m_MinMap.insert(std::make_pair(m_WriterRank,(double) variable.m_Min));          \
-//     }
-//     ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
-// #undef declare_type
-
-
-        // m_MaxMap.insert(std::make_pair(m_WriterRank,(double) variable.m_Max));\
-    // m_MinMap.insert(std::make_pair(m_WriterRank,variable.m_Min));
-    // m_MaxMap.insert(std::make_pair(m_WriterRank,variable.m_Max));
-    // m_minMap.append(m_WriterRank, (double) variable.m_Min);
-    // m_maxMap.append(m_WriterRank, (double) variable.m_Max);
-
-    // m_Comm.Barrier();
-
     // TODO: check if there really is no case for global variables to have
     // different features across different blocks
+    /* note (23.10.21): the global min/max do not work this way!
+        fixed by setting them in 'JuleaDBSetMinMax' */
     if (m_WriterRank == 0)
     {
-        // //find out global min/max over all blocks of this step
-        // std::map<int, double>::iterator it;
-        // std::map<int, double>::iterator it2;
-
-        // for(it=m_MaxMap.begin(); it!=m_MaxMap.end(); ++it)
-        // {
-        //     // cout << it->first << " => " << it->second << '\n';
-        //     // if (it->second > variable.m_Max)
-        //     // {
-        //     //     variable.m_Max = it->second;
-        //     // }
-        // }
-
         // TODO: add mean value to DB
         /** updates the variable metadata as there is a new block now */
         DBPutVariableMetadataToJulea(variable, m_Name, variable.m_Name,
