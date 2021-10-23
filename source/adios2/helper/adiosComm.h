@@ -356,6 +356,7 @@ public:
         UnsignedLong,
         UnsignedLongLong,
         LongLong,
+        Float,
         Double,
         LongDouble,
         Int_Int,

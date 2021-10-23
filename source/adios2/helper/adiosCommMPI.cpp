@@ -55,6 +55,7 @@ const MPI_Datatype DatatypeToMPI[] = {
     MPI_UNSIGNED_LONG,
     MPI_UNSIGNED_LONG_LONG,
     MPI_LONG_LONG_INT,
+    MPI_FLOAT,
     MPI_DOUBLE,
     MPI_LONG_DOUBLE,
     MPI_2INT,

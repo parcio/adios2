@@ -108,6 +108,12 @@ CommImpl::Datatype CommImpl::GetDatatype<long long>()
 }
 
 template <>
+CommImpl::Datatype CommImpl::GetDatatype<float>()
+{
+    return CommImpl::Datatype::Float;
+}
+
+template <>
 CommImpl::Datatype CommImpl::GetDatatype<double>()
 {
     return CommImpl::Datatype::Double;
