@@ -33,22 +33,6 @@ namespace core
 namespace engine
 {
 
-// void SetGlobalMinMax()
-// {
-//         //find out global min/max over all blocks of this step
-//         std::map<int, double>::iterator it;
-//         std::map<int, double>::iterator it2;
-
-//         for(it=m_MaxMap.begin(); it!=m_MaxMap.end(); ++it)
-//         {
-//             // cout << it->first << " => " << it->second << '\n';
-//             // if (it->second > variable.m_Max)
-//             // {
-//             //     variable.m_Max = it->second;
-//             // }
-//         }
-// }
-
 template <class T>
 void JuleaDBWriter::JuleaDBSetMinMax(Variable<T> &variable, const T *data, T &blockMin,
                       T &blockMax, T &blockMean, size_t currentStep, size_t currentBlockID)
@@ -79,20 +63,19 @@ void JuleaDBWriter::JuleaDBSetMinMax(Variable<T> &variable, const T *data, T &bl
         first min/max for the first block of the first step */
     if ((currentStep == 0) && (currentBlockID == 0))
     {
-        std::cout << "Set Min/Max to 0 " << std::endl;
+        // std::cout << "Set Min/Max to 0 " << std::endl;
         variable.m_Min = min;
         variable.m_Max = max;
     }
 
     if (min < variable.m_Min)
     {
-        // std::cout << "updated global min" << std::endl;
-        std::cout << "updated global min from "  << variable.m_Min << " to " << min << std::endl;
+        // std::cout << "updated global min from "  << variable.m_Min << " to " << min << std::endl;
         variable.m_Min = min;
     }
     if (max > variable.m_Max)
     {
-        std::cout << "updated global max from "  << variable.m_Max << " to " << max << std::endl;
+        // std::cout << "updated global max from "  << variable.m_Max << " to " << max << std::endl;
         variable.m_Max = max;
     }
 
