@@ -78,10 +78,11 @@ int main(int argc, char *argv[])
 
         // Open file. "w" means we overwrite any existing file on disk,
         // but Advance() will append steps to the same file.
-        // adios2::Engine writer = io.Open("globalArray.jb", adios2::Mode::Write);
         adios2::Engine writer = io.Open("globalArray.jb", adios2::Mode::Write);
         // adios2::Engine writer = io.Open("globalArray.bp", adios2::Mode::Write);
 
+        // std::cout << "rank = " << rank << std::endl;
+        // std::cout << "nproc = " << nproc << std::endl;
         for (size_t step = 0; step < NSTEPS; step++)
         {
             writer.BeginStep();
@@ -89,7 +90,7 @@ int main(int argc, char *argv[])
             for (size_t i = 0; i < Nx; i++)
             {
                 row2[i] = step * Nx * nproc * 1.0 + rank * Nx * 1.0 + (double)i;
-                std::cout << "row2: " << row2[i] << std::endl;
+                // std::cout << "row2: " << row2[i] << std::endl;
             }
 
             // Make a 2D selection to describe the local dimensions of the
