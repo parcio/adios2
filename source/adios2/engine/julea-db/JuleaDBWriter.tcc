@@ -79,17 +79,8 @@ void JuleaDBWriter::JuleaDBSetMinMax(Variable<T> &variable, const T *data, T &bl
         variable.m_Max = max;
     }
 
-    // m_Comm.Reduce(&max, &globalMax, 1, helper::Comm::Op::Max, 0);
     m_Comm.Reduce(&blockMin, &variable.m_Min, 1, helper::Comm::Op::Min, 0);
     m_Comm.Reduce(&blockMax, &variable.m_Max, 1, helper::Comm::Op::Max, 0);
-
-    /* when using something else than a float in form of T everything works with normal ADIOS2*/
-    // double localMin = 0;
-    // double globalMin = 0;
-    // double localMax = 0;
-    // double globalMax = 0;
-    // m_Comm.Reduce(&localMax, &globalMax, 1, helper::Comm::Op::Max, 0);
-    // m_Comm.Reduce(&localMin, &globalMin, 1, helper::Comm::Op::Min, 0);
 
     if (false)
     {
