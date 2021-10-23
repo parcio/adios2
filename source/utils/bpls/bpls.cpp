@@ -1098,6 +1098,7 @@ int printVariableInfo(core::Engine *fp, core::IO *io,
             {
                 fprintf(outf, " = ");
                 print_data(&variable->m_Min, 0, adiosvartype, false);
+                fprintf(outf, " / ");
                 print_data(&variable->m_Max, 0, adiosvartype, false);
 
                 // fprintf(outf," {MIN / MAX} ");
