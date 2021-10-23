@@ -33,50 +33,6 @@ namespace core
 namespace engine
 {
 
-// template <class T>
-// void JuleaDBWriter::SetGlobalMinMax(Variable<T> &variable, const
-// adios2::DataType varType, T)
-// {
-//     switch (varType)
-//     {
-//     case adios2::DataType::None:
-//         // TODO: Do something?
-//         break;
-//     case adios2::DataType::Int8:
-//     case adios2::DataType::UInt8:
-//     case adios2::DataType::Int16:
-//     case adios2::DataType::UInt16:
-//     case adios2::DataType::Int32:
-//     case adios2::DataType::UInt32:
-//     case adios2::DataType::Int64:
-//     case adios2::DataType::UInt64:
-//         m_globalMaxInt = (size_t) X;
-//         m_globalMinInt = (size_t) X;
-//         break;
-//     case adios2::DataType::Float:
-//         m_globalMaxFloat = X;
-//         m_globalMinFloat = X;
-//         break;
-//     case adios2::DataType::Double:
-//         m_globalMaxDouble = X;
-//         m_globalMinDouble = X;
-//         break;
-//     // case adios2::DataType::LongDouble:
-//     // case adios2::DataType::FloatComplex:
-//     // case adios2::DataType::DoubleComplex:
-//     //     *minField = "min_blob";
-//     //     *maxField = "max_blob";
-//     //     *valueField = "value_blob";
-//     //     break;
-//     // case adios2::DataType::String:
-//     //     *valueField = "value_sint32";
-//     //     break;
-//     // case adios2::DataType::Compound:
-//     //     std::cout << "Compound variables not supported";
-//     //     break;
-//     }
-// }
-
 template <class T>
 void JuleaDBWriter::JuleaDBSetMinMax(Variable<T> &variable, const T *data,
                                      T &blockMin, T &blockMax, T &blockMean,
@@ -115,72 +71,25 @@ void JuleaDBWriter::JuleaDBSetMinMax(Variable<T> &variable, const T *data,
                   << std::endl;
         variable.m_Min = min;
         variable.m_Max = max;
-
-        //TODO: set min_globalMinInt here as well?
     }
 
-
-
-    std::cout << "---- Rank = " << m_WriterRank << std::endl;
-    // std::cout << "blockMin : " << blockMin << std::endl;
-    // std::cout << "variable.m_Min : " << variable.m_Min << std::endl;
-
+    
     m_Comm.Reduce(&blockMin, &stepMin, 1, helper::Comm::Op::Min, 0);
-    // m_Comm.Reduce(&blockMin, &variable.m_Min, 1, helper::Comm::Op::Min, 0);
-
-    // std::cout << "blockMin : " << blockMin << std::endl;
-    // std::cout << "variable.m_Min : " << variable.m_Min << "\n " << std::endl;
     m_Comm.Reduce(&blockMax, &stepMax, 1, helper::Comm::Op::Max, 0);
-
 
     if (stepMin < variable.m_Min)
     {
-        std::cout << "updated global min from " << variable.m_Min << " to "
-                  << min << std::endl;
+        // std::cout << "updated global min from " << variable.m_Min << " to "
+                //   << min << std::endl;
         variable.m_Min = stepMin;
     }
+
     if (stepMax > variable.m_Max)
     {
         // std::cout << "updated global max from "  << variable.m_Max << " to "
         // << max << std::endl;
         variable.m_Max = stepMax;
     }
-    // if (m_WriterRank == 0)
-    // {
-    //     // SetGlobalMinMax(variable.m_Type, variable.m_Min, variable.m_Max);
-
-    //     switch (variable.m_Type)
-    //     {
-    //     case adios2::DataType::None:
-    //         // TODO: Do something?
-    //         break;
-    //     case adios2::DataType::Int8:
-    //     case adios2::DataType::UInt8:
-    //     case adios2::DataType::Int16:
-    //     case adios2::DataType::UInt16:
-    //     case adios2::DataType::Int32:
-    //     case adios2::DataType::UInt32:
-    //     case adios2::DataType::Int64:
-    //     case adios2::DataType::UInt64:
-
-    //         if (variable.m_Min < m_globalMinInt )
-    //         {
-    //             m_globalMinInt = (size_t) variable.m_Min;
-    //         }
-    //          if (variable.m_Max > m_globalMaxInt )
-    //         {
-    //             m_globalMaxInt = (size_t) variable.m_Max;
-    //         }
-    //         break;
-    //     case adios2::DataType::Float:
-    //         // m_globalMaxFloat = X;
-    //         // m_globalMinFloat = X;
-    //         break;
-    //     case adios2::DataType::Double:
-    //         // m_globalMaxDouble = X;
-    //         // m_globalMinDouble = X;
-    //         break;
-    //     }
 
         if (false)
         {
