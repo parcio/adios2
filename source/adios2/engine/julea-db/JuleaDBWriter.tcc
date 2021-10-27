@@ -68,10 +68,16 @@ void JuleaDBWriter::JuleaDBSetMinMax(Variable<T> &variable, const T *data,
     {
         variable.m_Min = min;
         variable.m_Max = max;
+        stepMin = min;
+        stepMax = max;
     }
 
-    m_Comm.Reduce(&blockMin, &stepMin, 1, helper::Comm::Op::Min, 0);
-    m_Comm.Reduce(&blockMax, &stepMax, 1, helper::Comm::Op::Max, 0);
+    /* reduce only necessary if more than one process*/
+    if (m_WriterRank > 0)
+    {
+        m_Comm.Reduce(&blockMin, &stepMin, 1, helper::Comm::Op::Min, 0);
+        m_Comm.Reduce(&blockMax, &stepMax, 1, helper::Comm::Op::Max, 0);
+    }
 
     if (stepMin < variable.m_Min)
     {
