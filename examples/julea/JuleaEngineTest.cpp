@@ -119,9 +119,11 @@ void TestReadVariableSync()
                                adios2::Mode::Sync);
         // juleaReader.Get<float>(juleaFloats2,
         // myFloats2.data(),adios2::Mode::Sync);
-        juleaReader.Get<int>(juleaInts, myInts.data(), adios2::Mode::Sync);
+        juleaReader.Get<int>(juleaInts, myInts.data(), adios2::Mode::Deferred);
         // std::cout << "Data : " << juleaFloats.GetData() << std::endl;
-        juleaReader.Get<int>(juleaInts2, myInts2.data(),adios2::Mode::Sync);
+        juleaReader.Get<int>(juleaInts2, myInts2.data(),adios2::Mode::Deferred);
+
+        juleaReader.PerformGets();
     }
 
     // std::cout << "Data: " << juleaFloats.Name() << std::endl;
