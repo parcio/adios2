@@ -8,8 +8,8 @@
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
-#ifndef ADIOS2_ENGINE_JULEADBINTERACTIONREADERTEST_H_
-#define ADIOS2_ENGINE_JULEADBINTERACTIONREADERTEST_H_
+#ifndef ADIOS2_ENGINE_JULEADBINTERACTIONREADER_H_
+#define ADIOS2_ENGINE_JULEADBINTERACTIONREADER_H_
 
 #include "JuleaDBReader.h"
 // #include "JuleaMetadata.h"
@@ -154,4 +154,4 @@ ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(attribute_template_instantiation)
 } // end namespace core
 } // end namespace adios2
 
-#endif /* ADIOS2_ENGINE_JULEAINTERACTIONREADERTEST_H_ */
+#endif /* ADIOS2_ENGINE_JULEAINTERACTIONREADER_H_ */

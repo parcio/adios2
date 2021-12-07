@@ -8,8 +8,8 @@
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
-#ifndef ADIOS2_ENGINE_JULEADBINTERACTION_H_
-#define ADIOS2_ENGINE_JULEADBINTERACTION_H_
+#ifndef ADIOS2_ENGINE_JULEADBINTERACTIONWRITER_H_
+#define ADIOS2_ENGINE_JULEADBINTERACTIONWRITER_H_
 
 #include "JuleaDBWriter.h"
 // #include "JuleaMetadata.h"
@@ -121,4 +121,4 @@ void DBPutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
 } // end namespace core
 } // end namespace adios2
 
-#endif /* ADIOS2_ENGINE_JULEAINTERACTION_H_ */
+#endif /* ADIOS2_ENGINE_JULEAINTERACTIONWRITER_H_ */
