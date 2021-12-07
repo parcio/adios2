@@ -54,6 +54,8 @@
 // #include "adios2/engine/julea-kv/JuleaKVWriter.h"
 #include "adios2/engine/julea-db/JuleaDBReader.h"
 #include "adios2/engine/julea-db/JuleaDBWriter.h"
+#include "adios2/engine/julea-db-dai/JuleaDBDAIReader.h"
+#include "adios2/engine/julea-db-dai/JuleaDBDAIWriter.h"
 // #include "adios2/engine/julea-db-do/JuleaDB-DO-Reader.h"
 // #include "adios2/engine/julea-db-do/JuleaDB-DO-Writer.h"
 #endif
@@ -135,6 +137,14 @@ std::unordered_map<std::string, IO::EngineFactoryEntry> Factory = {
 #else
      IO::NoEngineEntry("ERROR: this version didn't compile with "
                        "JULEA library, can't use JULEA database (julea-db) engine\n")
+#endif
+    },
+    {"julea-db-dai",
+#ifdef ADIOS2_HAVE_JULEA
+     {IO::MakeEngine<engine::JuleaDBDAIReader>, IO::MakeEngine<engine::JuleaDBDAIWriter>}
+#else
+     IO::NoEngineEntry("ERROR: this version didn't compile with "
+                       "JULEA library, can't use JULEA database (julea-db-dai) engine\n")
 #endif
     },
 //     {"julea-db-do",
