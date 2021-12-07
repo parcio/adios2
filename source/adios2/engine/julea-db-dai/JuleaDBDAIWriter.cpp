@@ -378,64 +378,12 @@ void JuleaDBDAIWriter::DoFlush(const bool isFinal, const int transportIndex)
  */
 void JuleaDBDAIWriter::PutAttributes(core::IO &io)
 {
-    // std::cout << "\n______________PutAttributes_____________________"
-    // << std::endl;
-
-    // const auto attributesDataMap = io.GetAttributesDataMap();
-    // const auto attributesDataMap = io.GetAttributes();
-    const auto attributesDataMap = io.GetAvailableAttributes();
-
-    // count is known ahead of time
-    const uint32_t attributesCount =
-        static_cast<uint32_t>(attributesDataMap.size());
-
-    // std::cout << "attributesCount: " << attributesCount << std::endl;
-
-    for (const auto &attributePair : attributesDataMap)
+   if (m_Verbosity == 5)
     {
-        unsigned int dataSize = 0;
-        // FIXME: where are the types stored now?
-        // const std::string type(attributePair.second.first);
-        const std::string name(attributePair.first);
+        std::cout << "\n --- Put Attributes currently not implemented!"
+                  << std::endl;
+    }
 
-        auto bsonMetadata = bson_new();
-        // std::cout << "------------------------------------" << std::endl;
-        // std::cout << "-- PutAttributes: type " << type << std::endl;
-        // std::cout << "-- PutAttributes: name " << name << std::endl;
-
-        // each attribute is only written to output once
-        // so filter out the ones already written
-        // FIXME: should this be guaranteed by the attributeMap of IO?
-        // FIXME: is m_SerializeAttributes already in use?
-        // auto it = m_SerializedAttributes.find(name);
-        // if (it != m_SerializedAttributes.end())
-        // {
-        //     continue;
-        // }
-
-        // TODO update the following code
-        // if (type == "unknown")
-        {
-            std::cout << "Attribute type is 'unknown' " << std::endl;
-        }
-
-        // #define declare_attribute_type(T)                                              \
-//     else if (type == helper::GetType<T>())                                     \
-//     {                                                                          \
-//         Attribute<T> &attribute = *io.InquireAttribute<T>(name);               \
-//         std::cout << "-- PutAttributes: m_Elements " << attribute.m_Elements   \
-//                   << std::endl;                                                \
-//         ParseAttributeToBSON(attribute, bsonMetadata);                         \
-//         ParseAttrTypeToBSON(attribute, bsonMetadata);                          \
-//         PutAttributeMetadataToJulea(attribute, bsonMetadata, m_Name);          \
-//         PutAttributeDataToJulea(attribute, m_Name);                            \
-//         bson_destroy(bsonMetadata);                                            \
-//     }
-        //         ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_attribute_type)
-        // #undef declare_attribute_type
-        //         // free(attrName);
-        //         // delete(&attrName);
-    } // end for
 }
 
 void JuleaDBDAIWriter::InitParameterFlushStepsCount(const std::string value)

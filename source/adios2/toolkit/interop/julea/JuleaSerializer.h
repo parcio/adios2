@@ -71,6 +71,11 @@ private:
     int m_CommSize = 1;
 };
 
+template <class T>
+    void JuleaDBDAISetMinMax(core::Variable<T> &variable, const T *data, T &blockMin,
+                          T &blockMax, T &blockMean, size_t currentStep,
+                          size_t currentBlockID);
+
 // Explicit declaration of the public template methods
 #define declare_template_instantiation(T)                                      \
     extern template void JuleaSerializer::Write(core::Variable<T> &variable,   \
