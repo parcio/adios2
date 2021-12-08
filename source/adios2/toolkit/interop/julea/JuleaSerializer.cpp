@@ -19,7 +19,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include <cstring>                        // strlen
+#include <cstring> // strlen
 
 namespace adios2
 {
@@ -79,9 +79,9 @@ void JuleaSerializer::Close() {}
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
 
-
 #define declare_template_instantiation(T)                                      \
-    template void JuleaSerializer::ParseVariable(core::Variable<T> &, const T *data, Metadata *metadata);
+    template void JuleaSerializer::ParseVariable(                              \
+        core::Variable<T> &, const T *data, Metadata *metadata);
 
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation

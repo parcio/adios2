@@ -13,8 +13,12 @@
 
 #include "adios2/core/Engine.h"
 // #include "adios2/toolkit/format/bp3/BP3.h" //BP3Serializer
-#include "adios2/toolkit/format/bp/bp3/BP3Serializer.h"
-#include "adios2/toolkit/interop/julea/JuleaSerializer.h"
+// #include "adios2/toolkit/format/bp/bp3/BP3Serializer.h"
+// #include "adios2/toolkit/interop/julea/JuleaSerializer.h"
+#include "adios2/toolkit/interop/julea/JuleaInteraction.h"
+#include "adios2/toolkit/interop/julea/Database/JuleaDBInteractionWriter.h"
+
+
 #include "adios2/toolkit/transportman/TransportMan.h" //transport::TransportsMan
 
 #include <complex.h>
@@ -32,7 +36,7 @@ namespace core
 namespace engine
 {
 
-class JuleaDBDAIWriter : public Engine
+class JuleaDBDAIWriter : public core::Engine
 {
 
 public:
@@ -56,7 +60,14 @@ public:
     void EndStep() final;
     void Flush(const int transportIndex = -1) final;
 
+    interop::JuleaDBInteractionWriter m_JuleaDBInteractionWriter;
+    // interop::JuleaInteraction m_JuleaDBInteractionWriter;
 private:
+    // interop::JuleaSerializer m_JuleaSerializer;
+    // interop::JuleaDBInteraction m_JuleaDBInteractionWriter;
+    // interop::JuleaDBInteractionWriter m_JuleaDBInteractionWriter;
+    // interop::JuleaInteraction m_JuleaDBInteractionWriter;
+
     JSemantics *m_JuleaSemantics;
     StepMode m_StepMode = StepMode::Append;
 
@@ -94,7 +105,7 @@ private:
     /** attributes are serialized only once, this set contains the names of ones
      * already serialized.
      */
-    std::unordered_set<std::string> m_SerializedAttributes; // TODO: needed?
+    // std::unordered_set<std::string> m_SerializedAttributes; // TODO: needed?
 
     /** statistics verbosity, only 0 is supported */
     unsigned int m_StatsLevel = 0;

@@ -28,11 +28,10 @@ void JuleaDeserializer::Read(core::Variable<T> &variable, const T *values)
     //
 }
 
-
 // /* parse variable information to metadata struct to store in JULEA */
 // template <class T>
-// void JuleaDeserializer::ParseVariable(core::Variable<T> &variable, const T *data, Metadata
-// 	 *metadata)
+// void JuleaDeserializer::ParseVariable(core::Variable<T> &variable, const T
+// *data, Metadata 	 *metadata)
 // {
 //     //
 // }

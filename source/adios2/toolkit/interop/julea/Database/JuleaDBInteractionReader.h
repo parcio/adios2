@@ -12,7 +12,8 @@
 #define ADIOS2_TOOLKIT_INTEROP_JULEA_JULEASERIALIZER_H_
 
 #include "JuleaMetadata.h"
-// #include "adios2/engine/julea/JuleaMetadata.h" //FIXME: move to interop namespace!
+// #include "adios2/engine/julea/JuleaMetadata.h" //FIXME: move to interop
+// namespace!
 #include "adios2/common/ADIOSMacros.h"
 #include "adios2/common/ADIOSTypes.h"
 #include "adios2/core/IO.h" // for CreateVar
@@ -21,7 +22,6 @@
 #include <julea.h>
 
 #include <string>
-
 
 #include <stdexcept> // for Intel Compiler
 
@@ -34,14 +34,11 @@ class JuleaDBInteractionReader : public JuleaInteraction
 {
 
 public:
-
-
     std::string m_JuleaNamespace = "adios2";
     // std::string m_VariableTableName; in DBInteractionWriter
 
 private:
-
-    //something private
+    // something private
 };
 } // end namespace interop
 } // end namespace adios

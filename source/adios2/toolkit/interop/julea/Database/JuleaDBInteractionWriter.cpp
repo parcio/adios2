@@ -195,9 +195,10 @@ void DAIaddFieldsForBlockMD(JDBSchema *schema)
 }
 
 template <class T>
-void DAIaddEntriesForVariableMD(Variable<T> &variable, const std::string nameSpace,
-                             const std::string varName, size_t currStep,
-                             JDBSchema *schema, JDBEntry *entry)
+void DAIaddEntriesForVariableMD(Variable<T> &variable,
+                                const std::string nameSpace,
+                                const std::string varName, size_t currStep,
+                                JDBSchema *schema, JDBEntry *entry)
 {
     bool isConstantDims = variable.IsConstantDims();
     int tmp = isConstantDims ? 1 : 0;
@@ -310,7 +311,7 @@ void DAIaddEntriesForVariableMD(Variable<T> &variable, const std::string nameSpa
     std::string meanField;
 
     DAIsetMinMaxValueFields(&minField, &maxField, &valueField, &meanField,
-                         variable.m_Type);
+                            variable.m_Type);
 
     j_db_entry_set_field(entry, minField.c_str(), &variable.m_Min,
                          sizeof(variable.m_Min), NULL);
@@ -320,11 +321,11 @@ void DAIaddEntriesForVariableMD(Variable<T> &variable, const std::string nameSpa
 
 template <class T>
 void DAIaddEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
-                          const std::string varName, size_t currStep,
-                          size_t block,
-                          const typename Variable<T>::Info &blockInfo,
-                          JDBSchema *schema, JDBEntry *entry, T &blockMin,
-                          T &blockMax, T &blockMean)
+                             const std::string varName, size_t currStep,
+                             size_t block,
+                             const typename Variable<T>::Info &blockInfo,
+                             JDBSchema *schema, JDBEntry *entry, T &blockMin,
+                             T &blockMax, T &blockMean)
 {
     size_t shapeSize = variable.m_Shape.size();
     size_t startSize = variable.m_Start.size();
@@ -405,7 +406,7 @@ void DAIaddEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
     std::string meanField;
 
     DAIsetMinMaxValueFields(&minField, &maxField, &valueField, &meanField,
-                         variable.m_Type);
+                            variable.m_Type);
 
     j_db_entry_set_field(entry, minField.c_str(), &blockMin, minLen, NULL);
     j_db_entry_set_field(entry, maxField.c_str(), &blockMax, maxLen, NULL);
@@ -433,7 +434,7 @@ void DAIaddEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
     j_db_entry_set_field(entry, "blockID", &blockID, sizeof(blockID), NULL);
 }
 
-void DAIInitDBSchemas()
+void InitDBSchemas()
 {
     // std::cout << "--- InitDBSchemas ---" << std::endl;
     int err = 0;
@@ -483,10 +484,9 @@ void DAIInitDBSchemas()
 }
 
 template <class T>
-void DAIDBPutVariableMetadataToJulea(Variable<T> &variable,
-                                  const std::string nameSpace,
-                                  const std::string varName, size_t currStep,
-                                  size_t block)
+void JuleaDBInteractionWriter::PutVariableMetadataToJulea(
+    core::Variable<T> &variable, const std::string nameSpace,
+    const std::string varName, size_t currStep, size_t block)
 {
     int err = 0;
     g_autoptr(JDBSchema) schema = NULL;
@@ -507,7 +507,7 @@ void DAIDBPutVariableMetadataToJulea(Variable<T> &variable,
 
     entry = j_db_entry_new(schema, NULL);
     DAIaddEntriesForVariableMD(variable, nameSpace, varName, currStep, schema,
-                            entry);
+                               entry);
 
     /** check whether variable needs to be updated or inserted */
     selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
@@ -539,13 +539,11 @@ void DAIDBPutVariableMetadataToJulea(Variable<T> &variable,
 }
 
 template <class T>
-void DAIDBPutBlockMetadataToJulea(Variable<T> &variable,
-                               const std::string nameSpace,
-                               const std::string varName, size_t step,
-                               size_t block,
-                               const typename Variable<T>::Info &blockInfo,
-                               T &blockMin, T &blockMax, T &blockMean,
-                               uint32_t &entryID)
+void JuleaDBInteractionWriter::PutBlockMetadataToJulea(
+    Variable<T> &variable, const std::string nameSpace,
+    const std::string varName, size_t step, size_t block,
+    const typename Variable<T>::Info &blockInfo, T &blockMin, T &blockMax,
+    T &blockMean, uint32_t &entryID)
 {
     int err = 0;
     g_autoptr(JDBSchema) schema = NULL;
@@ -568,8 +566,9 @@ void DAIDBPutBlockMetadataToJulea(Variable<T> &variable,
     // g_assert_true(j_batch_execute(batch) == true);
 
     entry = j_db_entry_new(schema, NULL);
-    DAIaddEntriesForBlockMD(variable, nameSpace, varName, step, block, blockInfo,
-                         schema, entry, blockMin, blockMax, blockMean);
+    DAIaddEntriesForBlockMD(variable, nameSpace, varName, step, block,
+                            blockInfo, schema, entry, blockMin, blockMax,
+                            blockMean);
 
     /** check whether blcock needs to be updated or inserted */
     selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
@@ -641,8 +640,8 @@ void DAIDBPutBlockMetadataToJulea(Variable<T> &variable,
 //     std::string objName = "variableblocks";
 
 //     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-//     j_semantics_set(semantics, J_SEMANTICS_SAFETY, J_SEMANTICS_SAFETY_STORAGE);
-//     auto batch = j_batch_new(semantics);
+//     j_semantics_set(semantics, J_SEMANTICS_SAFETY,
+//     J_SEMANTICS_SAFETY_STORAGE); auto batch = j_batch_new(semantics);
 
 //     auto numberElements = adios2::helper::GetTotalSize(variable.m_Count);
 //     auto dataSize = variable.m_ElementSize * numberElements;
@@ -650,7 +649,8 @@ void DAIDBPutBlockMetadataToJulea(Variable<T> &variable,
 //     // auto stepBlockID = g_strdup_printf("%lu_%lu", currStep, block);
 //     auto uniqueID = g_strdup_printf("%d", entryID);
 //     auto stringDataObject =
-//         g_strdup_printf("%s_%s_%s", nameSpace.c_str(), variable.m_Name.c_str(),
+//         g_strdup_printf("%s_%s_%s", nameSpace.c_str(),
+//         variable.m_Name.c_str(),
 //                         objName.c_str());
 //     // const char id = (char) entryID;
 
@@ -677,20 +677,33 @@ void DAIDBPutBlockMetadataToJulea(Variable<T> &variable,
 //     j_batch_unref(batch);
 //     j_semantics_unref(semantics);
 
-//     // std::cout << "++ Julea Interaction: PutVariableDataToJulea" << std::endl;
+//     // std::cout << "++ Julea Interaction: PutVariableDataToJulea" <<
+//     std::endl;
 // }
 
 #define declare_template_instantiation(T)                                      \
-    template void DAIDBPutVariableMetadataToJulea(                                \
-        Variable<T> &variable, const std::string nameSpace,                    \
+    template void JuleaDBInteractionWriter::PutVariableMetadataToJulea(        \
+        core::Variable<T> &variable, const std::string nameSpace,              \
         const std::string varName, size_t currStep, size_t block);             \
-    template void DAIDBPutBlockMetadataToJulea(                                   \
-        Variable<T> &variable, const std::string nameSpace,                    \
+    template void JuleaDBInteractionWriter::PutBlockMetadataToJulea(            \
+        core::Variable<T> &variable, const std::string nameSpace,              \
         const std::string varName, size_t step, size_t block,                  \
-        const typename Variable<T>::Info &blockInfo, T &blockMin, T &blockMax, \
-        T &blockMean, uint32_t &entryID);                                      
+        const typename core::Variable<T>::Info &blockInfo, T &blockMin,        \
+        T &blockMax, T &blockMean, uint32_t &entryID);
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
+
+// #define declare_template_instantiation(T)                                      \
+//     template void JuleaDBInteractionWriter::DAIDBPutVariableMetadataToJulea(                                \
+//         Variable<T> &variable, const std::string nameSpace,                    \
+//         const std::string varName, size_t currStep, size_t block);             \
+//     template void JuleaDBInteractionWriter::DAIDBPutBlockMetadataToJulea(                                   \
+//         Variable<T> &variable, const std::string nameSpace,                    \
+//         const std::string varName, size_t step, size_t block,                  \
+//         const typename Variable<T>::Info &blockInfo, T &blockMin, T &blockMax, \
+//         T &blockMean, uint32_t &entryID);
+// ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
+// #undef declare_template_instantiation
 
 } // end namespace interop
 } // end namespace adios2

@@ -26,7 +26,8 @@ namespace adios2
 namespace interop
 {
 
-JuleaDeserializer::JuleaDeserializer(const bool debugMode) : m_DebugMode(debugMode)
+JuleaDeserializer::JuleaDeserializer(const bool debugMode)
+: m_DebugMode(debugMode)
 {
 }
 

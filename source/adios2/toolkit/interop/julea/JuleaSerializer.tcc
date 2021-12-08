@@ -22,10 +22,10 @@ namespace adios2
 namespace interop
 {
 
-    template <class T>
+template <class T>
 void JuleaDBDAISetMinMax(core::Variable<T> &variable, const T *data,
-                                     T &blockMin, T &blockMax, T &blockMean,
-                                     size_t currentStep, size_t currentBlockID)
+                         T &blockMin, T &blockMax, T &blockMean,
+                         size_t currentStep, size_t currentBlockID)
 {
     T min = 0;
     T max = 0;
@@ -92,28 +92,32 @@ void JuleaDBDAISetMinMax(core::Variable<T> &variable, const T *data,
 }
 
 template <>
-void JuleaDBDAISetMinMax<std::string>(
-    core::Variable<std::string> &variable, const std::string *data,
-    std::string &blockMin, std::string &blockMax, std::string &blockMean,
-    size_t currentStep, size_t currentBlockID)
+void JuleaDBDAISetMinMax<std::string>(core::Variable<std::string> &variable,
+                                      const std::string *data,
+                                      std::string &blockMin,
+                                      std::string &blockMax,
+                                      std::string &blockMean,
+                                      size_t currentStep, size_t currentBlockID)
 {
     // TODO implement?
 }
 
 template <>
 void JuleaDBDAISetMinMax<std::complex<float>>(
-    core::Variable<std::complex<float>> &variable, const std::complex<float> *data,
-    std::complex<float> &blockMin, std::complex<float> &blockMax,
-    std::complex<float> &blockMean, size_t currentStep, size_t currentBlockID)
+    core::Variable<std::complex<float>> &variable,
+    const std::complex<float> *data, std::complex<float> &blockMin,
+    std::complex<float> &blockMax, std::complex<float> &blockMean,
+    size_t currentStep, size_t currentBlockID)
 {
     // TODO implement?
 }
 
 template <>
 void JuleaDBDAISetMinMax<std::complex<double>>(
-    core::Variable<std::complex<double>> &variable, const std::complex<double> *data,
-    std::complex<double> &blockMin, std::complex<double> &blockMax,
-    std::complex<double> &blockMean, size_t currentStep, size_t currentBlockID)
+    core::Variable<std::complex<double>> &variable,
+    const std::complex<double> *data, std::complex<double> &blockMin,
+    std::complex<double> &blockMax, std::complex<double> &blockMean,
+    size_t currentStep, size_t currentBlockID)
 {
     // TODO implement?
 }
@@ -124,11 +128,10 @@ void JuleaSerializer::Write(core::Variable<T> &variable, const T *values)
     //
 }
 
-
 /* parse variable information to metadata struct to store in JULEA */
 template <class T>
-void JuleaSerializer::ParseVariable(core::Variable<T> &variable, const T *data, Metadata
-	 *metadata)
+void JuleaSerializer::ParseVariable(core::Variable<T> &variable, const T *data,
+                                    Metadata *metadata)
 {
     //
 }

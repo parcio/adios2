@@ -13,7 +13,7 @@
 
 // #include "adios2/helper/adiosCommMPI.h"
 
-#include "JuleaDBDAIInteractionWriter.h"
+// #include "JuleaDBDAIInteractionWriter.h"
 #include "JuleaDBDAIWriter.h"
 
 // #include <adios2_c.h>
@@ -228,12 +228,12 @@ void JuleaDBDAIWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     {
         // TODO: add mean value to DB
         /** updates the variable metadata as there is a new block now */
-        DAIDBPutVariableMetadataToJulea(variable, m_Name, variable.m_Name,
+        m_JuleaDBInteractionWriter.PutVariableMetadataToJulea(variable, m_Name, variable.m_Name,
                                      m_CurrentStep, m_CurrentBlockID);
     }
 
     /** put block metadata to DB */
-    DAIDBPutBlockMetadataToJulea(variable, m_Name, variable.m_Name, m_CurrentStep,
+    m_JuleaDBInteractionWriter.PutBlockMetadataToJulea(variable, m_Name, variable.m_Name, m_CurrentStep,
                               m_CurrentBlockID, blockInfo, blockMin, blockMax,
                               blockMean, entryID);
 
@@ -241,7 +241,8 @@ void JuleaDBDAIWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     /** put data to object store */
     // DBPutVariableDataToJulea(variable, data, m_Name, m_CurrentStep,
     // m_CurrentBlockID);
-    DAIDBPutVariableDataToJulea(variable, data, m_Name, entryID);
+
+    m_JuleaDBInteractionWriter.PutVariableDataToJulea(variable, data, m_Name, entryID);
 }
 
 template <class T>

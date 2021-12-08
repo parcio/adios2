@@ -29,7 +29,7 @@ namespace engine
 
 JuleaDBDAIWriter::JuleaDBDAIWriter(IO &io, const std::string &name, const Mode mode,
                              helper::Comm comm)
-: Engine("JuleaDBDAIWriter", io, name, mode, std::move(comm))
+: Engine("JuleaDBDAIWriter", io, name, mode, std::move(comm)),  m_JuleaDBInteractionWriter()
 {
     // std::cout << "JULEA ENGINE: Constructor" << std::endl;
     // m_BP3Serializer(mpiComm, m_DebugMode),
@@ -238,12 +238,13 @@ void JuleaDBDAIWriter::Init()
 
     m_JuleaSemantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
 
-    DAIInitDBSchemas();
+    m_JuleaDBInteractionWriter.InitDBSchemas();
+    // DAIInitDBSchemas();
     InitParameters();
     InitVariables();
 }
 
-void JuleaDBDAIWriter::InitDB() { DAIInitDBSchemas(); }
+void JuleaDBDAIWriter::InitDB() { m_JuleaDBInteractionWriter.InitDBSchemas(); }
 
 /**TODO needed?
  * see BP3Base InitParameters
