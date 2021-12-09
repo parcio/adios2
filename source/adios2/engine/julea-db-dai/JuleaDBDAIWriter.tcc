@@ -13,7 +13,7 @@
 
 // #include "adios2/helper/adiosCommMPI.h"
 
-// #include "JuleaDBDAIInteractionWriter.h"
+#include "JuleaDBDAIInteractionWriter.h"
 #include "JuleaDBDAIWriter.h"
 
 // #include <adios2_c.h>
@@ -242,7 +242,8 @@ void JuleaDBDAIWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     // DBPutVariableDataToJulea(variable, data, m_Name, m_CurrentStep,
     // m_CurrentBlockID);
 
-    m_JuleaDBInteractionWriter.PutVariableDataToJulea(variable, data, m_Name, entryID);
+    DAIDBPutVariableDataToJulea(variable, data, m_Name, entryID);
+    // m_JuleaDBInteractionWriter.PutVariableDataToJulea(variable, data, m_Name, entryID);
 }
 
 template <class T>

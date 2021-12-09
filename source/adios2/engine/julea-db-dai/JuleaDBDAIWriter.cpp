@@ -29,7 +29,7 @@ namespace engine
 
 JuleaDBDAIWriter::JuleaDBDAIWriter(IO &io, const std::string &name, const Mode mode,
                              helper::Comm comm)
-: Engine("JuleaDBDAIWriter", io, name, mode, std::move(comm)),  m_JuleaDBInteractionWriter()
+: Engine("JuleaDBDAIWriter", io, name, mode, std::move(comm)),  m_JuleaDBInteractionWriter(m_DebugMode)
 {
     // std::cout << "JULEA ENGINE: Constructor" << std::endl;
     // m_BP3Serializer(mpiComm, m_DebugMode),

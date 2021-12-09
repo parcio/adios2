@@ -69,9 +69,9 @@ namespace engine
 // //                               const std::string nameSpace, size_t
 // //                               currentStep, size_t blockID);
 
-// template <class T>
-// void DAIDBPutVariableDataToJulea(Variable<T> &variable, const T *data,
-//                               const std::string nameSpace, uint32_t entryID);
+template <class T>
+void DAIDBPutVariableDataToJulea(Variable<T> &variable, const T *data,
+                              const std::string nameSpace, uint32_t entryID);
 
 // /** --- Attributes --- */
 // template <class T>
@@ -90,6 +90,14 @@ namespace engine
 // void DAIDBPutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
 //                                         bson_t *bsonMetadata,
 //                                         const std::string nameSpace);
+
+#define declare_template_instantiation(T)                                      \
+    extern template void DAIDBPutVariableDataToJulea(                             \
+        Variable<T> &variable, const T *data, const std::string nameSpace,     \
+        uint32_t entryID);                                                     
+    ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
+#undef declare_template_instantiation
+
 
 // #define declare_template_instantiation(T)                                      \
 //     extern template void DAIDBPutVariableDataToJulea(                             \
