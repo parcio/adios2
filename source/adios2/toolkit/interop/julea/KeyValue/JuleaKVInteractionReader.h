@@ -8,11 +8,13 @@
  *      Author: Kira Duwe
  */
 
-#ifndef ADIOS2_TOOLKIT_INTEROP_JULEA_JULEASERIALIZER_H_
-#define ADIOS2_TOOLKIT_INTEROP_JULEA_JULEASERIALIZER_H_
+#ifndef ADIOS2_TOOLKIT_INTEROP_JULEA_JULEAKVINTERACTIONWRITER_H_
+#define ADIOS2_TOOLKIT_INTEROP_JULEA_JULEAKVINTERACTIONWRITER_H_
 
-#include "JuleaMetadata.h"
+// #include "JuleaMetadata.h"
 // #include "adios2/engine/julea/JuleaMetadata.h" //FIXME: move to interop namespace!
+#include "adios2/toolkit/interop/julea/JuleaInteraction.h"
+
 #include "adios2/common/ADIOSMacros.h"
 #include "adios2/common/ADIOSTypes.h"
 #include "adios2/core/IO.h" // for CreateVar
@@ -30,34 +32,11 @@ namespace adios2
 namespace interop
 {
 
-class JuleaInteraction
+
+class JuleaKVInteractionReader : public JuleaInteraction
 {
 
 public:
-    /**
-     * Unique constructor
-     * @param debugMode true: extra exception checks
-     */
-    // JuleaSerializer(const bool debugMode);
-
-    void PrintMiniPenguin();
-    void PrintPenguinFamily();
-    void PrintLargePenguin();
-
-    unsigned int m_CurrentAdiosStep = 0;
-    const bool m_DebugMode;
-    bool m_WriteMode = false;
-    bool m_ReadMode = false;
-
-    int m_CommRank = 0;
-    int m_CommSize = 1;
-
-    JSemantics m_JuleaSemantics;
-    //TODO: batch?
-
-    std::string m_JuleaNamespace = "adios2";
-    // std::string m_VariableTableName; in DBInteractionWriter
-
 private:
 
     //something private
@@ -85,4 +64,4 @@ private:
 } // end namespace interop
 } // end namespace adios
 
-#endif /* ADIOS2_TOOLKIT_INTEROP_JULEA_JULEASERIALIZER_H_ */
+#endif /* ADIOS2_TOOLKIT_INTEROP_JULEA_JULEAKVINTERACTIONWRITER_H_ */

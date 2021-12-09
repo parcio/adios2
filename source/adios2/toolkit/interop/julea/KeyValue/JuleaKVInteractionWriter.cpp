@@ -8,7 +8,7 @@
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
-#include "JuleaDBInteractionReader.h"
+#include "JuleaKVInteractionWriter.h"
 // #include "JuleaDBDAIInteractionReader.h"
 // #include "JuleaMetadata.h"
 
@@ -28,7 +28,6 @@ namespace adios2
 namespace interop
 {
 
-}
 
 } // end namespace interop
 } // end namespace adios2

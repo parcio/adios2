@@ -8,8 +8,8 @@
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
-#ifndef ADIOS2_TOOLKIT_INTEROP_JULEA_JULEAINTERACTIONWRITER_H_
-#define ADIOS2_TOOLKIT_INTEROP_JULEA_JULEAINTERACTIONWRITER_H_
+#ifndef ADIOS2_TOOLKIT_INTEROP_JULEA_JULEADBINTERACTIONWRITER_H_
+#define ADIOS2_TOOLKIT_INTEROP_JULEA_JULEADBINTERACTIONWRITER_H_
 
 #include "adios2/toolkit/interop/julea/JuleaInteraction.h"
 
@@ -59,15 +59,15 @@ public:
         const typename core::Variable<T>::Info &blockInfo, T &blockMin,
         T &blockMax, T &blockMean, uint32_t &entryID);
 
-    /**
-     * Store variable data in JULEA object store. The key is:
-     * currentStep_currentBlock. Variable name is in the kv-namespace.
-     * @param variable      variable
-     * @param data data     pointer
-     * @param nameSpace     file name
-     * @param currentStep   current step (part of key)
-     * @param blockID       current block (part of key)
-     */
+    // /**
+    //  * Store variable data in JULEA object store. The key is:
+    //  * currentStep_currentBlock. Variable name is in the kv-namespace.
+    //  * @param variable      variable
+    //  * @param data data     pointer
+    //  * @param nameSpace     file name
+    //  * @param currentStep   current step (part of key)
+    //  * @param blockID       current block (part of key)
+    //  */
     // template <class T>
     // void DBPutVariableDataToJulea(Variable<T> &variable, const T *data,
     //                               const std::string nameSpace, size_t
@@ -149,4 +149,4 @@ ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 } // end namespace interop
 } // end namespace adios2
 
-#endif /* ADIOS2_TOOLKIT_INTEROP_JULEA_JULEAINTERACTIONWRITER_H_ */
+#endif /* ADIOS2_TOOLKIT_INTEROP_JULEA_JULEADBINTERACTIONWRITER_H_ */

@@ -52,8 +52,8 @@ public:
      * Unique constructor
      * @param debugMode true: extra exception checks
      */
-    JuleaInteraction();
-    // JuleaInteraction(const bool debugMode);
+    // JuleaInteraction();
+    JuleaInteraction(const bool debugMode);
     // JuleaSerializer(const bool debugMode);
 
     void PrintMiniPenguin();
@@ -79,11 +79,14 @@ public:
     std::string m_JuleaBackendDB = "DB";
     std::string m_JuleaBackendKV = "KV";
     // std::string m_VariableTableName; in DBInteractionWriter
+    void SetMinMaxValueFields(std::string *minField, std::string *maxField,
+                          std::string *valueField, std::string *meanField,
+                          const adios2::DataType varType);
 
     // for both db and kv engine
     template <class T>
     void PutVariableDataToJulea(core::Variable<T> &variable, const T *data,
-                                const std::string nameSpace, uint32_t entryID);
+                                const std::string nameSpace, uint32_t entryID) const;
     // TODO: GetVariableDataFromJulea
 
 protected:
@@ -95,9 +98,9 @@ private:
 };
 
 #define declare_template_instantiation(T)                                      \
-    extern template void PutVariableDataToJulea(                               \
+    extern template void JuleaInteraction::PutVariableDataToJulea(                               \
         core::Variable<T> &variable, const T *data,                            \
-        const std::string nameSpace, uint32_t entryID);
+        const std::string nameSpace, uint32_t entryID) const;
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
 

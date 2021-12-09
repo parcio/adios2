@@ -8,8 +8,8 @@
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
-#include "JuleaDBDAIInteractionWriter.h"
-// #include "JuleaDBDAIInteractionReader.h"
+#include "JuleaDBInteractionWriter.h"
+#include "JuleaDBInteractionReader.h"
 // #include "JuleaMetadata.h"
 
 #include <assert.h>
@@ -195,7 +195,7 @@ void DAIaddFieldsForBlockMD(JDBSchema *schema)
 }
 
 template <class T>
-void DAIaddEntriesForVariableMD(Variable<T> &variable,
+void DAIaddEntriesForVariableMD(core::Variable<T> &variable,
                                 const std::string nameSpace,
                                 const std::string varName, size_t currStep,
                                 JDBSchema *schema, JDBEntry *entry)
@@ -310,7 +310,7 @@ void DAIaddEntriesForVariableMD(Variable<T> &variable,
     std::string valueField;
     std::string meanField;
 
-    DAIsetMinMaxValueFields(&minField, &maxField, &valueField, &meanField,
+    SetMinMaxValueFields(&minField, &maxField, &valueField, &meanField,
                             variable.m_Type);
 
     j_db_entry_set_field(entry, minField.c_str(), &variable.m_Min,
@@ -320,10 +320,10 @@ void DAIaddEntriesForVariableMD(Variable<T> &variable,
 }
 
 template <class T>
-void DAIaddEntriesForBlockMD(Variable<T> &variable, const std::string nameSpace,
+void DAIaddEntriesForBlockMD(core::Variable<T> &variable, const std::string nameSpace,
                              const std::string varName, size_t currStep,
                              size_t block,
-                             const typename Variable<T>::Info &blockInfo,
+                             const typename core::Variable<T>::Info &blockInfo,
                              JDBSchema *schema, JDBEntry *entry, T &blockMin,
                              T &blockMax, T &blockMean)
 {
@@ -540,9 +540,9 @@ void JuleaDBInteractionWriter::PutVariableMetadataToJulea(
 
 template <class T>
 void JuleaDBInteractionWriter::PutBlockMetadataToJulea(
-    Variable<T> &variable, const std::string nameSpace,
+    core::Variable<T> &variable, const std::string nameSpace,
     const std::string varName, size_t step, size_t block,
-    const typename Variable<T>::Info &blockInfo, T &blockMin, T &blockMax,
+    const typename core::Variable<T>::Info &blockInfo, T &blockMin, T &blockMax,
     T &blockMean, uint32_t &entryID)
 {
     int err = 0;

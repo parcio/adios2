@@ -8,10 +8,12 @@
  *      Author: Kira Duwe
  */
 
-#ifndef ADIOS2_TOOLKIT_INTEROP_JULEA_JULEASERIALIZER_H_
-#define ADIOS2_TOOLKIT_INTEROP_JULEA_JULEASERIALIZER_H_
+#ifndef ADIOS2_TOOLKIT_INTEROP_JULEA_JULEADBINTERACTIONREADER_H_
+#define ADIOS2_TOOLKIT_INTEROP_JULEA_JULEADBINTERACTIONREADER_H_
 
-#include "JuleaMetadata.h"
+// #include "JuleaMetadata.h"
+#include "adios2/toolkit/interop/julea/JuleaInteraction.h"
+
 // #include "adios2/engine/julea/JuleaMetadata.h" //FIXME: move to interop
 // namespace!
 #include "adios2/common/ADIOSMacros.h"
@@ -37,10 +39,13 @@ public:
     std::string m_JuleaNamespace = "adios2";
     // std::string m_VariableTableName; in DBInteractionWriter
 
+// void SetMinMaxValueFields(std::string *minField, std::string *maxField,
+//                           std::string *valueField, std::string *meanField,
+//                           const adios2::DataType varType);
 private:
     // something private
 };
 } // end namespace interop
 } // end namespace adios
 
-#endif /* ADIOS2_TOOLKIT_INTEROP_JULEA_JULEASERIALIZER_H_ */
+#endif /* ADIOS2_TOOLKIT_INTEROP_JULEA_JULEADBINTERACTIONREADER_H_ */
