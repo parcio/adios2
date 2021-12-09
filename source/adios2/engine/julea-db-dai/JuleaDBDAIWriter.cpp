@@ -27,9 +27,15 @@ namespace core
 namespace engine
 {
 
+// JuleaDBDAIWriter::JuleaDBDAIWriter(IO &io, const std::string &name, const Mode mode,
+//                              helper::Comm comm)
+// : Engine("JuleaDBDAIWriter", io, name, mode, std::move(comm)),  m_JuleaDBInteractionWriter(m_Comm)
+
+
 JuleaDBDAIWriter::JuleaDBDAIWriter(IO &io, const std::string &name, const Mode mode,
                              helper::Comm comm)
-: Engine("JuleaDBDAIWriter", io, name, mode, std::move(comm)),  m_JuleaDBInteractionWriter(m_DebugMode)
+: Engine("JuleaDBDAIWriter", io, name, mode, std::move(comm))
+,  m_JuleaDBInteractionWriter(m_Comm)
 {
     // std::cout << "JULEA ENGINE: Constructor" << std::endl;
     // m_BP3Serializer(mpiComm, m_DebugMode),

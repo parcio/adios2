@@ -25,7 +25,7 @@ class JuleaDBInteractionWriter : public JuleaInteraction
 {
 
 public:
-    JuleaDBInteractionWriter();
+    JuleaDBInteractionWriter(helper::Comm const &comm);
     ~JuleaDBInteractionWriter() = default;
     /** --- Variables --- */
     void InitDBSchemas();

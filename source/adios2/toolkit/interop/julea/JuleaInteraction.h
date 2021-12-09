@@ -53,15 +53,16 @@ public:
      * @param debugMode true: extra exception checks
      */
     // JuleaInteraction();
-    JuleaInteraction(const bool debugMode);
+    JuleaInteraction(helper::Comm const &comm);
     // JuleaSerializer(const bool debugMode);
-
+    ~JuleaInteraction() = default;
+    
     void PrintMiniPenguin();
     void PrintPenguinFamily();
     void PrintLargePenguin();
 
     unsigned int m_CurrentAdiosStep = 0;
-    const bool m_DebugMode;
+    // const bool m_DebugMode;
     bool m_WriteMode = false;
     bool m_ReadMode = false;
 
@@ -79,7 +80,7 @@ public:
     std::string m_JuleaBackendDB = "DB";
     std::string m_JuleaBackendKV = "KV";
     // std::string m_VariableTableName; in DBInteractionWriter
-    void SetMinMaxValueFields(std::string *minField, std::string *maxField,
+    static void SetMinMaxValueFields(std::string *minField, std::string *maxField,
                           std::string *valueField, std::string *meanField,
                           const adios2::DataType varType);
 

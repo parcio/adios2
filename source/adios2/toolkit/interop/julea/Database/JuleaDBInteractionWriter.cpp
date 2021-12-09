@@ -8,6 +8,7 @@
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
+#include "adios2/toolkit/interop/julea/JuleaInteraction.h"
 #include "JuleaDBInteractionWriter.h"
 #include "JuleaDBInteractionReader.h"
 // #include "JuleaMetadata.h"
@@ -27,6 +28,12 @@ namespace adios2
 {
 namespace interop
 {
+
+JuleaDBInteractionWriter::JuleaDBInteractionWriter(helper::Comm const &comm) : JuleaInteraction(std::move(comm))
+{
+    std::cout << "This is the constructor" << std::endl;
+}
+
 
 void DAIaddFieldsForVariableMD(JDBSchema *schema)
 {
@@ -310,7 +317,7 @@ void DAIaddEntriesForVariableMD(core::Variable<T> &variable,
     std::string valueField;
     std::string meanField;
 
-    SetMinMaxValueFields(&minField, &maxField, &valueField, &meanField,
+    JuleaInteraction::SetMinMaxValueFields(&minField, &maxField, &valueField, &meanField,
                             variable.m_Type);
 
     j_db_entry_set_field(entry, minField.c_str(), &variable.m_Min,
@@ -405,7 +412,7 @@ void DAIaddEntriesForBlockMD(core::Variable<T> &variable, const std::string name
     std::string valueField;
     std::string meanField;
 
-    DAIsetMinMaxValueFields(&minField, &maxField, &valueField, &meanField,
+    JuleaInteraction::SetMinMaxValueFields(&minField, &maxField, &valueField, &meanField,
                             variable.m_Type);
 
     j_db_entry_set_field(entry, minField.c_str(), &blockMin, minLen, NULL);
@@ -434,7 +441,9 @@ void DAIaddEntriesForBlockMD(core::Variable<T> &variable, const std::string name
     j_db_entry_set_field(entry, "blockID", &blockID, sizeof(blockID), NULL);
 }
 
-void InitDBSchemas()
+
+
+void JuleaDBInteractionWriter::InitDBSchemas()
 {
     // std::cout << "--- InitDBSchemas ---" << std::endl;
     int err = 0;

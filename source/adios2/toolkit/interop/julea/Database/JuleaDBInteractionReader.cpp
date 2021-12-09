@@ -28,7 +28,6 @@ namespace adios2
 namespace interop
 {
 
-}
 
 } // end namespace interop
 } // end namespace adios2

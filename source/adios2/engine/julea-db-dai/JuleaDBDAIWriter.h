@@ -60,9 +60,9 @@ public:
     void EndStep() final;
     void Flush(const int transportIndex = -1) final;
 
-    interop::JuleaDBInteractionWriter m_JuleaDBInteractionWriter;
     // interop::JuleaInteraction m_JuleaDBInteractionWriter;
 private:
+    interop::JuleaDBInteractionWriter m_JuleaDBInteractionWriter;
     // interop::JuleaSerializer m_JuleaSerializer;
     // interop::JuleaDBInteraction m_JuleaDBInteractionWriter;
     // interop::JuleaDBInteractionWriter m_JuleaDBInteractionWriter;
