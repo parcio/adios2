@@ -36,6 +36,7 @@ namespace engine
 JuleaDBDAIReader::JuleaDBDAIReader(IO &io, const std::string &name, const Mode mode,
                              helper::Comm comm)
 : Engine("JuleaDBDAIReader", io, name, mode, std::move(comm))
+,  m_JuleaDBInteractionReader(m_Comm)
 
 {
     // m_EndMessage = " in call to IO Open JuleaDBDAIReader " + m_Name + "\n";
@@ -241,7 +242,7 @@ void JuleaDBDAIReader::Init()
 
     // InitParameters();
     // InitTransports();
-    DAICheckSchemas();
+    m_JuleaDBInteractionReader.DAICheckSchemas();
     InitVariables();
     // InitAttributes(); //TODO
 }
@@ -254,7 +255,7 @@ void JuleaDBDAIReader::Init()
 // template <class T>
 void JuleaDBDAIReader::InitVariables()
 {
-    DAIInitVariablesFromDB(m_Name, &m_IO, *this);
+    m_JuleaDBInteractionReader.DAIInitVariablesFromDB(m_Name, &m_IO, *this);
 }
 
 void JuleaDBDAIReader::InitParameters()

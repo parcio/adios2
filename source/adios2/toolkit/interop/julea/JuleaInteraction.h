@@ -75,11 +75,17 @@ public:
                                      std::string *meanField,
                                      const adios2::DataType varType);
 
-    // for both db and kv engine
+    // Both KV and DB engine store data in object store
     template <class T>
     void PutVariableDataToJulea(core::Variable<T> &variable, const T *data,
                                 const std::string nameSpace,
                                 uint32_t entryID) const;
+
+
+template <class T>
+void DAIDBGetVariableDataFromJulea(core::Variable<T> &variable, T *data,
+                                const std::string nameSpace, size_t offset,
+                                long unsigned int dataSize, uint32_t entryID) const;
     // TODO: GetVariableDataFromJulea
 
 protected:
@@ -93,7 +99,10 @@ private:
 #define declare_template_instantiation(T)                                      \
     extern template void JuleaInteraction::PutVariableDataToJulea(             \
         core::Variable<T> &variable, const T *data,                            \
-        const std::string nameSpace, uint32_t entryID) const;
+        const std::string nameSpace, uint32_t entryID) const;\
+         extern template void JuleaInteraction::DAIDBGetVariableDataFromJulea(                           \
+        core::Variable<T> &variable, T *data, const std::string nameSpace,           \
+        size_t offset, long unsigned int dataSize, uint32_t entryID) const;
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
 

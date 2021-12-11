@@ -36,15 +36,100 @@ class JuleaDBInteractionReader : public JuleaInteraction
 {
 
 public:
+
+   JuleaDBInteractionReader(helper::Comm const &comm);
+    ~JuleaDBInteractionReader() = default;
     std::string m_JuleaNamespace = "adios2";
     // std::string m_VariableTableName; in DBInteractionWriter
 
     // void SetMinMaxValueFields(std::string *minField, std::string *maxField,
     //                           std::string *valueField, std::string
     //                           *meanField, const adios2::DataType varType);
+
+
+void DAIsetMinMaxValueFields(std::string *minField, std::string *maxField,
+                          std::string *valueField, std::string *meanField,
+                          const adios2::DataType varType);
+
+void DAIDBDefineVariableInInit(core::IO *io, const std::string varName,
+                            std::string type, Dims shape, Dims start,
+                            Dims count, bool constantDims, bool isLocalValue);
+
+void DAICheckSchemas();
+
+void DAIInitVariablesFromDB(const std::string nameSpace, core::IO *io,
+                         core::Engine &engine);
+
+
+/**
+ * Deserialize the metadata of a single block of a step of a variable.
+ * @param variable         variable
+ * @param buffer           metadata buffer from JULEA key-value store
+ * @param blockID          blockID (0 index)
+ * @param info             info struct to store block infos in
+ */
+// template <class T>
+// void DeserializeBlockMetadata(Variable<T> &variable, gpointer buffer,
+//                               size_t blockID,
+//                               typename core::Variable<T>::Info &info);
+template <class T>
+void DAIGetCountFromBlockMetadata(const std::string nameSpace,
+                               const std::string varName, size_t step,
+                               size_t block, Dims *count, size_t entryID,
+                               bool isLocalValue, T *value);
+
+template <class T>
+std::unique_ptr<typename core::Variable<T>::Info>
+DAIDBGetBlockMetadata(const core::Variable<T> &variable,
+                   // const std::string nameSpace, size_t step, size_t block,
+                   size_t entryID) const;
+
+// entryID: unique ID for entry in database
+template <class T>
+void DAIDBGetBlockMetadataNEW(core::Variable<T> &variable,
+                           typename core::Variable<T>::Info &blockInfo,
+                           size_t entryID);
+
+/* --- Variables --- */
+
+/** Retrieves all variable names from key-value store. They are all stored
+ * in one bson. */
+void DAIDBGetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
+                         unsigned int *varCount, bool isVariable);
+
+/** Retrieves the metadata buffer for the variable metadata that do not vary
+ * from block to block. The key is the variable name. */
+void DAIDBGetVariableMetadataFromJulea(const std::string nameSpace,
+                                    const std::string varName, gpointer *buffer,
+                                    guint32 *buffer_len);
+
+/** Retrieves the block metadata buffer from the key-value store. The key is:
+ * currentStep_currentBlock. The variable name and the nameSpace from the
+ * key-value namespace. */
+void DAIDBGetBlockMetadataFromJulea(const std::string nameSpace,
+                                 const std::string varName, gpointer *buffer,
+                                 guint32 *buffer_len,
+                                 const std::string stepBlockID);
+
+
 private:
     // something private
 };
+
+#define variable_template_instantiation(T)                                     \
+    extern template void JuleaDBInteractionReader::DAIGetCountFromBlockMetadata(                            \
+        const std::string nameSpace, const std::string varName, size_t step,   \
+        size_t block, Dims *count, size_t entryID, bool isLocalValue,          \
+        T *value);                                                             \
+    extern template std::unique_ptr<typename core::Variable<T>::Info>          \
+    JuleaDBInteractionReader::DAIDBGetBlockMetadata(const core::Variable<T> &variable, size_t entryID) const;     \
+                                                                               \
+    extern template void JuleaDBInteractionReader::DAIDBGetBlockMetadataNEW(                                \
+        core::Variable<T> &variable, typename core::Variable<T>::Info &blockInfo,    \
+        size_t entryID);                                                       
+ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
+#undef variable_template_instantiation
+
 } // end namespace interop
 } // end namespace adios
 
