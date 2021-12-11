@@ -8,9 +8,9 @@
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
-#include "adios2/toolkit/interop/julea/JuleaInteraction.h"
 #include "JuleaDBInteractionWriter.h"
 #include "JuleaDBInteractionWriter.tcc"
+#include "adios2/toolkit/interop/julea/JuleaInteraction.h"
 // #include "JuleaDBInteractionReader.h"
 // #include "JuleaMetadata.h"
 
@@ -30,11 +30,11 @@ namespace adios2
 namespace interop
 {
 
-JuleaDBInteractionWriter::JuleaDBInteractionWriter(helper::Comm const &comm) : JuleaInteraction(std::move(comm))
+JuleaDBInteractionWriter::JuleaDBInteractionWriter(helper::Comm const &comm)
+: JuleaInteraction(std::move(comm))
 {
     std::cout << "This is the constructor" << std::endl;
 }
-
 
 void DAIaddFieldsForVariableMD(JDBSchema *schema)
 {
@@ -251,6 +251,17 @@ void JuleaDBInteractionWriter::InitDBSchemas()
     j_semantics_unref(semantics);
 }
 
+#define declare_template_instantiation(T)                                      \
+    template void JuleaDBInteractionWriter::PutVariableMetadataToJulea(        \
+        core::Variable<T> &variable, const std::string nameSpace,              \
+        const std::string varName, size_t currStep, size_t block);             \
+    template void JuleaDBInteractionWriter::PutBlockMetadataToJulea(           \
+        core::Variable<T> &variable, const std::string nameSpace,              \
+        const std::string varName, size_t step, size_t block,                  \
+        const typename core::Variable<T>::Info &blockInfo, T &blockMin,        \
+        T &blockMax, T &blockMean, uint32_t &entryID);
+ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
+#undef declare_template_instantiation
 
 } // end namespace interop
 } // end namespace adios2

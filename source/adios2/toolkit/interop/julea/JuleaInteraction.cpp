@@ -32,9 +32,11 @@ JuleaInteraction::JuleaInteraction(helper::Comm const &comm)
     std::cout << "This is the constructor" << std::endl;
 }
 
-void JuleaInteraction::SetMinMaxValueFields(std::string *minField, std::string *maxField,
-                          std::string *valueField, std::string *meanField,
-                          const adios2::DataType varType)
+void JuleaInteraction::SetMinMaxValueFields(std::string *minField,
+                                            std::string *maxField,
+                                            std::string *valueField,
+                                            std::string *meanField,
+                                            const adios2::DataType varType)
 {
     switch (varType)
     {
@@ -93,9 +95,9 @@ void JuleaInteraction::SetMinMaxValueFields(std::string *minField, std::string *
 }
 
 #define declare_template_instantiation(T)                                      \
-    template void JuleaInteraction::PutVariableDataToJulea(                                    \
-        core::Variable<T> &variable, const T *data, const std::string nameSpace,     \
-        uint32_t entryID) const;                                                     
+    template void JuleaInteraction::PutVariableDataToJulea(                    \
+        core::Variable<T> &variable, const T *data,                            \
+        const std::string nameSpace, uint32_t entryID) const;
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
 

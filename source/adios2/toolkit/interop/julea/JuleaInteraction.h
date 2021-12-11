@@ -22,11 +22,11 @@
 #include <julea-object.h>
 #include <julea.h>
 
-#include "adios2/core/VariableBase.h"
 #include "adios2/common/ADIOSMacros.h"
 #include "adios2/common/ADIOSTypes.h"
 #include "adios2/core/IO.h" // for CreateVar
 #include "adios2/core/Variable.h"
+#include "adios2/core/VariableBase.h"
 
 namespace adios2
 {
@@ -45,7 +45,7 @@ public:
     JuleaInteraction(helper::Comm const &comm);
     // JuleaSerializer(const bool debugMode);
     ~JuleaInteraction() = default;
-    
+
     void PrintMiniPenguin();
     void PrintPenguinFamily();
     void PrintLargePenguin();
@@ -69,14 +69,17 @@ public:
     std::string m_JuleaBackendDB = "DB";
     std::string m_JuleaBackendKV = "KV";
     // std::string m_VariableTableName; in DBInteractionWriter
-    static void SetMinMaxValueFields(std::string *minField, std::string *maxField,
-                          std::string *valueField, std::string *meanField,
-                          const adios2::DataType varType);
+    static void SetMinMaxValueFields(std::string *minField,
+                                     std::string *maxField,
+                                     std::string *valueField,
+                                     std::string *meanField,
+                                     const adios2::DataType varType);
 
     // for both db and kv engine
     template <class T>
     void PutVariableDataToJulea(core::Variable<T> &variable, const T *data,
-                                const std::string nameSpace, uint32_t entryID) const;
+                                const std::string nameSpace,
+                                uint32_t entryID) const;
     // TODO: GetVariableDataFromJulea
 
 protected:
@@ -88,7 +91,7 @@ private:
 };
 
 #define declare_template_instantiation(T)                                      \
-    extern template void JuleaInteraction::PutVariableDataToJulea(                               \
+    extern template void JuleaInteraction::PutVariableDataToJulea(             \
         core::Variable<T> &variable, const T *data,                            \
         const std::string nameSpace, uint32_t entryID) const;
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)

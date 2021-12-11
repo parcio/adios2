@@ -8,7 +8,7 @@
  *      Author: Kira Duwe
  */
 
- #ifndef ADIOS2_TOOLKIT_INTEROP_JULEA_JULEAINTERACTION_TCC_
+#ifndef ADIOS2_TOOLKIT_INTEROP_JULEA_JULEAINTERACTION_TCC_
 #define ADIOS2_TOOLKIT_INTEROP_JULEA_JULEAINTERACTION_TCC_
 
 #include "JuleaInteraction.h"
@@ -28,8 +28,10 @@ namespace interop
 {
 
 template <class T>
-void JuleaInteraction::PutVariableDataToJulea(core::Variable<T> &variable, const T *data,
-                              const std::string nameSpace, uint32_t entryID) const
+void JuleaInteraction::PutVariableDataToJulea(core::Variable<T> &variable,
+                                              const T *data,
+                                              const std::string nameSpace,
+                                              uint32_t entryID) const
 {
     // std::cout << "--- PutVariableDataToJulea ----- " << std::endl;
     // std::cout << "data: " << data[0] << std::endl;

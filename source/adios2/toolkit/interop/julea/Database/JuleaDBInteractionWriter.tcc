@@ -8,12 +8,12 @@
  *      Author: Kira Duwe duwe@informatik.uni-hamburg.de
  */
 
-#ifndef ADIOS2_TOOLKIT_INTEROP_JULEA_JULEADBINTERACTIONWRITER_H_
-#define ADIOS2_TOOLKIT_INTEROP_JULEA_JULEADBINTERACTIONWRITER_H_
+#ifndef ADIOS2_TOOLKIT_INTEROP_JULEA_JULEADBINTERACTIONWRITER_TCC_
+#define ADIOS2_TOOLKIT_INTEROP_JULEA_JULEADBINTERACTIONWRITER_TCC_
 
-#include "adios2/toolkit/interop/julea/JuleaInteraction.h"
-#include "JuleaDBInteractionWriter.h"
 #include "JuleaDBInteractionReader.h"
+#include "JuleaDBInteractionWriter.h"
+#include "adios2/toolkit/interop/julea/JuleaInteraction.h"
 // #include "JuleaMetadata.h"
 
 #include <assert.h>
@@ -148,8 +148,8 @@ void DAIaddEntriesForVariableMD(core::Variable<T> &variable,
     std::string valueField;
     std::string meanField;
 
-    JuleaInteraction::SetMinMaxValueFields(&minField, &maxField, &valueField, &meanField,
-                            variable.m_Type);
+    JuleaInteraction::SetMinMaxValueFields(&minField, &maxField, &valueField,
+                                           &meanField, variable.m_Type);
 
     j_db_entry_set_field(entry, minField.c_str(), &variable.m_Min,
                          sizeof(variable.m_Min), NULL);
@@ -158,7 +158,8 @@ void DAIaddEntriesForVariableMD(core::Variable<T> &variable,
 }
 
 template <class T>
-void DAIaddEntriesForBlockMD(core::Variable<T> &variable, const std::string nameSpace,
+void DAIaddEntriesForBlockMD(core::Variable<T> &variable,
+                             const std::string nameSpace,
                              const std::string varName, size_t currStep,
                              size_t block,
                              const typename core::Variable<T>::Info &blockInfo,
@@ -243,8 +244,8 @@ void DAIaddEntriesForBlockMD(core::Variable<T> &variable, const std::string name
     std::string valueField;
     std::string meanField;
 
-    JuleaInteraction::SetMinMaxValueFields(&minField, &maxField, &valueField, &meanField,
-                            variable.m_Type);
+    JuleaInteraction::SetMinMaxValueFields(&minField, &maxField, &valueField,
+                                           &meanField, variable.m_Type);
 
     j_db_entry_set_field(entry, minField.c_str(), &blockMin, minLen, NULL);
     j_db_entry_set_field(entry, maxField.c_str(), &blockMax, maxLen, NULL);
@@ -470,17 +471,17 @@ void JuleaDBInteractionWriter::PutBlockMetadataToJulea(
 //     std::endl;
 // }
 
-#define declare_template_instantiation(T)                                      \
-    template void JuleaDBInteractionWriter::PutVariableMetadataToJulea(        \
-        core::Variable<T> &variable, const std::string nameSpace,              \
-        const std::string varName, size_t currStep, size_t block);             \
-    template void JuleaDBInteractionWriter::PutBlockMetadataToJulea(            \
-        core::Variable<T> &variable, const std::string nameSpace,              \
-        const std::string varName, size_t step, size_t block,                  \
-        const typename core::Variable<T>::Info &blockInfo, T &blockMin,        \
-        T &blockMax, T &blockMean, uint32_t &entryID);
-ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
-#undef declare_template_instantiation
+// #define declare_template_instantiation(T)                                      \
+//     template void JuleaDBInteractionWriter::PutVariableMetadataToJulea(        \
+//         core::Variable<T> &variable, const std::string nameSpace,              \
+//         const std::string varName, size_t currStep, size_t block);             \
+//     template void JuleaDBInteractionWriter::PutBlockMetadataToJulea(           \
+//         core::Variable<T> &variable, const std::string nameSpace,              \
+//         const std::string varName, size_t step, size_t block,                  \
+//         const typename core::Variable<T>::Info &blockInfo, T &blockMin,        \
+//         T &blockMax, T &blockMean, uint32_t &entryID);
+// ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
+// #undef declare_template_instantiation
 
 // #define declare_template_instantiation(T)                                      \
 //     template void JuleaDBInteractionWriter::DAIDBPutVariableMetadataToJulea(                                \

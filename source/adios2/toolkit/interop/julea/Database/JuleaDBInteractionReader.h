@@ -39,9 +39,9 @@ public:
     std::string m_JuleaNamespace = "adios2";
     // std::string m_VariableTableName; in DBInteractionWriter
 
-// void SetMinMaxValueFields(std::string *minField, std::string *maxField,
-//                           std::string *valueField, std::string *meanField,
-//                           const adios2::DataType varType);
+    // void SetMinMaxValueFields(std::string *minField, std::string *maxField,
+    //                           std::string *valueField, std::string
+    //                           *meanField, const adios2::DataType varType);
 private:
     // something private
 };
