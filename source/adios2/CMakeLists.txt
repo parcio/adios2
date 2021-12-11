@@ -192,8 +192,11 @@ if(ADIOS2_HAVE_JULEA)
       # engine/julea-db-do/JuleaDB-DO-InteractionReader.cpp
 
       toolkit/interop/julea/JuleaInteraction.cpp
+      toolkit/interop/julea/JuleaInteraction.tcc
       toolkit/interop/julea/Database/JuleaDBInteractionReader.cpp
+      toolkit/interop/julea/Database/JuleaDBInteractionReader.tcc
       toolkit/interop/julea/Database/JuleaDBInteractionWriter.cpp
+      toolkit/interop/julea/Database/JuleaDBInteractionWriter.tcc
       toolkit/interop/julea/KeyValue/JuleaKVInteractionReader.cpp
       toolkit/interop/julea/KeyValue/JuleaKVInteractionWriter.cpp
       
