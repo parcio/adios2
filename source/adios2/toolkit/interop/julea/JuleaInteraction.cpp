@@ -98,7 +98,7 @@ void JuleaInteraction::SetMinMaxValueFields(std::string *minField,
     template void JuleaInteraction::PutVariableDataToJulea(                    \
         core::Variable<T> &variable, const T *data,                            \
         const std::string nameSpace, uint32_t entryID) const;\
-    template void JuleaInteraction::DAIDBGetVariableDataFromJulea(                                  \
+    template void JuleaInteraction::GetVariableDataFromJulea(                                  \
         core::Variable<T> &variable, T *data, const std::string nameSpace,           \
         size_t offset, long unsigned int dataSize, uint32_t entryID) const;
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)

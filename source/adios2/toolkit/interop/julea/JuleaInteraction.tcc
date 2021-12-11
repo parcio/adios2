@@ -82,7 +82,7 @@ void JuleaInteraction::PutVariableDataToJulea(core::Variable<T> &variable,
 
 
 template <class T>
-void JuleaInteraction::DAIDBGetVariableDataFromJulea(core::Variable<T> &variable, T *data,
+void JuleaInteraction::GetVariableDataFromJulea(core::Variable<T> &variable, T *data,
                                 const std::string nameSpace, size_t offset,
                                 size_t dataSize, uint32_t entryID) const
 {

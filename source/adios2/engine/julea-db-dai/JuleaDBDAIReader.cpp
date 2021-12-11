@@ -242,7 +242,7 @@ void JuleaDBDAIReader::Init()
 
     // InitParameters();
     // InitTransports();
-    m_JuleaDBInteractionReader.DAICheckSchemas();
+    m_JuleaDBInteractionReader.CheckSchemas();
     InitVariables();
     // InitAttributes(); //TODO
 }
@@ -255,7 +255,7 @@ void JuleaDBDAIReader::Init()
 // template <class T>
 void JuleaDBDAIReader::InitVariables()
 {
-    m_JuleaDBInteractionReader.DAIInitVariablesFromDB(m_Name, &m_IO, *this);
+    m_JuleaDBInteractionReader.InitVariablesFromDB(m_Name, &m_IO, *this);
 }
 
 void JuleaDBDAIReader::InitParameters()

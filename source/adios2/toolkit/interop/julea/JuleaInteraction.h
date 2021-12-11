@@ -83,7 +83,7 @@ public:
 
 
 template <class T>
-void DAIDBGetVariableDataFromJulea(core::Variable<T> &variable, T *data,
+void GetVariableDataFromJulea(core::Variable<T> &variable, T *data,
                                 const std::string nameSpace, size_t offset,
                                 long unsigned int dataSize, uint32_t entryID) const;
     // TODO: GetVariableDataFromJulea
@@ -100,7 +100,7 @@ private:
     extern template void JuleaInteraction::PutVariableDataToJulea(             \
         core::Variable<T> &variable, const T *data,                            \
         const std::string nameSpace, uint32_t entryID) const;\
-         extern template void JuleaInteraction::DAIDBGetVariableDataFromJulea(                           \
+         extern template void JuleaInteraction::GetVariableDataFromJulea(                           \
         core::Variable<T> &variable, T *data, const std::string nameSpace,           \
         size_t offset, long unsigned int dataSize, uint32_t entryID) const;
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)

@@ -33,7 +33,7 @@ namespace interop
 
 
 template <class T>
-void JuleaDBInteractionReader::DAIGetCountFromBlockMetadata(const std::string nameSpace,
+void JuleaDBInteractionReader::GetCountFromBlockMetadata(const std::string nameSpace,
                                const std::string varName, size_t step,
                                size_t block, Dims *count, size_t entryID,
                                bool isLocalValue, T *value)
@@ -109,7 +109,7 @@ void JuleaDBInteractionReader::DAIGetCountFromBlockMetadata(const std::string na
 }
 
 template <class T>
-void JuleaDBInteractionReader::DAIDBGetBlockMetadataNEW(core::Variable<T> &variable,
+void JuleaDBInteractionReader::GetBlockMetadataNEW(core::Variable<T> &variable,
                            typename core::Variable<T>::Info &blockInfo,
                            size_t entryID)
 {
@@ -304,7 +304,7 @@ void JuleaDBInteractionReader::DAIDBGetBlockMetadataNEW(core::Variable<T> &varia
 // TODO: remove step, block from parameter list
 template <class T>
 std::unique_ptr<typename core::Variable<T>::Info>
-JuleaDBInteractionReader::DAIDBGetBlockMetadata(const core::Variable<T> &variable,
+JuleaDBInteractionReader::GetBlockMetadata(const core::Variable<T> &variable,
                    // const std::string nameSpace, size_t step, size_t block,
                    size_t entryID) const
 {

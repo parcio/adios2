@@ -194,7 +194,7 @@ void JuleaDBDAIReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
     /** only retrieve Count. Everything is only needed for bp3 and bp4 to
      * determine block position in buffer and for AllStepsBlockInfo for bpls */
     auto entryID = variable.m_AvailableStepBlockIndexOffsets[step + 1][blockID];
-    m_JuleaDBInteractionReader.DAIGetCountFromBlockMetadata(nameSpace, variable.m_Name, step, blockID, &count,
+    m_JuleaDBInteractionReader.GetCountFromBlockMetadata(nameSpace, variable.m_Name, step, blockID, &count,
                               entryID, variable.m_SingleValue, data);
     if (variable.m_SingleValue)
     {
@@ -388,7 +388,7 @@ void JuleaDBDAIReader::ReadVariableBlocks(Variable<T> &variable)
 
                         // T data[dataSize];
                         std::vector<T> data = std::vector<T>(dataSize);
-                        m_JuleaDBInteractionReader.DAIDBGetVariableDataFromJulea(
+                        m_JuleaDBInteractionReader.GetVariableDataFromJulea(
                             variable, data.data(), nameSpace, offset, dataSize,
                             subStreamBoxInfo.SubStreamID);
 
@@ -414,7 +414,7 @@ void JuleaDBDAIReader::ReadVariableBlocks(Variable<T> &variable)
 
                         // T data[dataSize];
                         std::vector<T> data = std::vector<T>(dataSize);
-                        m_JuleaDBInteractionReader.DAIDBGetVariableDataFromJulea(
+                        m_JuleaDBInteractionReader.GetVariableDataFromJulea(
                             variable, data.data(), nameSpace, offset, dataSize,
                             subStreamBoxInfo.SubStreamID);
 
@@ -513,7 +513,7 @@ JuleaDBDAIReader::BlocksInfoCommon(const core::Variable<T> &variable,
 
         typename core::Variable<T>::Info info =
             // *DBGetBlockMetadata(variable, nameSpace, step, i, entryID);
-            *m_JuleaDBInteractionReader.DAIDBGetBlockMetadata(variable, entryID);
+            *m_JuleaDBInteractionReader.GetBlockMetadata(variable, entryID);
         info.IsReverseDims = false;
         info.Step = step;
 
@@ -807,7 +807,7 @@ void JuleaDBDAIReader::SetVariableBlockInfo(
 
         // info = blockCharacteristics in BP3
         typename core::Variable<T>::Info info =
-            *m_JuleaDBInteractionReader.DAIDBGetBlockMetadata(variable, blockIndexOffset);
+            *m_JuleaDBInteractionReader.GetBlockMetadata(variable, blockIndexOffset);
 
         // check if they intersect
         helper::SubStreamBoxInfo subStreamInfo;

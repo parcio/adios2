@@ -35,7 +35,7 @@ JuleaDBInteractionReader::JuleaDBInteractionReader(helper::Comm const &comm)
     std::cout << "This is the constructor of the reader" << std::endl;
 }
 
-void DAIDBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
+void InitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
                     std::string varName, size_t *blocks, size_t numberSteps,
                     ShapeID shapeID, bool isReadAsJoined,
                     bool isReadAsLocalValue, bool isRandomAccess,
@@ -188,7 +188,7 @@ void DAIDBInitVariable(core::IO *io, core::Engine &engine, std::string nameSpace
     j_semantics_unref(semantics);
 }
 
-void DAIDBDefineVariableInEngineIO(core::IO *io, const std::string varName,
+void DefineVariableInEngineIO(core::IO *io, const std::string varName,
                                 adios2::DataType type, ShapeID shapeID,
                                 Dims shape, Dims start, Dims count,
                                 bool constantDims, bool isLocalValue)
@@ -240,7 +240,7 @@ void DAIDBDefineVariableInEngineIO(core::IO *io, const std::string varName,
 #undef declare_type
 }
 
-void JuleaDBInteractionReader::DAIDBDefineVariableInInit(core::IO *io, const std::string varName,
+void JuleaDBInteractionReader::DefineVariableInInit(core::IO *io, const std::string varName,
                             std::string stringType, Dims shape, Dims start,
                             Dims count, bool constantDims, bool isLocalValue)
 {
@@ -460,7 +460,7 @@ void JuleaDBInteractionReader::DAIDBDefineVariableInInit(core::IO *io, const std
     // }
 }
 
-void JuleaDBInteractionReader::DAICheckSchemas()
+void JuleaDBInteractionReader::CheckSchemas()
 {
     // std::cout << "--- CheckSchemas" << std::endl;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -484,7 +484,7 @@ void JuleaDBInteractionReader::DAICheckSchemas()
     }
 }
 
-void JuleaDBInteractionReader::DAIInitVariablesFromDB(const std::string nameSpace, core::IO *io,
+void JuleaDBInteractionReader::InitVariablesFromDB(const std::string nameSpace, core::IO *io,
                          core::Engine &engine)
 {
     std::cout << "--- InitVariablesFromDB ---" << std::endl;
@@ -660,12 +660,12 @@ void JuleaDBInteractionReader::DAIInitVariablesFromDB(const std::string nameSpac
         // DBDefineVariableInEngineIO(io, varName, typeInt, *shapeID, shape,
         // start, DBDefineVariableInEngineIO(io, varName, varTypeAsInt,
         // *shapeID, shape, start,
-        DAIDBDefineVariableInEngineIO(io, varName, adiosType, *shapeID, shape,
+        DefineVariableInEngineIO(io, varName, adiosType, *shapeID, shape,
                                    start, count, *isConstantDims,
                                    *isSingleValue);
         // DBDefineVariableInInit(io, varName, varType, shape, start, count,
         //                        *isConstantDims, *isSingleValue);
-        DAIDBInitVariable(io, engine, nameSpace, varName, blocks, *numberSteps,
+        InitVariable(io, engine, nameSpace, varName, blocks, *numberSteps,
                        *shapeID, *isReadAsJoined, *isReadAsLocalValue,
                        *isRandomAccess, *isSingleValue);
         if (*numberSteps > 0)
@@ -694,7 +694,7 @@ void JuleaDBInteractionReader::DAIInitVariablesFromDB(const std::string nameSpac
     j_semantics_unref(semantics);
 }
 
-void JuleaDBInteractionReader::DAIDBGetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
+void JuleaDBInteractionReader::GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
                          unsigned int *varCount, bool isVariable)
 {
     std::cout << "-- GetNamesFromJulea ------" << std::endl;
@@ -753,15 +753,15 @@ void JuleaDBInteractionReader::DAIDBGetNamesFromJulea(const std::string nameSpac
 }
 
 #define variable_template_instantiation(T)                                     \
-    template void JuleaDBInteractionReader::DAIGetCountFromBlockMetadata(                                   \
+    template void JuleaDBInteractionReader::GetCountFromBlockMetadata(                                   \
         const std::string nameSpace, const std::string varName, size_t step,   \
         size_t block, Dims *count, size_t entryID, bool isLocalValue,          \
         T *value);                                                             \
-    template void JuleaDBInteractionReader::DAIDBGetBlockMetadataNEW(                                       \
+    template void JuleaDBInteractionReader::GetBlockMetadataNEW(                                       \
         core::Variable<T> &variable, typename core::Variable<T>::Info &blockInfo,    \
         size_t entryID);                                                       \
     template std::unique_ptr<typename core::Variable<T>::Info>                 \
-    JuleaDBInteractionReader::DAIDBGetBlockMetadata(const core::Variable<T> &variable, size_t entryID) const;  
+    JuleaDBInteractionReader::GetBlockMetadata(const core::Variable<T> &variable, size_t entryID) const;  
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 
