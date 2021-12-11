@@ -11,13 +11,6 @@
 #ifndef ADIOS2_TOOLKIT_INTEROP_JULEA_JULEAINTERACTION_H_
 #define ADIOS2_TOOLKIT_INTEROP_JULEA_JULEAINTERACTION_H_
 
-// #include "JuleaMetadata.h"
-// #include "JuleaDbInteractionWriter.h"
-// #include "adios2/engine/julea/JuleaMetadata.h" //FIXME: move to interop
-// namespace! #include "adios2/common/ADIOSMacros.h" #include
-// "adios2/common/ADIOSTypes.h" #include "adios2/core/IO.h" // for CreateVar
-// #include "adios2/core/Variable.h"
-
 #include <assert.h>
 #include <bson.h>
 #include <glib.h>
@@ -30,10 +23,6 @@
 #include <julea.h>
 
 #include "adios2/core/VariableBase.h"
-// #include "JuleaMetadata.h"
-// #include "JuleaDbInteractionWriter.h"
-// #include "adios2/engine/julea/JuleaMetadata.h" //FIXME: move to interop
-// namespace!
 #include "adios2/common/ADIOSMacros.h"
 #include "adios2/common/ADIOSTypes.h"
 #include "adios2/core/IO.h" // for CreateVar

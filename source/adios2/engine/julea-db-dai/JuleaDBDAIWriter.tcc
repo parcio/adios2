@@ -242,8 +242,8 @@ void JuleaDBDAIWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     // DBPutVariableDataToJulea(variable, data, m_Name, m_CurrentStep,
     // m_CurrentBlockID);
 
-    DAIDBPutVariableDataToJulea(variable, data, m_Name, entryID);
-    // m_JuleaDBInteractionWriter.PutVariableDataToJulea(variable, data, m_Name, entryID);
+    // DAIDBPutVariableDataToJulea(variable, data, m_Name, entryID);
+    m_JuleaDBInteractionWriter.PutVariableDataToJulea(variable, data, m_Name, entryID);
 }
 
 template <class T>
