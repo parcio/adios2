@@ -27,12 +27,6 @@ namespace core
 namespace engine
 {
 
-// JuleaDBDAIWriter::JuleaDBDAIWriter(IO &io, const std::string &name, const
-// Mode mode,
-//                              helper::Comm comm)
-// : Engine("JuleaDBDAIWriter", io, name, mode, std::move(comm)),
-// m_JuleaDBInteractionWriter(m_Comm)
-
 JuleaDBDAIWriter::JuleaDBDAIWriter(IO &io, const std::string &name,
                                    const Mode mode, helper::Comm comm)
 : Engine("JuleaDBDAIWriter", io, name, mode, std::move(comm)),
@@ -43,8 +37,6 @@ JuleaDBDAIWriter::JuleaDBDAIWriter(IO &io, const std::string &name,
     if (m_Verbosity == 5)
     {
         m_Comm.Barrier();
-        // std::cout << "Julea DB Writer " << m_WriterRank << " Open(" << m_Name
-        //   << ") in constructor." << std::endl;
         std::cout << "JDB Writer (" << m_WriterRank << ") : Open(" << m_Name
                   << ")." << std::endl;
     }
@@ -53,12 +45,8 @@ JuleaDBDAIWriter::JuleaDBDAIWriter(IO &io, const std::string &name,
 JuleaDBDAIWriter::~JuleaDBDAIWriter()
 {
     // DoClose();
-    // if (m_Verbosity == 5)
     if (m_Verbosity == 5)
     {
-        // std::cout << "Julea DB Writer " << m_WriterRank << " deconstructor on
-        // "
-        //   << m_Name << "\n";
         std::cout << "JDB Writer (" << m_WriterRank << ") : deconstructor on "
                   << m_Name << " \n";
     }
@@ -81,12 +69,6 @@ StepStatus JuleaDBDAIWriter::BeginStep(StepMode mode,
         m_Comm.Barrier();
         std::cout << "JDB Writer (" << m_WriterRank << ") : BeginStep() "
                   << "\n";
-        // std::cout << "JDB Writer (" << m_WriterRank << ") : BeginStep() ---
-        // step = " << m_CurrentStep << "\n";
-
-        // std::cout << "Julea DB Writer " << m_WriterRank
-        //           << "   BeginStep() new step " << m_CurrentStep << "\n";
-        // std::cout << "StepMode mode: " << mode << std::endl;
     }
 
     m_StepMode = mode;
@@ -103,11 +85,8 @@ StepStatus JuleaDBDAIWriter::BeginStep(StepMode mode,
  */
 size_t JuleaDBDAIWriter::CurrentStep() const
 {
-    // std::cout << "JULEA ENGINE: CurrentStep" << std::endl;
     if (m_Verbosity == 5)
     {
-        // std::cout << "Julea DB Writer " << m_WriterRank
-        //   << "   CurrentStep() returns " << m_CurrentStep << "\n";
         std::cout << "JDB Writer (" << m_WriterRank
                   << ") : CurrentStep() --- step = " << m_CurrentStep << "\n";
     }
@@ -119,9 +98,6 @@ size_t JuleaDBDAIWriter::CurrentStep() const
  */
 void JuleaDBDAIWriter::EndStep()
 {
-    // std::cout << "--- DEBUG : EndStep1" << std::endl;
-    // if (m_NeedPerformPuts)
-
     if (m_Verbosity == 5)
     {
         std::cout << "JDB Writer (" << m_WriterRank << ") : EndStep()\n";
@@ -129,7 +105,6 @@ void JuleaDBDAIWriter::EndStep()
 
     if (m_DeferredVariables.size() > 0)
     {
-        // std::cout << "--- DEBUG : EndStep" << std::endl;
         // std::cout << "m_DeferredVariables.size() = "
         // << m_DeferredVariables.size() << std::endl;
         PerformPuts();
@@ -145,11 +120,6 @@ void JuleaDBDAIWriter::EndStep()
     }
     m_CurrentBlockID = 0;
 
-    // if (m_Verbosity == 5)
-    // {
-    //     std::cout << "\n______________EndStep _____________________"
-    //               << std::endl;
-    // }
     m_Comm.Barrier();
     if (m_WriterRank == 0)
     {
@@ -166,8 +136,6 @@ void JuleaDBDAIWriter::PerformPuts()
 {
     if (m_Verbosity == 5)
     {
-        // std::cout << "Julea DB Writer " << m_WriterRank
-        //   << "     PerformPuts()\n";
         std::cout << "JDB Writer (" << m_WriterRank << ") : PerformPuts()\n";
     }
 
@@ -205,7 +173,6 @@ void JuleaDBDAIWriter::PerformPuts()
     }
     m_DeferredVariables.clear();
     m_CurrentBlockID = 0;
-    // std::cout << "--- PerformPuts -- " << std::endl;
 }
 // ADIOS2_FOREACH_TYPE_1ARG(declare_template_instantiation)
 
@@ -219,10 +186,6 @@ void JuleaDBDAIWriter::Flush(const int transportIndex)
 
     if (m_Verbosity == 5)
     {
-        // std::cout << "\n______________Flush  _____________________"
-        // std::cout << "\n___Flush___"
-        //   << std::endl;
-        // std::cout << "Julea DB Writer " << m_WriterRank << "   Flush()\n";
         std::cout << "JDB Writer (" << m_WriterRank << ") : Flush()\n";
     }
     DoFlush(false);
@@ -239,11 +202,6 @@ void JuleaDBDAIWriter::Flush(const int transportIndex)
  */
 void JuleaDBDAIWriter::Init()
 {
-    // if (m_Verbosity == 5)
-    // {
-    //     std::cout << "Julea DB Writer " << m_WriterRank << "   Init() "
-    //               << std::endl;
-    // }
     if (m_Verbosity == 5)
     {
         std::cout << "JDB Writer (" << m_WriterRank << ") : Init()\n";
@@ -385,12 +343,6 @@ void JuleaDBDAIWriter::DoClose(const int transportIndex)
 {
     if (m_Verbosity == 5)
     {
-        // std::cout << "\n______________DoClose_____________________"
-        // std::cout << "\n___DoClose___"
-        //   << std::endl;
-        // std::cout << "Julea DB Writer " << m_WriterRank << " Close(" <<
-        // m_Name
-        //   << ")\n";
         std::cout << "JDB Writer (" << m_WriterRank << ") : DoClose()\n";
     }
     // TODO: free semantics
