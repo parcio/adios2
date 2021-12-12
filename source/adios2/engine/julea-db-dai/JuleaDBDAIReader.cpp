@@ -9,7 +9,7 @@
  */
 
 #include "JuleaDBDAIReader.h"
-#include "JuleaDBDAIInteractionReader.h"
+// #include "JuleaDBDAIInteractionReader.h"
 #include "JuleaDBDAIReader.tcc"
 
 #include "adios2/helper/adiosFunctions.h" // CSVToVector
@@ -27,16 +27,16 @@ namespace core
 namespace engine
 {
 
-// JuleaDBDAIReader::JuleaDBDAIReader(IO &io, const std::string &name, const Mode
-// mode,
+// JuleaDBDAIReader::JuleaDBDAIReader(IO &io, const std::string &name, const
+// Mode mode,
 //                                MPI_Comm mpiComm)
 // : Engine("JuleaDBDAIReader", io, name, mode, mpiComm),
 //   m_BP3Deserializer(mpiComm, m_DebugMode)
 
-JuleaDBDAIReader::JuleaDBDAIReader(IO &io, const std::string &name, const Mode mode,
-                             helper::Comm comm)
-: Engine("JuleaDBDAIReader", io, name, mode, std::move(comm))
-,  m_JuleaDBInteractionReader(m_Comm)
+JuleaDBDAIReader::JuleaDBDAIReader(IO &io, const std::string &name,
+                                   const Mode mode, helper::Comm comm)
+: Engine("JuleaDBDAIReader", io, name, mode, std::move(comm)),
+  m_JuleaDBInteractionReader(m_Comm)
 
 {
     // m_EndMessage = " in call to IO Open JuleaDBDAIReader " + m_Name + "\n";
@@ -72,7 +72,7 @@ JuleaDBDAIReader::~JuleaDBDAIReader()
 }
 
 StepStatus JuleaDBDAIReader::BeginStep(const StepMode mode,
-                                    const float timeoutSeconds)
+                                       const float timeoutSeconds)
 {
     // if (m_DebugMode)
     // {
@@ -198,11 +198,11 @@ void JuleaDBDAIReader::PerformGets()
 }
 
 #define declare_type(T)                                                        \
-    void JuleaDBDAIReader::DoGetSync(Variable<T> &variable, T *data)              \
+    void JuleaDBDAIReader::DoGetSync(Variable<T> &variable, T *data)           \
     {                                                                          \
         GetSyncCommon(variable, data);                                         \
     }                                                                          \
-    void JuleaDBDAIReader::DoGetDeferred(Variable<T> &variable, T *data)          \
+    void JuleaDBDAIReader::DoGetDeferred(Variable<T> &variable, T *data)       \
     {                                                                          \
         GetDeferredCommon(variable, data);                                     \
     }
@@ -288,18 +288,18 @@ void JuleaDBDAIReader::DoClose(const int transportIndex)
 
 #define declare_type(T)                                                        \
     std::map<size_t, std::vector<typename Variable<T>::Info>>                  \
-    JuleaDBDAIReader::DoAllStepsBlocksInfo(const Variable<T> &variable) const     \
+    JuleaDBDAIReader::DoAllStepsBlocksInfo(const Variable<T> &variable) const  \
     {                                                                          \
         return AllStepsBlocksInfo(variable);                                   \
     }                                                                          \
     std::vector<std::vector<typename Variable<T>::Info>>                       \
-    JuleaDBDAIReader::DoAllRelativeStepsBlocksInfo(const Variable<T> &variable)   \
-        const                                                                  \
+    JuleaDBDAIReader::DoAllRelativeStepsBlocksInfo(                            \
+        const Variable<T> &variable) const                                     \
     {                                                                          \
         return AllRelativeStepsBlocksInfo(variable);                           \
     }                                                                          \
                                                                                \
-    std::vector<typename Variable<T>::Info> JuleaDBDAIReader::DoBlocksInfo(       \
+    std::vector<typename Variable<T>::Info> JuleaDBDAIReader::DoBlocksInfo(    \
         const Variable<T> &variable, const size_t step) const                  \
     {                                                                          \
         return BlocksInfo(variable, step);                                     \

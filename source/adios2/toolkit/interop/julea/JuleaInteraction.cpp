@@ -29,7 +29,7 @@ namespace interop
 // m_DebugMode(debugMode)
 JuleaInteraction::JuleaInteraction(helper::Comm const &comm)
 {
-    std::cout << "This is the constructor" << std::endl;
+    // std::cout << "This is the constructor" << std::endl;
 }
 
 void JuleaInteraction::SetMinMaxValueFields(std::string *minField,
@@ -97,9 +97,9 @@ void JuleaInteraction::SetMinMaxValueFields(std::string *minField,
 #define declare_template_instantiation(T)                                      \
     template void JuleaInteraction::PutVariableDataToJulea(                    \
         core::Variable<T> &variable, const T *data,                            \
-        const std::string nameSpace, uint32_t entryID) const;\
-    template void JuleaInteraction::GetVariableDataFromJulea(                                  \
-        core::Variable<T> &variable, T *data, const std::string nameSpace,           \
+        const std::string nameSpace, uint32_t entryID) const;                  \
+    template void JuleaInteraction::GetVariableDataFromJulea(                  \
+        core::Variable<T> &variable, T *data, const std::string nameSpace,     \
         size_t offset, long unsigned int dataSize, uint32_t entryID) const;
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation

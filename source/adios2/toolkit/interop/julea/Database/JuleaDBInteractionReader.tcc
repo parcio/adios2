@@ -31,12 +31,10 @@ namespace adios2
 namespace interop
 {
 
-
 template <class T>
-void JuleaDBInteractionReader::GetCountFromBlockMetadata(const std::string nameSpace,
-                               const std::string varName, size_t step,
-                               size_t block, Dims *count, size_t entryID,
-                               bool isLocalValue, T *value)
+void JuleaDBInteractionReader::GetCountFromBlockMetadata(
+    const std::string nameSpace, const std::string varName, size_t step,
+    size_t block, Dims *count, size_t entryID, bool isLocalValue, T *value)
 {
     // std::cout << "------ GetCountFromBlockMetadata ----------" << std::endl;
     int err = 0;
@@ -96,9 +94,10 @@ void JuleaDBInteractionReader::GetCountFromBlockMetadata(const std::string nameS
         // if(isLocalValue)
         // {
         //     //FIXME: not yet tested!
-        //     JuleaInteraction::SetMinMaxValueFields(NULL, NULL,valueField, varType );
-        //     std::cout << "valueField: " << valueField << std::endl;
-        //     j_db_iterator_get_field(iterator, valueField.c_str(), &type,
+        //     JuleaInteraction::SetMinMaxValueFields(NULL, NULL,valueField,
+        //     varType ); std::cout << "valueField: " << valueField <<
+        //     std::endl; j_db_iterator_get_field(iterator, valueField.c_str(),
+        //     &type,
         //                             (gpointer *)&value, &db_length,
         //                             NULL);
         // }
@@ -109,9 +108,9 @@ void JuleaDBInteractionReader::GetCountFromBlockMetadata(const std::string nameS
 }
 
 template <class T>
-void JuleaDBInteractionReader::GetBlockMetadataNEW(core::Variable<T> &variable,
-                           typename core::Variable<T>::Info &blockInfo,
-                           size_t entryID)
+void JuleaDBInteractionReader::GetBlockMetadataNEW(
+    core::Variable<T> &variable, typename core::Variable<T>::Info &blockInfo,
+    size_t entryID)
 {
     // std::cout << "--- DBGetBlockMetadata ---" << std::endl;
     // std::unique_ptr<typename Variable<T>::Info> blockInfo(
@@ -235,8 +234,8 @@ void JuleaDBInteractionReader::GetBlockMetadataNEW(core::Variable<T> &variable,
         std::string valueField;
         std::string meanField;
 
-        JuleaInteraction::SetMinMaxValueFields(&minField, &maxField, &valueField, &meanField,
-                             variable.m_Type);
+        JuleaInteraction::SetMinMaxValueFields(
+            &minField, &maxField, &valueField, &meanField, variable.m_Type);
 
         j_db_iterator_get_field(iterator, minField.c_str(), &type,
                                 (gpointer *)&min, &db_length, NULL);
@@ -304,9 +303,10 @@ void JuleaDBInteractionReader::GetBlockMetadataNEW(core::Variable<T> &variable,
 // TODO: remove step, block from parameter list
 template <class T>
 std::unique_ptr<typename core::Variable<T>::Info>
-JuleaDBInteractionReader::GetBlockMetadata(const core::Variable<T> &variable,
-                   // const std::string nameSpace, size_t step, size_t block,
-                   size_t entryID) const
+JuleaDBInteractionReader::GetBlockMetadata(
+    const core::Variable<T> &variable,
+    // const std::string nameSpace, size_t step, size_t block,
+    size_t entryID) const
 {
     // std::cout << "--- DBGetBlockMetadata ---" << std::endl;
     std::unique_ptr<typename core::Variable<T>::Info> info(
@@ -498,12 +498,12 @@ JuleaDBInteractionReader::GetBlockMetadata(const core::Variable<T> &variable,
         //     maxField = "max_blob";
         //     valueField = "value_blob";
         // }
-        JuleaInteraction::SetMinMaxValueFields(&minField, &maxField, &valueField, &meanField,
-                             variable.m_Type);
-        // JuleaInteraction::SetMinMaxValueFields(&minField, &maxField, &valueField, &meanField,
-        // varType); std::cout << "minField: " << minField << std::endl;
-        // std::cout << "maxField: " << maxField << std::endl;
-        // std::cout << "valueField: " << valueField << std::endl;
+        JuleaInteraction::SetMinMaxValueFields(
+            &minField, &maxField, &valueField, &meanField, variable.m_Type);
+        // JuleaInteraction::SetMinMaxValueFields(&minField, &maxField,
+        // &valueField, &meanField, varType); std::cout << "minField: " <<
+        // minField << std::endl; std::cout << "maxField: " << maxField <<
+        // std::endl; std::cout << "valueField: " << valueField << std::endl;
         // std::cout << "varType: " << varType << std::endl;
 
         j_db_iterator_get_field(iterator, minField.c_str(), &type,
@@ -569,9 +569,7 @@ JuleaDBInteractionReader::GetBlockMetadata(const core::Variable<T> &variable,
     return info;
 }
 
-
 } // end namespace interop
 } // end namespace adios2
-
 
 #endif /* ADIOS2_TOOLKIT_INTEROP_JULEA_JULEADBINTERACTIONREADER_TCC_ */

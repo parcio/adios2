@@ -15,8 +15,8 @@
 #include "adios2/core/ADIOS.h"
 #include "adios2/core/Engine.h"
 #include "adios2/helper/adiosFunctions.h"
-#include "adios2/toolkit/interop/julea/JuleaInteraction.h"
 #include "adios2/toolkit/interop/julea/Database/JuleaDBInteractionReader.h"
+#include "adios2/toolkit/interop/julea/JuleaInteraction.h"
 
 // #include "adios2/toolkit/format/bp3/BP3.h" //BP3Deserializer
 // #include "adios2/toolkit/format/bp/bp3/BP3Serializer.h"
@@ -49,7 +49,7 @@ public:
      * @param hostLanguage
      */
     JuleaDBDAIReader(IO &adios, const std::string &name, const Mode mode,
-                  helper::Comm comm);
+                     helper::Comm comm);
 
     ~JuleaDBDAIReader();
     // StepStatus BeginStep(StepMode mode = StepMode::NextAvailable,

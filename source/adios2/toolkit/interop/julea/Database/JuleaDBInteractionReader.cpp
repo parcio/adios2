@@ -36,10 +36,9 @@ JuleaDBInteractionReader::JuleaDBInteractionReader(helper::Comm const &comm)
 }
 
 void InitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
-                    std::string varName, size_t *blocks, size_t numberSteps,
-                    ShapeID shapeID, bool isReadAsJoined,
-                    bool isReadAsLocalValue, bool isRandomAccess,
-                    bool isSingleValue)
+                  std::string varName, size_t *blocks, size_t numberSteps,
+                  ShapeID shapeID, bool isReadAsJoined, bool isReadAsLocalValue,
+                  bool isRandomAccess, bool isSingleValue)
 {
     std::cout << "----- InitVariable --- " << varName << std::endl;
     const adios2::DataType type(io->InquireVariableType(varName));
@@ -128,8 +127,8 @@ void InitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
                 var->m_AvailableStepsCount++;                                  \
             }                                                                  \
                                                                                \
-            JuleaInteraction::SetMinMaxValueFields(&minField, &maxField, &valueField,            \
-                                 &meanField, type);                            \
+            JuleaInteraction::SetMinMaxValueFields(                            \
+                &minField, &maxField, &valueField, &meanField, type);          \
             g_autoptr(JDBSelector) selector =                                  \
                 j_db_selector_new(varSchema, J_DB_SELECTOR_MODE_AND, NULL);    \
                                                                                \
@@ -189,9 +188,9 @@ void InitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
 }
 
 void DefineVariableInEngineIO(core::IO *io, const std::string varName,
-                                adios2::DataType type, ShapeID shapeID,
-                                Dims shape, Dims start, Dims count,
-                                bool constantDims, bool isLocalValue)
+                              adios2::DataType type, ShapeID shapeID,
+                              Dims shape, Dims start, Dims count,
+                              bool constantDims, bool isLocalValue)
 {
     // variable->m_AvailableShapes[characteristics.Statistics.Step] = \
                 //     variable->m_Shape;                                         \
@@ -240,9 +239,9 @@ void DefineVariableInEngineIO(core::IO *io, const std::string varName,
 #undef declare_type
 }
 
-void JuleaDBInteractionReader::DefineVariableInInit(core::IO *io, const std::string varName,
-                            std::string stringType, Dims shape, Dims start,
-                            Dims count, bool constantDims, bool isLocalValue)
+void JuleaDBInteractionReader::DefineVariableInInit(
+    core::IO *io, const std::string varName, std::string stringType, Dims shape,
+    Dims start, Dims count, bool constantDims, bool isLocalValue)
 {
     const char *type = stringType.c_str();
     // std::cout << "------ DefineVariableInInit ----------" << std::endl;
@@ -484,8 +483,9 @@ void JuleaDBInteractionReader::CheckSchemas()
     }
 }
 
-void JuleaDBInteractionReader::InitVariablesFromDB(const std::string nameSpace, core::IO *io,
-                         core::Engine &engine)
+void JuleaDBInteractionReader::InitVariablesFromDB(const std::string nameSpace,
+                                                   core::IO *io,
+                                                   core::Engine &engine)
 {
     std::cout << "--- InitVariablesFromDB ---" << std::endl;
     // int rank = engine.m_Comm.Rank();
@@ -660,14 +660,13 @@ void JuleaDBInteractionReader::InitVariablesFromDB(const std::string nameSpace, 
         // DBDefineVariableInEngineIO(io, varName, typeInt, *shapeID, shape,
         // start, DBDefineVariableInEngineIO(io, varName, varTypeAsInt,
         // *shapeID, shape, start,
-        DefineVariableInEngineIO(io, varName, adiosType, *shapeID, shape,
-                                   start, count, *isConstantDims,
-                                   *isSingleValue);
+        DefineVariableInEngineIO(io, varName, adiosType, *shapeID, shape, start,
+                                 count, *isConstantDims, *isSingleValue);
         // DBDefineVariableInInit(io, varName, varType, shape, start, count,
         //                        *isConstantDims, *isSingleValue);
         InitVariable(io, engine, nameSpace, varName, blocks, *numberSteps,
-                       *shapeID, *isReadAsJoined, *isReadAsLocalValue,
-                       *isRandomAccess, *isSingleValue);
+                     *shapeID, *isReadAsJoined, *isReadAsLocalValue,
+                     *isRandomAccess, *isSingleValue);
         if (*numberSteps > 0)
         {
             g_free(*tmpblocks);
@@ -694,8 +693,10 @@ void JuleaDBInteractionReader::InitVariablesFromDB(const std::string nameSpace, 
     j_semantics_unref(semantics);
 }
 
-void JuleaDBInteractionReader::GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
-                         unsigned int *varCount, bool isVariable)
+void JuleaDBInteractionReader::GetNamesFromJulea(const std::string nameSpace,
+                                                 bson_t **bsonNames,
+                                                 unsigned int *varCount,
+                                                 bool isVariable)
 {
     std::cout << "-- GetNamesFromJulea ------" << std::endl;
     guint32 valueLen = 0;
@@ -753,18 +754,18 @@ void JuleaDBInteractionReader::GetNamesFromJulea(const std::string nameSpace, bs
 }
 
 #define variable_template_instantiation(T)                                     \
-    template void JuleaDBInteractionReader::GetCountFromBlockMetadata(                                   \
+    template void JuleaDBInteractionReader::GetCountFromBlockMetadata(         \
         const std::string nameSpace, const std::string varName, size_t step,   \
         size_t block, Dims *count, size_t entryID, bool isLocalValue,          \
         T *value);                                                             \
-    template void JuleaDBInteractionReader::GetBlockMetadataNEW(                                       \
-        core::Variable<T> &variable, typename core::Variable<T>::Info &blockInfo,    \
-        size_t entryID);                                                       \
+    template void JuleaDBInteractionReader::GetBlockMetadataNEW(               \
+        core::Variable<T> &variable,                                           \
+        typename core::Variable<T>::Info &blockInfo, size_t entryID);          \
     template std::unique_ptr<typename core::Variable<T>::Info>                 \
-    JuleaDBInteractionReader::GetBlockMetadata(const core::Variable<T> &variable, size_t entryID) const;  
+    JuleaDBInteractionReader::GetBlockMetadata(                                \
+        const core::Variable<T> &variable, size_t entryID) const;
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
-
 
 } // end namespace interop
 } // end namespace adios2

@@ -13,7 +13,7 @@
 
 // #include "adios2/helper/adiosCommMPI.h"
 
-#include "JuleaDBDAIInteractionWriter.h"
+// #include "JuleaDBDAIInteractionWriter.h"
 #include "JuleaDBDAIWriter.h"
 
 // #include <adios2_c.h>
@@ -35,9 +35,15 @@ namespace engine
 
 template <class T>
 void JuleaDBDAIWriter::JuleaDBDAISetMinMax(Variable<T> &variable, const T *data,
-                                     T &blockMin, T &blockMax, T &blockMean,
-                                     size_t currentStep, size_t currentBlockID)
+                                           T &blockMin, T &blockMax,
+                                           T &blockMean, size_t currentStep,
+                                           size_t currentBlockID)
 {
+    if (m_Verbosity == 5)
+{
+    std::cout << "JDB Writer (" << m_WriterRank << ") : JuleaDBDAISetMinMax()\n";
+}
+
     T min = 0;
     T max = 0;
     T stepMin = 0;
@@ -132,6 +138,12 @@ void JuleaDBDAIWriter::JuleaDBDAISetMinMax<std::complex<double>>(
 template <class T>
 void JuleaDBDAIWriter::SetBlockID(Variable<T> &variable)
 {
+    if (m_Verbosity == 5)
+{
+    std::cout << "JDB Writer (" << m_WriterRank << ") : SetBlockID()\n";
+}
+
+
     if (variable.m_ShapeID == ShapeID::GlobalValue ||
         variable.m_ShapeID == ShapeID::GlobalArray)
     {
@@ -175,14 +187,18 @@ void JuleaDBDAIWriter::SetBlockID(Variable<T> &variable)
 }
 
 template <class T>
-void JuleaDBDAIWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
-                                   const typename Variable<T>::Info &blockInfo)
+void JuleaDBDAIWriter::PutSyncToJulea(
+    Variable<T> &variable, const T *data,
+    const typename Variable<T>::Info &blockInfo)
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea DB Writer " << m_WriterRank
-                  << "     PutSyncToJulea(" << variable.m_Name
-                  << " ---- BlockID: " << m_CurrentBlockID << std::endl;
+        // std::cout << "Julea DB Writer " << m_WriterRank
+                //   << "     PutSyncToJulea(" << variable.m_Name
+                //   << " ---- BlockID: " << m_CurrentBlockID << std::endl;
+                      std::cout << "JDB Writer (" << m_WriterRank << ") : PutSyncToJulea(" <<
+                       variable.m_Name << ") --- BlockID = " << m_CurrentBlockID <<" \n";
+
     }
     T blockMin;
     T blockMax;
@@ -190,7 +206,7 @@ void JuleaDBDAIWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     uint32_t entryID = 0;
 
     JuleaDBDAISetMinMax(variable, data, blockMin, blockMax, blockMean,
-                     m_CurrentStep, m_CurrentBlockID);
+                        m_CurrentStep, m_CurrentBlockID);
 
     auto stepBlockID =
         g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
@@ -228,14 +244,14 @@ void JuleaDBDAIWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     {
         // TODO: add mean value to DB
         /** updates the variable metadata as there is a new block now */
-        m_JuleaDBInteractionWriter.PutVariableMetadataToJulea(variable, m_Name, variable.m_Name,
-                                     m_CurrentStep, m_CurrentBlockID);
+        m_JuleaDBInteractionWriter.PutVariableMetadataToJulea(
+            variable, m_Name, variable.m_Name, m_CurrentStep, m_CurrentBlockID);
     }
 
     /** put block metadata to DB */
-    m_JuleaDBInteractionWriter.PutBlockMetadataToJulea(variable, m_Name, variable.m_Name, m_CurrentStep,
-                              m_CurrentBlockID, blockInfo, blockMin, blockMax,
-                              blockMean, entryID);
+    m_JuleaDBInteractionWriter.PutBlockMetadataToJulea(
+        variable, m_Name, variable.m_Name, m_CurrentStep, m_CurrentBlockID,
+        blockInfo, blockMin, blockMax, blockMean, entryID);
 
     // std::cout << "entryID: " << entryID << std::endl;
     /** put data to object store */
@@ -243,26 +259,30 @@ void JuleaDBDAIWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     // m_CurrentBlockID);
 
     // DAIDBPutVariableDataToJulea(variable, data, m_Name, entryID);
-    m_JuleaDBInteractionWriter.PutVariableDataToJulea(variable, data, m_Name, entryID);
+    m_JuleaDBInteractionWriter.PutVariableDataToJulea(variable, data, m_Name,
+                                                      entryID);
 }
 
 template <class T>
-void JuleaDBDAIWriter::PutSyncCommon(Variable<T> &variable,
-                                  const typename Variable<T>::Info &blockInfo)
+void JuleaDBDAIWriter::PutSyncCommon(
+    Variable<T> &variable, const typename Variable<T>::Info &blockInfo)
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea DB Writer " << m_WriterRank << "     PutSync("
-                  << variable.m_Name << ")\n";
-        std::cout << "\n_________________________PutSyncCommon "
-                     "BlockInfo_____________________________"
-                  << std::endl;
-        std::cout << "Julea DB Writer " << m_WriterRank
-                  << " Namespace: " << m_Name << std::endl;
-        std::cout << "Julea DB Writer " << m_WriterRank
-                  << " Variable name: " << variable.m_Name << std::endl;
+        // std::cout << "Julea DB Writer " << m_WriterRank << "     PutSync("
+        //           << variable.m_Name << ")\n";
+        // std::cout << "\n_________________________PutSyncCommon "
+        //              "BlockInfo_____________________________"
+        //           << std::endl;
+        // std::cout << "Julea DB Writer " << m_WriterRank
+        //           << " Namespace: " << m_Name << std::endl;
+        // std::cout << "Julea DB Writer " << m_WriterRank
+        //           << " Variable name: " << variable.m_Name << std::endl;
 
-        std::cout << "    CurrentStep: " << m_CurrentStep << std::endl;
+        // std::cout << "    CurrentStep: " << m_CurrentStep << std::endl;
+
+        std::cout << "JDB Writer (" << m_WriterRank << ") : PutSyncCommon(" << variable.m_Name << ") --- Namespace = " << 
+        m_Name << " --- CurrentStep = " << m_CurrentStep << "\n";
     }
 
     PutSyncToJulea(variable, blockInfo.Data, blockInfo);
@@ -273,17 +293,19 @@ void JuleaDBDAIWriter::PutSyncCommon(Variable<T> &variable, const T *data)
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea DB Writer " << m_WriterRank << "     PutSync("
-                  << variable.m_Name << ")\n";
-        std::cout << "\n___________________________PutSyncCommon "
-                     "T__________________________"
-                  << std::endl;
-        std::cout << "Julea DB Writer " << m_WriterRank
-                  << " Namespace: " << m_Name << std::endl;
-        std::cout << "Julea DB Writer " << m_WriterRank
-                  << " Variable name: " << variable.m_Name << std::endl;
+        // std::cout << "Julea DB Writer " << m_WriterRank << "     PutSync("
+        //           << variable.m_Name << ")\n";
+        // std::cout << "\n___________________________PutSyncCommon "
+        //              "T__________________________"
+        //           << std::endl;
+        // std::cout << "Julea DB Writer " << m_WriterRank
+        //           << " Namespace: " << m_Name << std::endl;
+        // std::cout << "Julea DB Writer " << m_WriterRank
+        //           << " Variable name: " << variable.m_Name << std::endl;
 
-        std::cout << "    CurrentStep: " << m_CurrentStep << std::endl;
+        // std::cout << "    CurrentStep: " << m_CurrentStep << std::endl;
+                std::cout << "JDB Writer (" << m_WriterRank << ") : PutSyncCommon(" << variable.m_Name << ") --- Namespace = " << 
+        m_Name << " --- CurrentStep = " << m_CurrentStep << "\n";
     }
 
     const typename Variable<T>::Info blockInfo =
@@ -296,13 +318,14 @@ void JuleaDBDAIWriter::PutDeferredCommon(Variable<T> &variable, const T *data)
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea DB Writer " << m_WriterRank << "     PutDeferred("
-                  << variable.m_Name << ")\n";
-        std::cout << "\n___________________________PutDeferred "
-                     "T____________________________"
-                  << std::endl;
-        std::cout << "data[0]: " << data[0] << std::endl;
+        // std::cout << "Julea DB Writer " << m_WriterRank << "     PutDeferred("
+        //           << variable.m_Name << ")\n";
+        // std::cout << "\n___________________________PutDeferred "
+        //              "T____________________________"
+        //           << std::endl;
+        // std::cout << "data[0]: " << data[0] << std::endl;
         // std::cout << "data[1]: " << data[1] << std::endl;
+                std::cout << "JDB Writer (" << m_WriterRank << ") : PutDeferredCommon(" << variable.m_Name << ") " << "\n";
     }
 
     const typename Variable<T>::Info blockInfo =
@@ -324,10 +347,12 @@ void JuleaDBDAIWriter::PerformPutCommon(Variable<T> &variable)
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "\n______________PerformPutCommon T_____________________"
-                  << std::endl;
-        std::cout << "BlockInfo.size = " << variable.m_BlocksInfo.size()
-                  << std::endl;
+        // std::cout << "\n______________PerformPutCommon T_____________________"
+                //   << std::endl;
+        // std::cout << "BlockInfo.size = " << variable.m_BlocksInfo.size()
+                //   << std::endl;
+            std::cout << "JDB Writer (" << m_WriterRank << ") : PerformPutCommon()\n";
+
     }
     for (size_t i = 0; i < variable.m_BlocksInfo.size(); ++i)
     {

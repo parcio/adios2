@@ -15,9 +15,8 @@
 // #include "adios2/toolkit/format/bp3/BP3.h" //BP3Serializer
 // #include "adios2/toolkit/format/bp/bp3/BP3Serializer.h"
 // #include "adios2/toolkit/interop/julea/JuleaSerializer.h"
-#include "adios2/toolkit/interop/julea/JuleaInteraction.h"
 #include "adios2/toolkit/interop/julea/Database/JuleaDBInteractionWriter.h"
-
+#include "adios2/toolkit/interop/julea/JuleaInteraction.h"
 
 #include "adios2/toolkit/transportman/TransportMan.h" //transport::TransportsMan
 
@@ -49,7 +48,7 @@ public:
      * @param debugMode
      */
     JuleaDBDAIWriter(IO &adios, const std::string &name, const Mode mode,
-                  helper::Comm comm);
+                     helper::Comm comm);
 
     ~JuleaDBDAIWriter(); // was =default -> meaning?
 
@@ -71,7 +70,7 @@ private:
     JSemantics *m_JuleaSemantics;
     StepMode m_StepMode = StepMode::Append;
 
-    int m_Verbosity = 0; // change for debugging info from 0 to 5
+    int m_Verbosity = 5; // change for debugging info from 0 to 5
     int m_Penguin = 0;   // change for debugging info from 0 to 42
     int m_WriterRank;    // my rank in the writers' comm
 
@@ -145,8 +144,8 @@ private:
 
     template <class T>
     void JuleaDBDAISetMinMax(Variable<T> &variable, const T *data, T &blockMin,
-                          T &blockMax, T &blockMean, size_t currentStep,
-                          size_t currentBlockID);
+                             T &blockMax, T &blockMean, size_t currentStep,
+                             size_t currentBlockID);
 
     /**
      * Closes a single transport or all transports

@@ -28,7 +28,7 @@ namespace engine
 // is separate data stored which needs to be read or just metadata?
 template <>
 void JuleaDBDAIReader::GetSyncCommon(Variable<std::string> &variable,
-                                  std::string *data)
+                                     std::string *data)
 {
     if (m_Verbosity == 5)
     {
@@ -194,8 +194,9 @@ void JuleaDBDAIReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
     /** only retrieve Count. Everything is only needed for bp3 and bp4 to
      * determine block position in buffer and for AllStepsBlockInfo for bpls */
     auto entryID = variable.m_AvailableStepBlockIndexOffsets[step + 1][blockID];
-    m_JuleaDBInteractionReader.GetCountFromBlockMetadata(nameSpace, variable.m_Name, step, blockID, &count,
-                              entryID, variable.m_SingleValue, data);
+    m_JuleaDBInteractionReader.GetCountFromBlockMetadata(
+        nameSpace, variable.m_Name, step, blockID, &count, entryID,
+        variable.m_SingleValue, data);
     if (variable.m_SingleValue)
     {
         // FIXME: get Value from DB
@@ -214,7 +215,7 @@ void JuleaDBDAIReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
 
 template <class T>
 void JuleaDBDAIReader::ReadBlockMD(typename core::Variable<T>::Info &blockInfo,
-                                size_t blockID)
+                                   size_t blockID)
 {
     // if (m_Verbosity == 5)
     // {
@@ -483,9 +484,9 @@ JuleaDBDAIReader::AllStepsBlocksInfo(const core::Variable<T> &variable) const
 
 template <class T>
 std::vector<typename core::Variable<T>::Info>
-JuleaDBDAIReader::BlocksInfoCommon(const core::Variable<T> &variable,
-                                const std::vector<size_t> &blocksIndexOffsets,
-                                size_t step) const
+JuleaDBDAIReader::BlocksInfoCommon(
+    const core::Variable<T> &variable,
+    const std::vector<size_t> &blocksIndexOffsets, size_t step) const
 {
     if (m_Verbosity == 5)
     {
@@ -554,7 +555,7 @@ JuleaDBDAIReader::AllRelativeStepsBlocksInfo(
 template <class T>
 std::vector<typename core::Variable<T>::Info>
 JuleaDBDAIReader::BlocksInfo(const core::Variable<T> &variable,
-                          const size_t step) const
+                             const size_t step) const
 {
     if (m_Verbosity == 5)
     {
@@ -807,7 +808,8 @@ void JuleaDBDAIReader::SetVariableBlockInfo(
 
         // info = blockCharacteristics in BP3
         typename core::Variable<T>::Info info =
-            *m_JuleaDBInteractionReader.GetBlockMetadata(variable, blockIndexOffset);
+            *m_JuleaDBInteractionReader.GetBlockMetadata(variable,
+                                                         blockIndexOffset);
 
         // check if they intersect
         helper::SubStreamBoxInfo subStreamInfo;

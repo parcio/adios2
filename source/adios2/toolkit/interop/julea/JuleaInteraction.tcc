@@ -80,11 +80,12 @@ void JuleaInteraction::PutVariableDataToJulea(core::Variable<T> &variable,
     // std::cout << "++ Julea Interaction: PutVariableDataToJulea" << std::endl;
 }
 
-
 template <class T>
-void JuleaInteraction::GetVariableDataFromJulea(core::Variable<T> &variable, T *data,
-                                const std::string nameSpace, size_t offset,
-                                size_t dataSize, uint32_t entryID) const
+void JuleaInteraction::GetVariableDataFromJulea(core::Variable<T> &variable,
+                                                T *data,
+                                                const std::string nameSpace,
+                                                size_t offset, size_t dataSize,
+                                                uint32_t entryID) const
 {
     // std::cout << "-- GetVariableDataFromJulea ----- " << std::endl;
 
@@ -125,9 +126,6 @@ void JuleaInteraction::GetVariableDataFromJulea(core::Variable<T> &variable, T *
     g_free(stringDataObject);
     j_object_unref(dataObject);
 }
-
-
-
 
 } // end namespace interop
 } // end namespace adios

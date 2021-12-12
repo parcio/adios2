@@ -33,7 +33,7 @@ namespace interop
 JuleaDBInteractionWriter::JuleaDBInteractionWriter(helper::Comm const &comm)
 : JuleaInteraction(std::move(comm))
 {
-    std::cout << "This is the constructor of the writer" << std::endl;
+    // std::cout << "This is the constructor of the writer" << std::endl;
 }
 
 void DAIaddFieldsForVariableMD(JDBSchema *schema)
