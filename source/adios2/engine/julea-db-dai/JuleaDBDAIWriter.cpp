@@ -44,7 +44,7 @@ JuleaDBDAIWriter::JuleaDBDAIWriter(IO &io, const std::string &name,
     {
         m_Comm.Barrier();
         // std::cout << "Julea DB Writer " << m_WriterRank << " Open(" << m_Name
-                //   << ") in constructor." << std::endl;
+        //   << ") in constructor." << std::endl;
         std::cout << "JDB Writer (" << m_WriterRank << ") : Open(" << m_Name
                   << ")." << std::endl;
     }
@@ -56,11 +56,12 @@ JuleaDBDAIWriter::~JuleaDBDAIWriter()
     // if (m_Verbosity == 5)
     if (m_Verbosity == 5)
     {
-        // std::cout << "Julea DB Writer " << m_WriterRank << " deconstructor on "
-                //   << m_Name << "\n";
-        std::cout << "JDB Writer (" << m_WriterRank << ") : deconstructor on " << m_Name << " \n";
+        // std::cout << "Julea DB Writer " << m_WriterRank << " deconstructor on
+        // "
+        //   << m_Name << "\n";
+        std::cout << "JDB Writer (" << m_WriterRank << ") : deconstructor on "
+                  << m_Name << " \n";
     }
-    
 }
 
 /**
@@ -70,15 +71,18 @@ StepStatus JuleaDBDAIWriter::BeginStep(StepMode mode,
                                        const float timeoutSeconds)
 {
     if (m_Verbosity == 5)
-    {   
-        if(m_WriterRank == 0)
+    {
+        if (m_WriterRank == 0)
         {
-        std::cout << "\n______________BeginStep _____________________ step = " << m_CurrentStep 
-                  << std::endl;
+            std::cout
+                << "\n______________BeginStep _____________________ step = "
+                << m_CurrentStep << std::endl;
         }
         m_Comm.Barrier();
-        std::cout << "JDB Writer (" << m_WriterRank << ") : BeginStep() " << "\n";
-        // std::cout << "JDB Writer (" << m_WriterRank << ") : BeginStep() --- step = " << m_CurrentStep << "\n";
+        std::cout << "JDB Writer (" << m_WriterRank << ") : BeginStep() "
+                  << "\n";
+        // std::cout << "JDB Writer (" << m_WriterRank << ") : BeginStep() ---
+        // step = " << m_CurrentStep << "\n";
 
         // std::cout << "Julea DB Writer " << m_WriterRank
         //           << "   BeginStep() new step " << m_CurrentStep << "\n";
@@ -103,9 +107,9 @@ size_t JuleaDBDAIWriter::CurrentStep() const
     if (m_Verbosity == 5)
     {
         // std::cout << "Julea DB Writer " << m_WriterRank
-                //   << "   CurrentStep() returns " << m_CurrentStep << "\n";
-        std::cout << "JDB Writer (" << m_WriterRank << ") : CurrentStep() --- step = " << m_CurrentStep << "\n";
-
+        //   << "   CurrentStep() returns " << m_CurrentStep << "\n";
+        std::cout << "JDB Writer (" << m_WriterRank
+                  << ") : CurrentStep() --- step = " << m_CurrentStep << "\n";
     }
     return m_CurrentStep;
 }
@@ -119,10 +123,9 @@ void JuleaDBDAIWriter::EndStep()
     // if (m_NeedPerformPuts)
 
     if (m_Verbosity == 5)
-{
-    std::cout << "JDB Writer (" << m_WriterRank << ") : EndStep()\n";
-}
-
+    {
+        std::cout << "JDB Writer (" << m_WriterRank << ") : EndStep()\n";
+    }
 
     if (m_DeferredVariables.size() > 0)
     {
@@ -147,12 +150,12 @@ void JuleaDBDAIWriter::EndStep()
     //     std::cout << "\n______________EndStep _____________________"
     //               << std::endl;
     // }
-     m_Comm.Barrier();
-        if(m_WriterRank == 0)
-        {
-        std::cout << "______________EndStep _____________________ step = " << (m_CurrentStep - 1)
-                  << "\n "<< std::endl;
-        }
+    m_Comm.Barrier();
+    if (m_WriterRank == 0)
+    {
+        std::cout << "______________EndStep _____________________ step = "
+                  << (m_CurrentStep - 1) << "\n " << std::endl;
+    }
 }
 
 /**
@@ -164,7 +167,7 @@ void JuleaDBDAIWriter::PerformPuts()
     if (m_Verbosity == 5)
     {
         // std::cout << "Julea DB Writer " << m_WriterRank
-                //   << "     PerformPuts()\n";
+        //   << "     PerformPuts()\n";
         std::cout << "JDB Writer (" << m_WriterRank << ") : PerformPuts()\n";
     }
 
@@ -218,7 +221,7 @@ void JuleaDBDAIWriter::Flush(const int transportIndex)
     {
         // std::cout << "\n______________Flush  _____________________"
         // std::cout << "\n___Flush___"
-                //   << std::endl;
+        //   << std::endl;
         // std::cout << "Julea DB Writer " << m_WriterRank << "   Flush()\n";
         std::cout << "JDB Writer (" << m_WriterRank << ") : Flush()\n";
     }
@@ -241,10 +244,9 @@ void JuleaDBDAIWriter::Init()
     //     std::cout << "Julea DB Writer " << m_WriterRank << "   Init() "
     //               << std::endl;
     // }
-        if (m_Verbosity == 5)
+    if (m_Verbosity == 5)
     {
-        std::cout << "JDB Writer (" << m_WriterRank
-                  << ") : Init()\n";
+        std::cout << "JDB Writer (" << m_WriterRank << ") : Init()\n";
     }
 
     if (m_OpenMode == Mode::Append)
@@ -275,17 +277,19 @@ void JuleaDBDAIWriter::Init()
     {
         std::cout << "JDB Writer (" << m_WriterRank << ") : InitDBSchemas()\n";
         // std::cout << "InitDBSchemas" << std::endl;
-        
+
         m_JuleaDBInteractionWriter.InitDBSchemas();
         // Init();
-        std::cout << "JDB Writer (" << m_WriterRank << ") : InitDBSchemas finished()\n";
+        std::cout << "JDB Writer (" << m_WriterRank
+                  << ") : InitDBSchemas finished()\n";
     }
     // DAIInitDBSchemas();
-    //TODO: nothing happening in InitVariables
+    // TODO: nothing happening in InitVariables
     // InitVariables();
 }
 
-// void JuleaDBDAIWriter::InitDB() { m_JuleaDBInteractionWriter.InitDBSchemas(); }
+// void JuleaDBDAIWriter::InitDB() { m_JuleaDBInteractionWriter.InitDBSchemas();
+// }
 
 /**TODO needed?
  * see BP3Base InitParameters
@@ -351,10 +355,11 @@ void JuleaDBDAIWriter::InitVariables()
 #define declare_type(T)                                                        \
     void JuleaDBDAIWriter::DoPutSync(Variable<T> &variable, const T *data)     \
     {                                                                          \
-        if (m_Verbosity == 5)\
-        {\
-            std::cout << "JDB Writer (" << m_WriterRank << ") : DoPutSync()\n";\
-        }\
+        if (m_Verbosity == 5)                                                  \
+        {                                                                      \
+            std::cout << "JDB Writer (" << m_WriterRank                        \
+                      << ") : DoPutSync()\n";                                  \
+        }                                                                      \
         SetBlockID(variable);                                                  \
         PutSyncCommon(variable, data);                                         \
         variable.m_BlocksInfo.pop_back();                                      \
@@ -362,10 +367,11 @@ void JuleaDBDAIWriter::InitVariables()
     }                                                                          \
     void JuleaDBDAIWriter::DoPutDeferred(Variable<T> &variable, const T *data) \
     {                                                                          \
-    if (m_Verbosity == 5)\
-        {\
-            std::cout << "JDB Writer (" << m_WriterRank << ") : DoPutDeferred()\n";\
-        }\
+        if (m_Verbosity == 5)                                                  \
+        {                                                                      \
+            std::cout << "JDB Writer (" << m_WriterRank                        \
+                      << ") : DoPutDeferred()\n";                              \
+        }                                                                      \
         PutDeferredCommon(variable, data);                                     \
     }
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
@@ -381,11 +387,11 @@ void JuleaDBDAIWriter::DoClose(const int transportIndex)
     {
         // std::cout << "\n______________DoClose_____________________"
         // std::cout << "\n___DoClose___"
-                //   << std::endl;
-        // std::cout << "Julea DB Writer " << m_WriterRank << " Close(" << m_Name
-                //   << ")\n";
+        //   << std::endl;
+        // std::cout << "Julea DB Writer " << m_WriterRank << " Close(" <<
+        // m_Name
+        //   << ")\n";
         std::cout << "JDB Writer (" << m_WriterRank << ") : DoClose()\n";
-
     }
     // TODO: free semantics
     /* Write deferred variables*/
@@ -444,9 +450,10 @@ void JuleaDBDAIWriter::PutAttributes(core::IO &io)
 void JuleaDBDAIWriter::InitParameterFlushStepsCount(const std::string value)
 {
     if (m_Verbosity == 5)
-{
-    std::cout << "JDB Writer (" << m_WriterRank << ") : InitParameterFlushStepsCount()\n";
-}
+    {
+        std::cout << "JDB Writer (" << m_WriterRank
+                  << ") : InitParameterFlushStepsCount()\n";
+    }
 
     long long int flushStepsCount = -1;
 
