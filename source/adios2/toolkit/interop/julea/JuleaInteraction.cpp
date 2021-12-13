@@ -32,6 +32,27 @@ JuleaInteraction::JuleaInteraction(helper::Comm const &comm)
     // std::cout << "This is the constructor" << std::endl;
 }
 
+void JuleaInteraction::PrintMiniPenguin()
+{
+    std::cout << "   (o_ \n   (/)_ \n" << std::endl;
+}
+
+void JuleaInteraction::PrintPenguinFamily()
+{
+    std::cout << "           (o_ \n   (o_     //\\ \n   (/)_    V_/_ "
+              << std::endl;
+}
+
+void JuleaInteraction::PrintLargePenguin()
+{
+    std::cout
+        << "      .___. \n     /     \\ \n    | O _ O | \n    /  \\_/  \\ \n  .' / \
+    \\ `. \n / _|       |_ \\ \n(_/ |       | \\_) \n    \\       / \n   __\\_>-<_/__ \
+         \n   ~;/     \\;~"
+        << std::endl;
+}
+
+
 void JuleaInteraction::SetMinMaxValueFields(std::string *minField,
                                             std::string *maxField,
                                             std::string *valueField,
