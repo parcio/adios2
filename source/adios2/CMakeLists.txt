@@ -181,8 +181,6 @@ if(ADIOS2_HAVE_JULEA)
       engine/julea-db-dai/JuleaDBDAIReader.tcc
       engine/julea-db-dai/JuleaDBDAIWriter.cpp
       engine/julea-db-dai/JuleaDBDAIWriter.tcc
-      # engine/julea-db-dai/JuleaDBDAIInteractionWriter.cpp
-      # engine/julea-db-dai/JuleaDBDAIInteractionReader.cpp
 
       # engine/julea-db-do/JuleaDB-DO-Reader.cpp
       # engine/julea-db-do/JuleaDB-DO-Reader.tcc
@@ -193,17 +191,13 @@ if(ADIOS2_HAVE_JULEA)
 
       toolkit/interop/julea/JuleaInteraction.cpp
       toolkit/interop/julea/JuleaInteraction.tcc
+      toolkit/interop/julea/JuleaCDO.cpp
       toolkit/interop/julea/Database/JuleaDBInteractionReader.cpp
       toolkit/interop/julea/Database/JuleaDBInteractionReader.tcc
       toolkit/interop/julea/Database/JuleaDBInteractionWriter.cpp
       toolkit/interop/julea/Database/JuleaDBInteractionWriter.tcc
       toolkit/interop/julea/KeyValue/JuleaKVInteractionReader.cpp
       toolkit/interop/julea/KeyValue/JuleaKVInteractionWriter.cpp
-      
-      # toolkit/interop/julea/JuleaSerializer.cpp
-      # toolkit/interop/julea/JuleaSerializer.tcc
-      # toolkit/interop/julea/JuleaDeserializer.cpp
-      # toolkit/interop/julea/JuleaDeserializer.tcc
   )
   target_include_directories(adios2_core PRIVATE
     ${JULEA_INCLUDE_DIRS}
