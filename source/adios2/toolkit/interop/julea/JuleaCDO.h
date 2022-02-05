@@ -55,6 +55,7 @@ public:
     void computeDailyMinimum(const std::string nameSpace,
                              std::string variableName, uint32_t entryID);
 
+    void computeDailyMin(void);
 private:
 };
 

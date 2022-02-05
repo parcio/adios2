@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 
         // Open file. "w" means we overwrite any existing file on disk,
         // but Advance() will append steps to the same file.
-        adios2::Engine writer = io.Open("globalArray.bp", adios2::Mode::Write);
+        adios2::Engine writer = io.Open("globalArray-AdiosExample.bp", adios2::Mode::Write);
 
         for (size_t step = 0; step < NSTEPS; step++)
         {

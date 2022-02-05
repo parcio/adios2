@@ -118,6 +118,13 @@ void JuleaDBDAIWriter::EndStep()
     {
         Flush();
     }
+
+    if (m_CurrentStep % m_DayIntervall == 0)
+    {
+        // ComputeDailyMean();
+        // ComputeDailyMin();
+        // ComputeDailyMax();
+    }
     m_CurrentBlockID = 0;
 
     m_Comm.Barrier();

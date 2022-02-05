@@ -90,6 +90,8 @@ private:
      * EndStep */
     size_t m_FlushStepsCount = 1;
 
+    size_t m_DayIntervall = 24;
+
     /** manages all communication tasks in aggregation */
     // aggregator::MPIChain m_Aggregator;
 

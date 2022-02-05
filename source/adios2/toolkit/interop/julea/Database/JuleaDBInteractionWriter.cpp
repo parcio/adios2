@@ -36,6 +36,102 @@ JuleaDBInteractionWriter::JuleaDBInteractionWriter(helper::Comm const &comm)
     // std::cout << "This is the constructor of the writer" << std::endl;
 }
 
+void DAIaddFieldsForVariableMDSmall(JDBSchema *schema)
+{
+    gchar const *fileIndex[] = {"file", NULL};
+    gchar const *varIndex[] = {"variableName", NULL};
+    gchar const *minDoubleIndex[] = {"min_float64", NULL};
+    gchar const *maxDoubleIndex[] = {"max_float64", NULL};
+    gchar const *meanDoubleIndex[] = {"mean_float64", NULL};
+
+    j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
+
+    j_db_schema_add_field(schema, "isConstantDims", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "isReadAsJoined", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "isReadAsLocalValue", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "isRandomAccess", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "isSingleValue", J_DB_TYPE_UINT32, NULL);
+
+    j_db_schema_add_field(schema, "shapeID", J_DB_TYPE_UINT32, NULL);
+    // TODO: Check whether this renaming screws up anything in init
+    j_db_schema_add_field(schema, "typeInt", J_DB_TYPE_UINT32, NULL);
+
+    /** all vectors need to store their size */
+    j_db_schema_add_field(schema, "shapeSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "shape", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "startSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "start", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "countSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "count", J_DB_TYPE_BLOB, NULL);
+
+    /** number of blocks (steps are index starting at 0) */
+    j_db_schema_add_field(schema, "numberSteps", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "blockArray", J_DB_TYPE_BLOB, NULL);
+
+    j_db_schema_add_field(schema, "min_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "max_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "mean_float64", J_DB_TYPE_FLOAT64, NULL);
+
+    j_db_schema_add_field(schema, "value_string", J_DB_TYPE_STRING, NULL);
+
+
+    j_db_schema_add_index(schema, fileIndex, NULL);
+    j_db_schema_add_index(schema, varIndex, NULL);
+    j_db_schema_add_index(schema, minDoubleIndex, NULL);
+    j_db_schema_add_index(schema, maxDoubleIndex, NULL);
+    j_db_schema_add_index(schema, meanDoubleIndex, NULL);
+}
+
+void DAIaddFieldsForBlockMDSmall(JDBSchema *schema)
+{
+    gchar const *fileIndex[] = {"file", NULL};
+    gchar const *varIndex[] = {"variableName", NULL};
+    gchar const *stepIndex[] = {"step", NULL};
+    gchar const *blockIndex[] = {"block", NULL};
+    gchar const *minDoubleIndex[] = {"min_float64", NULL};
+    gchar const *maxDoubleIndex[] = {"max_float64", NULL};
+    gchar const *meanDoubleIndex[] = {"mean_float64", NULL};
+
+    j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "step", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "block", J_DB_TYPE_UINT64, NULL);
+
+    /** all vectors need to store their size */
+    j_db_schema_add_field(schema, "shapeSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "shape", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "startSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "start", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "countSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "count", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "memoryStartSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "memoryStart", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "memoryCountSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "memoryCount", J_DB_TYPE_BLOB, NULL);
+
+    j_db_schema_add_field(schema, "isValue", J_DB_TYPE_UINT32, NULL);
+
+    j_db_schema_add_field(schema, "min_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "max_float64", J_DB_TYPE_FLOAT64, NULL);
+    // j_db_schema_add_field(schema, "value_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "mean_float64", J_DB_TYPE_FLOAT64, NULL);
+
+    j_db_schema_add_field(schema, "value_string", J_DB_TYPE_STRING, NULL);
+
+    j_db_schema_add_field(schema, "stepsStart", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "stepsCount", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "blockID", J_DB_TYPE_UINT64, NULL);
+
+    j_db_schema_add_index(schema, fileIndex, NULL);
+    j_db_schema_add_index(schema, varIndex, NULL);
+    j_db_schema_add_index(schema, stepIndex, NULL);
+    j_db_schema_add_index(schema, blockIndex, NULL);
+    j_db_schema_add_index(schema, minDoubleIndex, NULL);
+    j_db_schema_add_index(schema, maxDoubleIndex, NULL);
+    j_db_schema_add_index(schema, meanDoubleIndex, NULL);
+}
+
 void DAIaddFieldsForVariableMD(JDBSchema *schema)
 {
     gchar const *fileIndex[] = {"file", NULL};
@@ -228,7 +324,8 @@ void JuleaDBInteractionWriter::InitDBSchemas()
     {
         // std::cout << "variable schema does not exist" << std::endl;
         varSchema = j_db_schema_new("adios2", "variable-metadata", NULL);
-        DAIaddFieldsForVariableMD(varSchema);
+        DAIaddFieldsForVariableMDSmall(varSchema);
+        // DAIaddFieldsForVariableMD(varSchema);
         j_db_schema_create(varSchema, batch, NULL);
         g_assert_true(j_batch_execute(batch) == true);
     }
@@ -238,7 +335,8 @@ void JuleaDBInteractionWriter::InitDBSchemas()
 
         // std::cout << "block schema does not exist" << std::endl;
         blockSchema = j_db_schema_new("adios2", "block-metadata", NULL);
-        DAIaddFieldsForBlockMD(blockSchema);
+        DAIaddFieldsForBlockMDSmall(blockSchema);
+        // DAIaddFieldsForBlockMD(blockSchema);
         j_db_schema_create(blockSchema, batch2, NULL);
         g_assert_true(j_batch_execute(batch2) == true);
     }

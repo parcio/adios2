@@ -35,7 +35,8 @@ void TestWriteVariableSync()
     adios2::IO juleaIO = adios.DeclareIO("juleaIO");
 
     // juleaIO.SetEngine("julea-kv");
-    juleaIO.SetEngine("julea-db");
+    juleaIO.SetEngine("julea-db-dai");
+    // juleaIO.SetEngine("julea-db");
     // juleaIO.SetEngine("bp3");
 
     /** global array: name, { shape (total dimensions) }, { start (local) },
@@ -90,7 +91,7 @@ void TestReadVariableSync()
     adios2::IO juleaIO = adios.DeclareIO("juleaIO");
 
     // juleaIO.SetEngine("julea-kv");
-    juleaIO.SetEngine("julea-db");
+    juleaIO.SetEngine("julea-db-dai");
     // juleaIO.SetEngine("bp3");
 
     /** Engine derived class, spawned to start IO operations */
