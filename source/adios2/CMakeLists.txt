@@ -158,14 +158,14 @@ endif()
 
 if(ADIOS2_HAVE_JULEA)
   target_sources(adios2_core PRIVATE
-      # engine/julea-kv/JuleaKVReader.cpp
-      # engine/julea-kv/JuleaKVReader.tcc
-      # engine/julea-kv/JuleaKVWriter.cpp
-      # engine/julea-kv/JuleaKVWriter.tcc
-      # engine/julea-kv/JuleaInteractionWriter.cpp
-      # engine/julea-kv/JuleaInteractionReader.cpp
-      # engine/julea-kv/JuleaFormatWriter.cpp
-      # engine/julea-kv/JuleaFormatReader.cpp
+      # engine/julea-kv-old/JuleaKVReader.cpp
+      # engine/julea-kv-old/JuleaKVReader.tcc
+      # engine/julea-kv-old/JuleaKVWriter.cpp
+      # engine/julea-kv-old/JuleaKVWriter.tcc
+      # engine/julea-kv-old/JuleaInteractionWriter.cpp
+      # engine/julea-kv-old/JuleaInteractionReader.cpp
+      # engine/julea-kv-old/JuleaFormatWriter.cpp
+      # engine/julea-kv-old/JuleaFormatReader.cpp
 
       # engine/julea-kv/JuleaClientLogic-legacy.cpp
       # engine/julea-kv/JuleaFormatWriter-legacy.cpp

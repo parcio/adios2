@@ -37,7 +37,15 @@ public:
     // JuleaSerializer(const bool debugMode);
     ~JuleaCDO() = default;
     // set duration of day; currently 24 steps = 24 h
-    size_t m_DayIntervall = 24;
+    size_t m_StepsPerDay = 24;
+
+    size_t m_DaysPerMonth = 30;
+    size_t m_StepsPerMonth = 720;
+
+    size_t m_MonthsPerYear = 12;
+    size_t m_DaysPerYear = 365;
+    size_t m_StepsPerYear = 8640;
+
     bool m_computeCFD = false;
     bool m_computeFD = false;
 
@@ -50,8 +58,24 @@ public:
 
     void precomputeCFD(void);
 
+    //pc = precompute
+    void pc_FD(void);
+
+    //compute frost days: daily min temperature < 0°C
+    void computeFrostDays(void);
+
+    //compute summer days: daily max temperature > 25°C
+    void computeSummerDays(void);
+
+    //compute icing days: daily max temperature < 0°C
+    void computeIcingDays(void);
+
+    //compute tropical nights: daily min temperature > 25°C
+    void computeTropicalNights(void);
+
     // compute dailyMinTemperature; dailyMinPrecipitation
-    //
+
+    // is computed every 24 steps
     void computeDailyMinimum(const std::string nameSpace,
                              std::string variableName, uint32_t entryID);
 

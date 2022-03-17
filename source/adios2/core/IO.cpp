@@ -50,8 +50,8 @@
 #endif
 
 #ifdef ADIOS2_HAVE_JULEA // external dependencies
-// #include "adios2/engine/julea-kv/JuleaKVReader.h"
-// #include "adios2/engine/julea-kv/JuleaKVWriter.h"
+// #include "adios2/engine/julea-kv-old/JuleaKVReader.h"
+// #include "adios2/engine/julea-kv-old/JuleaKVWriter.h"
 #include "adios2/engine/julea-db/JuleaDBReader.h"
 #include "adios2/engine/julea-db/JuleaDBWriter.h"
 #include "adios2/engine/julea-db-dai/JuleaDBDAIReader.h"

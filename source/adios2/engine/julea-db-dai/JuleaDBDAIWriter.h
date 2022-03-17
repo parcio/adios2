@@ -92,6 +92,16 @@ private:
 
     size_t m_DayIntervall = 24;
 
+    /** CDO stuff*/
+    // Temperature buffer
+    std::vector<double> m_DailyTempsBuffer;     // 24 hours
+    std::vector<double> m_MonthlyTempsBuffer;   //30 days
+
+    // precipitation buffer
+    std::vector<double> m_DailyPrecipsBuffer;   // 24 hour
+    std::vector<double> m_MonthlyPrecipsBuffer; // 30 days
+
+
     /** manages all communication tasks in aggregation */
     // aggregator::MPIChain m_Aggregator;
 

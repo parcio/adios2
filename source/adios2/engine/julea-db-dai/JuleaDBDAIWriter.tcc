@@ -47,10 +47,12 @@ void JuleaDBDAIWriter::JuleaDBDAISetMinMax(Variable<T> &variable, const T *data,
 
     T min = 0;
     T max = 0;
-    T stepMin = 0;
-    T stepMax = 0;
     T sum = 0;
     T mean = 0;
+
+    T stepMin = 0;
+    T stepMax = 0;
+    T stepMean = 0;
 
     auto number_elements = adios2::helper::GetTotalSize(variable.m_Count);
     adios2::helper::GetMinMax(data, number_elements, min, max);
@@ -67,6 +69,14 @@ void JuleaDBDAIWriter::JuleaDBDAISetMinMax(Variable<T> &variable, const T *data,
     blockMax = max;
     blockMean = mean;
 
+    /** The mean of means is ONLY the same as the mean of all, when the cardinality is the same for every sub-mean.
+    * E.g. mean(1+2+3+4+5+6) = 21/6 = 3.5
+    * mean(1+2+3) = 6/3 = 2; mean(4+5+6) = 15/3 = 5; mean(2+5) = 7/2 = 3.5
+    *
+    * Also: dividing each sub-sum by the total number of elements allows to simply sum these "non-means" to a total mean.
+    * E.g. (1+2+3)/6 = 6/6 = 1; (4+5+6)/6 = 15/6 = 2.5; 1 + 2.5 = 3.5
+    */
+
     // TODO: check whether this is incorrect
     // there may be some cases where this is not working
     /*  to initialize the global min/max, they are set to the
@@ -82,9 +92,13 @@ void JuleaDBDAIWriter::JuleaDBDAISetMinMax(Variable<T> &variable, const T *data,
     /* reduce only necessary if more than one process*/
     if (m_WriterRank > 0)
     {
+        //const T *sendbuf, T *recvbuf, size_t count, Op op, int root, const std::string &hint = std::string())
         m_Comm.Reduce(&blockMin, &stepMin, 1, helper::Comm::Op::Min, 0);
         m_Comm.Reduce(&blockMax, &stepMax, 1, helper::Comm::Op::Max, 0);
+        m_Comm.Reduce(&blockMean, &stepMean, 1, helper::Comm::Op::Sum, 0);
     }
+
+    blockMean = stepMean / m_Comm.Size();
 
     if (stepMin < variable.m_Min)
     {
@@ -194,6 +208,7 @@ void JuleaDBDAIWriter::PutSyncToJulea(
                   << variable.m_Name << ") --- BlockID = " << m_CurrentBlockID
                   << " \n";
     }
+    const DataType type = m_IO.InquireVariableType(variable.m_Name);
     T blockMin;
     T blockMax;
     T blockMean;
@@ -201,6 +216,30 @@ void JuleaDBDAIWriter::PutSyncToJulea(
 
     JuleaDBDAISetMinMax(variable, data, blockMin, blockMax, blockMean,
                         m_CurrentStep, m_CurrentBlockID);
+    
+
+        // add value to buffer:
+
+    // if (variable.m_Name == "T")
+    // {
+    //     m_DailyTempsBuffer.push_back((double)blockMean);
+    // }
+
+    // FIXME: does not compile yet... just wanted to add mean temperature to buffer...
+     if ((type == DataType::Compound) || (type == DataType::String) || (type == DataType::LongDouble) ||
+      (type == DataType::FloatComplex) || (type == DataType::DoubleComplex))
+    {
+    }
+#define declare_type(T)                                                        \
+    else if (type == helper::GetDataType<T>())                                 \
+    {                                                                          \
+    if (variable.m_Name == "T")\
+    {\
+        m_DailyTempsBuffer.push_back((double)blockMean);\
+    }\
+    }
+    ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
+#undef declare_type
 
     auto stepBlockID =
         g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
