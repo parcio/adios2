@@ -53,6 +53,7 @@ void TestWriteVariableSync()
 
     /** Engine derived class, spawned to start IO operations */
     adios2::Engine juleaWriter = juleaIO.Open("testFile.jb", adios2::Mode::Write);
+    // adios2::Engine juleaWriter = juleaIO.Open("testFile.jv", adios2::Mode::Write);
 
     /** Write variable for buffering */
     juleaWriter.Put<float>(juleaFloats, myFloats.data(), adios2::Mode::Deferred);
@@ -96,6 +97,7 @@ void TestReadVariableSync()
 
     /** Engine derived class, spawned to start IO operations */
     adios2::Engine juleaReader = juleaIO.Open("testFile.jb", adios2::Mode::Read);
+    // adios2::Engine juleaReader = juleaIO.Open("testFile.jv", adios2::Mode::Read);
 
     // for(int i = 0; i <10; i++)
     // {
