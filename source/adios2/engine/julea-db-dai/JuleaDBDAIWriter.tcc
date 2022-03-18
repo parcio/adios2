@@ -124,6 +124,8 @@ void JuleaDBDAIWriter::JuleaDBDAISetMinMax(Variable<T> &variable, const T *data,
         variable.m_Max = stepMax;
     }
 
+    m_JuleaCDO.m_ExtremeTemperatureRange = variable.m_Max - variable.m_Min;
+
     if (false)
     {
         std::cout << "min: " << min << std::endl;

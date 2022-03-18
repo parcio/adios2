@@ -34,13 +34,7 @@ class JuleaCDO
 {
 public:
     JuleaCDO(helper::Comm const &comm);
-    // JuleaSerializer(const bool debugMode);
     ~JuleaCDO() = default;
-
-    void precomputeCFD(void);
-
-    // pc = precompute
-    void pc_FD(void);
 
     // compute frost days: daily min temperature < 0°C
     void computeFrostDays(double dailyTempMin);
@@ -54,57 +48,47 @@ public:
     // compute icing days: daily max temperature < 0°C
     void computeIcingDays(double dailyTempMax);
 
-    // precipitation R > 1mm (RR1)
+    // precipitation R > 1mm,10mm,20mm (RR1,RR10,RR20)
     void computePrecipDays(double dailyPrecipSum);
-    // void computePrecipDays1mm(double dailyPrecipMin);
-    // void computePrecipDays10mm(double dailyPrecipMin);
-    // void computePrecipDays20mm(double dailyPrecipMin);
-
-    // precipitation R > 1 (RR1)
-    // void computeWetDays(double dailyPrecipMin);
-
-    // compute dailyMinTemperature; dailyMinPrecipitation
-
-    // is computed every 24 steps
-    // void computeDailyMinimum(const std::string nameSpace,
-    //                          std::string variableName, uint32_t entryID);
 
     void computeDailyStatistics(std::string variableName);
     void computeMonthlyStatistics(std::string variableName);
     void computeYearlyStatistics(std::string variableName);
 
+    /** Variables*/
     std::string m_PrecipitationName = "P";
     std::string m_TemperatureName = "T";
 
-    // set duration of day; currently 24 steps = 24 h
+    /** Simplified durations */
     size_t m_StepsPerDay = 24;
-
     size_t m_DaysPerMonth = 30;
     size_t m_StepsPerMonth = 720;
-
     size_t m_MonthsPerYear = 12;
     size_t m_DaysPerYear = 360;
     size_t m_StepsPerYear = 8640;
-
-    bool m_computeCFD = false;
-    bool m_computeFD = false;
-
-    // #define declare_type(T)                                                        \
-//     T *currentDailyMinTemperature;                                  \
-//     T *currentDailyMaxTemperature;                                  \
-//     void PutSomething(Variable<T> &, T *) final;
-    //     ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
-    // #undef declare_type
-
+    
+    /** Climate indices*/
     size_t m_FrostDays = 0;
     size_t m_SummerDays = 0;
-    size_t m_SummerDaysThreshold = 25;
     size_t m_IcingDays = 0;
     size_t m_TropicalNights = 0;
+    size_t m_ExtremeTemperatureRange = 0;
 
     size_t m_PrecipDays1mm = 0;
     size_t m_PrecipDays10mm = 0;
     size_t m_PrecipDays20mm = 0;
+
+    size_t m_SummerDaysTemperatureThreshold = 25;
+    
+    /** Climate indices for all years*/
+    std::vector<size_t> m_FrostDaysPerYear;
+    std::vector<size_t> m_SummerDaysPerYear;
+    std::vector<size_t> m_IcingDaysPerYear;
+    std::vector<size_t> m_TropicalNightsPerYear;
+
+    std::vector<size_t> m_PrecipDays1mmPerYear;
+    std::vector<size_t> m_PrecipDays10mmPerYear;
+    std::vector<size_t> m_PrecipDays20mmPerYear;
 
     // hourly temperature min/mean/max
     std::vector<double> m_HTempMin;  // 1 step
@@ -149,7 +133,6 @@ public:
     std::vector<double> m_YPrecMean; // 12 months
     std::vector<double> m_YPrecMax;  // 12 months
     std::vector<double> m_YPrecSum;  // 12 months
-
 private:
 };
 

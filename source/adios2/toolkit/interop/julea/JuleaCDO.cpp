@@ -29,6 +29,8 @@ namespace interop
 JuleaCDO::JuleaCDO(helper::Comm const &comm)
 {
     // std::cout << "This is the constructor" << std::endl;
+    // m_TemperatureName =
+    // m_PrecipitationName =
 }
 
 // daily minimum temperature < 0°cC
@@ -42,7 +44,7 @@ void JuleaCDO::computeFrostDays(double dailyTempMin)
 
 void JuleaCDO::computeTropicalNights(double dailyTempMin)
 {
-    if (dailyTempMin > m_SummerDaysThreshold)
+    if (dailyTempMin > m_SummerDaysTemperatureThreshold)
     {
         m_TropicalNights++;
     }
@@ -50,7 +52,7 @@ void JuleaCDO::computeTropicalNights(double dailyTempMin)
 
 void JuleaCDO::computeSummerDays(double dailyTempMax)
 {
-    if (dailyTempMax > m_SummerDaysThreshold)
+    if (dailyTempMax > m_SummerDaysTemperatureThreshold)
     {
         m_SummerDays++;
     }
@@ -208,6 +210,17 @@ void JuleaCDO::computeYearlyStatistics(std::string variableName)
         m_YTempMin.push_back(yearlyMin);
         m_YTempMean.push_back(yearlyMean);
         m_YTempMax.push_back(yearlyMax);
+
+        m_FrostDaysPerYear.push_back(m_FrostDays);
+        m_SummerDaysPerYear.push_back(m_SummerDays);
+        m_IcingDaysPerYear.push_back(m_IcingDays);
+        m_TropicalNightsPerYear.push_back(m_TropicalNights);
+
+        // resetting counts for next year
+        m_FrostDays = 0;
+        m_SummerDays = 0;
+        m_IcingDays = 0;
+        m_TropicalNights = 0;
     }
 
     if (variableName == m_PrecipitationName)
@@ -225,6 +238,15 @@ void JuleaCDO::computeYearlyStatistics(std::string variableName)
         m_YPrecMean.push_back(yearlyMean);
         m_YPrecMax.push_back(yearlyMax);
         m_YPrecSum.push_back(yearlySum);
+
+        m_PrecipDays1mmPerYear.push_back(m_PrecipDays1mm);
+        m_PrecipDays10mmPerYear.push_back(m_PrecipDays10mm);
+        m_PrecipDays20mmPerYear.push_back(m_PrecipDays20mm);
+
+        // resetting counts for next year
+        m_PrecipDays1mm = 0;
+        m_PrecipDays10mm = 0;
+        m_PrecipDays20mm = 0;
     }
 }
 
