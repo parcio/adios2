@@ -16,8 +16,8 @@
 #include "adios2/toolkit/transport/file/FileFStream.h"
 
 #include <iostream>
-#include <numeric>
 #include <julea-object.h> //needed?
+#include <numeric>
 
 // #include <julea-adios.h>
 
@@ -120,18 +120,6 @@ void JuleaDBDAIWriter::EndStep()
         Flush();
     }
 
-    if (m_CurrentStep % m_JuleaCDO.m_StepsPerDay == 0)
-    {
-        double dailyMeanTemp = accumulate(m_JuleaCDO.m_DBTempMean.begin(),m_JuleaCDO.m_DBTempMean.end(),0) / m_JuleaCDO.m_StepsPerDay ;
-        double dailyMeanPrecip = accumulate(m_JuleaCDO.m_DBPrecMean.begin(),m_JuleaCDO.m_DBPrecMean.end(),0) / m_JuleaCDO.m_StepsPerDay;
-        
-        m_JuleaCDO.m_MBTempMean.push_back(dailyMeanTemp);
-        m_JuleaCDO.m_MBPrecMean.push_back(dailyMeanPrecip);
-
-        // ComputeDailyMean();
-        // ComputeDailyMin();
-        // ComputeDailyMax();
-    }
     m_CurrentBlockID = 0;
 
     m_Comm.Barrier();
@@ -179,6 +167,15 @@ void JuleaDBDAIWriter::PerformPuts()
     {                                                                          \
         Variable<T> &variable = FindVariable<T>(                               \
             variableName, "in call to PerformPuts, EndStep or Close");         \
+        if (m_CurrentStep % m_JuleaCDO.m_StepsPerDay == 0)                     \
+        {                                                                      \
+            m_JuleaCDO.computeDailyStatistics(variableName);                   \
+        }                                                                      \
+                                                                               \
+        if (m_CurrentStep % m_JuleaCDO.m_StepsPerMonth == 0)                   \
+        {                                                                      \
+            m_JuleaCDO.computeMonthlyStatistics(variableName);                 \
+        }                                                                      \
                                                                                \
         PerformPutCommon(variable);                                            \
     }

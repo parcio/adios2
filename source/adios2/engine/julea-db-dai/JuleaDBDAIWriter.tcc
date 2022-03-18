@@ -68,14 +68,6 @@ void JuleaDBDAIWriter::JuleaDBDAISetMinMax(Variable<T> &variable, const T *data,
     blockMax = max;
     blockMean = mean;
 
-    /** The mean of means is ONLY the same as the mean of all, when the cardinality is the same for every sub-mean.
-    * E.g. mean(1+2+3+4+5+6) = 21/6 = 3.5
-    * mean(1+2+3) = 6/3 = 2; mean(4+5+6) = 15/3 = 5; mean(2+5) = 7/2 = 3.5
-    *
-    * Also: dividing each sub-sum by the total number of elements allows to simply sum these "non-means" to a total mean.
-    * E.g. (1+2+3)/6 = 6/6 = 1; (4+5+6)/6 = 15/6 = 2.5; 1 + 2.5 = 3.5
-    */
-
     // TODO: check whether this is incorrect
     // there may be some cases where this is not working
     /*  to initialize the global min/max, they are set to the
@@ -91,12 +83,23 @@ void JuleaDBDAIWriter::JuleaDBDAISetMinMax(Variable<T> &variable, const T *data,
     /* reduce only necessary if more than one process*/
     if (m_WriterRank > 0)
     {
-        //const T *sendbuf, T *recvbuf, size_t count, Op op, int root, const std::string &hint = std::string())
+        // const T *sendbuf, T *recvbuf, size_t count, Op op, int root, const
+        // std::string &hint = std::string())
         m_Comm.Reduce(&blockMin, &stepMin, 1, helper::Comm::Op::Min, 0);
         m_Comm.Reduce(&blockMax, &stepMax, 1, helper::Comm::Op::Max, 0);
         m_Comm.Reduce(&blockMean, &stepMean, 1, helper::Comm::Op::Sum, 0);
     }
 
+    /** The mean of means is ONLY the same as the mean of all, when the
+     * cardinality is the same for every sub-mean. E.g. mean(1+2+3+4+5+6) = 21/6
+     * = 3.5 mean(1+2+3) = 6/3 = 2; mean(4+5+6) = 15/3 = 5; mean(2+5) = 7/2
+     * = 3.5
+     *
+     * Also: dividing each sub-sum by the total number of elements allows to
+     * simply sum these "non-means" to a total mean. E.g. (1+2+3)/6 = 6/6 = 1;
+     * (4+5+6)/6 = 15/6 = 2.5; 1 + 2.5 = 3.5
+     * However, this is unintuitive. So, first version is used.
+     */
     blockMean = stepMean / m_Comm.Size();
 
     if (stepMin < variable.m_Min)
@@ -149,24 +152,26 @@ void JuleaDBDAIWriter::JuleaDBDAISetMinMax<std::complex<double>>(
 }
 
 template <class T>
-void JuleaDBDAIWriter::JuleaDBDAIStepValues(
-    Variable<T> &variable, T blockMin, T blockMean, T blockMax)
+void JuleaDBDAIWriter::JuleaDBDAIStepValues(Variable<T> &variable, T blockMin,
+                                            T blockMean, T blockMax)
 {
-
 }
 
-/** Add means per step to buffer to make computation of "daily" means easier, i.e. no reading from database required*/
+/** Add means per step to buffer to make computation of "daily" means easier,
+ * i.e. no reading from database required*/
 template <>
-void JuleaDBDAIWriter::JuleaDBDAIStepValues<double>(
-    Variable<double> &variable, double blockMin, double blockMean, double blockMax)
+void JuleaDBDAIWriter::JuleaDBDAIStepValues<double>(Variable<double> &variable,
+                                                    double blockMin,
+                                                    double blockMean,
+                                                    double blockMax)
 {
     if (variable.m_Name == "T")
     {
-       m_JuleaCDO.m_DBTempMin.push_back(blockMin);
-       m_JuleaCDO.m_DBTempMean.push_back(blockMean);
-       m_JuleaCDO.m_DBTempMax.push_back(blockMax);
+        m_JuleaCDO.m_DBTempMin.push_back(blockMin);
+        m_JuleaCDO.m_DBTempMean.push_back(blockMean);
+        m_JuleaCDO.m_DBTempMax.push_back(blockMax);
     }
-    
+
     if (variable.m_Name == "P")
     {
         m_JuleaCDO.m_DBPrecMin.push_back(blockMin);
@@ -174,8 +179,6 @@ void JuleaDBDAIWriter::JuleaDBDAIStepValues<double>(
         m_JuleaCDO.m_DBPrecMax.push_back(blockMax);
     }
 }
-
-
 
 template <class T>
 void JuleaDBDAIWriter::SetBlockID(Variable<T> &variable)
@@ -248,7 +251,7 @@ void JuleaDBDAIWriter::PutSyncToJulea(
     JuleaDBDAISetMinMax(variable, data, blockMin, blockMax, blockMean);
 
     JuleaDBDAIStepValues(variable, blockMin, blockMean, blockMax);
-    
+
     auto stepBlockID =
         g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
     // std::cout << "    stepBlockID: " << stepBlockID << std::endl;

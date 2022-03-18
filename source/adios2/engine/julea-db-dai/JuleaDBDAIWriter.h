@@ -94,7 +94,6 @@ private:
 
     size_t m_DayIntervall = 24;
 
-
     /** manages all communication tasks in aggregation */
     // aggregator::MPIChain m_Aggregator;
 
@@ -152,7 +151,8 @@ private:
                              T &blockMax, T &blockMean);
 
     template <class T>
-    void JuleaDBDAIStepValues(Variable<T> &variable, T blockMin, T blockMean, T blockMax);
+    void JuleaDBDAIStepValues(Variable<T> &variable, T blockMin, T blockMean,
+                              T blockMax);
 
     /**
      * Closes a single transport or all transports

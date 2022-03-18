@@ -36,6 +36,33 @@ public:
     JuleaCDO(helper::Comm const &comm);
     // JuleaSerializer(const bool debugMode);
     ~JuleaCDO() = default;
+
+    void precomputeCFD(void);
+
+    // pc = precompute
+    void pc_FD(void);
+
+    // compute frost days: daily min temperature < 0°C
+    void computeFrostDays(void);
+
+    // compute summer days: daily max temperature > 25°C
+    void computeSummerDays(void);
+
+    // compute icing days: daily max temperature < 0°C
+    void computeIcingDays(void);
+
+    // compute tropical nights: daily min temperature > 25°C
+    void computeTropicalNights(void);
+
+    // compute dailyMinTemperature; dailyMinPrecipitation
+
+    // is computed every 24 steps
+    // void computeDailyMinimum(const std::string nameSpace,
+    //                          std::string variableName, uint32_t entryID);
+
+    void computeDailyStatistics(std::string variableName);
+    void computeMonthlyStatistics(std::string variableName);
+
     // set duration of day; currently 24 steps = 24 h
     size_t m_StepsPerDay = 24;
 
@@ -62,51 +89,28 @@ public:
     // std::vector<double> m_MonthlyTempsBuffer;   //30 days
 
     // daily buffer temperature mean
-    std::vector<double> m_DBTempMin;   // 24 hours
-    std::vector<double> m_DBTempMean;   // 24 hours
-    std::vector<double> m_DBTempMax;   // 24 hours
+    std::vector<double> m_DBTempMin;  // 24 hours
+    std::vector<double> m_DBTempMean; // 24 hours
+    std::vector<double> m_DBTempMax;  // 24 hours
     // monthly buffer temperature mean
-    std::vector<double> m_MBTempMin;   //30 days
-    std::vector<double> m_MBTempMean;   //30 days
-    std::vector<double> m_MBTempMax;   //30 days
+    std::vector<double> m_MBTempMin;  // 30 days
+    std::vector<double> m_MBTempMean; // 30 days
+    std::vector<double> m_MBTempMax;  // 30 days
 
     // precipitation buffer
     // std::vector<double> m_DailyPrecipsBuffer;   // 24 hour
     // std::vector<double> m_MonthlyPrecipsBuffer; // 30 days
 
     // daily buffer precipitation mean
-    std::vector<double> m_DBPrecMin;   // 24 hour
-    std::vector<double> m_DBPrecMean;   // 24 hour
-    std::vector<double> m_DBPrecMax;   // 24 hour
+    std::vector<double> m_DBPrecMin;  // 24 hour
+    std::vector<double> m_DBPrecMean; // 24 hour
+    std::vector<double> m_DBPrecMax;  // 24 hour
     // monthly buffer precipitation mean
-    std::vector<double> m_MBPrecMin; // 30 days
+    std::vector<double> m_MBPrecMin;  // 30 days
     std::vector<double> m_MBPrecMean; // 30 days
-    std::vector<double> m_MBPrecMax; // 30 days
+    std::vector<double> m_MBPrecMax;  // 30 days
 
-    void precomputeCFD(void);
-
-    //pc = precompute
-    void pc_FD(void);
-
-    //compute frost days: daily min temperature < 0°C
-    void computeFrostDays(void);
-
-    //compute summer days: daily max temperature > 25°C
-    void computeSummerDays(void);
-
-    //compute icing days: daily max temperature < 0°C
-    void computeIcingDays(void);
-
-    //compute tropical nights: daily min temperature > 25°C
-    void computeTropicalNights(void);
-
-    // compute dailyMinTemperature; dailyMinPrecipitation
-
-    // is computed every 24 steps
-    void computeDailyMinimum(const std::string nameSpace,
-                             std::string variableName, uint32_t entryID);
-
-    void computeDailyMin(void);
+    
 private:
 };
 

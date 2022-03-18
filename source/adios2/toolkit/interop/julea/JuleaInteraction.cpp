@@ -52,7 +52,6 @@ void JuleaInteraction::PrintLargePenguin()
         << std::endl;
 }
 
-
 void JuleaInteraction::SetMinMaxValueFields(std::string *minField,
                                             std::string *maxField,
                                             std::string *valueField,
