@@ -52,6 +52,7 @@ void JuleaDBDAIWriter::JuleaDBDAISetMinMax(Variable<T> &variable, const T *data,
     T stepMin = 0;
     T stepMax = 0;
     T stepMean = 0;
+    T stepSum = 0;
 
     auto number_elements = adios2::helper::GetTotalSize(variable.m_Count);
     adios2::helper::GetMinMax(data, number_elements, min, max);
@@ -67,6 +68,7 @@ void JuleaDBDAIWriter::JuleaDBDAISetMinMax(Variable<T> &variable, const T *data,
     blockMin = min;
     blockMax = max;
     blockMean = mean;
+    T blockSum = sum;
 
     // TODO: check whether this is incorrect
     // there may be some cases where this is not working
@@ -88,6 +90,12 @@ void JuleaDBDAIWriter::JuleaDBDAISetMinMax(Variable<T> &variable, const T *data,
         m_Comm.Reduce(&blockMin, &stepMin, 1, helper::Comm::Op::Min, 0);
         m_Comm.Reduce(&blockMax, &stepMax, 1, helper::Comm::Op::Max, 0);
         m_Comm.Reduce(&blockMean, &stepMean, 1, helper::Comm::Op::Sum, 0);
+
+        if (variable.m_Name == m_JuleaCDO.m_PrecipitationName)
+        {
+            m_Comm.Reduce(&blockMean, &stepSum, 1, helper::Comm::Op::Sum, 0);
+            m_JuleaCDO.m_DPrecSum.push_back(stepSum);
+        }
     }
 
     /** The mean of means is ONLY the same as the mean of all, when the
@@ -165,18 +173,18 @@ void JuleaDBDAIWriter::JuleaDBDAIStepValues<double>(Variable<double> &variable,
                                                     double blockMean,
                                                     double blockMax)
 {
-    if (variable.m_Name == "T")
+    if (variable.m_Name == m_JuleaCDO.m_TemperatureName)
     {
-        m_JuleaCDO.m_DBTempMin.push_back(blockMin);
-        m_JuleaCDO.m_DBTempMean.push_back(blockMean);
-        m_JuleaCDO.m_DBTempMax.push_back(blockMax);
+        m_JuleaCDO.m_DTempMin.push_back(blockMin);
+        m_JuleaCDO.m_DTempMean.push_back(blockMean);
+        m_JuleaCDO.m_DTempMax.push_back(blockMax);
     }
 
-    if (variable.m_Name == "P")
+    if (variable.m_Name == m_JuleaCDO.m_PrecipitationName)
     {
-        m_JuleaCDO.m_DBPrecMin.push_back(blockMin);
-        m_JuleaCDO.m_DBPrecMean.push_back(blockMean);
-        m_JuleaCDO.m_DBPrecMax.push_back(blockMax);
+        m_JuleaCDO.m_DPrecMin.push_back(blockMin);
+        m_JuleaCDO.m_DPrecMean.push_back(blockMean);
+        m_JuleaCDO.m_DPrecMax.push_back(blockMax);
     }
 }
 

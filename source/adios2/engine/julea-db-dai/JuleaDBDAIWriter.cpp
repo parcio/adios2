@@ -177,6 +177,10 @@ void JuleaDBDAIWriter::PerformPuts()
             m_JuleaCDO.computeMonthlyStatistics(variableName);                 \
         }                                                                      \
                                                                                \
+        if (m_CurrentStep % m_JuleaCDO.m_StepsPerYear == 0)                   \
+        {                                                                      \
+            m_JuleaCDO.computeYearlyStatistics(variableName);                 \
+        }                                                                      \
         PerformPutCommon(variable);                                            \
     }
         ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
