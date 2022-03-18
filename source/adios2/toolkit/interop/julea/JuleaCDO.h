@@ -43,7 +43,7 @@ public:
     size_t m_StepsPerMonth = 720;
 
     size_t m_MonthsPerYear = 12;
-    size_t m_DaysPerYear = 365;
+    size_t m_DaysPerYear = 360;
     size_t m_StepsPerYear = 8640;
 
     bool m_computeCFD = false;
@@ -55,6 +55,33 @@ public:
 //     void PutSomething(Variable<T> &, T *) final;
     //     ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
     // #undef declare_type
+
+    /** CDO stuff*/
+    // Temperature buffer
+    // std::vector<double> m_DailyTempsBuffer;     // 24 hours
+    // std::vector<double> m_MonthlyTempsBuffer;   //30 days
+
+    // daily buffer temperature mean
+    std::vector<double> m_DBTempMin;   // 24 hours
+    std::vector<double> m_DBTempMean;   // 24 hours
+    std::vector<double> m_DBTempMax;   // 24 hours
+    // monthly buffer temperature mean
+    std::vector<double> m_MBTempMin;   //30 days
+    std::vector<double> m_MBTempMean;   //30 days
+    std::vector<double> m_MBTempMax;   //30 days
+
+    // precipitation buffer
+    // std::vector<double> m_DailyPrecipsBuffer;   // 24 hour
+    // std::vector<double> m_MonthlyPrecipsBuffer; // 30 days
+
+    // daily buffer precipitation mean
+    std::vector<double> m_DBPrecMin;   // 24 hour
+    std::vector<double> m_DBPrecMean;   // 24 hour
+    std::vector<double> m_DBPrecMax;   // 24 hour
+    // monthly buffer precipitation mean
+    std::vector<double> m_MBPrecMin; // 30 days
+    std::vector<double> m_MBPrecMean; // 30 days
+    std::vector<double> m_MBPrecMax; // 30 days
 
     void precomputeCFD(void);
 
