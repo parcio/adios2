@@ -198,6 +198,30 @@ void JuleaDBDAIWriter::SetBlockID(Variable<T> &variable)
 }
 
 template <class T>
+void JuleaDBDAIWriter::JuleaDBDAIStepMeans(
+    Variable<T> &variable, T blockMean)
+{
+
+}
+
+/** Add means per step to buffer to make computation of "daily" means easier, i.e. no reading from database required*/
+template <>
+void JuleaDBDAIWriter::JuleaDBDAIStepMeans<double>(
+    Variable<double> &variable, double blockMean)
+{
+    if (variable.m_Name == "T")
+    {
+        m_DailyTempsBuffer.push_back(blockMean);
+    }
+    
+    if (variable.m_Name == "P")
+    {
+        m_DailyPrecipsBuffer.push_back(blockMean);
+    }
+}
+
+
+template <class T>
 void JuleaDBDAIWriter::PutSyncToJulea(
     Variable<T> &variable, const T *data,
     const typename Variable<T>::Info &blockInfo)
@@ -209,38 +233,20 @@ void JuleaDBDAIWriter::PutSyncToJulea(
                   << " \n";
     }
     const DataType type = m_IO.InquireVariableType(variable.m_Name);
+    // const DataType type = helper::GetDataType<T>();
     T blockMin;
     T blockMax;
     T blockMean;
     uint32_t entryID = 0;
+    std::vector<double> testBuffer;
+    std::vector<T> testBuffer2;
+    double testDouble = 42.0;
 
     JuleaDBDAISetMinMax(variable, data, blockMin, blockMax, blockMean,
                         m_CurrentStep, m_CurrentBlockID);
+
+    JuleaDBDAIStepMeans(variable, blockMean);
     
-
-        // add value to buffer:
-
-    // if (variable.m_Name == "T")
-    // {
-    //     m_DailyTempsBuffer.push_back((double)blockMean);
-    // }
-
-    // FIXME: does not compile yet... just wanted to add mean temperature to buffer...
-     if ((type == DataType::Compound) || (type == DataType::String) || (type == DataType::LongDouble) ||
-      (type == DataType::FloatComplex) || (type == DataType::DoubleComplex))
-    {
-    }
-#define declare_type(T)                                                        \
-    else if (type == helper::GetDataType<T>())                                 \
-    {                                                                          \
-    if (variable.m_Name == "T")\
-    {\
-        m_DailyTempsBuffer.push_back((double)blockMean);\
-    }\
-    }
-    ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
-#undef declare_type
-
     auto stepBlockID =
         g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
     // std::cout << "    stepBlockID: " << stepBlockID << std::endl;

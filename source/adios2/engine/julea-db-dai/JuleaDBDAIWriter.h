@@ -159,6 +159,9 @@ private:
                              T &blockMax, T &blockMean, size_t currentStep,
                              size_t currentBlockID);
 
+    template <class T>
+    void JuleaDBDAIStepMeans(Variable<T> &variable, T blockMean);
+
     /**
      * Closes a single transport or all transports
      * @param transportIndex, if -1 (default) closes all transports,
