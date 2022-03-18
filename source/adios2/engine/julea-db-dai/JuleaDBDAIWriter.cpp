@@ -16,6 +16,7 @@
 #include "adios2/toolkit/transport/file/FileFStream.h"
 
 #include <iostream>
+#include <numeric>
 #include <julea-object.h> //needed?
 
 // #include <julea-adios.h>
@@ -30,7 +31,7 @@ namespace engine
 JuleaDBDAIWriter::JuleaDBDAIWriter(IO &io, const std::string &name,
                                    const Mode mode, helper::Comm comm)
 : Engine("JuleaDBDAIWriter", io, name, mode, std::move(comm)),
-  m_JuleaDBInteractionWriter(m_Comm)
+  m_JuleaDBInteractionWriter(m_Comm), m_JuleaCDO(m_Comm)
 {
     m_WriterRank = m_Comm.Rank();
     Init();
@@ -119,8 +120,14 @@ void JuleaDBDAIWriter::EndStep()
         Flush();
     }
 
-    if (m_CurrentStep % m_DayIntervall == 0)
+    if (m_CurrentStep % m_JuleaCDO.m_StepsPerDay == 0)
     {
+        double dailyMeanTemp = accumulate(m_JuleaCDO.m_DBTempMean.begin(),m_JuleaCDO.m_DBTempMean.end(),0) / m_JuleaCDO.m_StepsPerDay ;
+        double dailyMeanPrecip = accumulate(m_JuleaCDO.m_DBPrecMean.begin(),m_JuleaCDO.m_DBPrecMean.end(),0) / m_JuleaCDO.m_StepsPerDay;
+        
+        m_JuleaCDO.m_MBTempMean.push_back(dailyMeanTemp);
+        m_JuleaCDO.m_MBPrecMean.push_back(dailyMeanPrecip);
+
         // ComputeDailyMean();
         // ComputeDailyMin();
         // ComputeDailyMax();

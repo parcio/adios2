@@ -103,14 +103,14 @@ void JuleaDBDAIWriter::JuleaDBDAISetMinMax(Variable<T> &variable, const T *data,
     if (stepMin < variable.m_Min)
     {
         // std::cout << "updated global min from " << variable.m_Min << " to "
-        //   << min << std::endl;
+        //   << stepMin << std::endl;
         variable.m_Min = stepMin;
     }
 
     if (stepMax > variable.m_Max)
     {
         // std::cout << "updated global max from "  << variable.m_Max << " to "
-        // << max << std::endl;
+        // << stepMax << std::endl;
         variable.m_Max = stepMax;
     }
 
@@ -149,6 +149,35 @@ void JuleaDBDAIWriter::JuleaDBDAISetMinMax<std::complex<double>>(
 {
     // TODO implement?
 }
+
+template <class T>
+void JuleaDBDAIWriter::JuleaDBDAIStepValues(
+    Variable<T> &variable, T blockMin, T blockMean, T blockMax)
+{
+
+}
+
+/** Add means per step to buffer to make computation of "daily" means easier, i.e. no reading from database required*/
+template <>
+void JuleaDBDAIWriter::JuleaDBDAIStepValues<double>(
+    Variable<double> &variable, double blockMin, double blockMean, double blockMax)
+{
+    if (variable.m_Name == "T")
+    {
+       m_JuleaCDO.m_DBTempMin.push_back(blockMin);
+       m_JuleaCDO.m_DBTempMean.push_back(blockMean);
+       m_JuleaCDO.m_DBTempMax.push_back(blockMax);
+    }
+    
+    if (variable.m_Name == "P")
+    {
+        m_JuleaCDO.m_DBPrecMin.push_back(blockMin);
+        m_JuleaCDO.m_DBPrecMean.push_back(blockMean);
+        m_JuleaCDO.m_DBPrecMax.push_back(blockMax);
+    }
+}
+
+
 
 template <class T>
 void JuleaDBDAIWriter::SetBlockID(Variable<T> &variable)
@@ -198,30 +227,6 @@ void JuleaDBDAIWriter::SetBlockID(Variable<T> &variable)
 }
 
 template <class T>
-void JuleaDBDAIWriter::JuleaDBDAIStepMeans(
-    Variable<T> &variable, T blockMean)
-{
-
-}
-
-/** Add means per step to buffer to make computation of "daily" means easier, i.e. no reading from database required*/
-template <>
-void JuleaDBDAIWriter::JuleaDBDAIStepMeans<double>(
-    Variable<double> &variable, double blockMean)
-{
-    if (variable.m_Name == "T")
-    {
-        m_DailyTempsBuffer.push_back(blockMean);
-    }
-    
-    if (variable.m_Name == "P")
-    {
-        m_DailyPrecipsBuffer.push_back(blockMean);
-    }
-}
-
-
-template <class T>
 void JuleaDBDAIWriter::PutSyncToJulea(
     Variable<T> &variable, const T *data,
     const typename Variable<T>::Info &blockInfo)
@@ -245,7 +250,7 @@ void JuleaDBDAIWriter::PutSyncToJulea(
     JuleaDBDAISetMinMax(variable, data, blockMin, blockMax, blockMean,
                         m_CurrentStep, m_CurrentBlockID);
 
-    JuleaDBDAIStepMeans(variable, blockMean);
+    JuleaDBDAIStepValues(variable, blockMin, blockMean, blockMax);
     
     auto stepBlockID =
         g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);

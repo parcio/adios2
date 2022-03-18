@@ -16,6 +16,7 @@
 // #include "adios2/toolkit/format/bp/bp3/BP3Serializer.h"
 // #include "adios2/toolkit/interop/julea/JuleaSerializer.h"
 #include "adios2/toolkit/interop/julea/Database/JuleaDBInteractionWriter.h"
+#include "adios2/toolkit/interop/julea/JuleaCDO.h"
 #include "adios2/toolkit/interop/julea/JuleaInteraction.h"
 
 #include "adios2/toolkit/transportman/TransportMan.h" //transport::TransportsMan
@@ -62,6 +63,7 @@ public:
     // interop::JuleaInteraction m_JuleaDBInteractionWriter;
 private:
     interop::JuleaDBInteractionWriter m_JuleaDBInteractionWriter;
+    interop::JuleaCDO m_JuleaCDO;
     // interop::JuleaSerializer m_JuleaSerializer;
     // interop::JuleaDBInteraction m_JuleaDBInteractionWriter;
     // interop::JuleaDBInteractionWriter m_JuleaDBInteractionWriter;
@@ -91,15 +93,6 @@ private:
     size_t m_FlushStepsCount = 1;
 
     size_t m_DayIntervall = 24;
-
-    /** CDO stuff*/
-    // Temperature buffer
-    std::vector<double> m_DailyTempsBuffer;     // 24 hours
-    std::vector<double> m_MonthlyTempsBuffer;   //30 days
-
-    // precipitation buffer
-    std::vector<double> m_DailyPrecipsBuffer;   // 24 hour
-    std::vector<double> m_MonthlyPrecipsBuffer; // 30 days
 
 
     /** manages all communication tasks in aggregation */
@@ -160,7 +153,7 @@ private:
                              size_t currentBlockID);
 
     template <class T>
-    void JuleaDBDAIStepMeans(Variable<T> &variable, T blockMean);
+    void JuleaDBDAIStepValues(Variable<T> &variable, T blockMin, T blockMean, T blockMax);
 
     /**
      * Closes a single transport or all transports
