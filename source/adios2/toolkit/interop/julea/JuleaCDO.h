@@ -63,7 +63,6 @@ public:
     // precipitation R > 1 (RR1)
     // void computeWetDays(double dailyPrecipMin);
 
-
     // compute dailyMinTemperature; dailyMinPrecipitation
 
     // is computed every 24 steps
@@ -106,7 +105,7 @@ public:
     size_t m_PrecipDays1mm = 0;
     size_t m_PrecipDays10mm = 0;
     size_t m_PrecipDays20mm = 0;
-    
+
     // daily temperature min/mean/max
     std::vector<double> m_DTempMin;  // 24 hours
     std::vector<double> m_DTempMean; // 24 hours
@@ -139,7 +138,7 @@ public:
     std::vector<double> m_YPrecMean; // 12 months
     std::vector<double> m_YPrecMax;  // 12 months
     std::vector<double> m_YPrecSum;  // 12 months
-    
+
 private:
 };
 

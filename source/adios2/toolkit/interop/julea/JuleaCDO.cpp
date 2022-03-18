@@ -81,8 +81,8 @@ void JuleaCDO::computePrecipDays(double dailyPrecipSum)
     }
 }
 
-
-// void JuleaCDO::computeDailyMinimum(const std::string nameSpace, std::string variableName,
+// void JuleaCDO::computeDailyMinimum(const std::string nameSpace, std::string
+// variableName,
 //                          uint32_t entryID)
 // {
 //     // TODO:
@@ -95,8 +95,9 @@ void JuleaCDO::computeDailyStatistics(std::string variableName)
     double dailyMin = 0;
     double dailyMean = 0;
     double dailyMax = 0;
+    double dailySum = 0;
 
-    if (variableName == "T")
+    if (variableName == m_TemperatureName)
     {
         // get daily minimum
         adios2::helper::GetMinMax(m_DTempMin.data(), m_DTempMin.size(),
@@ -104,9 +105,8 @@ void JuleaCDO::computeDailyStatistics(std::string variableName)
         // get daily maximum
         adios2::helper::GetMinMax(m_DTempMax.data(), m_DTempMax.size(), tmp,
                                   dailyMax);
-        dailyMean =
-            std::accumulate(m_DTempMean.begin(), m_DTempMean.end(), 0) /
-            m_StepsPerDay;
+        dailyMean = std::accumulate(m_DTempMean.begin(), m_DTempMean.end(), 0) /
+                    m_StepsPerDay;
         m_MTempMean.push_back(dailyMean);
 
         m_MTempMin.push_back(dailyMin);
@@ -118,27 +118,65 @@ void JuleaCDO::computeDailyStatistics(std::string variableName)
         computeSummerDays(dailyMax);
     }
 
-    if (variableName == "P")
+    if (variableName == m_PrecipitationName)
     {
         adios2::helper::GetMinMax(m_DPrecMin.data(), m_DPrecMin.size(),
                                   dailyMin, tmp);
         adios2::helper::GetMinMax(m_DPrecMax.data(), m_DPrecMax.size(), tmp,
                                   dailyMax);
-        dailyMean =
-            std::accumulate(m_DPrecMean.begin(), m_DPrecMean.end(), 0) /
-            m_StepsPerDay;
+        dailyMean = std::accumulate(m_DPrecMean.begin(), m_DPrecMean.end(), 0) /
+                    m_StepsPerDay;
+        dailySum = std::accumulate(m_DPrecSum.begin(), m_DPrecSum.end(), 0);
+
         m_MPrecMin.push_back(dailyMin);
         m_MPrecMean.push_back(dailyMean);
         m_MPrecMax.push_back(dailyMax);
-        //TODO: do something with the min/mean/avg?
+        m_MPrecSum.push_back(dailySum);
+        // TODO: do something with the min/mean/avg?
 
-        computePrecipDays(m_DPrecSum);
+        computePrecipDays(dailySum);
     }
 }
 
+//TODO: compute something else besides min/mean/max/sum?
 void JuleaCDO::computeMonthlyStatistics(std::string variableName) 
 {
-    
+    double tmp = 0;
+    double monthlyMin = 0;
+    double monthlyMean = 0;
+    double monthlyMax = 0;
+    double monthlySum = 0;
+
+    if (variableName == m_TemperatureName)
+    {
+        // get monthly minimum
+        adios2::helper::GetMinMax(m_MTempMin.data(), m_MTempMin.size(),
+                                  monthlyMin, tmp);
+        // get monthly maximum
+        adios2::helper::GetMinMax(m_MTempMax.data(), m_MTempMax.size(), tmp,
+                                  monthlyMax);
+        // get monthly mean
+        monthlyMean = std::accumulate(m_MTempMean.begin(), m_MTempMean.end(), 0) /
+                    m_DaysPerMonth;
+        m_YTempMean.push_back(monthlyMean);
+        m_YTempMin.push_back(monthlyMin);
+        m_YTempMax.push_back(monthlyMax);
+    }
+
+    if (variableName == m_PrecipitationName)
+    {
+        adios2::helper::GetMinMax(m_MPrecMin.data(), m_MPrecMin.size(),
+                                  monthlyMin, tmp);
+        adios2::helper::GetMinMax(m_MPrecMax.data(), m_MPrecMax.size(), tmp,
+                                  monthlyMax);
+        monthlyMean = std::accumulate(m_MPrecMean.begin(), m_MPrecMean.end(), 0) /
+                    m_StepsPerDay;
+        monthlySum = std::accumulate(m_MPrecSum.begin(), m_MPrecSum.end(), 0);
+        m_YPrecMin.push_back(monthlyMin);
+        m_YPrecMean.push_back(monthlyMean);
+        m_YPrecMax.push_back(monthlyMax);
+        m_YPrecSum.push_back(monthlySum);
+    }
 }
 
 void JuleaCDO::computeYearlyStatistics(std::string variableName) {}
