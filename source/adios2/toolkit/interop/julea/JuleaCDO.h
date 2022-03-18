@@ -43,16 +43,26 @@ public:
     void pc_FD(void);
 
     // compute frost days: daily min temperature < 0°C
-    void computeFrostDays(void);
-
-    // compute summer days: daily max temperature > 25°C
-    void computeSummerDays(void);
-
-    // compute icing days: daily max temperature < 0°C
-    void computeIcingDays(void);
+    void computeFrostDays(double dailyTempMin);
 
     // compute tropical nights: daily min temperature > 25°C
-    void computeTropicalNights(void);
+    void computeTropicalNights(double dailyTempMin);
+
+    // compute summer days: daily max temperature > 25°C
+    void computeSummerDays(double dailyTempMax);
+
+    // compute icing days: daily max temperature < 0°C
+    void computeIcingDays(double dailyTempMax);
+
+    // precipitation R > 1mm (RR1)
+    void computePrecipDays(double dailyPrecipSum);
+    // void computePrecipDays1mm(double dailyPrecipMin);
+    // void computePrecipDays10mm(double dailyPrecipMin);
+    // void computePrecipDays20mm(double dailyPrecipMin);
+
+    // precipitation R > 1 (RR1)
+    // void computeWetDays(double dailyPrecipMin);
+
 
     // compute dailyMinTemperature; dailyMinPrecipitation
 
@@ -62,6 +72,10 @@ public:
 
     void computeDailyStatistics(std::string variableName);
     void computeMonthlyStatistics(std::string variableName);
+    void computeYearlyStatistics(std::string variableName);
+
+    std::string m_PrecipitationName = "P";
+    std::string m_TemperatureName = "T";
 
     // set duration of day; currently 24 steps = 24 h
     size_t m_StepsPerDay = 24;
@@ -83,33 +97,48 @@ public:
     //     ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
     // #undef declare_type
 
-    /** CDO stuff*/
-    // Temperature buffer
-    // std::vector<double> m_DailyTempsBuffer;     // 24 hours
-    // std::vector<double> m_MonthlyTempsBuffer;   //30 days
+    size_t m_FrostDays = 0;
+    size_t m_SummerDays = 0;
+    size_t m_SummerDaysThreshold = 25;
+    size_t m_IcingDays = 0;
+    size_t m_TropicalNights = 0;
 
-    // daily buffer temperature mean
-    std::vector<double> m_DBTempMin;  // 24 hours
-    std::vector<double> m_DBTempMean; // 24 hours
-    std::vector<double> m_DBTempMax;  // 24 hours
-    // monthly buffer temperature mean
-    std::vector<double> m_MBTempMin;  // 30 days
-    std::vector<double> m_MBTempMean; // 30 days
-    std::vector<double> m_MBTempMax;  // 30 days
+    size_t m_PrecipDays1mm = 0;
+    size_t m_PrecipDays10mm = 0;
+    size_t m_PrecipDays20mm = 0;
+    
+    // daily temperature min/mean/max
+    std::vector<double> m_DTempMin;  // 24 hours
+    std::vector<double> m_DTempMean; // 24 hours
+    std::vector<double> m_DTempMax;  // 24 hours
 
-    // precipitation buffer
-    // std::vector<double> m_DailyPrecipsBuffer;   // 24 hour
-    // std::vector<double> m_MonthlyPrecipsBuffer; // 30 days
+    // monthly temperature min/mean/max
+    std::vector<double> m_MTempMin;  // 30 days
+    std::vector<double> m_MTempMean; // 30 days
+    std::vector<double> m_MTempMax;  // 30 days
 
-    // daily buffer precipitation mean
-    std::vector<double> m_DBPrecMin;  // 24 hour
-    std::vector<double> m_DBPrecMean; // 24 hour
-    std::vector<double> m_DBPrecMax;  // 24 hour
-    // monthly buffer precipitation mean
-    std::vector<double> m_MBPrecMin;  // 30 days
-    std::vector<double> m_MBPrecMean; // 30 days
-    std::vector<double> m_MBPrecMax;  // 30 days
+    // yearly temperature min/mean/max
+    std::vector<double> m_YTempMin;  // 12 months
+    std::vector<double> m_YTempMean; // 12 months
+    std::vector<double> m_YTempMax;  // 12 months
 
+    // daily precipitation min/mean/max/sum
+    std::vector<double> m_DPrecMin;  // 24 hour
+    std::vector<double> m_DPrecMean; // 24 hour
+    std::vector<double> m_DPrecMax;  // 24 hour
+    std::vector<double> m_DPrecSum;  // 24 hour
+
+    // monthly precipitation min/mean/max/sum
+    std::vector<double> m_MPrecMin;  // 30 days
+    std::vector<double> m_MPrecMean; // 30 days
+    std::vector<double> m_MPrecMax;  // 30 days
+    std::vector<double> m_MPrecSum;  // 30 days
+
+    // yearly precipitation min/mean/max/sum
+    std::vector<double> m_YPrecMin;  // 12 months
+    std::vector<double> m_YPrecMean; // 12 months
+    std::vector<double> m_YPrecMax;  // 12 months
+    std::vector<double> m_YPrecSum;  // 12 months
     
 private:
 };
