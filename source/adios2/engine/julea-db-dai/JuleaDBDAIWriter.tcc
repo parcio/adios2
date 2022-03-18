@@ -36,8 +36,7 @@ namespace engine
 template <class T>
 void JuleaDBDAIWriter::JuleaDBDAISetMinMax(Variable<T> &variable, const T *data,
                                            T &blockMin, T &blockMax,
-                                           T &blockMean, size_t currentStep,
-                                           size_t currentBlockID)
+                                           T &blockMean)
 {
     if (m_Verbosity == 5)
     {
@@ -81,7 +80,7 @@ void JuleaDBDAIWriter::JuleaDBDAISetMinMax(Variable<T> &variable, const T *data,
     // there may be some cases where this is not working
     /*  to initialize the global min/max, they are set to the
         first min/max for the first block of the first step */
-    if ((currentStep == 0) && (currentBlockID == 0))
+    if ((m_CurrentStep == 0) && (m_CurrentBlockID == 0))
     {
         variable.m_Min = min;
         variable.m_Max = max;
@@ -126,8 +125,7 @@ void JuleaDBDAIWriter::JuleaDBDAISetMinMax(Variable<T> &variable, const T *data,
 template <>
 void JuleaDBDAIWriter::JuleaDBDAISetMinMax<std::string>(
     Variable<std::string> &variable, const std::string *data,
-    std::string &blockMin, std::string &blockMax, std::string &blockMean,
-    size_t currentStep, size_t currentBlockID)
+    std::string &blockMin, std::string &blockMax, std::string &blockMean)
 {
     // TODO implement?
 }
@@ -136,7 +134,7 @@ template <>
 void JuleaDBDAIWriter::JuleaDBDAISetMinMax<std::complex<float>>(
     Variable<std::complex<float>> &variable, const std::complex<float> *data,
     std::complex<float> &blockMin, std::complex<float> &blockMax,
-    std::complex<float> &blockMean, size_t currentStep, size_t currentBlockID)
+    std::complex<float> &blockMean)
 {
     // TODO implement?
 }
@@ -145,7 +143,7 @@ template <>
 void JuleaDBDAIWriter::JuleaDBDAISetMinMax<std::complex<double>>(
     Variable<std::complex<double>> &variable, const std::complex<double> *data,
     std::complex<double> &blockMin, std::complex<double> &blockMax,
-    std::complex<double> &blockMean, size_t currentStep, size_t currentBlockID)
+    std::complex<double> &blockMean)
 {
     // TODO implement?
 }
@@ -247,8 +245,7 @@ void JuleaDBDAIWriter::PutSyncToJulea(
     std::vector<T> testBuffer2;
     double testDouble = 42.0;
 
-    JuleaDBDAISetMinMax(variable, data, blockMin, blockMax, blockMean,
-                        m_CurrentStep, m_CurrentBlockID);
+    JuleaDBDAISetMinMax(variable, data, blockMin, blockMax, blockMean);
 
     JuleaDBDAIStepValues(variable, blockMin, blockMean, blockMax);
     

@@ -149,8 +149,7 @@ private:
 
     template <class T>
     void JuleaDBDAISetMinMax(Variable<T> &variable, const T *data, T &blockMin,
-                             T &blockMax, T &blockMean, size_t currentStep,
-                             size_t currentBlockID);
+                             T &blockMax, T &blockMean);
 
     template <class T>
     void JuleaDBDAIStepValues(Variable<T> &variable, T blockMin, T blockMean, T blockMax);
