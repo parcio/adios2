@@ -106,6 +106,11 @@ public:
     size_t m_PrecipDays10mm = 0;
     size_t m_PrecipDays20mm = 0;
 
+    // hourly temperature min/mean/max
+    std::vector<double> m_HTempMin;  // 1 step
+    std::vector<double> m_HTempMean; // 1 step
+    std::vector<double> m_HTempMax;  // 1 step
+
     // daily temperature min/mean/max
     std::vector<double> m_DTempMin;  // 24 hours
     std::vector<double> m_DTempMean; // 24 hours
@@ -120,6 +125,12 @@ public:
     std::vector<double> m_YTempMin;  // 12 months
     std::vector<double> m_YTempMean; // 12 months
     std::vector<double> m_YTempMax;  // 12 months
+
+    // hourly precipitation min/mean/max/sum
+    std::vector<double> m_HPrecMin;  // 1 step
+    std::vector<double> m_HPrecMean; // 1 step
+    std::vector<double> m_HPrecMax;  // 1 step
+    std::vector<double> m_HPrecSum;  // 1 step
 
     // daily precipitation min/mean/max/sum
     std::vector<double> m_DPrecMin;  // 24 hour

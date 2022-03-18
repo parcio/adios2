@@ -94,7 +94,7 @@ void JuleaDBDAIWriter::JuleaDBDAISetMinMax(Variable<T> &variable, const T *data,
         if (variable.m_Name == m_JuleaCDO.m_PrecipitationName)
         {
             m_Comm.Reduce(&blockMean, &stepSum, 1, helper::Comm::Op::Sum, 0);
-            m_JuleaCDO.m_DPrecSum.push_back(stepSum);
+            m_JuleaCDO.m_HPrecSum.push_back(stepSum);
         }
     }
 
@@ -175,16 +175,16 @@ void JuleaDBDAIWriter::JuleaDBDAIStepValues<double>(Variable<double> &variable,
 {
     if (variable.m_Name == m_JuleaCDO.m_TemperatureName)
     {
-        m_JuleaCDO.m_DTempMin.push_back(blockMin);
-        m_JuleaCDO.m_DTempMean.push_back(blockMean);
-        m_JuleaCDO.m_DTempMax.push_back(blockMax);
+        m_JuleaCDO.m_HTempMin.push_back(blockMin);
+        m_JuleaCDO.m_HTempMean.push_back(blockMean);
+        m_JuleaCDO.m_HTempMax.push_back(blockMax);
     }
 
     if (variable.m_Name == m_JuleaCDO.m_PrecipitationName)
     {
-        m_JuleaCDO.m_DPrecMin.push_back(blockMin);
-        m_JuleaCDO.m_DPrecMean.push_back(blockMean);
-        m_JuleaCDO.m_DPrecMax.push_back(blockMax);
+        m_JuleaCDO.m_HPrecMin.push_back(blockMin);
+        m_JuleaCDO.m_HPrecMean.push_back(blockMean);
+        m_JuleaCDO.m_HPrecMax.push_back(blockMax);
     }
 }
 
