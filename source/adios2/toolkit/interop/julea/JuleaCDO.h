@@ -66,7 +66,7 @@ public:
     size_t m_MonthsPerYear = 12;
     size_t m_DaysPerYear = 360;
     size_t m_StepsPerYear = 8640;
-    
+
     /** Climate indices*/
     size_t m_FrostDays = 0;
     size_t m_SummerDays = 0;
@@ -79,7 +79,7 @@ public:
     size_t m_PrecipDays20mm = 0;
 
     size_t m_SummerDaysTemperatureThreshold = 25;
-    
+
     /** Climate indices for all years*/
     std::vector<size_t> m_FrostDaysPerYear;
     std::vector<size_t> m_SummerDaysPerYear;
