@@ -121,7 +121,7 @@ void DAIaddFieldsForBlockMDSmall(JDBSchema *schema)
 
     j_db_schema_add_field(schema, "stepsStart", J_DB_TYPE_UINT64, NULL);
     j_db_schema_add_field(schema, "stepsCount", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "blockID", J_DB_TYPE_UINT64, NULL);
+    // j_db_schema_add_field(schema, "blockID", J_DB_TYPE_UINT64, NULL);
 
     j_db_schema_add_index(schema, fileIndex, NULL);
     j_db_schema_add_index(schema, varIndex, NULL);
@@ -283,7 +283,7 @@ void DAIaddFieldsForBlockMD(JDBSchema *schema)
 
     j_db_schema_add_field(schema, "stepsStart", J_DB_TYPE_UINT64, NULL);
     j_db_schema_add_field(schema, "stepsCount", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "blockID", J_DB_TYPE_UINT64, NULL);
+    // j_db_schema_add_field(schema, "blockID", J_DB_TYPE_UINT64, NULL);
 
     j_db_schema_add_index(schema, fileIndex, NULL);
     j_db_schema_add_index(schema, varIndex, NULL);

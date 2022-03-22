@@ -198,7 +198,7 @@ void DAIaddEntriesForBlockMD(core::Variable<T> &variable,
         std::cout << "size of T: " << sizeof(T) << std::endl;
         std::cout << "stepsStart" << stepsStart << std::endl;
         std::cout << "stepsCount" << stepsCount << std::endl;
-        std::cout << "blockID: " << blockID << std::endl;
+        // std::cout << "blockID: " << blockID << std::endl;
     }
 
     j_db_entry_set_field(entry, "file", nameSpace.c_str(),
@@ -270,7 +270,8 @@ void DAIaddEntriesForBlockMD(core::Variable<T> &variable,
                          NULL);
     j_db_entry_set_field(entry, "stepsCount", &stepsCount, sizeof(stepsCount),
                          NULL);
-    j_db_entry_set_field(entry, "blockID", &blockID, sizeof(blockID), NULL);
+    // no difference to block
+    // j_db_entry_set_field(entry, "blockID", &blockID, sizeof(blockID), NULL);
 }
 
 template <class T>

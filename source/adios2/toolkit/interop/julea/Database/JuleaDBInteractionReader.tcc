@@ -162,6 +162,11 @@ void JuleaDBInteractionReader::GetBlockMetadataNEW(
     iterator = j_db_iterator_new(schema, selectorShort, NULL);
     if (j_db_iterator_next(iterator, NULL))
     {
+        //TODO: check whether reading "block" here instead of blockID at the end
+        j_db_iterator_get_field(iterator, "block", &type,
+                                (gpointer *)&blockID, &db_length, NULL);
+        blockInfo.BlockID = *blockID;
+
         j_db_iterator_get_field(iterator, "shapeSize", &type,
                                 (gpointer *)&shapeSize, &db_length, NULL);
         if (*shapeSize > 0)
@@ -260,9 +265,10 @@ void JuleaDBInteractionReader::GetBlockMetadataNEW(
         j_db_iterator_get_field(iterator, "stepsCount", &type,
                                 (gpointer *)&stepsCount, &db_length, NULL);
         blockInfo.StepsCount = *stepsCount;
-        j_db_iterator_get_field(iterator, "blockID", &type,
-                                (gpointer *)&blockID, &db_length, NULL);
-        blockInfo.BlockID = *blockID;
+        // info already stored in block
+        // j_db_iterator_get_field(iterator, "blockID", &type,
+        //                         (gpointer *)&blockID, &db_length, NULL);
+        // blockInfo.BlockID = *blockID;
 
         if (false)
         {
@@ -371,6 +377,12 @@ JuleaDBInteractionReader::GetBlockMetadata(
     iterator = j_db_iterator_new(schema, selectorShort, NULL);
     if (j_db_iterator_next(iterator, NULL))
     {
+        //TODO: check whether this works instead of reading blockID
+        j_db_iterator_get_field(iterator, "block", &type,
+                                (gpointer *)&blockID, &db_length, NULL);
+        info->BlockID = *blockID;
+
+
         j_db_iterator_get_field(iterator, "shapeSize", &type,
                                 (gpointer *)&shapeSize, &db_length, NULL);
         if (*shapeSize > 0)
@@ -529,9 +541,9 @@ JuleaDBInteractionReader::GetBlockMetadata(
         j_db_iterator_get_field(iterator, "stepsCount", &type,
                                 (gpointer *)&stepsCount, &db_length, NULL);
         info->StepsCount = *stepsCount;
-        j_db_iterator_get_field(iterator, "blockID", &type,
-                                (gpointer *)&blockID, &db_length, NULL);
-        info->BlockID = *blockID;
+        // j_db_iterator_get_field(iterator, "block", &type,
+        //                         (gpointer *)&blockID, &db_length, NULL);
+        // info->BlockID = *blockID;
 
         if (false)
         {

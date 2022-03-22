@@ -178,6 +178,8 @@ void InitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
     // like the rest
     // std::cout << "This is the tricky part! " << std::endl;             \
 
+    //std::cout << "This is the trickyyy part! " << std::endl;             
+
     j_batch_unref(batch);
     // j_db_schema_unref(schema);
     // j_db_selector_unref(selector);
