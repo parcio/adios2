@@ -36,6 +36,31 @@ JuleaDBInteractionWriter::JuleaDBInteractionWriter(helper::Comm const &comm)
     // std::cout << "This is the constructor of the writer" << std::endl;
 }
 
+void DAIaddFieldsForCDOTable(JDBSchema *schema)
+{
+    gchar const *fileIndex[] = {"file", NULL};
+    gchar const *varIndex[] = {"variableName", NULL};
+    // gchar const *minDoubleIndex[] = {"min_float64", NULL};
+    // gchar const *maxDoubleIndex[] = {"max_float64", NULL};
+    // gchar const *meanDoubleIndex[] = {"mean_float64", NULL};
+
+    j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
+
+    j_db_schema_add_field(schema, "year", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "precip_days_1mm", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "precip_days_10mm", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "precip_days_20mm", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "frost_days", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "summer_days", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "tropical_nights", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "icing_days", J_DB_TYPE_UINT32, NULL);
+    
+    j_db_schema_add_index(schema, fileIndex, NULL);
+    j_db_schema_add_index(schema, varIndex, NULL);
+}
+
+
 void DAIaddFieldsForVariableMDSmall(JDBSchema *schema)
 {
     gchar const *fileIndex[] = {"file", NULL};
@@ -97,6 +122,8 @@ void DAIaddFieldsForBlockMDSmall(JDBSchema *schema)
     j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
     j_db_schema_add_field(schema, "step", J_DB_TYPE_UINT64, NULL);
     j_db_schema_add_field(schema, "block", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "X", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "Y", J_DB_TYPE_UINT64, NULL);
 
     /** all vectors need to store their size */
     j_db_schema_add_field(schema, "shapeSize", J_DB_TYPE_UINT64, NULL);
@@ -111,11 +138,17 @@ void DAIaddFieldsForBlockMDSmall(JDBSchema *schema)
     j_db_schema_add_field(schema, "memoryCount", J_DB_TYPE_BLOB, NULL);
 
     j_db_schema_add_field(schema, "isValue", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "year", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "month", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "day", J_DB_TYPE_UINT32, NULL);
 
     j_db_schema_add_field(schema, "min_float64", J_DB_TYPE_FLOAT64, NULL);
     j_db_schema_add_field(schema, "max_float64", J_DB_TYPE_FLOAT64, NULL);
     // j_db_schema_add_field(schema, "value_float64", J_DB_TYPE_FLOAT64, NULL);
     j_db_schema_add_field(schema, "mean_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "sum_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "variance_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "std_float64", J_DB_TYPE_FLOAT64, NULL);
 
     j_db_schema_add_field(schema, "value_string", J_DB_TYPE_STRING, NULL);
 
@@ -232,6 +265,8 @@ void DAIaddFieldsForBlockMD(JDBSchema *schema)
     j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
     j_db_schema_add_field(schema, "step", J_DB_TYPE_UINT64, NULL);
     j_db_schema_add_field(schema, "block", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "X", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "Y", J_DB_TYPE_UINT64, NULL);
 
     /** all vectors need to store their size */
     j_db_schema_add_field(schema, "shapeSize", J_DB_TYPE_UINT64, NULL);
@@ -246,6 +281,10 @@ void DAIaddFieldsForBlockMD(JDBSchema *schema)
     j_db_schema_add_field(schema, "memoryCount", J_DB_TYPE_BLOB, NULL);
 
     j_db_schema_add_field(schema, "isValue", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "year", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "month", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "day", J_DB_TYPE_UINT32, NULL);
+
 
     j_db_schema_add_field(schema, "min_blob", J_DB_TYPE_BLOB, NULL);
     j_db_schema_add_field(schema, "max_blob", J_DB_TYPE_BLOB, NULL);
@@ -276,6 +315,11 @@ void DAIaddFieldsForBlockMD(JDBSchema *schema)
     j_db_schema_add_field(schema, "max_float64", J_DB_TYPE_FLOAT64, NULL);
     j_db_schema_add_field(schema, "value_float64", J_DB_TYPE_FLOAT64, NULL);
     j_db_schema_add_field(schema, "mean_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "sum_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "variance_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "std_float64", J_DB_TYPE_FLOAT64, NULL);
+
+
 
     // j_db_schema_add_field(schema, "min_string", J_DB_TYPE_STRING, NULL);
     // j_db_schema_add_field(schema, "max_string", J_DB_TYPE_STRING, NULL);
