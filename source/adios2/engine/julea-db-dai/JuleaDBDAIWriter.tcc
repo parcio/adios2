@@ -365,16 +365,24 @@ void JuleaDBDAIWriter::PutSyncToJulea(
     T blockMin;
     T blockMax;
     T blockMean;
+    T blockSum;
+    T blockSumSquares;
+    T blockVar;
+        auto number_elements = adios2::helper::GetTotalSize(variable.m_Count);
+
+    // T blockStd;
     uint32_t entryID = 0;
     std::vector<double> testBuffer;
     std::vector<T> testBuffer2;
     double testDouble = 42.0;
 
     // JuleaDBDAISetMinMax(variable, data, blockMin, blockMax, blockMean);
-    m_JuleaCDO.SetMinMax(variable, data, blockMin, blockMax, m_CurrentStep,
-                         m_CurrentBlockID);
+    // m_JuleaCDO.SetMinMax(variable, data, blockMin, blockMax, m_CurrentStep,
+    //                      m_CurrentBlockID);
 
     // TODO: call ComputeBlockStatistics
+    m_JuleaCDO.ComputeBlockStatistics(variable, data, blockMin, blockMax, blockMean, blockSum, blockSumSquares, blockVar);
+
 
     // JuleaDBDAIStepValues(variable, blockMin, blockMean, blockMax);
     m_JuleaCDO.ComputeStepStatistics(variable, blockMin, blockMean, blockMax,
@@ -407,6 +415,8 @@ void JuleaDBDAIWriter::PutSyncToJulea(
             // std::endl;
         }
     }
+
+    //FIXME: implement PutCDOStatisticsToJulea(blockStats)
 
     // TODO: check if there really is no case for global variables to have
     // different features across different blocks

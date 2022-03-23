@@ -268,9 +268,7 @@ void JuleaCDO::computeYearlyStatistics(std::string variableName)
         core::Variable<T> &variable, const T *data, T &blockMin, T &blockMax,  \
         size_t currentStep, size_t blockID);                     \
     template void JuleaCDO::ComputeBlockStatistics(                            \
-        core::Variable<T> &variable, const T *data, T &blockMin, T &blockMax,  \
-        T &blockMean, T &blockSum, T &blockVar, T &blockStd,                   \
-        size_t currentStep, size_t blockID);                                   \
+        core::Variable<T> &variable, const T *data, T &blockMin, T &blockMax, T &blockMean, T &blockSum, T &blockSumSquares, T &blockVar);                                   \
     template void JuleaCDO::ComputeStepStatistics(                             \
         core::Variable<T> &variable, T blockMin, T blockMean, T blockMax,      \
         size_t currentStep, size_t blockID);

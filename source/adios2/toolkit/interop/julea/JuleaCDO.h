@@ -43,9 +43,7 @@ public:
 
     template <class T>
     void ComputeBlockStatistics(core::Variable<T> &variable, const T *data,
-                                T &blockMin, T &blockMax, T &blockMean,
-                                T &blockSum, T &blockVar, T &blockStd,
-                                size_t currentStep, size_t blockID);
+                                T &blockMin, T &blockMax,T &blockMean, T &blockSum, T &blockSumSquares, T &blockVar);
 
     template <class T>
     void ComputeStepStatistics(core::Variable<T> &variable, T blockMin,
