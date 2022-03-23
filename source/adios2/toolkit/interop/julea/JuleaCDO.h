@@ -2,7 +2,7 @@
  * Distributed under the OSI-approved Apache License, Version 2.0.  See
  * accompanying file Copyright.txt for details.
  *
- * JuleaSerializer.h
+ * JuleaCDO.h
  *
  *  Created on: December 08, 2021
  *      Author: Kira Duwe
@@ -11,7 +11,7 @@
 #ifndef ADIOS2_TOOLKIT_INTEROP_JULEA_CDOCLIMATEINDECES_H_
 #define ADIOS2_TOOLKIT_INTEROP_JULEA_CDOCLIMATEINDECES_H_
 
-#include "adios2/toolkit/interop/julea/JuleaInteraction.h"
+// #include "adios2/toolkit/interop/julea/JuleaInteraction.h"
 // #include "JuleaMetadata.h"
 // #include "adios2/common/ADIOSMacros.h"
 // #include "adios2/common/ADIOSTypes.h"
@@ -36,6 +36,22 @@ public:
     JuleaCDO(helper::Comm const &comm);
     ~JuleaCDO() = default;
 
+    template <class T>
+    void SetMinMax(core::Variable<T> &variable, const T *data, T &blockMin,
+                   T &blockMax, size_t currentStep,
+                   size_t blockID);
+
+    template <class T>
+    void ComputeBlockStatistics(core::Variable<T> &variable, const T *data,
+                                T &blockMin, T &blockMax, T &blockMean,
+                                T &blockSum, T &blockVar, T &blockStd,
+                                size_t currentStep, size_t blockID);
+
+    template <class T>
+    void ComputeStepStatistics(core::Variable<T> &variable, T blockMin,
+                               T blockMean, T blockMax, size_t currentStep,
+                               size_t blockID);
+
     // compute frost days: daily min temperature < 0°C
     void computeFrostDays(double dailyTempMin);
 
@@ -54,6 +70,10 @@ public:
     void computeDailyStatistics(std::string variableName);
     void computeMonthlyStatistics(std::string variableName);
     void computeYearlyStatistics(std::string variableName);
+
+    helper::Comm const &m_Comm; ///< multi-process communicator from Engine
+    int m_Verbosity = 5;
+    int m_WriterRank;
 
     /** Variables*/
     std::string m_PrecipitationName = "P";
@@ -135,6 +155,20 @@ public:
     std::vector<double> m_YPrecSum;  // 12 months
 private:
 };
+
+// #define declare_template_instantiation(T)                                      \
+//     extern template void JuleaCDO::SetMinMax(                                  \
+//         core::Variable<T> &variable, const T *data, T &blockMin, T &blockMax,  \
+//         size_t currentStep, size_t blockID);                     \
+//     extern template void JuleaCDO::ComputeBlockStatistics(                     \
+//         core::Variable<T> &variable, const T *data, T &blockMin, T &blockMax,  \
+//         T &blockMean, T &blockSum, T &blockVar, T &blockStd,                   \
+//         size_t currentStep, size_t blockID);                                   \
+//     extern template void JuleaCDO::ComputeStepStatistics(                      \
+//         core::Variable<T> &variable, T blockMin, T blockMean, T blockMax,      \
+//         size_t currentStep, size_t blockID);
+// ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
+// #undef declare_template_instantiation
 
 } // end namespace interop
 } // end namespace adios

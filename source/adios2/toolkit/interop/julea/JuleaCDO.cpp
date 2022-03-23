@@ -2,9 +2,9 @@
  * Distributed under the OSI-approved Apache License, Version 2.0.  See
  * accompanying file Copyright.txt for details.
  *
- * JuleaSerializer.cpp
+ * JuleaCDO.cpp
  *
- *  Created on: July 23, 2019
+ *  Created on: December 08, 2021
  *      Author: Kira Duwe
  */
 
@@ -16,6 +16,8 @@
 // #include <ios>
 // #include <iostream>
 #include "JuleaCDO.h"
+#include "JuleaCDO.tcc"
+
 #include <stdexcept>
 #include <vector>
 
@@ -26,12 +28,23 @@ namespace adios2
 namespace interop
 {
 
-JuleaCDO::JuleaCDO(helper::Comm const &comm)
+JuleaCDO::JuleaCDO(helper::Comm const &comm) : m_Comm(comm)
 {
+    m_WriterRank = m_Comm.Rank();
+    // m_SizeMPI = m_Comm.Size();
     // std::cout << "This is the constructor" << std::endl;
     // m_TemperatureName =
     // m_PrecipitationName =
 }
+
+// template <class T>
+// void ComputeBlockStatistics(Variable<T> &variable, const T *data, T
+// &blockMin,
+//                              T &blockMax, T &blockMean, T &blockSum, T
+//                              &blockVar, T &blockStd)
+//                              {
+
+//                              }
 
 // daily minimum temperature < 0°cC
 void JuleaCDO::computeFrostDays(double dailyTempMin)
@@ -249,6 +262,20 @@ void JuleaCDO::computeYearlyStatistics(std::string variableName)
         m_PrecipDays20mm = 0;
     }
 }
+
+#define declare_template_instantiation(T)                                      \
+    template void JuleaCDO::SetMinMax(                                         \
+        core::Variable<T> &variable, const T *data, T &blockMin, T &blockMax,  \
+        size_t currentStep, size_t blockID);                     \
+    template void JuleaCDO::ComputeBlockStatistics(                            \
+        core::Variable<T> &variable, const T *data, T &blockMin, T &blockMax,  \
+        T &blockMean, T &blockSum, T &blockVar, T &blockStd,                   \
+        size_t currentStep, size_t blockID);                                   \
+    template void JuleaCDO::ComputeStepStatistics(                             \
+        core::Variable<T> &variable, T blockMin, T blockMean, T blockMax,      \
+        size_t currentStep, size_t blockID);
+ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
+#undef declare_template_instantiation
 
 } // end namespace interop
 } // end namespace adios
