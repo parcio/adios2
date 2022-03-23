@@ -59,75 +59,7 @@ public:
         const typename core::Variable<T>::Info &blockInfo, T &blockMin,
         T &blockMax, T &blockMean, uint32_t &entryID);
 
-    // /**
-    //  * Store variable data in JULEA object store. The key is:
-    //  * currentStep_currentBlock. Variable name is in the kv-namespace.
-    //  * @param variable      variable
-    //  * @param data data     pointer
-    //  * @param nameSpace     file name
-    //  * @param currentStep   current step (part of key)
-    //  * @param blockID       current block (part of key)
-    //  */
-    // template <class T>
-    // void DBPutVariableDataToJulea(Variable<T> &variable, const T *data,
-    //                               const std::string nameSpace, size_t
-    //                               currentStep, size_t blockID);
 
-    // template <class T>
-    // void DAIDBPutVariableDataToJulea(Variable<T> &variable, const T *data,
-    //                               const std::string nameSpace, uint32_t
-    //                               entryID);
-
-    /** --- Attributes --- */
-    // template <class T>
-    // void DAIDBPutAttributeMetadataToJulea(Attribute<T> &attribute,
-    //                                    bson_t *bsonMetadata,
-    //                                    const std::string nameSpace);
-    // template <class T>
-    // void DAIDBPutAttributeMetadataToJuleaSmall(Attribute<T> &attribute,
-    //                                         bson_t *bsonMetadata,
-    //                                         const std::string nameSpace);
-
-    // #define declare_template_instantiation(T)                                      \
-//     extern template void JuleaSerializer::Write(core::Variable<T> &variable,   \
-//                                                 const T *value);
-    // ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
-    // #undef declare_template_instantiation
-
-    // TODO: THIS WORKS WHY NOT MINE?
-    // #define declare_template_instantiation(T) \
-//     extern template void HDF5Common::Write(core::Variable<T> &variable, \
-//                                            const T *value);
-    // ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
-    // #undef declare_template_instantiation
-
-    // #define declare_template_instantiation(T)                                      \
-//     extern template void JuleaDBInteractionWriter::DAIDBPutVariableDataToJulea(                             \
-//         core::Variable<T> &variable, const T *data, const std::string nameSpace,     \
-//         uint32_t entryID);                                                     \
-//     extern template void JuleaDBInteractionWriter::DAIDBPutVariableMetadataToJulea(                         \
-//         core::Variable<T> &variable, const std::string nameSpace,                    \
-//         const std::string varName, size_t currStep, size_t block);             \
-//     extern template void JuleaDBInteractionWriter::DAIDBPutBlockMetadataToJulea(                            \
-//         core::Variable<T> &variable, const std::string nameSpace,                    \
-//         const std::string varName, size_t step, size_t block,                  \
-//         const typename Variable<T>::Info &blockInfo, , T &blockMin,            \
-//         T &blockMax, T &blockMean, uint32_t &entryID);
-    //     ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
-    // #undef declare_template_instantiation
-
-    // extern template void DAIDBPutAttributeDataToJulea(                            \
-    //     Attribute<T> &attribute, const std::string nameSpace);                 \
-    // extern template void DAIDBPutAttributeDataToJuleaSmall(                       \
-    //     Attribute<T> &attribute, const T *data, const std::string nameSpace);  \
-    // extern template void DAIDBPutAttributeMetadataToJulea(                        \
-    //     Attribute<T> &attribute, bson_t *bsonMetadata,                         \
-    //     const std::string nameSpace);                                          \
-    // extern template void DAIDBPutAttributeMetadataToJuleaSmall(                   \
-    //     Attribute<T> &attribute, bson_t *bsonMetadata,                         \
-    //     const std::string nameSpace);                                          \
-    // ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
-    // #undef declare_template_instantiation
 
 private:
     //schemas for CDO related statistics
