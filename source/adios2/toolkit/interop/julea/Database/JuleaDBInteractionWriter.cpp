@@ -36,7 +36,7 @@ JuleaDBInteractionWriter::JuleaDBInteractionWriter(helper::Comm const &comm)
     // std::cout << "This is the constructor of the writer" << std::endl;
 }
 
-void DAIaddFieldsForCDOTable(JDBSchema *schema)
+void DAIaddFieldsForClimateIndexTable(JDBSchema *schema)
 {
     gchar const *fileIndex[] = {"file", NULL};
     gchar const *varIndex[] = {"variableName", NULL};
@@ -55,6 +55,63 @@ void DAIaddFieldsForCDOTable(JDBSchema *schema)
     j_db_schema_add_field(schema, "summer_days", J_DB_TYPE_UINT32, NULL);
     j_db_schema_add_field(schema, "tropical_nights", J_DB_TYPE_UINT32, NULL);
     j_db_schema_add_field(schema, "icing_days", J_DB_TYPE_UINT32, NULL);
+    
+    j_db_schema_add_index(schema, fileIndex, NULL);
+    j_db_schema_add_index(schema, varIndex, NULL);
+}
+
+void DAIaddFieldsForYearlyLocalStatsTable(JDBSchema *schema)
+{
+    gchar const *fileIndex[] = {"file", NULL};
+    gchar const *varIndex[] = {"variableName", NULL};
+    // gchar const *minDoubleIndex[] = {"min_float64", NULL};
+    // gchar const *maxDoubleIndex[] = {"max_float64", NULL};
+    // gchar const *meanDoubleIndex[] = {"mean_float64", NULL};
+
+    j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
+
+    j_db_schema_add_field(schema, "year", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "precip_days_1mm", J_DB_TYPE_UINT32, NULL);
+
+    
+    j_db_schema_add_index(schema, fileIndex, NULL);
+    j_db_schema_add_index(schema, varIndex, NULL);
+}
+
+void DAIaddFieldsForDailyGlobalStatsTable(JDBSchema *schema)
+{
+    gchar const *fileIndex[] = {"file", NULL};
+    gchar const *varIndex[] = {"variableName", NULL};
+    // gchar const *minDoubleIndex[] = {"min_float64", NULL};
+    // gchar const *maxDoubleIndex[] = {"max_float64", NULL};
+    // gchar const *meanDoubleIndex[] = {"mean_float64", NULL};
+
+    j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
+
+    j_db_schema_add_field(schema, "year", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "precip_days_1mm", J_DB_TYPE_UINT32, NULL);
+
+    
+    j_db_schema_add_index(schema, fileIndex, NULL);
+    j_db_schema_add_index(schema, varIndex, NULL);
+}
+
+void DAIaddFieldsForDailyLocalStatsTable(JDBSchema *schema)
+{
+    gchar const *fileIndex[] = {"file", NULL};
+    gchar const *varIndex[] = {"variableName", NULL};
+    // gchar const *minDoubleIndex[] = {"min_float64", NULL};
+    // gchar const *maxDoubleIndex[] = {"max_float64", NULL};
+    // gchar const *meanDoubleIndex[] = {"mean_float64", NULL};
+
+    j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
+
+    j_db_schema_add_field(schema, "year", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "precip_days_1mm", J_DB_TYPE_UINT32, NULL);
+
     
     j_db_schema_add_index(schema, fileIndex, NULL);
     j_db_schema_add_index(schema, varIndex, NULL);

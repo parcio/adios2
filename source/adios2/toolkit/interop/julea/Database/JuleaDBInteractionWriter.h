@@ -129,6 +129,21 @@ public:
     // ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
     // #undef declare_template_instantiation
 
+private:
+    //schemas for CDO related statistics
+    void DAIaddFieldsForClimateIndexTable(JDBSchema *schema);
+    void DAIaddFieldsForYearlyLocalStatsTable(JDBSchema *schema);
+    void DAIaddFieldsForDailyGlobalStatsTable(JDBSchema *schema);
+    void DAIaddFieldsForDailyLocalStatsTable(JDBSchema *schema);
+
+    // Supports only those types required in thesis evaluation
+    void DAIaddFieldsForVariableMDSmall(JDBSchema *schema);
+    void DAIaddFieldsForBlockMDSmall(JDBSchema *schema);
+
+    //Supports all AdiosTypes
+    void DAIaddFieldsForVariableMD(JDBSchema *schema);
+    void DAIaddFieldsForBlockMD(JDBSchema *schema);
+
 }; // end namespace JuleaDBInteractionWriter
 
 // TODO: check whether there is any parameter missing; also, maybe blockInfo
