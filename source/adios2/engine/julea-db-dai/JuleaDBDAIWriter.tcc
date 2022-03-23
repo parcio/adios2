@@ -302,6 +302,111 @@ namespace engine
 //     }
 // }
 
+
+template <class T>
+void JuleaDBDAIWriter::ManageBlockStepMetadata(Variable<T> &variable, const T *data)
+{
+ T blockMin;
+    T blockMax;
+    T blockMean;
+    T blockSum;
+    T blockSumSquares;
+    T blockVar;
+
+    T stepMin;
+    T stepMax;
+    T stepMean;
+    T stepSum;
+    T stepSumSquares;
+    T stepVar;
+
+    auto number_elements = adios2::helper::GetTotalSize(variable.m_Count);
+
+    // T blockStd;
+    uint32_t entryID = 0;
+    std::vector<double> testBuffer;
+    std::vector<T> testBuffer2;
+    double testDouble = 42.0;
+
+    m_JuleaCDO.ComputeBlockStatistics(variable, data, blockMin, blockMax, blockMean, blockSum, blockSumSquares, blockVar);
+
+    /**  to initialize the global min/max, they are set to the
+        first min/max for the first block of the first step */
+    if ((m_CurrentStep == 0) && (m_CurrentBlockID == 0))
+    {
+        variable.m_Min = blockMin;
+        variable.m_Max = blockMax;
+        stepMin = blockMin;
+        stepMax = blockMax;
+    }
+    
+    /** reduce only necessary if more than one process*/
+    if (m_WriterRank > 0)
+    {
+        /** const T *sendbuf, T *recvbuf, size_t count, Op op, int root, const
+        std::string &hint = std::string()) */
+        m_Comm.Reduce(&blockMin, &stepMin, 1, helper::Comm::Op::Min, 0);
+        m_Comm.Reduce(&blockMax, &stepMax, 1, helper::Comm::Op::Max, 0);
+        m_Comm.Reduce(&blockSum, &stepSum, 1, helper::Comm::Op::Sum, 0);
+        m_Comm.Reduce(&blockSumSquares, &stepSumSquares, 1, helper::Comm::Op::Sum, 0);
+
+        /** not required since blockSum is also computed now */        
+        // m_Comm.Reduce(&blockMean, &stepMean, 1, helper::Comm::Op::Sum, 0);
+
+        // if (variable.m_Name == m_PrecipitationName)
+        // {
+        //     m_Comm.Reduce(&blockMean, &stepSum, 1, helper::Comm::Op::Sum, 0);
+        //     m_HPrecSum.push_back(stepSum);
+        // }
+    }
+
+    stepMean = stepSum / (number_elements * m_Comm.Size());
+    stepVar = stepSumSquares / (number_elements * m_Comm.Size());
+
+    if (stepMin < variable.m_Min)
+    {
+        // std::cout << "updated global min from " << variable.m_Min << " to "
+        //   << stepMin << std::endl;
+        variable.m_Min = stepMin;
+    }
+
+    if (stepMax > variable.m_Max)
+    {
+        // std::cout << "updated global max from "  << variable.m_Max << " to "
+        // << stepMax << std::endl;
+        variable.m_Max = stepMax;
+    }
+
+
+    //FIXME: put step values to climate index buffer
+    // PutCDOStatsToBuffers();
+    //FIXME: write metadata to julea
+
+}
+
+template <>
+void JuleaDBDAIWriter::ManageBlockStepMetadata<std::string>(
+    Variable<std::string> &variable, const std::string *data)
+{
+    // TODO implement?
+}
+
+template <>
+void JuleaDBDAIWriter::ManageBlockStepMetadata<std::complex<float>>(
+    Variable<std::complex<float>> &variable, const std::complex<float> *data)
+{
+    // TODO implement?
+}
+
+template <>
+void JuleaDBDAIWriter::ManageBlockStepMetadata<std::complex<double>>(
+    Variable<std::complex<double>> &variable, const std::complex<double>
+    *data)
+{
+    // TODO implement?
+}
+
+
 template <class T>
 void JuleaDBDAIWriter::SetBlockID(Variable<T> &variable)
 {
@@ -349,6 +454,40 @@ void JuleaDBDAIWriter::SetBlockID(Variable<T> &variable)
     }
 }
 
+/** 
+* Only works for 2D variables!
+*/
+template <class T>
+void JuleaDBDAIWriter::computeGlobalDimensions(
+    Variable<T> &variable)
+    {
+        int globalX = 0;
+        int globalY = 0;
+
+        int localX = 0;
+        int localY = 0;
+        int testNumberProcesses = 0;
+
+        globalX = variable.m_Shape[0];
+        globalY = variable.m_Shape[1];
+
+        localX = variable.m_Count[0];
+        localY = variable.m_Count[1];
+
+        m_JuleaCDO.numberBlocksX = globalX/localX;
+        m_JuleaCDO.numberBlocksY = globalY/localY;
+
+        testNumberProcesses =  m_JuleaCDO.numberBlocksX *  m_JuleaCDO.numberBlocksY;
+
+        if(m_Comm.Size() == testNumberProcesses)
+        {
+            std::cout << "wuhu: gleich groß \n"; 
+        }
+
+        std::cout << "X = " << m_JuleaCDO.numberBlocksX << "\n"; 
+        std::cout << "Y = " << m_JuleaCDO.numberBlocksY << "\n"; 
+    }
+
 template <class T>
 void JuleaDBDAIWriter::PutSyncToJulea(
     Variable<T> &variable, const T *data,
@@ -361,32 +500,97 @@ void JuleaDBDAIWriter::PutSyncToJulea(
                   << " \n";
     }
     const DataType type = m_IO.InquireVariableType(variable.m_Name);
+
+    /** 
+    * Attention: Here the assumption is made, that the dimensions are the same for all processes and all steps!
+    */
+    if ((m_CurrentStep == 0) && (m_WriterRank == 0) && (variable.m_Shape.size() == 2))
+    {
+     computeGlobalDimensions(variable);
+        
+    }   
     // const DataType type = helper::GetDataType<T>();
-    T blockMin;
-    T blockMax;
-    T blockMean;
-    T blockSum;
-    T blockSumSquares;
-    T blockVar;
-        auto number_elements = adios2::helper::GetTotalSize(variable.m_Count);
+    // T blockMin;
+    // T blockMax;
+    // T blockMean;
+    // T blockSum;
+    // T blockSumSquares;
+    // T blockVar;
 
-    // T blockStd;
+    // T stepMin;
+    // T stepMax;
+    // T stepMean;
+    // T stepSum;
+    // T stepSumSquares;
+    // T stepVar;
+
+    //     auto number_elements = adios2::helper::GetTotalSize(variable.m_Count);
+
+    // // T blockStd;
     uint32_t entryID = 0;
-    std::vector<double> testBuffer;
-    std::vector<T> testBuffer2;
-    double testDouble = 42.0;
+    // std::vector<double> testBuffer;
+    // std::vector<T> testBuffer2;
+    // double testDouble = 42.0;
 
-    // JuleaDBDAISetMinMax(variable, data, blockMin, blockMax, blockMean);
-    // m_JuleaCDO.SetMinMax(variable, data, blockMin, blockMax, m_CurrentStep,
-    //                      m_CurrentBlockID);
+    // // JuleaDBDAISetMinMax(variable, data, blockMin, blockMax, blockMean);
+    // // m_JuleaCDO.SetMinMax(variable, data, blockMin, blockMax, m_CurrentStep,
+    // //                      m_CurrentBlockID);
 
-    // TODO: call ComputeBlockStatistics
-    m_JuleaCDO.ComputeBlockStatistics(variable, data, blockMin, blockMax, blockMean, blockSum, blockSumSquares, blockVar);
+    // m_JuleaCDO.ComputeBlockStatistics(variable, data, blockMin, blockMax, blockMean, blockSum, blockSumSquares, blockVar);
 
+    // // TODO: check whether this is incorrect
+    // // there may be some cases where this is not working
+    // /**  to initialize the global min/max, they are set to the
+    //     first min/max for the first block of the first step */
+    // if ((m_CurrentStep == 0) && (m_CurrentBlockID == 0))
+    // {
+    //     variable.m_Min = blockMin;
+    //     variable.m_Max = blockMax;
+    //     stepMin = blockMin;
+    //     stepMax = blockMax;
+    // }
+    //     /** reduce only necessary if more than one process*/
+    // if (m_WriterRank > 0)
+    // {
+    //     /** const T *sendbuf, T *recvbuf, size_t count, Op op, int root, const
+    //     std::string &hint = std::string()) */
+    //     m_Comm.Reduce(&blockMin, &stepMin, 1, helper::Comm::Op::Min, 0);
+    //     m_Comm.Reduce(&blockMax, &stepMax, 1, helper::Comm::Op::Max, 0);
+    //     m_Comm.Reduce(&blockSum, &stepSum, 1, helper::Comm::Op::Sum, 0);
 
+    //     /** not required since blockSum is also computed now */        
+    //     // m_Comm.Reduce(&blockMean, &stepMean, 1, helper::Comm::Op::Sum, 0);
+
+    //     // if (variable.m_Name == m_PrecipitationName)
+    //     // {
+    //     //     m_Comm.Reduce(&blockMean, &stepSum, 1, helper::Comm::Op::Sum, 0);
+    //     //     m_HPrecSum.push_back(stepSum);
+    //     // }
+    // }
+
+    // stepMean = stepSum / (number_elements * m_Comm.Size());
+
+    // if (stepMin < variable.m_Min)
+    // {
+    //     // std::cout << "updated global min from " << variable.m_Min << " to "
+    //     //   << stepMin << std::endl;
+    //     variable.m_Min = stepMin;
+    // }
+
+    // if (stepMax > variable.m_Max)
+    // {
+    //     // std::cout << "updated global max from "  << variable.m_Max << " to "
+    //     // << stepMax << std::endl;
+    //     variable.m_Max = stepMax;
+    // }
+
+    // computes and stores block statistics
+    ManageBlockStepMetadata(variable,data);
+
+    //FIXME: compute step values
     // JuleaDBDAIStepValues(variable, blockMin, blockMean, blockMax);
-    m_JuleaCDO.ComputeStepStatistics(variable, blockMin, blockMean, blockMax,
-                                     m_CurrentStep, m_CurrentBlockID);
+    // m_JuleaCDO.ComputeStepStatistics(variable, blockMin, blockMean, blockMax,
+    //                                  m_CurrentStep, m_CurrentBlockID);
 
     auto stepBlockID =
         g_strdup_printf("%lu_%lu", m_CurrentStep, m_CurrentBlockID);
@@ -430,10 +634,11 @@ void JuleaDBDAIWriter::PutSyncToJulea(
             variable, m_Name, variable.m_Name, m_CurrentStep, m_CurrentBlockID);
     }
 
+    //FIXME: fix parameters + implementation
     /** put block metadata to DB */
-    m_JuleaDBInteractionWriter.PutBlockMetadataToJulea(
-        variable, m_Name, variable.m_Name, m_CurrentStep, m_CurrentBlockID,
-        blockInfo, blockMin, blockMax, blockMean, entryID);
+    // m_JuleaDBInteractionWriter.PutBlockMetadataToJulea(
+    //     variable, m_Name, variable.m_Name, m_CurrentStep, m_CurrentBlockID,
+    //     blockInfo, blockMin, blockMax, blockMean, entryID);
 
     // std::cout << "entryID: " << entryID << std::endl;
     /** put data to object store */
