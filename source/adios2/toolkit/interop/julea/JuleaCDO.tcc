@@ -43,8 +43,8 @@ void JuleaCDO::SetMinMax(core::Variable<T> &variable, const T *data,
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "JDB Writer (" << m_WriterRank
-                  << ") : JuleaDBDAISetMinMax()\n";
+        std::cout << "JuleaCDO (" << m_WriterRank
+                  << ") : SetMinMax()\n";
     }
 
     T min = 0;
@@ -170,16 +170,9 @@ void JuleaCDO::ComputeBlockStatistics(core::Variable<T> &variable,
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "JDB Writer (" << m_WriterRank
-                  << ") : JuleaDBDAISetMinMax()\n";
+        std::cout << "JuleaCDO (" << m_WriterRank
+                  << ") : ComputeBlockStatistics()\n";
     }
-
-    T min = 0;
-    T max = 0;
-    T sum = 0;
-    T mean = 0;
-    T var = 0;
-    T std = 0;
 
     T stepMin = 0;
     T stepMax = 0;
@@ -189,20 +182,24 @@ void JuleaCDO::ComputeBlockStatistics(core::Variable<T> &variable,
     T stepStd = 0;
 
     auto number_elements = adios2::helper::GetTotalSize(variable.m_Count);
-    adios2::helper::GetMinMax(data, number_elements, min, max);
+    adios2::helper::GetMinMax(data, number_elements, blockMin, blockMax);
+
+    /** accumulate does not work with type T data, so need to do it by hand */
+    // blockSum = std::accumulate(data.begin(), data.end(), 0)
 
     for (size_t i = 0; i < number_elements; ++i)
     {
-        sum += data[i];
+        blockSum += data[i];
     }
 
-    // TODO: cast to T ?
-    mean = sum / (double)number_elements;
+    blockMean = blockSum / (double)number_elements;
 
-    blockMin = min;
-    blockMax = max;
-    blockMean = mean;
-    blockSum = sum;
+    for (size_t i = 0; i < number_elements; ++i)
+    {
+        blockVar += std::pow(data[i] - blockMean,2) / number_elements;
+    }
+
+    blockStd = std::sqrt(blockVar);
 
     // TODO: check whether this is incorrect
     // there may be some cases where this is not working
@@ -210,10 +207,10 @@ void JuleaCDO::ComputeBlockStatistics(core::Variable<T> &variable,
         first min/max for the first block of the first step */
     if ((currentStep == 0) && (blockID == 0))
     {
-        variable.m_Min = min;
-        variable.m_Max = max;
-        stepMin = min;
-        stepMax = max;
+        variable.m_Min = blockMin;
+        variable.m_Max = blockMax;
+        stepMin = blockMin;
+        stepMax = blockMax;
     }
 
     /* reduce only necessary if more than one process*/
@@ -223,13 +220,16 @@ void JuleaCDO::ComputeBlockStatistics(core::Variable<T> &variable,
         // std::string &hint = std::string())
         m_Comm.Reduce(&blockMin, &stepMin, 1, helper::Comm::Op::Min, 0);
         m_Comm.Reduce(&blockMax, &stepMax, 1, helper::Comm::Op::Max, 0);
-        m_Comm.Reduce(&blockMean, &stepMean, 1, helper::Comm::Op::Sum, 0);
+        m_Comm.Reduce(&blockSum, &stepSum, 1, helper::Comm::Op::Sum, 0);
 
-        if (variable.m_Name == m_PrecipitationName)
-        {
-            m_Comm.Reduce(&blockMean, &stepSum, 1, helper::Comm::Op::Sum, 0);
-            m_HPrecSum.push_back(stepSum);
-        }
+        /** not required since blockSum is also computed now */        
+        // m_Comm.Reduce(&blockMean, &stepMean, 1, helper::Comm::Op::Sum, 0);
+
+        // if (variable.m_Name == m_PrecipitationName)
+        // {
+        //     m_Comm.Reduce(&blockMean, &stepSum, 1, helper::Comm::Op::Sum, 0);
+        //     m_HPrecSum.push_back(stepSum);
+        // }
     }
 
     /** The mean of means is ONLY the same as the mean of all, when the
@@ -242,7 +242,7 @@ void JuleaCDO::ComputeBlockStatistics(core::Variable<T> &variable,
      * (4+5+6)/6 = 15/6 = 2.5; 1 + 2.5 = 3.5
      * However, this is unintuitive. So, first version is used.
      */
-    blockMean = stepMean / m_Comm.Size();
+    stepMean = stepSum / (number_elements * m_Comm.Size());
 
     if (stepMin < variable.m_Min)
     {
@@ -262,9 +262,9 @@ void JuleaCDO::ComputeBlockStatistics(core::Variable<T> &variable,
 
     if (false)
     {
-        std::cout << "min: " << min << std::endl;
+        std::cout << "min: " << blockMin << std::endl;
         std::cout << "global min: " << variable.m_Min << std::endl;
-        std::cout << "max: " << max << std::endl;
+        std::cout << "max: " << blockMax << std::endl;
         std::cout << "global max: " << variable.m_Max << std::endl;
     }
 }
