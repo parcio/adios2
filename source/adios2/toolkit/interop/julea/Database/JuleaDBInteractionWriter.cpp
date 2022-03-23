@@ -72,19 +72,25 @@ void JuleaDBInteractionWriter::DAIaddFieldsForYearlyLocalStatsTable(JDBSchema *s
 {
     gchar const *fileIndex[] = {"file", NULL};
     gchar const *varIndex[] = {"variableName", NULL};
-    // gchar const *minDoubleIndex[] = {"min_float64", NULL};
-    // gchar const *maxDoubleIndex[] = {"max_float64", NULL};
-    // gchar const *meanDoubleIndex[] = {"mean_float64", NULL};
+    gchar const *x[] = {"x", NULL};
+    gchar const *y[] = {"y", NULL};
 
     j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
     j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
 
-    j_db_schema_add_field(schema, "year", J_DB_TYPE_UINT32, NULL);
-    j_db_schema_add_field(schema, "precip_days_1mm", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "x", J_DB_TYPE_SINT32, NULL);
+    j_db_schema_add_field(schema, "y", J_DB_TYPE_SINT32, NULL);
 
+    j_db_schema_add_field(schema, "yearly_blockMin", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "yearly_blockMax", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "yearly_blockMean", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "yearly_blockSum", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "yearly_blockVar", J_DB_TYPE_FLOAT64, NULL);
     
     j_db_schema_add_index(schema, fileIndex, NULL);
     j_db_schema_add_index(schema, varIndex, NULL);
+    j_db_schema_add_index(schema, x, NULL);
+    j_db_schema_add_index(schema, y, NULL);
 }
 
 /** 
@@ -97,38 +103,70 @@ void JuleaDBInteractionWriter::DAIaddFieldsForDailyGlobalStatsTable(JDBSchema *s
 {
     gchar const *fileIndex[] = {"file", NULL};
     gchar const *varIndex[] = {"variableName", NULL};
-    // gchar const *minDoubleIndex[] = {"min_float64", NULL};
-    // gchar const *maxDoubleIndex[] = {"max_float64", NULL};
-    // gchar const *meanDoubleIndex[] = {"mean_float64", NULL};
+    gchar const *yearIndex[] = {"year", NULL};
+    gchar const *monthIndex[] = {"month", NULL};
+    gchar const *dayIndex[] = {"day", NULL};
 
     j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
     j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
 
-    j_db_schema_add_field(schema, "year", J_DB_TYPE_UINT32, NULL);
-    j_db_schema_add_field(schema, "precip_days_1mm", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "year", J_DB_TYPE_SINT32, NULL);
+    j_db_schema_add_field(schema, "month", J_DB_TYPE_SINT32, NULL);
+    j_db_schema_add_field(schema, "day", J_DB_TYPE_SINT32, NULL);
+
+    j_db_schema_add_field(schema, "daily_globalMin", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "daily_globalMax", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "daily_globalMean", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "daily_globalSum", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "daily_globalVar", J_DB_TYPE_FLOAT64, NULL);
 
     
     j_db_schema_add_index(schema, fileIndex, NULL);
     j_db_schema_add_index(schema, varIndex, NULL);
+    j_db_schema_add_index(schema, yearIndex, NULL);
+    j_db_schema_add_index(schema, monthIndex, NULL);
+    j_db_schema_add_index(schema, dayIndex, NULL);
 }
 
+
+/**
+* Both local and daily resolution for statistics
+* 
+*/
 void JuleaDBInteractionWriter::DAIaddFieldsForDailyLocalStatsTable(JDBSchema *schema)
 {
+    //FIXME: index choice might not be great
     gchar const *fileIndex[] = {"file", NULL};
     gchar const *varIndex[] = {"variableName", NULL};
-    // gchar const *minDoubleIndex[] = {"min_float64", NULL};
-    // gchar const *maxDoubleIndex[] = {"max_float64", NULL};
-    // gchar const *meanDoubleIndex[] = {"mean_float64", NULL};
+    gchar const *x[] = {"x", NULL};
+    gchar const *y[] = {"y", NULL};
+    gchar const *yearIndex[] = {"year", NULL};
+    gchar const *monthIndex[] = {"month", NULL};
+    gchar const *dayIndex[] = {"day", NULL};
 
     j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
     j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
 
-    j_db_schema_add_field(schema, "year", J_DB_TYPE_UINT32, NULL);
-    j_db_schema_add_field(schema, "precip_days_1mm", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "x", J_DB_TYPE_SINT32, NULL);
+    j_db_schema_add_field(schema, "y", J_DB_TYPE_SINT32, NULL);
 
+    j_db_schema_add_field(schema, "year", J_DB_TYPE_SINT32, NULL);
+    j_db_schema_add_field(schema, "month", J_DB_TYPE_SINT32, NULL);
+    j_db_schema_add_field(schema, "day", J_DB_TYPE_SINT32, NULL);
+
+    j_db_schema_add_field(schema, "daily_globalMin", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "daily_globalMax", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "daily_globalMean", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "daily_globalSum", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "daily_globalVar", J_DB_TYPE_FLOAT64, NULL);
     
     j_db_schema_add_index(schema, fileIndex, NULL);
     j_db_schema_add_index(schema, varIndex, NULL);
+        j_db_schema_add_index(schema, x, NULL);
+    j_db_schema_add_index(schema, y, NULL);
+        j_db_schema_add_index(schema, yearIndex, NULL);
+    j_db_schema_add_index(schema, monthIndex, NULL);
+    j_db_schema_add_index(schema, dayIndex, NULL);
 }
 
 

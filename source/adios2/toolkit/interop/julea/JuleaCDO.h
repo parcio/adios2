@@ -73,6 +73,9 @@ public:
     int m_Verbosity = 5;
     int m_WriterRank;
 
+    int numberBlocksX = 0;
+    int numberBlocksY = 0;
+
     /** Variables*/
     std::string m_PrecipitationName = "P";
     std::string m_TemperatureName = "T";
