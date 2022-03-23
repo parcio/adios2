@@ -46,7 +46,7 @@ public:
                                 T &blockMin, T &blockMax,T &blockMean, T &blockSum, T &blockSumSquares, T &blockVar);
 
     template <class T>
-    void ComputeStepStatistics(core::Variable<T> &variable, T blockMin,
+    void PutCDOStatsToBuffers(core::Variable<T> &variable, T blockMin,
                                T blockMean, T blockMax, size_t currentStep,
                                size_t blockID);
 

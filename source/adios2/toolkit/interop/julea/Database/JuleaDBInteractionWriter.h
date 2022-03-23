@@ -27,6 +27,7 @@ class JuleaDBInteractionWriter : public JuleaInteraction
 public:
     JuleaDBInteractionWriter(helper::Comm const &comm);
     ~JuleaDBInteractionWriter() = default;
+
     /** --- Variables --- */
     void InitDBSchemas();
 
@@ -59,8 +60,10 @@ public:
         const typename core::Variable<T>::Info &blockInfo, T &blockMin,
         T &blockMax, T &blockMean, uint32_t &entryID);
 
+    /** --- Attributes --- */
+    //TODO: support attributes again
 
-
+    
 private:
     //schemas for CDO related statistics
     void DAIaddFieldsForClimateIndexTable(JDBSchema *schema);
@@ -78,8 +81,6 @@ private:
 
 }; // end namespace JuleaDBInteractionWriter
 
-// TODO: check whether there is any parameter missing; also, maybe blockInfo
-// does not need to be passed?
 
 #define declare_template_instantiation(T)                                      \
     extern template void JuleaDBInteractionWriter::PutVariableMetadataToJulea( \

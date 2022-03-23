@@ -36,7 +36,10 @@ JuleaDBInteractionWriter::JuleaDBInteractionWriter(helper::Comm const &comm)
     // std::cout << "This is the constructor of the writer" << std::endl;
 }
 
-void DAIaddFieldsForClimateIndexTable(JDBSchema *schema)
+/** 
+* One table for all climate indeces that are computed for evaluation
+*/
+void JuleaDBInteractionWriter::DAIaddFieldsForClimateIndexTable(JDBSchema *schema)
 {
     gchar const *fileIndex[] = {"file", NULL};
     gchar const *varIndex[] = {"variableName", NULL};
@@ -60,7 +63,12 @@ void DAIaddFieldsForClimateIndexTable(JDBSchema *schema)
     j_db_schema_add_index(schema, varIndex, NULL);
 }
 
-void DAIaddFieldsForYearlyLocalStatsTable(JDBSchema *schema)
+/** 
+* Table for the yearly min/max/mean/sum/var with "local" resolution
+* local resolution = yearly values at the block level
+* global stats: x/y set to -1/-1
+*/
+void JuleaDBInteractionWriter::DAIaddFieldsForYearlyLocalStatsTable(JDBSchema *schema)
 {
     gchar const *fileIndex[] = {"file", NULL};
     gchar const *varIndex[] = {"variableName", NULL};
@@ -79,7 +87,13 @@ void DAIaddFieldsForYearlyLocalStatsTable(JDBSchema *schema)
     j_db_schema_add_index(schema, varIndex, NULL);
 }
 
-void DAIaddFieldsForDailyGlobalStatsTable(JDBSchema *schema)
+/** 
+* Table for the daily min/max/mean/sum/var with "global" resolution
+* global resolution = daily values for the complete step -> over all processes
+* monthly stats: day set to -1
+* yearly stats: month and day set to -1
+*/
+void JuleaDBInteractionWriter::DAIaddFieldsForDailyGlobalStatsTable(JDBSchema *schema)
 {
     gchar const *fileIndex[] = {"file", NULL};
     gchar const *varIndex[] = {"variableName", NULL};
@@ -98,7 +112,7 @@ void DAIaddFieldsForDailyGlobalStatsTable(JDBSchema *schema)
     j_db_schema_add_index(schema, varIndex, NULL);
 }
 
-void DAIaddFieldsForDailyLocalStatsTable(JDBSchema *schema)
+void JuleaDBInteractionWriter::DAIaddFieldsForDailyLocalStatsTable(JDBSchema *schema)
 {
     gchar const *fileIndex[] = {"file", NULL};
     gchar const *varIndex[] = {"variableName", NULL};
@@ -118,7 +132,7 @@ void DAIaddFieldsForDailyLocalStatsTable(JDBSchema *schema)
 }
 
 
-void DAIaddFieldsForVariableMDSmall(JDBSchema *schema)
+void JuleaDBInteractionWriter::DAIaddFieldsForVariableMDSmall(JDBSchema *schema)
 {
     gchar const *fileIndex[] = {"file", NULL};
     gchar const *varIndex[] = {"variableName", NULL};
@@ -165,7 +179,7 @@ void DAIaddFieldsForVariableMDSmall(JDBSchema *schema)
     j_db_schema_add_index(schema, meanDoubleIndex, NULL);
 }
 
-void DAIaddFieldsForBlockMDSmall(JDBSchema *schema)
+void JuleaDBInteractionWriter::DAIaddFieldsForBlockMDSmall(JDBSchema *schema)
 {
     gchar const *fileIndex[] = {"file", NULL};
     gchar const *varIndex[] = {"variableName", NULL};
@@ -222,7 +236,7 @@ void DAIaddFieldsForBlockMDSmall(JDBSchema *schema)
     j_db_schema_add_index(schema, meanDoubleIndex, NULL);
 }
 
-void DAIaddFieldsForVariableMD(JDBSchema *schema)
+void JuleaDBInteractionWriter::DAIaddFieldsForVariableMD(JDBSchema *schema)
 {
     gchar const *fileIndex[] = {"file", NULL};
     gchar const *varIndex[] = {"variableName", NULL};
@@ -304,7 +318,7 @@ void DAIaddFieldsForVariableMD(JDBSchema *schema)
     j_db_schema_add_index(schema, meanDoubleIndex, NULL);
 }
 
-void DAIaddFieldsForBlockMD(JDBSchema *schema)
+void JuleaDBInteractionWriter::DAIaddFieldsForBlockMD(JDBSchema *schema)
 {
     gchar const *fileIndex[] = {"file", NULL};
     gchar const *varIndex[] = {"variableName", NULL};
