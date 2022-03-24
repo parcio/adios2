@@ -379,7 +379,7 @@ void JuleaDBDAIWriter::ManageBlockStepMetadata(Variable<T> &variable, const T *d
 
 
     //FIXME: put step values to climate index buffer
-    // PutCDOStatsToBuffers();
+    m_JuleaCDO.PutCDOStatsToBuffers(variable, blockMin, blockMean, blockMax, m_CurrentStep, m_CurrentBlockID);
     //FIXME: write metadata to julea
 
 }
@@ -474,18 +474,18 @@ void JuleaDBDAIWriter::computeGlobalDimensions(
         localX = variable.m_Count[0];
         localY = variable.m_Count[1];
 
-        m_JuleaCDO.numberBlocksX = globalX/localX;
-        m_JuleaCDO.numberBlocksY = globalY/localY;
+        m_JuleaCDO.m_numberBlocksX = globalX/localX;
+        m_JuleaCDO.m_numberBlocksY = globalY/localY;
 
-        testNumberProcesses =  m_JuleaCDO.numberBlocksX *  m_JuleaCDO.numberBlocksY;
+        testNumberProcesses =  m_JuleaCDO.m_numberBlocksX *  m_JuleaCDO.m_numberBlocksY;
 
         if(m_Comm.Size() == testNumberProcesses)
         {
             std::cout << "wuhu: gleich groß \n"; 
         }
 
-        std::cout << "X = " << m_JuleaCDO.numberBlocksX << "\n"; 
-        std::cout << "Y = " << m_JuleaCDO.numberBlocksY << "\n"; 
+        std::cout << "X = " << m_JuleaCDO.m_numberBlocksX << "\n"; 
+        std::cout << "Y = " << m_JuleaCDO.m_numberBlocksY << "\n"; 
     }
 
 template <class T>
