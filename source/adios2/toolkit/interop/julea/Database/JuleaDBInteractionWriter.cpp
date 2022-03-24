@@ -185,38 +185,38 @@ void JuleaDBInteractionWriter::AddFieldsForClimateIndexTable(JDBSchema *schema)
     j_db_schema_add_index(schema, varIndex, NULL);
 }
 
-/**
- * Table for the yearly min/max/mean/sum/var with "local" resolution
- * local resolution = yearly values at the block level
- * global stats: x/y set to -1/-1
- */
-void JuleaDBInteractionWriter::AddFieldsForYearlyLocalStatsTable(
-    JDBSchema *schema)
-{
-    gchar const *fileIndex[] = {"file", NULL};
-    gchar const *varIndex[] = {"variableName", NULL};
-    gchar const *x[] = {"x", NULL};
-    gchar const *y[] = {"y", NULL};
+// /**
+//  * Table for the yearly min/max/mean/sum/var with "local" resolution
+//  * local resolution = yearly values at the block level
+//  * global stats: x/y set to -1/-1
+//  */
+// void JuleaDBInteractionWriter::AddFieldsForYearlyLocalStatsTable(
+//     JDBSchema *schema)
+// {
+//     gchar const *fileIndex[] = {"file", NULL};
+//     gchar const *varIndex[] = {"variableName", NULL};
+//     gchar const *x[] = {"x", NULL};
+//     gchar const *y[] = {"y", NULL};
 
-    j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
-    j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
+//     j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
+//     j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
 
-    j_db_schema_add_field(schema, "year", J_DB_TYPE_SINT32, NULL);
-    j_db_schema_add_field(schema, "x", J_DB_TYPE_SINT32, NULL);
-    j_db_schema_add_field(schema, "y", J_DB_TYPE_SINT32, NULL);
+//     j_db_schema_add_field(schema, "year", J_DB_TYPE_SINT32, NULL);
+//     j_db_schema_add_field(schema, "x", J_DB_TYPE_SINT32, NULL);
+//     j_db_schema_add_field(schema, "y", J_DB_TYPE_SINT32, NULL);
 
-    j_db_schema_add_field(schema, "yearly_blockMin", J_DB_TYPE_FLOAT64, NULL);
-    j_db_schema_add_field(schema, "yearly_blockMax", J_DB_TYPE_FLOAT64, NULL);
-    j_db_schema_add_field(schema, "yearly_blockMean", J_DB_TYPE_FLOAT64, NULL);
-    j_db_schema_add_field(schema, "yearly_blockSum", J_DB_TYPE_FLOAT64, NULL);
-    // j_db_schema_add_field(schema, "yearly_blockVar", J_DB_TYPE_FLOAT64,
-    // NULL);
+//     j_db_schema_add_field(schema, "yearly_blockMin", J_DB_TYPE_FLOAT64, NULL);
+//     j_db_schema_add_field(schema, "yearly_blockMax", J_DB_TYPE_FLOAT64, NULL);
+//     j_db_schema_add_field(schema, "yearly_blockMean", J_DB_TYPE_FLOAT64, NULL);
+//     j_db_schema_add_field(schema, "yearly_blockSum", J_DB_TYPE_FLOAT64, NULL);
+//     // j_db_schema_add_field(schema, "yearly_blockVar", J_DB_TYPE_FLOAT64,
+//     // NULL);
 
-    j_db_schema_add_index(schema, fileIndex, NULL);
-    j_db_schema_add_index(schema, varIndex, NULL);
-    j_db_schema_add_index(schema, x, NULL);
-    j_db_schema_add_index(schema, y, NULL);
-}
+//     j_db_schema_add_index(schema, fileIndex, NULL);
+//     j_db_schema_add_index(schema, varIndex, NULL);
+//     j_db_schema_add_index(schema, x, NULL);
+//     j_db_schema_add_index(schema, y, NULL);
+// }
 
 /**
  * Table for the daily min/max/mean/sum/var with "global" resolution
@@ -254,46 +254,46 @@ void JuleaDBInteractionWriter::AddFieldsForDailyGlobalStatsTable(
     j_db_schema_add_index(schema, dayIndex, NULL);
 }
 
-/**
- * Both local and daily resolution for statistics
- *
- */
-void JuleaDBInteractionWriter::AddFieldsForDailyLocalStatsTable(
-    JDBSchema *schema)
-{
-    // FIXME: index choice might not be great
-    gchar const *fileIndex[] = {"file", NULL};
-    gchar const *varIndex[] = {"variableName", NULL};
-    gchar const *x[] = {"x", NULL};
-    gchar const *y[] = {"y", NULL};
-    gchar const *yearIndex[] = {"year", NULL};
-    gchar const *monthIndex[] = {"month", NULL};
-    gchar const *dayIndex[] = {"day", NULL};
+// /**
+//  * Both local and daily resolution for statistics
+//  *
+//  */
+// void JuleaDBInteractionWriter::AddFieldsForDailyLocalStatsTable(
+//     JDBSchema *schema)
+// {
+//     // FIXME: index choice might not be great
+//     gchar const *fileIndex[] = {"file", NULL};
+//     gchar const *varIndex[] = {"variableName", NULL};
+//     gchar const *x[] = {"x", NULL};
+//     gchar const *y[] = {"y", NULL};
+//     gchar const *yearIndex[] = {"year", NULL};
+//     gchar const *monthIndex[] = {"month", NULL};
+//     gchar const *dayIndex[] = {"day", NULL};
 
-    j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
-    j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
+//     j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
+//     j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
 
-    j_db_schema_add_field(schema, "x", J_DB_TYPE_SINT32, NULL);
-    j_db_schema_add_field(schema, "y", J_DB_TYPE_SINT32, NULL);
+//     j_db_schema_add_field(schema, "x", J_DB_TYPE_SINT32, NULL);
+//     j_db_schema_add_field(schema, "y", J_DB_TYPE_SINT32, NULL);
 
-    j_db_schema_add_field(schema, "year", J_DB_TYPE_SINT32, NULL);
-    j_db_schema_add_field(schema, "month", J_DB_TYPE_SINT32, NULL);
-    j_db_schema_add_field(schema, "day", J_DB_TYPE_SINT32, NULL);
+//     j_db_schema_add_field(schema, "year", J_DB_TYPE_SINT32, NULL);
+//     j_db_schema_add_field(schema, "month", J_DB_TYPE_SINT32, NULL);
+//     j_db_schema_add_field(schema, "day", J_DB_TYPE_SINT32, NULL);
 
-    j_db_schema_add_field(schema, "daily_globalMin", J_DB_TYPE_FLOAT64, NULL);
-    j_db_schema_add_field(schema, "daily_globalMax", J_DB_TYPE_FLOAT64, NULL);
-    j_db_schema_add_field(schema, "daily_globalMean", J_DB_TYPE_FLOAT64, NULL);
-    j_db_schema_add_field(schema, "daily_globalSum", J_DB_TYPE_FLOAT64, NULL);
-    j_db_schema_add_field(schema, "daily_globalVar", J_DB_TYPE_FLOAT64, NULL);
+//     j_db_schema_add_field(schema, "daily_globalMin", J_DB_TYPE_FLOAT64, NULL);
+//     j_db_schema_add_field(schema, "daily_globalMax", J_DB_TYPE_FLOAT64, NULL);
+//     j_db_schema_add_field(schema, "daily_globalMean", J_DB_TYPE_FLOAT64, NULL);
+//     j_db_schema_add_field(schema, "daily_globalSum", J_DB_TYPE_FLOAT64, NULL);
+//     j_db_schema_add_field(schema, "daily_globalVar", J_DB_TYPE_FLOAT64, NULL);
 
-    j_db_schema_add_index(schema, fileIndex, NULL);
-    j_db_schema_add_index(schema, varIndex, NULL);
-    j_db_schema_add_index(schema, x, NULL);
-    j_db_schema_add_index(schema, y, NULL);
-    j_db_schema_add_index(schema, yearIndex, NULL);
-    j_db_schema_add_index(schema, monthIndex, NULL);
-    j_db_schema_add_index(schema, dayIndex, NULL);
-}
+//     j_db_schema_add_index(schema, fileIndex, NULL);
+//     j_db_schema_add_index(schema, varIndex, NULL);
+//     j_db_schema_add_index(schema, x, NULL);
+//     j_db_schema_add_index(schema, y, NULL);
+//     j_db_schema_add_index(schema, yearIndex, NULL);
+//     j_db_schema_add_index(schema, monthIndex, NULL);
+//     j_db_schema_add_index(schema, dayIndex, NULL);
+// }
 
 void JuleaDBInteractionWriter::AddFieldsForVariableMDEval(JDBSchema *schema)
 {
@@ -621,7 +621,6 @@ void JuleaDBInteractionWriter::AddEntriesForClimateIndexTable(
     auto batch = j_batch_new(semantics);
     auto batch2 = j_batch_new(semantics);
 
-    // FIXME: chose correct schema
     schema = j_db_schema_new("adios2", "climate-indices", NULL);
     j_db_schema_get(schema, batch, NULL);
     err = j_batch_execute(batch);
@@ -653,64 +652,65 @@ void JuleaDBInteractionWriter::AddEntriesForClimateIndexTable(
                          sizeof(size_t), NULL);
 }
 
-void JuleaDBInteractionWriter::AddEntriesForYearlyLocalStatsTable(
-    const std::string nameSpace, const std::string varName, size_t currentStep,
-    interop::JuleaCDO &JuleaCDO, int writerRank)
-{
-    int err = 0;
-    g_autoptr(JDBSchema) schema = NULL;
-    g_autoptr(JDBEntry) entry = NULL;
-    g_autoptr(JDBSelector) selector = NULL;
-    g_autoptr(JDBIterator) iterator = NULL;
-    JDBType jdbType;
-    guint64 db_length = 0;
-    uint32_t *tmpID;
-    // size_t year = 0;
-    // size_t month = 0;
-    // size_t day = 0;
-    // uint32_t entryID = 0;
-    int x = 0;
-    int y = 0;
-    int year = 0;
 
-    // TODO: find correct x/y coordinates
-    JuleaCDO.computeCoordinatesFromRank(writerRank, x, y);
-    if (currentStep >= JuleaCDO.m_StepsPerYear)
-    {
-        year = (size_t)currentStep / JuleaCDO.m_StepsPerYear;
-    }
 
-    // ComputeYearlyLocalStats();
+// void JuleaDBInteractionWriter::AddEntriesForYearlyLocalStatsTable(
+//     const std::string nameSpace, const std::string varName, size_t currentStep,
+//     interop::JuleaCDO &JuleaCDO, int writerRank)
+// {
+//     int err = 0;
+//     g_autoptr(JDBSchema) schema = NULL;
+//     g_autoptr(JDBEntry) entry = NULL;
+//     g_autoptr(JDBSelector) selector = NULL;
+//     g_autoptr(JDBIterator) iterator = NULL;
+//     JDBType jdbType;
+//     guint64 db_length = 0;
+//     uint32_t *tmpID;
+//     // size_t year = 0;
+//     // size_t month = 0;
+//     // size_t day = 0;
+//     // uint32_t entryID = 0;
+//     int x = 0;
+//     int y = 0;
+//     int year = 0;
 
-    // void *namesBuf = NULL;
-    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    auto batch = j_batch_new(semantics);
-    auto batch2 = j_batch_new(semantics);
+//     // TODO: find correct x/y coordinates
+//     JuleaCDO.ComputeCoordinatesFromRank(writerRank, x, y);
+//     if (currentStep >= JuleaCDO.m_StepsPerYear)
+//     {
+//         year = (size_t)currentStep / JuleaCDO.m_StepsPerYear;
+//     }
 
-    // FIXME: chose correct schema
-    schema = j_db_schema_new("adios2", "yearly-local-statistics", NULL);
-    j_db_schema_get(schema, batch, NULL);
-    err = j_batch_execute(batch);
-    // g_assert_true(j_batch_execute(batch) == true);
+//     JuleaCDO.ComputeYearlyLocalStats(varName);
 
-    entry = j_db_entry_new(schema, NULL);
-    j_db_entry_set_field(entry, "file", nameSpace.c_str(),
-                         strlen(nameSpace.c_str()) + 1, NULL);
-    j_db_entry_set_field(entry, "variableName", varName.c_str(),
-                         strlen(varName.c_str()) + 1, NULL);
+//     // void *namesBuf = NULL;
+//     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+//     auto batch = j_batch_new(semantics);
+//     auto batch2 = j_batch_new(semantics);
 
-    j_db_entry_set_field(entry, "year", &year, sizeof(year), NULL);
-    j_db_entry_set_field(entry, "x", &x, sizeof(x), NULL);
-    j_db_entry_set_field(entry, "y", &y, sizeof(y), NULL);
+//     schema = j_db_schema_new("adios2", "yearly-local-statistics", NULL);
+//     j_db_schema_get(schema, batch, NULL);
+//     err = j_batch_execute(batch);
+//     // g_assert_true(j_batch_execute(batch) == true);
 
-    // j_db_entry_set_field(entry, "yearly_blockMin", &variable,
-    // sizeof(), NULL); j_db_entry_set_field(entry, "yearly_blockMax",
-    // &variable, sizeof(), NULL); j_db_entry_set_field(entry,
-    // "yearly_blockMean", &variable, sizeof(), NULL);
-    // j_db_entry_set_field(entry, "yearly_blockSum", &variable,
-    // sizeof(), NULL); j_db_entry_set_field(entry, "yearly_blockVar",
-    // &variable, sizeof(), NULL);
-}
+//     entry = j_db_entry_new(schema, NULL);
+//     j_db_entry_set_field(entry, "file", nameSpace.c_str(),
+//                          strlen(nameSpace.c_str()) + 1, NULL);
+//     j_db_entry_set_field(entry, "variableName", varName.c_str(),
+//                          strlen(varName.c_str()) + 1, NULL);
+
+//     j_db_entry_set_field(entry, "year", &year, sizeof(year), NULL);
+//     j_db_entry_set_field(entry, "x", &x, sizeof(x), NULL);
+//     j_db_entry_set_field(entry, "y", &y, sizeof(y), NULL);
+
+//     // j_db_entry_set_field(entry, "yearly_blockMin", &variable,
+//     // sizeof(), NULL); j_db_entry_set_field(entry, "yearly_blockMax",
+//     // &variable, sizeof(), NULL); j_db_entry_set_field(entry,
+//     // "yearly_blockMean", &variable, sizeof(), NULL);
+//     // j_db_entry_set_field(entry, "yearly_blockSum", &variable,
+//     // sizeof(), NULL); j_db_entry_set_field(entry, "yearly_blockVar",
+//     // &variable, sizeof(), NULL);
+// }
 
 void JuleaDBInteractionWriter::AddEntriesForDailyGlobalStatsTable(
     const std::string nameSpace, const std::string varName, size_t currentStep,
@@ -730,7 +730,6 @@ void JuleaDBInteractionWriter::AddEntriesForDailyGlobalStatsTable(
     auto batch = j_batch_new(semantics);
     auto batch2 = j_batch_new(semantics);
 
-    // FIXME: chose correct schema
     schema = j_db_schema_new("adios2", "daily-global-statistics", NULL);
     j_db_schema_get(schema, batch, NULL);
     err = j_batch_execute(batch);
@@ -758,11 +757,10 @@ void JuleaDBInteractionWriter::InitDBSchemas()
     auto batch2 = j_batch_new(semantics);
     auto batch3 = j_batch_new(semantics);
     auto batch4 = j_batch_new(semantics);
-    auto batch5 = j_batch_new(semantics);
     g_autoptr(JDBSchema) varSchema = NULL;
     g_autoptr(JDBSchema) blockSchema = NULL;
     g_autoptr(JDBSchema) cIndexSchema = NULL;  // climate indices table
-    g_autoptr(JDBSchema) yLocalSchema = NULL;  // yearly local statistics table
+    // g_autoptr(JDBSchema) yLocalSchema = NULL;  // yearly local statistics table
     g_autoptr(JDBSchema) dGlobalSchema = NULL; // daily global statistics table
 
     varSchema = j_db_schema_new("adios2", "variable-metadata", NULL);
@@ -771,7 +769,7 @@ void JuleaDBInteractionWriter::InitDBSchemas()
     // TODO: check whether tables are required by user
     // readDAISettings
     cIndexSchema = j_db_schema_new("adios2", "climate-indices", NULL);
-    yLocalSchema = j_db_schema_new("adios2", "yearly-local-statistics", NULL);
+    // yLocalSchema = j_db_schema_new("adios2", "yearly-local-statistics", NULL);
     dGlobalSchema = j_db_schema_new("adios2", "daily-global-statistics", NULL);
 
     j_db_schema_get(varSchema, batch, NULL);
@@ -783,8 +781,8 @@ void JuleaDBInteractionWriter::InitDBSchemas()
     j_db_schema_get(cIndexSchema, batch, NULL);
     bool existsClimaIndex = j_batch_execute(batch);
 
-    j_db_schema_get(yLocalSchema, batch, NULL);
-    bool existsYearlyLocal = j_batch_execute(batch);
+    // j_db_schema_get(yLocalSchema, batch, NULL);
+    // bool existsYearlyLocal = j_batch_execute(batch);
 
     j_db_schema_get(dGlobalSchema, batch, NULL);
     bool existsDailyGlobal = j_batch_execute(batch);
@@ -818,22 +816,22 @@ void JuleaDBInteractionWriter::InitDBSchemas()
         g_assert_true(j_batch_execute(batch3) == true);
     }
 
-    if (existsYearlyLocal == 0)
-    {
-        yLocalSchema =
-            j_db_schema_new("adios2", "yearly-local-statistics", NULL);
-        AddFieldsForYearlyLocalStatsTable(yLocalSchema);
-        j_db_schema_create(yLocalSchema, batch4, NULL);
-        g_assert_true(j_batch_execute(batch4) == true);
-    }
+    // if (existsYearlyLocal == 0)
+    // {
+    //     yLocalSchema =
+    //         j_db_schema_new("adios2", "yearly-local-statistics", NULL);
+    //     AddFieldsForYearlyLocalStatsTable(yLocalSchema);
+    //     j_db_schema_create(yLocalSchema, batch4, NULL);
+    //     g_assert_true(j_batch_execute(batch4) == true);
+    // }
 
     if (existsDailyGlobal == 0)
     {
         dGlobalSchema =
             j_db_schema_new("adios2", "daily-global-statistics", NULL);
         AddFieldsForDailyGlobalStatsTable(dGlobalSchema);
-        j_db_schema_create(dGlobalSchema, batch5, NULL);
-        g_assert_true(j_batch_execute(batch5) == true);
+        j_db_schema_create(dGlobalSchema, batch4, NULL);
+        g_assert_true(j_batch_execute(batch4) == true);
     }
 
     // g_assert_true(j_batch_execute(batch2) == true);
@@ -841,6 +839,8 @@ void JuleaDBInteractionWriter::InitDBSchemas()
     // j_db_schema_unref(blockSchema);
     j_batch_unref(batch);
     j_batch_unref(batch2);
+    j_batch_unref(batch3);
+    j_batch_unref(batch4);
     j_semantics_unref(semantics);
 }
 

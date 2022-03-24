@@ -36,14 +36,12 @@ public:
     JuleaCDO(helper::Comm const &comm);
     ~JuleaCDO() = default;
 
-    void computeCoordinatesFromRank(int rank, int &x, int&y);
-
     template <class T>
     void SetMinMax(core::Variable<T> &variable, const T *data, T &blockMin,
                    T &blockMax, size_t currentStep, size_t blockID);
 
     template <class T>
-    void ComputeBlockStatistics(core::Variable<T> &variable, const T *data,
+    void ComputeBlockStats(core::Variable<T> &variable, const T *data,
                                 T &blockMin, T &blockMax, T &blockMean,
                                 T &blockSum, T &blockSumSquares, T &blockVar);
 
@@ -52,24 +50,13 @@ public:
                               T blockMean, T blockMax, size_t currentStep,
                               size_t blockID);
 
-    // compute frost days: daily min temperature < 0°C
-    void computeFrostDays(double dailyTempMin);
+        void ComputeCoordinatesFromRank(int rank, int &x, int&y);
+            void ComputeDailyStats(std::string variableName);
+    void ComputeMonthlyStats(std::string variableName);
+    void ComputeYearlyStats(std::string variableName);
+    void ComputeYearlyLocalStats(std::string variableName);
 
-    // compute tropical nights: daily min temperature > 25°C
-    void computeTropicalNights(double dailyTempMin);
 
-    // compute summer days: daily max temperature > 25°C
-    void computeSummerDays(double dailyTempMax);
-
-    // compute icing days: daily max temperature < 0°C
-    void computeIcingDays(double dailyTempMax);
-
-    // precipitation R > 1mm,10mm,20mm (RR1,RR10,RR20)
-    void computePrecipDays(double dailyPrecipSum);
-
-    void computeDailyStatistics(std::string variableName);
-    void computeMonthlyStatistics(std::string variableName);
-    void computeYearlyStatistics(std::string variableName);
 
     int m_numberBlocksX = 0;
     int m_numberBlocksY = 0;
@@ -169,6 +156,23 @@ private:
     std::vector<double> m_HPrecMean; // 1 step
     std::vector<double> m_HPrecMax;  // 1 step
     std::vector<double> m_HPrecSum;  // 1 step
+
+        // compute frost days: daily min temperature < 0°C
+    void ComputeFrostDays(double dailyTempMin);
+
+    // compute tropical nights: daily min temperature > 25°C
+    void ComputeTropicalNights(double dailyTempMin);
+
+    // compute summer days: daily max temperature > 25°C
+    void ComputeSummerDays(double dailyTempMax);
+
+    // compute icing days: daily max temperature < 0°C
+    void ComputeIcingDays(double dailyTempMax);
+
+    // precipitation R > 1mm,10mm,20mm (RR1,RR10,RR20)
+    void ComputePrecipDays(double dailyPrecipSum);
+
+
    
 };
 

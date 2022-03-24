@@ -160,7 +160,7 @@ void JuleaCDO::SetMinMax<std::complex<double>>(
 // blockSumSquares = sum of the "fehlerquadrate"
 // blockVar = block variance
 template <class T>
-void JuleaCDO::ComputeBlockStatistics(core::Variable<T> &variable,
+void JuleaCDO::ComputeBlockStats(core::Variable<T> &variable,
                                       const T *data, T &blockMin, T &blockMax,
                                       T &blockMean, T &blockSum,
                                       T &blockSumSquares, T &blockVar)
@@ -168,7 +168,7 @@ void JuleaCDO::ComputeBlockStatistics(core::Variable<T> &variable,
     if (m_Verbosity == 5)
     {
         std::cout << "JuleaCDO (" << m_WriterRank
-                  << ") : ComputeBlockStatistics()\n";
+                  << ") : ComputeBlockStats()\n";
     }
 
     auto number_elements = adios2::helper::GetTotalSize(variable.m_Count);
@@ -193,7 +193,7 @@ void JuleaCDO::ComputeBlockStatistics(core::Variable<T> &variable,
 }
 
 template <>
-void JuleaCDO::ComputeBlockStatistics<std::string>(
+void JuleaCDO::ComputeBlockStats<std::string>(
     core::Variable<std::string> &variable, const std::string *data,
     std::string &blockMin, std::string &blockMax, std::string &blockMean,
     std::string &blockSum, std::string &blockSumSquares, std::string &blockVar)
@@ -201,7 +201,7 @@ void JuleaCDO::ComputeBlockStatistics<std::string>(
 }
 
 template <>
-void JuleaCDO::ComputeBlockStatistics<std::complex<float>>(
+void JuleaCDO::ComputeBlockStats<std::complex<float>>(
     core::Variable<std::complex<float>> &variable,
     const std::complex<float> *data, std::complex<float> &blockMin,
     std::complex<float> &blockMax, std::complex<float> &blockMean,
@@ -211,7 +211,7 @@ void JuleaCDO::ComputeBlockStatistics<std::complex<float>>(
 }
 
 template <>
-void JuleaCDO::ComputeBlockStatistics<std::complex<double>>(
+void JuleaCDO::ComputeBlockStats<std::complex<double>>(
     core::Variable<std::complex<double>> &variable,
     const std::complex<double> *data, std::complex<double> &blockMin,
     std::complex<double> &blockMax, std::complex<double> &blockMean,
@@ -228,7 +228,7 @@ void JuleaCDO::PutCDOStatsToBuffers(core::Variable<T> &variable, T stepMin,
     //     if (m_Verbosity == 5)
     // {
     //     std::cout << "JuleaCDO (" << m_WriterRank
-    //               << ") : ComputeBlockStatistics()\n";
+    //               << ") : ComputeBlockStats()\n";
     // }
 
     // T stepMin = 0;

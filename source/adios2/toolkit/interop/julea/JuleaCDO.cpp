@@ -37,26 +37,15 @@ JuleaCDO::JuleaCDO(helper::Comm const &comm) : m_Comm(comm)
     // m_PrecipitationName =
 }
 
-// template <class T>
-// void ComputeBlockStatistics(Variable<T> &variable, const T *data, T
-// &blockMin,
-//                              T &blockMax, T &blockMean, T &blockSum, T
-//                              &blockVar, T &blockStd)
-//                              {
 
-//                              }
-
-
-void JuleaCDO::computeCoordinatesFromRank(int rank, int &x, int&y)
+void JuleaCDO::ComputeCoordinatesFromRank(int rank, int &x, int&y)
 {
     x = rank % m_numberBlocksX;
     y = rank / m_numberBlocksX;
 }
 
-
-
 // daily minimum temperature < 0°cC
-void JuleaCDO::computeFrostDays(double dailyTempMin)
+void JuleaCDO::ComputeFrostDays(double dailyTempMin)
 {
     if (dailyTempMin < 0)
     {
@@ -64,7 +53,7 @@ void JuleaCDO::computeFrostDays(double dailyTempMin)
     }
 }
 
-void JuleaCDO::computeTropicalNights(double dailyTempMin)
+void JuleaCDO::ComputeTropicalNights(double dailyTempMin)
 {
     if (dailyTempMin > m_SummerDaysTemperatureThreshold)
     {
@@ -72,7 +61,7 @@ void JuleaCDO::computeTropicalNights(double dailyTempMin)
     }
 }
 
-void JuleaCDO::computeSummerDays(double dailyTempMax)
+void JuleaCDO::ComputeSummerDays(double dailyTempMax)
 {
     if (dailyTempMax > m_SummerDaysTemperatureThreshold)
     {
@@ -80,7 +69,7 @@ void JuleaCDO::computeSummerDays(double dailyTempMax)
     }
 }
 
-void JuleaCDO::computeIcingDays(double dailyTempMax)
+void JuleaCDO::ComputeIcingDays(double dailyTempMax)
 {
 
     if (dailyTempMax < 0)
@@ -89,7 +78,7 @@ void JuleaCDO::computeIcingDays(double dailyTempMax)
     }
 }
 
-void JuleaCDO::computePrecipDays(double dailyPrecipSum)
+void JuleaCDO::ComputePrecipDays(double dailyPrecipSum)
 {
     if (dailyPrecipSum >= 1)
     {
@@ -105,15 +94,14 @@ void JuleaCDO::computePrecipDays(double dailyPrecipSum)
     }
 }
 
-// void JuleaCDO::computeDailyMinimum(const std::string nameSpace, std::string
-// variableName,
-//                          uint32_t entryID)
+// void JuleaCDO::ComputeYearlyLocalStats(const std::string varName)
 // {
-//     // TODO:
+    
 // }
 
+
 /** Gets daily minimum, mean and maximum over all blocks for m_StepsPerDay */
-void JuleaCDO::computeDailyStatistics(std::string variableName)
+void JuleaCDO::ComputeDailyStats(std::string variableName)
 {
     double tmp = 0;
     double dailyMin = 0;
@@ -137,16 +125,16 @@ void JuleaCDO::computeDailyStatistics(std::string variableName)
         m_DTempMean.push_back(dailyMean);
         m_DTempMax.push_back(dailyMax);
 
-        computeFrostDays(dailyMin);
-        computeTropicalNights(dailyMin);
+        ComputeFrostDays(dailyMin);
+        ComputeTropicalNights(dailyMin);
 
-        computeIcingDays(dailyMax);
-        computeSummerDays(dailyMax);
+        ComputeIcingDays(dailyMax);
+        ComputeSummerDays(dailyMax);
 
         // FIXME: correct parameters...
-        //  addEntriesForCDOStatistics(variableName)
-        //  addEntriesForCDOStatistics()
-        //  PutCDOStatisticsToJulea(variableName);
+        //  addEntriesForCDOStats(variableName)
+        //  addEntriesForCDOStats()
+        //  PutCDOStatsToJulea(variableName);
     }
 
     if (variableName == m_PrecipitationName)
@@ -165,12 +153,11 @@ void JuleaCDO::computeDailyStatistics(std::string variableName)
         m_DPrecSum.push_back(dailySum);
         // TODO: do something with the min/mean/avg?
 
-        computePrecipDays(dailySum);
+        ComputePrecipDays(dailySum);
     }
 }
 
-// TODO: compute something else besides min/mean/max/sum?
-void JuleaCDO::computeMonthlyStatistics(std::string variableName)
+void JuleaCDO::ComputeMonthlyStats(std::string variableName)
 {
     double tmp = 0;
     double monthlyMin = 0;
@@ -214,7 +201,7 @@ void JuleaCDO::computeMonthlyStatistics(std::string variableName)
     }
 }
 
-void JuleaCDO::computeYearlyStatistics(std::string variableName)
+void JuleaCDO::ComputeYearlyStats(std::string variableName)
 {
     double tmp = 0;
     double yearlyMin = 0;
@@ -282,7 +269,7 @@ void JuleaCDO::computeYearlyStatistics(std::string variableName)
     template void JuleaCDO::SetMinMax(core::Variable<T> &variable,             \
                                       const T *data, T &blockMin, T &blockMax, \
                                       size_t currentStep, size_t blockID);     \
-    template void JuleaCDO::ComputeBlockStatistics(                            \
+    template void JuleaCDO::ComputeBlockStats(                            \
         core::Variable<T> &variable, const T *data, T &blockMin, T &blockMax,  \
         T &blockMean, T &blockSum, T &blockSumSquares, T &blockVar);           \
     template void JuleaCDO::PutCDOStatsToBuffers(                              \

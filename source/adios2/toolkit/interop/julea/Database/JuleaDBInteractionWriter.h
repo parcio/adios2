@@ -67,7 +67,7 @@ public:
 private:
     // schemas for CDO related statistics
     void AddFieldsForClimateIndexTable(JDBSchema *schema);
-    void AddFieldsForYearlyLocalStatsTable(JDBSchema *schema);
+    // void AddFieldsForYearlyLocalStatsTable(JDBSchema *schema);
     void AddFieldsForDailyGlobalStatsTable(JDBSchema *schema);
     void AddFieldsForDailyLocalStatsTable(JDBSchema *schema);
 
@@ -76,18 +76,18 @@ private:
                                         const std::string varName,
                                         size_t currentStep,
                                         interop::JuleaCDO &JuleaCDO);
-    void AddEntriesForYearlyLocalStatsTable(const std::string nameSpace,
-                                            const std::string varName,
-                                            size_t currentStep,
-                                            interop::JuleaCDO &JuleaCDO,
-                                            int writerRank);
+    // void AddEntriesForYearlyLocalStatsTable(const std::string nameSpace,
+    //                                         const std::string varName,
+    //                                         size_t currentStep,
+    //                                         interop::JuleaCDO &JuleaCDO,
+    //                                         int writerRank);
     void AddEntriesForDailyGlobalStatsTable(const std::string nameSpace,
                                             const std::string varName,
                                             size_t currentStep,
                                             interop::JuleaCDO &JuleaCDO,
                                             int writerRank, int year, int month,
                                             int day);
-    void AddEntriesForDailyLocalStatsTable(JDBSchema *schema);
+    // void AddEntriesForDailyLocalStatsTable(JDBSchema *schema);
 
     // Supports only those types required in thesis evaluation
     void AddFieldsForVariableMDEval(JDBSchema *schema);
