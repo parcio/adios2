@@ -11,6 +11,7 @@
 #ifndef ADIOS2_TOOLKIT_INTEROP_JULEA_JULEADBINTERACTIONWRITER_H_
 #define ADIOS2_TOOLKIT_INTEROP_JULEA_JULEADBINTERACTIONWRITER_H_
 
+#include "adios2/toolkit/interop/julea/JuleaCDO.h"
 #include "adios2/toolkit/interop/julea/JuleaInteraction.h"
 
 // #include "JuleaDBDAIWriter.h"
@@ -61,26 +62,36 @@ public:
         T &blockMax, T &blockMean, uint32_t &entryID);
 
     /** --- Attributes --- */
-    //TODO: support attributes again
+    // TODO: support attributes again
 
-    
 private:
-    //schemas for CDO related statistics
-    void DAIaddFieldsForClimateIndexTable(JDBSchema *schema);
-    void DAIaddFieldsForYearlyLocalStatsTable(JDBSchema *schema);
-    void DAIaddFieldsForDailyGlobalStatsTable(JDBSchema *schema);
-    void DAIaddFieldsForDailyLocalStatsTable(JDBSchema *schema);
+    // schemas for CDO related statistics
+    void AddFieldsForClimateIndexTable(JDBSchema *schema);
+    void AddFieldsForYearlyLocalStatsTable(JDBSchema *schema);
+    void AddFieldsForDailyGlobalStatsTable(JDBSchema *schema);
+    void AddFieldsForDailyLocalStatsTable(JDBSchema *schema);
+
+    //should only be called from master
+    void AddEntriesForClimateIndexTable(const std::string nameSpace, const std::string varName);
+    void AddEntriesForYearlyLocalStatsTable(const std::string nameSpace, const std::string varName, size_t currentStep,
+    interop::JuleaCDO &JuleaCDO, int writerRank);
+    void AddEntriesForDailyGlobalStatsTable(JDBSchema *schema);
+    void AddEntriesForDailyLocalStatsTable(JDBSchema *schema);
 
     // Supports only those types required in thesis evaluation
-    void DAIaddFieldsForVariableMDSmall(JDBSchema *schema);
-    void DAIaddFieldsForBlockMDSmall(JDBSchema *schema);
+    void AddFieldsForVariableMDSmall(JDBSchema *schema);
+    void AddFieldsForBlockMDSmall(JDBSchema *schema);
 
-    //Supports all AdiosTypes
-    void DAIaddFieldsForVariableMD(JDBSchema *schema);
-    void DAIaddFieldsForBlockMD(JDBSchema *schema);
+    // Supports all AdiosTypes
+    void AddFieldsForVariableMD(JDBSchema *schema);
+    void AddFieldsForBlockMD(JDBSchema *schema);
+
+    void AddEntriesForCDOStatistics(const std::string nameSpace,
+                                    const std::string varName,
+                                    size_t currentStep,
+                                    interop::JuleaCDO &m_JuleaCDO);
 
 }; // end namespace JuleaDBInteractionWriter
-
 
 #define declare_template_instantiation(T)                                      \
     extern template void JuleaDBInteractionWriter::PutVariableMetadataToJulea( \

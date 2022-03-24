@@ -162,9 +162,10 @@ void JuleaDBInteractionReader::GetBlockMetadataNEW(
     iterator = j_db_iterator_new(schema, selectorShort, NULL);
     if (j_db_iterator_next(iterator, NULL))
     {
-        //TODO: check whether reading "block" here instead of blockID at the end
-        j_db_iterator_get_field(iterator, "block", &type,
-                                (gpointer *)&blockID, &db_length, NULL);
+        // TODO: check whether reading "block" here instead of blockID at the
+        // end
+        j_db_iterator_get_field(iterator, "block", &type, (gpointer *)&blockID,
+                                &db_length, NULL);
         blockInfo.BlockID = *blockID;
 
         j_db_iterator_get_field(iterator, "shapeSize", &type,
@@ -377,11 +378,10 @@ JuleaDBInteractionReader::GetBlockMetadata(
     iterator = j_db_iterator_new(schema, selectorShort, NULL);
     if (j_db_iterator_next(iterator, NULL))
     {
-        //TODO: check whether this works instead of reading blockID
-        j_db_iterator_get_field(iterator, "block", &type,
-                                (gpointer *)&blockID, &db_length, NULL);
+        // TODO: check whether this works instead of reading blockID
+        j_db_iterator_get_field(iterator, "block", &type, (gpointer *)&blockID,
+                                &db_length, NULL);
         info->BlockID = *blockID;
-
 
         j_db_iterator_get_field(iterator, "shapeSize", &type,
                                 (gpointer *)&shapeSize, &db_length, NULL);

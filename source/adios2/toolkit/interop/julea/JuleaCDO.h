@@ -36,19 +36,21 @@ public:
     JuleaCDO(helper::Comm const &comm);
     ~JuleaCDO() = default;
 
+    void computeCoordinatesFromRank(int rank, int &x, int&y);
+
     template <class T>
     void SetMinMax(core::Variable<T> &variable, const T *data, T &blockMin,
-                   T &blockMax, size_t currentStep,
-                   size_t blockID);
+                   T &blockMax, size_t currentStep, size_t blockID);
 
     template <class T>
     void ComputeBlockStatistics(core::Variable<T> &variable, const T *data,
-                                T &blockMin, T &blockMax,T &blockMean, T &blockSum, T &blockSumSquares, T &blockVar);
+                                T &blockMin, T &blockMax, T &blockMean,
+                                T &blockSum, T &blockSumSquares, T &blockVar);
 
     template <class T>
     void PutCDOStatsToBuffers(core::Variable<T> &variable, T blockMin,
-                               T blockMean, T blockMax, size_t currentStep,
-                               size_t blockID);
+                              T blockMean, T blockMax, size_t currentStep,
+                              size_t blockID);
 
     // compute frost days: daily min temperature < 0°C
     void computeFrostDays(double dailyTempMin);
@@ -69,12 +71,8 @@ public:
     void computeMonthlyStatistics(std::string variableName);
     void computeYearlyStatistics(std::string variableName);
 
-    helper::Comm const &m_Comm; ///< multi-process communicator from Engine
-    int m_Verbosity = 5;
-    int m_WriterRank;
-
-    int numberBlocksX = 0;
-    int numberBlocksY = 0;
+    int m_numberBlocksX = 0;
+    int m_numberBlocksY = 0;
 
     /** Variables*/
     std::string m_PrecipitationName = "P";
@@ -110,6 +108,12 @@ public:
     std::vector<size_t> m_PrecipDays1mmPerYear;
     std::vector<size_t> m_PrecipDays10mmPerYear;
     std::vector<size_t> m_PrecipDays20mmPerYear;
+
+
+private:
+    helper::Comm const &m_Comm; ///< multi-process communicator from Engine
+    int m_Verbosity = 5;
+    int m_WriterRank;
 
     // hourly temperature min/mean/max
     std::vector<double> m_HTempMin;  // 1 step

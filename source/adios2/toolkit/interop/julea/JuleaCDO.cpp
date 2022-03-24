@@ -46,6 +46,15 @@ JuleaCDO::JuleaCDO(helper::Comm const &comm) : m_Comm(comm)
 
 //                              }
 
+
+void JuleaCDO::computeCoordinatesFromRank(int rank, int &x, int&y)
+{
+    x = rank % m_numberBlocksX;
+    y = rank / m_numberBlocksX;
+}
+
+
+
 // daily minimum temperature < 0°cC
 void JuleaCDO::computeFrostDays(double dailyTempMin)
 {
@@ -132,6 +141,11 @@ void JuleaCDO::computeDailyStatistics(std::string variableName)
 
         computeIcingDays(dailyMax);
         computeSummerDays(dailyMax);
+
+        // FIXME: correct parameters...
+        //  addEntriesForCDOStatistics(variableName)
+        //  addEntriesForCDOStatistics()
+        //  PutCDOStatisticsToJulea(variableName);
     }
 
     if (variableName == m_PrecipitationName)
@@ -264,12 +278,13 @@ void JuleaCDO::computeYearlyStatistics(std::string variableName)
 }
 
 #define declare_template_instantiation(T)                                      \
-    template void JuleaCDO::SetMinMax(                                         \
-        core::Variable<T> &variable, const T *data, T &blockMin, T &blockMax,  \
-        size_t currentStep, size_t blockID);                     \
+    template void JuleaCDO::SetMinMax(core::Variable<T> &variable,             \
+                                      const T *data, T &blockMin, T &blockMax, \
+                                      size_t currentStep, size_t blockID);     \
     template void JuleaCDO::ComputeBlockStatistics(                            \
-        core::Variable<T> &variable, const T *data, T &blockMin, T &blockMax, T &blockMean, T &blockSum, T &blockSumSquares, T &blockVar);                                   \
-    template void JuleaCDO::PutCDOStatsToBuffers(                             \
+        core::Variable<T> &variable, const T *data, T &blockMin, T &blockMax,  \
+        T &blockMean, T &blockSum, T &blockSumSquares, T &blockVar);           \
+    template void JuleaCDO::PutCDOStatsToBuffers(                              \
         core::Variable<T> &variable, T blockMin, T blockMean, T blockMax,      \
         size_t currentStep, size_t blockID);
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)

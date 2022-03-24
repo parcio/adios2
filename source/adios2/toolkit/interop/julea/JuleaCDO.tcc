@@ -43,8 +43,7 @@ void JuleaCDO::SetMinMax(core::Variable<T> &variable, const T *data,
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "JuleaCDO (" << m_WriterRank
-                  << ") : SetMinMax()\n";
+        std::cout << "JuleaCDO (" << m_WriterRank << ") : SetMinMax()\n";
     }
 
     T min = 0;
@@ -134,8 +133,8 @@ template <>
 void JuleaCDO::SetMinMax<std::string>(core::Variable<std::string> &variable,
                                       const std::string *data,
                                       std::string &blockMin,
-                                      std::string &blockMax,
-                                      size_t currentStep, size_t blockID)
+                                      std::string &blockMax, size_t currentStep,
+                                      size_t blockID)
 {
     // TODO implement?
 }
@@ -162,7 +161,9 @@ void JuleaCDO::SetMinMax<std::complex<double>>(
 // blockVar = block variance
 template <class T>
 void JuleaCDO::ComputeBlockStatistics(core::Variable<T> &variable,
-                                      const T *data, T &blockMin, T &blockMax, T &blockMean, T &blockSum, T &blockSumSquares, T &blockVar)
+                                      const T *data, T &blockMin, T &blockMax,
+                                      T &blockMean, T &blockSum,
+                                      T &blockSumSquares, T &blockVar)
 {
     if (m_Verbosity == 5)
     {
@@ -185,7 +186,7 @@ void JuleaCDO::ComputeBlockStatistics(core::Variable<T> &variable,
 
     for (size_t i = 0; i < number_elements; ++i)
     {
-        blockSumSquares += std::pow(data[i] - blockMean,2);
+        blockSumSquares += std::pow(data[i] - blockMean, 2);
     }
 
     blockVar = blockSumSquares / number_elements;
@@ -194,7 +195,8 @@ void JuleaCDO::ComputeBlockStatistics(core::Variable<T> &variable,
 template <>
 void JuleaCDO::ComputeBlockStatistics<std::string>(
     core::Variable<std::string> &variable, const std::string *data,
-    std::string &blockMin, std::string &blockMax, std::string &blockMean, std::string &blockSum, std::string &blockSumSquares, std::string &blockVar)
+    std::string &blockMin, std::string &blockMax, std::string &blockMean,
+    std::string &blockSum, std::string &blockSumSquares, std::string &blockVar)
 {
 }
 
@@ -202,7 +204,9 @@ template <>
 void JuleaCDO::ComputeBlockStatistics<std::complex<float>>(
     core::Variable<std::complex<float>> &variable,
     const std::complex<float> *data, std::complex<float> &blockMin,
-    std::complex<float> &blockMax, std::complex<float> &blockMean, std::complex<float> &blockSum, std::complex<float> &blockSumSquares, std::complex<float> &blockVar)
+    std::complex<float> &blockMax, std::complex<float> &blockMean,
+    std::complex<float> &blockSum, std::complex<float> &blockSumSquares,
+    std::complex<float> &blockVar)
 {
 }
 
@@ -210,14 +214,16 @@ template <>
 void JuleaCDO::ComputeBlockStatistics<std::complex<double>>(
     core::Variable<std::complex<double>> &variable,
     const std::complex<double> *data, std::complex<double> &blockMin,
-    std::complex<double> &blockMax,std::complex<double> &blockMean, std::complex<double> &blockSum, std::complex<double> &blockSumSquares, std::complex<double> &blockVar)
+    std::complex<double> &blockMax, std::complex<double> &blockMean,
+    std::complex<double> &blockSum, std::complex<double> &blockSumSquares,
+    std::complex<double> &blockVar)
 {
 }
 
 template <class T>
 void JuleaCDO::PutCDOStatsToBuffers(core::Variable<T> &variable, T stepMin,
-                                     T blockMean, T blockMax,
-                                     size_t currentStep, size_t blockID)
+                                    T blockMean, T blockMax, size_t currentStep,
+                                    size_t blockID)
 {
     //     if (m_Verbosity == 5)
     // {
@@ -235,7 +241,8 @@ void JuleaCDO::PutCDOStatsToBuffers(core::Variable<T> &variable, T stepMin,
     // auto number_elements = adios2::helper::GetTotalSize(variable.m_Count);
     // // adios2::helper::GetMinMax(data, number_elements, blockMin, blockMax);
 
-    // /** accumulate does not work with type T data, so need to do it by hand */
+    // /** accumulate does not work with type T data, so need to do it by hand
+    // */
     // // blockSum = std::accumulate(data.begin(), data.end(), 0)
 
     // // for (size_t i = 0; i < number_elements; ++i)
@@ -267,18 +274,19 @@ void JuleaCDO::PutCDOStatsToBuffers(core::Variable<T> &variable, T stepMin,
     // /** reduce only necessary if more than one process*/
     // if (m_WriterRank > 0)
     // {
-    //     /** const T *sendbuf, T *recvbuf, size_t count, Op op, int root, const
-    //     std::string &hint = std::string()) */
-    //     m_Comm.Reduce(&blockMin, &stepMin, 1, helper::Comm::Op::Min, 0);
-    //     m_Comm.Reduce(&blockMax, &stepMax, 1, helper::Comm::Op::Max, 0);
-    //     m_Comm.Reduce(&blockSum, &stepSum, 1, helper::Comm::Op::Sum, 0);
+    //     /** const T *sendbuf, T *recvbuf, size_t count, Op op, int root,
+    //     const std::string &hint = std::string()) */ m_Comm.Reduce(&blockMin,
+    //     &stepMin, 1, helper::Comm::Op::Min, 0); m_Comm.Reduce(&blockMax,
+    //     &stepMax, 1, helper::Comm::Op::Max, 0); m_Comm.Reduce(&blockSum,
+    //     &stepSum, 1, helper::Comm::Op::Sum, 0);
 
-    //     /** not required since blockSum is also computed now */        
+    //     /** not required since blockSum is also computed now */
     //     // m_Comm.Reduce(&blockMean, &stepMean, 1, helper::Comm::Op::Sum, 0);
 
     //     // if (variable.m_Name == m_PrecipitationName)
     //     // {
-    //     //     m_Comm.Reduce(&blockMean, &stepSum, 1, helper::Comm::Op::Sum, 0);
+    //     //     m_Comm.Reduce(&blockMean, &stepSum, 1, helper::Comm::Op::Sum,
+    //     0);
     //     //     m_HPrecSum.push_back(stepSum);
     //     // }
     // }
@@ -287,14 +295,16 @@ void JuleaCDO::PutCDOStatsToBuffers(core::Variable<T> &variable, T stepMin,
 
     // if (stepMin < variable.m_Min)
     // {
-    //     // std::cout << "updated global min from " << variable.m_Min << " to "
+    //     // std::cout << "updated global min from " << variable.m_Min << " to
+    //     "
     //     //   << stepMin << std::endl;
     //     variable.m_Min = stepMin;
     // }
 
     // if (stepMax > variable.m_Max)
     // {
-    //     // std::cout << "updated global max from "  << variable.m_Max << " to "
+    //     // std::cout << "updated global max from "  << variable.m_Max << " to
+    //     "
     //     // << stepMax << std::endl;
     //     variable.m_Max = stepMax;
     // }
@@ -314,8 +324,9 @@ void JuleaCDO::PutCDOStatsToBuffers(core::Variable<T> &variable, T stepMin,
  * i.e. no reading from database required*/
 template <>
 void JuleaCDO::PutCDOStatsToBuffers<double>(core::Variable<double> &variable,
-                                             double blockMin, double blockMean,
-                                             double blockMax, size_t currentStep, size_t blockID)
+                                            double blockMin, double blockMean,
+                                            double blockMax, size_t currentStep,
+                                            size_t blockID)
 {
     if (variable.m_Name == m_TemperatureName)
     {
