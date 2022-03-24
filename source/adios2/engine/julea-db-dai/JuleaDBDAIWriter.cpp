@@ -169,17 +169,17 @@ void JuleaDBDAIWriter::PerformPuts()
             variableName, "in call to PerformPuts, EndStep or Close");         \
         if (m_CurrentStep % m_JuleaCDO.m_StepsPerDay == 0)                     \
         {                                                                      \
-            m_JuleaCDO.computeDailyStatistics(variableName);                   \
+            m_JuleaCDO.ComputeDailyStats(variableName);                   \
         }                                                                      \
                                                                                \
         if (m_CurrentStep % m_JuleaCDO.m_StepsPerMonth == 0)                   \
         {                                                                      \
-            m_JuleaCDO.computeMonthlyStatistics(variableName);                 \
+            m_JuleaCDO.ComputeMonthlyStats(variableName);                 \
         }                                                                      \
                                                                                \
         if (m_CurrentStep % m_JuleaCDO.m_StepsPerYear == 0)                    \
         {                                                                      \
-            m_JuleaCDO.computeYearlyStatistics(variableName);                  \
+            m_JuleaCDO.ComputeYearlyStats(variableName);                  \
         }                                                                      \
         PerformPutCommon(variable);                                            \
     }

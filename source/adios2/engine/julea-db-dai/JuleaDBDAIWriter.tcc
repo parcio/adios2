@@ -36,7 +36,7 @@ namespace engine
 // // blockVar = block variance
 // // blockStd = block standard deviation
 // template <class T>
-// void JuleaDBDAIWriter::JuleaDBDAIComputeBlockStatistics(Variable<T>
+// void JuleaDBDAIWriter::JuleaDBDAIComputeBlockStats(Variable<T>
 // &variable, const T *data,
 //                                            T &blockMin, T &blockMax,
 //                                            T &blockMean, T &blockSum, T
@@ -328,7 +328,7 @@ void JuleaDBDAIWriter::ManageBlockStepMetadata(Variable<T> &variable,
     std::vector<T> testBuffer2;
     double testDouble = 42.0;
 
-    m_JuleaCDO.ComputeBlockStatistics(variable, data, blockMin, blockMax,
+    m_JuleaCDO.ComputeBlockStats(variable, data, blockMin, blockMax,
                                       blockMean, blockSum, blockSumSquares,
                                       blockVar);
 
@@ -458,7 +458,7 @@ void JuleaDBDAIWriter::SetBlockID(Variable<T> &variable)
  * Only works for 2D variables!
  */
 template <class T>
-void JuleaDBDAIWriter::computeGlobalDimensions(Variable<T> &variable)
+void JuleaDBDAIWriter::ComputeGlobalDimensions(Variable<T> &variable)
 {
     int globalX = 0;
     int globalY = 0;
@@ -508,7 +508,7 @@ void JuleaDBDAIWriter::PutSyncToJulea(
     if ((m_CurrentStep == 0) && (m_WriterRank == 0) &&
         (variable.m_Shape.size() == 2))
     {
-        computeGlobalDimensions(variable);
+        ComputeGlobalDimensions(variable);
     }
     // const DataType type = helper::GetDataType<T>();
     // T blockMin;
@@ -539,7 +539,7 @@ void JuleaDBDAIWriter::PutSyncToJulea(
     // m_CurrentStep,
     // //                      m_CurrentBlockID);
 
-    // m_JuleaCDO.ComputeBlockStatistics(variable, data, blockMin, blockMax,
+    // m_JuleaCDO.ComputeBlockStats(variable, data, blockMin, blockMax,
     // blockMean, blockSum, blockSumSquares, blockVar);
 
     // // TODO: check whether this is incorrect
@@ -596,7 +596,7 @@ void JuleaDBDAIWriter::PutSyncToJulea(
 
     // FIXME: compute step values
     //  JuleaDBDAIStepValues(variable, blockMin, blockMean, blockMax);
-    //  m_JuleaCDO.ComputeStepStatistics(variable, blockMin, blockMean,
+    //  m_JuleaCDO.ComputeStepStats(variable, blockMin, blockMean,
     //  blockMax,
     //                                   m_CurrentStep, m_CurrentBlockID);
 
@@ -628,7 +628,7 @@ void JuleaDBDAIWriter::PutSyncToJulea(
         }
     }
 
-    // FIXME: implement PutCDOStatisticsToJulea(blockStats)
+    // FIXME: implement PutCDOStatsToJulea(blockStats)
 
     // TODO: check if there really is no case for global variables to have
     // different features across different blocks

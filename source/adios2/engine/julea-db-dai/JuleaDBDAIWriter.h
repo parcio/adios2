@@ -147,7 +147,7 @@ private:
     void SetBlockID(Variable<T> &variable);
 
     template <class T>
-    void computeGlobalDimensions(Variable<T> &variable);
+    void ComputeGlobalDimensions(Variable<T> &variable);
 
     template <class T>
     void SetMinMax(Variable<T> &variable, const T *data, T &blockMin,
