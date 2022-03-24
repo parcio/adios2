@@ -147,18 +147,18 @@ private:
     void SetBlockID(Variable<T> &variable);
 
     template <class T>
-    void JuleaDBDAISetMinMax(Variable<T> &variable, const T *data, T &blockMin,
-                             T &blockMax, T &blockMean);
+    void computeGlobalDimensions(Variable<T> &variable);
+
+    template <class T>
+    void SetMinMax(Variable<T> &variable, const T *data, T &blockMin,
+                   T &blockMax, T &blockMean);
 
     template <class T>
     void ManageBlockStepMetadata(Variable<T> &variable, const T *data);
 
     template <class T>
-    void JuleaDBDAIStepValues(Variable<T> &variable, T blockMin, T blockMean,
-                              T blockMax);
+    void StepValues(Variable<T> &variable, T blockMin, T blockMean, T blockMax);
 
-    template <class T>
-    void computeGlobalDimensions(Variable<T> &variable);
     /**
      * Closes a single transport or all transports
      * @param transportIndex, if -1 (default) closes all transports,
