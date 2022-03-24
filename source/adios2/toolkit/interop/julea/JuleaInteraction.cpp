@@ -56,6 +56,7 @@ void JuleaInteraction::SetMinMaxValueFields(std::string *minField,
                                             std::string *maxField,
                                             std::string *valueField,
                                             std::string *meanField,
+                                            std::string *sumField,
                                             const adios2::DataType varType)
 {
     switch (varType)
@@ -71,32 +72,43 @@ void JuleaInteraction::SetMinMaxValueFields(std::string *minField,
         *minField = "min_sint32";
         *maxField = "max_sint32";
         *valueField = "value_sint32";
+        *meanField = "mean_sint32";
+        *sumField = "sum_sint32";
         break;
     case adios2::DataType::UInt32:
         *minField = "min_uint32";
         *maxField = "max_uint32";
         *valueField = "value_uint32";
+        *meanField = "mean_uint32";
+        *sumField = "sum_uint32";
         break;
     case adios2::DataType::Int64:
         *minField = "min_sint64";
         *maxField = "max_sint64";
         *valueField = "value_sint64";
+        *meanField = "mean_sint64";
+        *sumField = "sum_sint64";
         break;
     case adios2::DataType::UInt64:
         *minField = "min_uint64";
         *maxField = "max_uint64";
         *valueField = "value_uint64";
+        *meanField = "mean_uint64";
+        *sumField = "sum_uint64";
         break;
     case adios2::DataType::Float:
         *minField = "min_float32";
         *maxField = "max_float32";
         *valueField = "value_float32";
+        *meanField = "mean_float32";
+        *sumField = "sum_float32";
         break;
     case adios2::DataType::Double:
         *minField = "min_float64";
         *maxField = "max_float64";
         *valueField = "value_float64";
         *meanField = "mean_float64";
+        *sumField = "sum_float64";
         break;
     case adios2::DataType::LongDouble:
     case adios2::DataType::FloatComplex:

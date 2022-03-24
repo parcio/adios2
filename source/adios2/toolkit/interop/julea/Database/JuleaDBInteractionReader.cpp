@@ -77,6 +77,7 @@ void InitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
     std::string maxField;
     std::string valueField;
     std::string meanField;
+    std::string sumField;
 
     /** AvailableStepBlockIndexOffsets stores the entries (= blocks) _id (= line
      * in the sql table) */
@@ -127,8 +128,9 @@ void InitVariable(core::IO *io, core::Engine &engine, std::string nameSpace,
                 var->m_AvailableStepsCount++;                                  \
             }                                                                  \
                                                                                \
-            JuleaInteraction::SetMinMaxValueFields(                            \
-                &minField, &maxField, &valueField, &meanField, type);          \
+            JuleaInteraction::SetMinMaxValueFields(&minField, &maxField,       \
+                                                   &valueField, &meanField,    \
+                                                   &sumField, type);           \
             g_autoptr(JDBSelector) selector =                                  \
                 j_db_selector_new(varSchema, J_DB_SELECTOR_MODE_AND, NULL);    \
                                                                                \

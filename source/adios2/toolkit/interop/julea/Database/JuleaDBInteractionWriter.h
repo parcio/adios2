@@ -59,7 +59,7 @@ public:
         core::Variable<T> &variable, const std::string nameSpace,
         const std::string varName, size_t step, size_t block,
         const typename core::Variable<T>::Info &blockInfo, T &blockMin,
-        T &blockMax, T &blockMean, uint32_t &entryID);
+        T &blockMax, T &blockMean, T &blockSum, T &blockVar, uint32_t &entryID);
 
     /** --- Attributes --- */
     // TODO: support attributes again
@@ -71,16 +71,27 @@ private:
     void AddFieldsForDailyGlobalStatsTable(JDBSchema *schema);
     void AddFieldsForDailyLocalStatsTable(JDBSchema *schema);
 
-    //should only be called from master
-    void AddEntriesForClimateIndexTable(const std::string nameSpace, const std::string varName);
-    void AddEntriesForYearlyLocalStatsTable(const std::string nameSpace, const std::string varName, size_t currentStep,
-    interop::JuleaCDO &JuleaCDO, int writerRank);
-    void AddEntriesForDailyGlobalStatsTable(JDBSchema *schema);
+    // should only be called from master
+    void AddEntriesForClimateIndexTable(const std::string nameSpace,
+                                        const std::string varName,
+                                        size_t currentStep,
+                                        interop::JuleaCDO &JuleaCDO);
+    void AddEntriesForYearlyLocalStatsTable(const std::string nameSpace,
+                                            const std::string varName,
+                                            size_t currentStep,
+                                            interop::JuleaCDO &JuleaCDO,
+                                            int writerRank);
+    void AddEntriesForDailyGlobalStatsTable(const std::string nameSpace,
+                                            const std::string varName,
+                                            size_t currentStep,
+                                            interop::JuleaCDO &JuleaCDO,
+                                            int writerRank, int year, int month,
+                                            int day);
     void AddEntriesForDailyLocalStatsTable(JDBSchema *schema);
 
     // Supports only those types required in thesis evaluation
-    void AddFieldsForVariableMDSmall(JDBSchema *schema);
-    void AddFieldsForBlockMDSmall(JDBSchema *schema);
+    void AddFieldsForVariableMDEval(JDBSchema *schema);
+    void AddFieldsForBlockMDEval(JDBSchema *schema);
 
     // Supports all AdiosTypes
     void AddFieldsForVariableMD(JDBSchema *schema);
@@ -101,7 +112,8 @@ private:
         core::Variable<T> &variable, const std::string nameSpace,              \
         const std::string varName, size_t step, size_t block,                  \
         const typename core::Variable<T>::Info &blockInfo, T &blockMin,        \
-        T &blockMax, T &blockMean, uint32_t &entryID);
+        T &blockMax, T &blockMean, T &blockSum, T &blockVar,                   \
+        uint32_t &entryID);
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
 

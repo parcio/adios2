@@ -33,10 +33,10 @@ namespace interop
 {
 
 template <class T>
-void DAIaddEntriesForVariableMD(core::Variable<T> &variable,
-                                const std::string nameSpace,
-                                const std::string varName, size_t currStep,
-                                JDBSchema *schema, JDBEntry *entry)
+void AddEntriesForVariableMD(core::Variable<T> &variable,
+                             const std::string nameSpace,
+                             const std::string varName, size_t currStep,
+                             JDBSchema *schema, JDBEntry *entry)
 {
     bool isConstantDims = variable.IsConstantDims();
     int tmp = isConstantDims ? 1 : 0;
@@ -147,9 +147,11 @@ void DAIaddEntriesForVariableMD(core::Variable<T> &variable,
     std::string maxField;
     std::string valueField;
     std::string meanField;
+    std::string sumField;
 
     JuleaInteraction::SetMinMaxValueFields(&minField, &maxField, &valueField,
-                                           &meanField, variable.m_Type);
+                                           &meanField, &sumField,
+                                           variable.m_Type);
 
     j_db_entry_set_field(entry, minField.c_str(), &variable.m_Min,
                          sizeof(variable.m_Min), NULL);
@@ -158,13 +160,13 @@ void DAIaddEntriesForVariableMD(core::Variable<T> &variable,
 }
 
 template <class T>
-void DAIaddEntriesForBlockMD(core::Variable<T> &variable,
-                             const std::string nameSpace,
-                             const std::string varName, size_t currStep,
-                             size_t block,
-                             const typename core::Variable<T>::Info &blockInfo,
-                             JDBSchema *schema, JDBEntry *entry, T &blockMin,
-                             T &blockMax, T &blockMean)
+void AddEntriesForBlockMD(core::Variable<T> &variable,
+                          const std::string nameSpace,
+                          const std::string varName, size_t currStep,
+                          size_t block,
+                          const typename core::Variable<T>::Info &blockInfo,
+                          JDBSchema *schema, JDBEntry *entry, T &blockMin,
+                          T &blockMax, T &blockMean, T &blockSum, T &blockVar)
 {
     size_t shapeSize = variable.m_Shape.size();
     size_t startSize = variable.m_Start.size();
@@ -176,6 +178,7 @@ void DAIaddEntriesForBlockMD(core::Variable<T> &variable,
     size_t maxLen = sizeof(blockMax);
     size_t valueLen = sizeof(variable.m_Value);
     size_t meanLen = sizeof(blockMean);
+    size_t sumLen = sizeof(blockSum);
 
     size_t stepsStart = blockInfo.StepsStart;
     size_t stepsCount = blockInfo.StepsCount;
@@ -243,13 +246,16 @@ void DAIaddEntriesForBlockMD(core::Variable<T> &variable,
     std::string maxField;
     std::string valueField;
     std::string meanField;
+    std::string sumField;
 
     JuleaInteraction::SetMinMaxValueFields(&minField, &maxField, &valueField,
-                                           &meanField, variable.m_Type);
+                                           &meanField, &sumField,
+                                           variable.m_Type);
 
     j_db_entry_set_field(entry, minField.c_str(), &blockMin, minLen, NULL);
     j_db_entry_set_field(entry, maxField.c_str(), &blockMax, maxLen, NULL);
     j_db_entry_set_field(entry, meanField.c_str(), &blockMean, meanLen, NULL);
+    j_db_entry_set_field(entry, sumField.c_str(), &blockSum, sumLen, NULL);
 
     j_db_entry_set_field(entry, "isValue", &tmp, sizeof(tmp), NULL);
 
@@ -297,8 +303,8 @@ void JuleaDBInteractionWriter::PutVariableMetadataToJulea(
     err = j_batch_execute(batch);
 
     entry = j_db_entry_new(schema, NULL);
-    DAIaddEntriesForVariableMD(variable, nameSpace, varName, currStep, schema,
-                               entry);
+    AddEntriesForVariableMD(variable, nameSpace, varName, currStep, schema,
+                            entry);
 
     /** check whether variable needs to be updated or inserted */
     selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
@@ -334,7 +340,7 @@ void JuleaDBInteractionWriter::PutBlockMetadataToJulea(
     core::Variable<T> &variable, const std::string nameSpace,
     const std::string varName, size_t step, size_t block,
     const typename core::Variable<T>::Info &blockInfo, T &blockMin, T &blockMax,
-    T &blockMean, uint32_t &entryID)
+    T &blockMean, T &blockSum, T &blockVar, uint32_t &entryID)
 {
     int err = 0;
     g_autoptr(JDBSchema) schema = NULL;
@@ -357,9 +363,9 @@ void JuleaDBInteractionWriter::PutBlockMetadataToJulea(
     // g_assert_true(j_batch_execute(batch) == true);
 
     entry = j_db_entry_new(schema, NULL);
-    DAIaddEntriesForBlockMD(variable, nameSpace, varName, step, block,
-                            blockInfo, schema, entry, blockMin, blockMax,
-                            blockMean);
+    AddEntriesForBlockMD(variable, nameSpace, varName, step, block, blockInfo,
+                         schema, entry, blockMin, blockMax, blockMean, blockSum,
+                         blockVar);
 
     /** check whether blcock needs to be updated or inserted */
     selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);

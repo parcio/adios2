@@ -239,9 +239,11 @@ void JuleaDBInteractionReader::GetBlockMetadataNEW(
         std::string maxField;
         std::string valueField;
         std::string meanField;
+        std::string sumField;
 
-        JuleaInteraction::SetMinMaxValueFields(
-            &minField, &maxField, &valueField, &meanField, variable.m_Type);
+        JuleaInteraction::SetMinMaxValueFields(&minField, &maxField,
+                                               &valueField, &meanField,
+                                               &sumField, variable.m_Type);
 
         j_db_iterator_get_field(iterator, minField.c_str(), &type,
                                 (gpointer *)&min, &db_length, NULL);
@@ -455,6 +457,7 @@ JuleaDBInteractionReader::GetBlockMetadata(
         std::string maxField;
         std::string valueField;
         std::string meanField;
+        std::string sumField;
 
         // if ((strcmp(varType, "char") == 0) ||
         //     (strcmp(varType, "int8_t") == 0) ||
@@ -510,8 +513,9 @@ JuleaDBInteractionReader::GetBlockMetadata(
         //     maxField = "max_blob";
         //     valueField = "value_blob";
         // }
-        JuleaInteraction::SetMinMaxValueFields(
-            &minField, &maxField, &valueField, &meanField, variable.m_Type);
+        JuleaInteraction::SetMinMaxValueFields(&minField, &maxField,
+                                               &valueField, &meanField,
+                                               &sumField, variable.m_Type);
         // JuleaInteraction::SetMinMaxValueFields(&minField, &maxField,
         // &valueField, &meanField, varType); std::cout << "minField: " <<
         // minField << std::endl; std::cout << "maxField: " << maxField <<

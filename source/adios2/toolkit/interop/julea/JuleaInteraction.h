@@ -73,6 +73,7 @@ public:
                                      std::string *maxField,
                                      std::string *valueField,
                                      std::string *meanField,
+                                     std::string *sumField,
                                      const adios2::DataType varType);
 
     // Both KV and DB engine store data in object store

@@ -120,6 +120,7 @@ void JuleaCDO::computeDailyStatistics(std::string variableName)
     double dailyMean = 0;
     double dailyMax = 0;
     double dailySum = 0;
+    double dailyVar = 0;
 
     if (variableName == m_TemperatureName)
     {
