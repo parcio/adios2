@@ -7,6 +7,10 @@ add_executable(BITTE_BITTE JuleaEngineTest.cpp)
 target_link_libraries(BITTE_BITTE adios2)
 target_link_libraries(BITTE_BITTE PkgConfig::JULEA)
 
+add_executable(DAI_TestExample JuleaDAITest.cpp)
+target_link_libraries(DAI_TestExample adios2)
+target_link_libraries(DAI_TestExample PkgConfig::JULEA)
+
 add_executable(SIMPLE_STEPS SimpleStepTest.cpp)
 target_link_libraries(SIMPLE_STEPS adios2)
 

@@ -33,6 +33,11 @@ namespace core
 namespace engine
 {
 
+// void JuleaDBDAIWriter::JuleaDBDAICheckPrecomputes(std::string fileName, std::string varName, )
+// {
+
+// }
+
 // // blockVar = block variance
 // // blockStd = block standard deviation
 // template <class T>
@@ -303,7 +308,7 @@ namespace engine
 // }
 
 template <class T>
-void JuleaDBDAIWriter::ManageBlockStepMetadata(Variable<T> &variable,
+void JuleaDBDAIWriter::ManageBlockStepMetadataStandard(Variable<T> &variable,
                                                const T *data)
 {
     T blockMin;
@@ -328,7 +333,7 @@ void JuleaDBDAIWriter::ManageBlockStepMetadata(Variable<T> &variable,
     std::vector<T> testBuffer2;
     double testDouble = 42.0;
 
-    m_JuleaCDO.ComputeBlockStats(variable, data, blockMin, blockMax,
+    m_JuleaCDO.ComputeBlockStatsStandard(variable, data, blockMin, blockMax,
                                       blockMean, blockSum, blockSumSquares,
                                       blockVar);
 
@@ -387,21 +392,21 @@ void JuleaDBDAIWriter::ManageBlockStepMetadata(Variable<T> &variable,
 }
 
 template <>
-void JuleaDBDAIWriter::ManageBlockStepMetadata<std::string>(
+void JuleaDBDAIWriter::ManageBlockStepMetadataStandard<std::string>(
     Variable<std::string> &variable, const std::string *data)
 {
     // TODO implement?
 }
 
 template <>
-void JuleaDBDAIWriter::ManageBlockStepMetadata<std::complex<float>>(
+void JuleaDBDAIWriter::ManageBlockStepMetadataStandard<std::complex<float>>(
     Variable<std::complex<float>> &variable, const std::complex<float> *data)
 {
     // TODO implement?
 }
 
 template <>
-void JuleaDBDAIWriter::ManageBlockStepMetadata<std::complex<double>>(
+void JuleaDBDAIWriter::ManageBlockStepMetadataStandard<std::complex<double>>(
     Variable<std::complex<double>> &variable, const std::complex<double> *data)
 {
     // TODO implement?
@@ -535,9 +540,7 @@ void JuleaDBDAIWriter::PutSyncToJulea(
     // double testDouble = 42.0;
 
     // // JuleaDBDAISetMinMax(variable, data, blockMin, blockMax, blockMean);
-    // // m_JuleaCDO.SetMinMax(variable, data, blockMin, blockMax,
-    // m_CurrentStep,
-    // //                      m_CurrentBlockID);
+    // m_JuleaCDO.SetMinMax(variable, data, blockMin, blockMax, m_CurrentStep, m_CurrentBlockID);
 
     // m_JuleaCDO.ComputeBlockStats(variable, data, blockMin, blockMax,
     // blockMean, blockSum, blockSumSquares, blockVar);
@@ -592,7 +595,20 @@ void JuleaDBDAIWriter::PutSyncToJulea(
     // }
 
     // computes and stores block statistics
-    ManageBlockStepMetadata(variable, data);
+    bool needsPrecomputing = m_JuleaCDO.m_Precomputes[std::pair<std::string, std::string>(m_Name, variable.m_Name)];
+    // = (m_JuleaCDO.m_Precomputes.m_FileName == m_Name ) &&
+    // (m_JuleaCDO.m_Precomputes.m_VariableName == variable.m_Name);
+
+    // TODO: check precomputes vector whether anything needs to be computed
+    if(!needsPrecomputing)
+    {
+        ManageBlockStepMetadataStandard(variable, data);
+    }
+    else{
+        // TODO: compute all other block metadata
+        // ManageBlockStepMetadata(variable, data);
+    }
+
 
     // FIXME: compute step values
     //  JuleaDBDAIStepValues(variable, blockMin, blockMean, blockMax);

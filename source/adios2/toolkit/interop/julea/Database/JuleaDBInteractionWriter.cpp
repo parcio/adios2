@@ -578,7 +578,6 @@ void JuleaDBInteractionWriter::AddEntriesForClimateIndexTable(
                          sizeof(size_t), NULL);
 }
 
-
 void JuleaDBInteractionWriter::AddEntriesForDailyGlobalStatsTable(
     const std::string nameSpace, const std::string varName, size_t currentStep,
     interop::JuleaCDO &JuleaCDO, int writerRank, int year, int month, int day)

@@ -64,6 +64,9 @@ public:
 private:
     interop::JuleaDBInteractionWriter m_JuleaDBInteractionWriter;
     interop::JuleaCDO m_JuleaCDO;
+
+    //TODO: set namespace
+    std::string m_ProjectNamespace;
     // interop::JuleaSerializer m_JuleaSerializer;
     // interop::JuleaDBInteraction m_JuleaDBInteractionWriter;
     // interop::JuleaDBInteractionWriter m_JuleaDBInteractionWriter;
@@ -154,7 +157,7 @@ private:
                    T &blockMax, T &blockMean);
 
     template <class T>
-    void ManageBlockStepMetadata(Variable<T> &variable, const T *data);
+    void ManageBlockStepMetadataStandard(Variable<T> &variable, const T *data);
 
     template <class T>
     void StepValues(Variable<T> &variable, T blockMin, T blockMean, T blockMax);

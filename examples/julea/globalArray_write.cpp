@@ -76,8 +76,11 @@ int main(int argc, char *argv[])
         // Open file. "w" means we overwrite any existing file on disk,
         // but Advance() will append steps to the same file.
         // io.SetEngine("bp3");
-        io.SetEngine("julea-db");
+        // io.SetEngine("julea-db");
+        io.SetEngine("julea-db-dai");
         adios2::Engine writer = io.Open("globalArray.bp", adios2::Mode::Write);
+
+        // std::cout << "-- GlobalArrayWrite -- \n";
 
         for (size_t step = 0; step < NSTEPS; step++)
         {
@@ -138,7 +141,7 @@ int main(int argc, char *argv[])
         // Get io settings from the config file or
         // create one with default settings here
         adios2::IO read_io = adios.DeclareIO("Input");
-        std::cout << "rank: " << rank << "declared input io" << std::endl;
+        std::cout << "rank: " << rank << " declared input io" << std::endl;
         // read_io.SetEngine("bp3");
         read_io.SetEngine("julea-db");
 

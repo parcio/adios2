@@ -191,6 +191,7 @@ if(ADIOS2_HAVE_JULEA)
 
       toolkit/interop/julea/JuleaInteraction.cpp
       toolkit/interop/julea/JuleaInteraction.tcc
+      toolkit/interop/julea/JuleaDAI.cpp
       toolkit/interop/julea/JuleaCDO.cpp
       toolkit/interop/julea/Database/JuleaDBInteractionReader.cpp
       toolkit/interop/julea/Database/JuleaDBInteractionReader.tcc

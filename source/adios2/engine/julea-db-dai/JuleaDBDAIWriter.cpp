@@ -31,7 +31,8 @@ namespace engine
 JuleaDBDAIWriter::JuleaDBDAIWriter(IO &io, const std::string &name,
                                    const Mode mode, helper::Comm comm)
 : Engine("JuleaDBDAIWriter", io, name, mode, std::move(comm)),
-  m_JuleaDBInteractionWriter(m_Comm), m_JuleaCDO(m_Comm)
+//  m_JuleaDBInteractionWriter(m_Comm)
+   m_JuleaDBInteractionWriter(m_Comm), m_JuleaCDO(m_Comm)
 {
     m_WriterRank = m_Comm.Rank();
     Init();
@@ -220,6 +221,7 @@ void JuleaDBDAIWriter::Init()
     if (m_Verbosity == 5)
     {
         std::cout << "JDB Writer (" << m_WriterRank << ") : Init()\n";
+        std::cout << "Note this is the DB DAI engine\n";
     }
 
     if (m_OpenMode == Mode::Append)
@@ -256,6 +258,9 @@ void JuleaDBDAIWriter::Init()
         std::cout << "JDB Writer (" << m_WriterRank
                   << ") : InitDBSchemas finished()\n";
     }
+    //TODO: figuring out how communicator work in ADIOS when used with inheritance etc
+    // m_JuleaCDO.Init(m_Comm);
+
     // DAIInitDBSchemas();
     // TODO: nothing happening in InitVariables
     // InitVariables();

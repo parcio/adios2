@@ -29,16 +29,18 @@ namespace interop
 {
 
 JuleaCDO::JuleaCDO(helper::Comm const &comm) : m_Comm(comm)
+// JuleaCDO::JuleaCDO(helper::Comm const &comm) : JuleaDAI(m_Comm)//, m_Comm(comm)
+// JuleaCDO::JuleaCDO(helper::Comm const &comm) : JuleaDAI(std::move(comm))
+//JuleaCDO::JuleaCDO() : JuleaDAI()
 {
     m_WriterRank = m_Comm.Rank();
-    // m_SizeMPI = m_Comm.Size();
+    m_SizeMPI = m_Comm.Size();
     // std::cout << "This is the constructor" << std::endl;
     // m_TemperatureName =
     // m_PrecipitationName =
 }
 
-
-void JuleaCDO::ComputeCoordinatesFromRank(int rank, int &x, int&y)
+void JuleaCDO::ComputeCoordinatesFromRank(int rank, int &x, int &y)
 {
     x = rank % m_numberBlocksX;
     y = rank / m_numberBlocksX;
@@ -96,9 +98,8 @@ void JuleaCDO::ComputePrecipDays(double dailyPrecipSum)
 
 // void JuleaCDO::ComputeYearlyLocalStats(const std::string varName)
 // {
-    
-// }
 
+// }
 
 /** Gets daily minimum, mean and maximum over all blocks for m_StepsPerDay */
 void JuleaCDO::ComputeDailyStats(std::string variableName)
@@ -269,7 +270,10 @@ void JuleaCDO::ComputeYearlyStats(std::string variableName)
     template void JuleaCDO::SetMinMax(core::Variable<T> &variable,             \
                                       const T *data, T &blockMin, T &blockMax, \
                                       size_t currentStep, size_t blockID);     \
-    template void JuleaCDO::ComputeBlockStats(                            \
+    template void JuleaCDO::ComputeBlockStat(                                 \
+        core::Variable<T> &variable, const T *data, T &blockResult,  \
+        JDAIStatistic statistic);           \
+    template void JuleaCDO::ComputeBlockStatsStandard(                                 \
         core::Variable<T> &variable, const T *data, T &blockMin, T &blockMax,  \
         T &blockMean, T &blockSum, T &blockSumSquares, T &blockVar);           \
     template void JuleaCDO::PutCDOStatsToBuffers(                              \

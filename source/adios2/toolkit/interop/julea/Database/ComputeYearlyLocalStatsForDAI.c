@@ -1,13 +1,10 @@
 DB_Init()
 {
 
-        yLocalSchema = j_db_schema_new("adios2", "yearly-local-statistics", NULL);
+    yLocalSchema = j_db_schema_new("adios2", "yearly-local-statistics", NULL);
 
-j_db_schema_get(yLocalSchema, batch, NULL);
+    j_db_schema_get(yLocalSchema, batch, NULL);
     bool existsYearlyLocal = j_batch_execute(batch);
-
-
-
 
     if (existsYearlyLocal == 0)
     {
@@ -17,10 +14,7 @@ j_db_schema_get(yLocalSchema, batch, NULL);
         j_db_schema_create(yLocalSchema, batch4, NULL);
         g_assert_true(j_batch_execute(batch4) == true);
     }
-
 }
-
-
 
 /**
  * Table for the yearly min/max/mean/sum/var with "local" resolution
@@ -54,8 +48,6 @@ void JuleaDBInteractionWriter::AddFieldsForYearlyLocalStatsTable(
     j_db_schema_add_index(schema, x, NULL);
     j_db_schema_add_index(schema, y, NULL);
 }
-
-
 
 void JuleaDBInteractionWriter::AddEntriesForYearlyLocalStatsTable(
     const std::string nameSpace, const std::string varName, size_t currentStep,

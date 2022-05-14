@@ -367,9 +367,10 @@ int main(int argc, char *argv[])
         TestWriteVariableSync();
         std::cout << "\n JuleaEngineTest :) Write variable finished \n"
                   << std::endl;
-        TestReadVariableSync();
-        std::cout << "\n JuleaEngineTest :) Read variable finished \n"
-                  << std::endl;
+        // TestReadVariableSync();
+        // std::cout << "\n JuleaEngineTest :) Read variable finished \n"
+                //   << std::endl;
+                
         // TestWriteAttribute();
         // std::cout << "\n JuleaEngineTest :) Write attribute finished \n"
                   // << std::endl;

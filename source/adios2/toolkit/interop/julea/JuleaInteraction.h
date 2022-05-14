@@ -69,12 +69,10 @@ public:
     std::string m_JuleaBackendDB = "DB";
     std::string m_JuleaBackendKV = "KV";
     // std::string m_VariableTableName; in DBInteractionWriter
-    static void SetMinMaxValueFields(std::string *minField,
-                                     std::string *maxField,
-                                     std::string *valueField,
-                                     std::string *meanField,
-                                     std::string *sumField,
-                                     const adios2::DataType varType);
+    static void
+    SetMinMaxValueFields(std::string *minField, std::string *maxField,
+                         std::string *valueField, std::string *meanField,
+                         std::string *sumField, const adios2::DataType varType);
 
     // Both KV and DB engine store data in object store
     template <class T>

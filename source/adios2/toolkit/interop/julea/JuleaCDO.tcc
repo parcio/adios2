@@ -157,13 +157,94 @@ void JuleaCDO::SetMinMax<std::complex<double>>(
     // TODO implement?
 }
 
+/**
+* Function to compute additional statistics on their own. Useful for evaluation for detailled overhead assessment.
+* Computing time, memory consumption, db size of single statistic vs. all of them
+*/
+template <class T>
+void JuleaCDO::ComputeBlockStat(core::Variable<T> &variable, const T *data,
+                                 T &blockResult, JDAIStatistic statistic)
+{
+    if (m_Verbosity == 5)
+    {
+        std::cout << "JuleaCDO (" << m_WriterRank
+                  << ") : ComputeBlockStats()\n";
+    }
+        auto number_elements = adios2::helper::GetTotalSize(variable.m_Count);
+
+    switch(statistic)
+    {
+        //TODO: not really necessary since already in ADIOS format, right?!
+        // case J_DAI_STAT_MIN:
+        //     //DoStuff();
+        //     break;
+        // case J_DAI_STAT_MAX:
+        //     //DoStuff();
+        //     break;
+        case J_DAI_STAT_MEAN:
+            for (size_t i = 0; i < number_elements; ++i)
+            {
+                blockResult += data[i];
+            }
+            blockResult = blockResult / (double)number_elements;
+            break;
+
+        case J_DAI_STAT_SUM:
+           for (size_t i = 0; i < number_elements; ++i)
+            {
+                blockResult += data[i];
+            }
+            break;
+            
+        case J_DAI_STAT_VAR:
+            T blockMean;
+            T blockSumSquares;
+            
+            // Compute mean then sum squares
+            for (size_t i = 0; i < number_elements; ++i)
+            {
+                blockResult += data[i];
+            }
+            blockMean = blockResult / (double)number_elements;
+
+            for (size_t i = 0; i < number_elements; ++i)
+            {
+                blockSumSquares += std::pow(data[i] - blockMean, 2);
+            }
+            blockResult = blockSumSquares / number_elements;
+            break;
+
+    }
+   
+}
+
+template <>
+void JuleaCDO::ComputeBlockStat<std::string>(
+    core::Variable<std::string> &variable, const std::string *data,
+    std::string &blockResult, JDAIStatistic statistic)
+{
+}
+
+template <>
+void JuleaCDO::ComputeBlockStat<std::complex<float>>(
+    core::Variable<std::complex<float>> &variable,
+    const std::complex<float> *data, std::complex<float> &blockResult, JDAIStatistic statistic)
+{
+}
+
+template <>
+void JuleaCDO::ComputeBlockStat<std::complex<double>>(
+    core::Variable<std::complex<double>> &variable,
+    const std::complex<double> *data, std::complex<double> &blockResult, JDAIStatistic statistic)
+{
+}
+
 // blockSumSquares = sum of the "fehlerquadrate"
 // blockVar = block variance
 template <class T>
-void JuleaCDO::ComputeBlockStats(core::Variable<T> &variable,
-                                      const T *data, T &blockMin, T &blockMax,
-                                      T &blockMean, T &blockSum,
-                                      T &blockSumSquares, T &blockVar)
+void JuleaCDO::ComputeBlockStatsStandard(core::Variable<T> &variable, const T *data,
+                                 T &blockMin, T &blockMax, T &blockMean,
+                                 T &blockSum, T &blockSumSquares, T &blockVar)
 {
     if (m_Verbosity == 5)
     {
@@ -193,7 +274,7 @@ void JuleaCDO::ComputeBlockStats(core::Variable<T> &variable,
 }
 
 template <>
-void JuleaCDO::ComputeBlockStats<std::string>(
+void JuleaCDO::ComputeBlockStatsStandard<std::string>(
     core::Variable<std::string> &variable, const std::string *data,
     std::string &blockMin, std::string &blockMax, std::string &blockMean,
     std::string &blockSum, std::string &blockSumSquares, std::string &blockVar)
@@ -201,7 +282,7 @@ void JuleaCDO::ComputeBlockStats<std::string>(
 }
 
 template <>
-void JuleaCDO::ComputeBlockStats<std::complex<float>>(
+void JuleaCDO::ComputeBlockStatsStandard<std::complex<float>>(
     core::Variable<std::complex<float>> &variable,
     const std::complex<float> *data, std::complex<float> &blockMin,
     std::complex<float> &blockMax, std::complex<float> &blockMean,
@@ -211,7 +292,7 @@ void JuleaCDO::ComputeBlockStats<std::complex<float>>(
 }
 
 template <>
-void JuleaCDO::ComputeBlockStats<std::complex<double>>(
+void JuleaCDO::ComputeBlockStatsStandard<std::complex<double>>(
     core::Variable<std::complex<double>> &variable,
     const std::complex<double> *data, std::complex<double> &blockMin,
     std::complex<double> &blockMax, std::complex<double> &blockMean,
