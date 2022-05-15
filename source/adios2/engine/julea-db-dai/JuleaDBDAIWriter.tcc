@@ -23,6 +23,7 @@
 #include <numeric>
 #include <string>
 #include <utility>
+#include <stdexcept>      // std::out_of_range
 
 #include <mpi.h>
 
@@ -594,19 +595,33 @@ void JuleaDBDAIWriter::PutSyncToJulea(
     //     variable.m_Max = stepMax;
     // }
 
-    // computes and stores block statistics
-    bool needsPrecomputing = m_JuleaCDO.m_Precomputes[std::pair<std::string, std::string>(m_Name, variable.m_Name)];
-    // = (m_JuleaCDO.m_Precomputes.m_FileName == m_Name ) &&
-    // (m_JuleaCDO.m_Precomputes.m_VariableName == variable.m_Name);
 
-    // TODO: check precomputes vector whether anything needs to be computed
-    if(!needsPrecomputing)
+    auto it = m_JuleaCDO.m_Precomputes.find(std::pair<std::string,std::string>(m_Name, variable.m_Name)); 
+
+    if (it == m_JuleaCDO.m_Precomputes.end()) 
     {
+        //TODO: figure out whether ....Standard (=mean,sum,etc.) should be called here
         ManageBlockStepMetadataStandard(variable, data);
     }
-    else{
-        // TODO: compute all other block metadata
-        // ManageBlockStepMetadata(variable, data);
+    else
+    {
+        T blockResult;
+        for(std::list<std::pair<JDAIStatistic,JDAIGranularity>>::iterator it2=it->second.begin(); it2 != it->second.end(); ++it )
+        {
+            std::pair<JDAIStatistic,JDAIGranularity> pair = *it2;
+            switch(pair.second)
+            {
+                case J_DAI_GRAN_BLOCK:
+                    m_JuleaCDO.ComputeBlockStat(variable, data, blockResult, pair.first);
+                    break;
+                case J_DAI_GRAN_STEP:
+                    //TODO: compute something
+                    break;
+                case J_DAI_GRAN_VARIABLE:
+                    //TODO: compute something
+                    break;
+            }
+        }
     }
 
 

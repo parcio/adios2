@@ -23,6 +23,7 @@
 #include <julea-dai.h>
 #include <julea.h>
 
+#include <list>
 #include <string>
 
 #include <stdexcept> // for Intel Compiler
@@ -75,9 +76,11 @@ public:
     std::vector<Tag> m_Tags;
     // std::vector<Precompute> m_Precomputes;
 
-    // map: key (pair of filename and variable name); value (statistic, granularity)
-
-    std::map<std::pair<std::string,std::string>,std::pair<JDAIStatistic,JDAIGranularity>> m_Precomputes;
+    // stores all functions that should be precomputed.
+    // map
+    // key: pair of filename and variable name
+    // value: list of pairs (statistic and granularity)
+    std::map< std::pair<std::string,std::string>, std::list<std::pair<JDAIStatistic,JDAIGranularity>>> m_Precomputes;
 
 
     template <class T>
