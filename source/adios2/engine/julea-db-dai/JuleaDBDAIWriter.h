@@ -65,7 +65,7 @@ private:
     interop::JuleaDBInteractionWriter m_JuleaDBInteractionWriter;
     interop::JuleaCDO m_JuleaCDO;
 
-    //TODO: set namespace
+    // TODO: set namespace
     std::string m_ProjectNamespace;
     // interop::JuleaSerializer m_JuleaSerializer;
     // interop::JuleaDBInteraction m_JuleaDBInteractionWriter;
@@ -95,7 +95,9 @@ private:
      * EndStep */
     size_t m_FlushStepsCount = 1;
 
-    size_t m_DayIntervall = 24;
+    // size_t m_DayIntervall = 24;
+    size_t m_CustomGranularity = 24; // in steps
+    bool m_ComputeStatsCombined = false;
 
     /** manages all communication tasks in aggregation */
     // aggregator::MPIChain m_Aggregator;
@@ -160,7 +162,11 @@ private:
     void ManageBlockStepMetadataStandard(Variable<T> &variable, const T *data);
 
     template <class T>
-    void StepValues(Variable<T> &variable, T blockMin, T blockMean, T blockMax);
+    void ManageBlockStepMetadataOriginal(Variable<T> &variable, const T *data);
+
+    template <class T>
+    void BufferTemperature(Variable<T> &variable, T blockMin, T blockMean,
+                           T blockMax);
 
     /**
      * Closes a single transport or all transports

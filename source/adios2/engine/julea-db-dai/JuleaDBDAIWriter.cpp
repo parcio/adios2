@@ -31,8 +31,8 @@ namespace engine
 JuleaDBDAIWriter::JuleaDBDAIWriter(IO &io, const std::string &name,
                                    const Mode mode, helper::Comm comm)
 : Engine("JuleaDBDAIWriter", io, name, mode, std::move(comm)),
-//  m_JuleaDBInteractionWriter(m_Comm)
-   m_JuleaDBInteractionWriter(m_Comm), m_JuleaCDO(m_Comm)
+  //  m_JuleaDBInteractionWriter(m_Comm)
+  m_JuleaDBInteractionWriter(m_Comm), m_JuleaCDO(m_Comm)
 {
     m_WriterRank = m_Comm.Rank();
     Init();
@@ -170,17 +170,17 @@ void JuleaDBDAIWriter::PerformPuts()
             variableName, "in call to PerformPuts, EndStep or Close");         \
         if (m_CurrentStep % m_JuleaCDO.m_StepsPerDay == 0)                     \
         {                                                                      \
-            m_JuleaCDO.ComputeDailyStats(variableName);                   \
+            m_JuleaCDO.ComputeDailyStats(variableName);                        \
         }                                                                      \
                                                                                \
         if (m_CurrentStep % m_JuleaCDO.m_StepsPerMonth == 0)                   \
         {                                                                      \
-            m_JuleaCDO.ComputeMonthlyStats(variableName);                 \
+            m_JuleaCDO.ComputeMonthlyStats(variableName);                      \
         }                                                                      \
                                                                                \
         if (m_CurrentStep % m_JuleaCDO.m_StepsPerYear == 0)                    \
         {                                                                      \
-            m_JuleaCDO.ComputeYearlyStats(variableName);                  \
+            m_JuleaCDO.ComputeYearlyStats(variableName);                       \
         }                                                                      \
         PerformPutCommon(variable);                                            \
     }
@@ -258,8 +258,9 @@ void JuleaDBDAIWriter::Init()
         std::cout << "JDB Writer (" << m_WriterRank
                   << ") : InitDBSchemas finished()\n";
     }
-    //TODO: figuring out how communicator work in ADIOS when used with inheritance etc
-    // m_JuleaCDO.Init(m_Comm);
+    // TODO: figuring out how communicator work in ADIOS when used with
+    // inheritance etc
+    //  m_JuleaCDO.Init(m_Comm);
 
     // DAIInitDBSchemas();
     // TODO: nothing happening in InitVariables

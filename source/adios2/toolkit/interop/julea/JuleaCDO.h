@@ -33,7 +33,7 @@ namespace adios2
 namespace interop
 {
 
-class JuleaCDO 
+class JuleaCDO
 // class JuleaCDO : public JuleaDAI
 {
 public:
@@ -44,12 +44,14 @@ public:
 
     struct Tag
     {
-        // std::string m_projectNamespace; //TODO: check whether sensible to store here...
-        std::string m_TagName;          //determines the table name
+        // std::string m_projectNamespace; //TODO: check whether sensible to
+        // store here...
+        std::string m_TagName; // determines the table name
         std::string m_FileName;
         std::string m_VariableName;
-        // feature that should be tagged -> could be a stat, could be new feature -> more flexible
-        std::string m_FeatureName;      // default "mean"
+        // feature that should be tagged -> could be a stat, could be new
+        // feature -> more flexible
+        std::string m_FeatureName; // default "mean"
 
         // only one of them is used but since JULEA has not many types these two
         // are sufficient for now
@@ -57,20 +59,21 @@ public:
         float m_Threshold_f;
 
         // JDAIStatistic m_Statistic;
-        JDAIOperator m_Operator;            //default ">"
-        JDAIGranularity m_Granularity;      // default "block level"
+        JDAIOperator m_Operator;       // default ">"
+        JDAIGranularity m_Granularity; // default "block level"
     };
 
     // this is the struct holding the information which functions should be
     // precomputed
     struct Precompute
     {
-        // std::string m_projectNamespace; //TODO: check whether sensible to store here... probably better in engine itself
+        // std::string m_projectNamespace; //TODO: check whether sensible to
+        // store here... probably better in engine itself
         std::string m_FileName;
         std::string m_VariableName;
 
         JDAIStatistic m_Statistic;
-        JDAIGranularity m_Granularity; //default block level
+        JDAIGranularity m_Granularity; // default block level
     };
 
     std::vector<Tag> m_Tags;
@@ -80,8 +83,9 @@ public:
     // map
     // key: pair of filename and variable name
     // value: list of pairs (statistic and granularity)
-    std::map< std::pair<std::string,std::string>, std::list<std::pair<JDAIStatistic,JDAIGranularity>>> m_Precomputes;
-
+    std::map<std::pair<std::string, std::string>,
+             std::list<std::pair<JDAIStatistic, JDAIGranularity>>>
+        m_Precomputes;
 
     template <class T>
     void SetMinMax(core::Variable<T> &variable, const T *data, T &blockMin,
@@ -89,17 +93,31 @@ public:
 
     template <class T>
     void ComputeBlockStat(core::Variable<T> &variable, const T *data,
-                           T &blockResult, JDAIStatistic statistic);
+                          T &blockResult, JDAIStatistic statistic);
 
     template <class T>
     void ComputeBlockStatsStandard(core::Variable<T> &variable, const T *data,
-                           T &blockMin, T &blockMax, T &blockMean, T &blockSum,
-                           T &blockSumSquares, T &blockVar);
+                                   T &blockMin, T &blockMax, T &blockMean,
+                                   T &blockSum, T &blockSumSquares,
+                                   T &blockVar);
 
     template <class T>
-    void PutCDOStatsToBuffers(core::Variable<T> &variable, T blockMin,
-                              T blockMean, T blockMax, size_t currentStep,
-                              size_t blockID);
+    void BufferCDOStats(core::Variable<T> &variable, T blockMin, T blockMean,
+                        T blockMax);
+
+    // template <class T>
+    // void BufferTemperatureOriginal(core::Variable<T> &variable, T blockMin,
+    //                                T blockMax);
+
+    // template <class T>
+    // void PutCDOStatsToBuffers(core::Variable<T> &variable, T blockMin,
+    //                           T blockMean, T blockMax, size_t currentStep,
+    //                           size_t blockID);
+    // template <class T>
+    // void PutCDOStatsToBuffersOriginal(core::Variable<T> &variable, T
+    // blockMin,
+    //                                   T blockMax, size_t currentStep,
+    //                                   size_t blockID);
 
     void ComputeCoordinatesFromRank(int rank, int &x, int &y);
     void ComputeDailyStats(std::string variableName);

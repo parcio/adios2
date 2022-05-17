@@ -29,9 +29,10 @@ namespace interop
 {
 
 JuleaCDO::JuleaCDO(helper::Comm const &comm) : m_Comm(comm)
-// JuleaCDO::JuleaCDO(helper::Comm const &comm) : JuleaDAI(m_Comm)//, m_Comm(comm)
-// JuleaCDO::JuleaCDO(helper::Comm const &comm) : JuleaDAI(std::move(comm))
-//JuleaCDO::JuleaCDO() : JuleaDAI()
+// JuleaCDO::JuleaCDO(helper::Comm const &comm) : JuleaDAI(m_Comm)//,
+// m_Comm(comm) JuleaCDO::JuleaCDO(helper::Comm const &comm) :
+// JuleaDAI(std::move(comm))
+// JuleaCDO::JuleaCDO() : JuleaDAI()
 {
     m_WriterRank = m_Comm.Rank();
     m_SizeMPI = m_Comm.Size();
@@ -270,15 +271,14 @@ void JuleaCDO::ComputeYearlyStats(std::string variableName)
     template void JuleaCDO::SetMinMax(core::Variable<T> &variable,             \
                                       const T *data, T &blockMin, T &blockMax, \
                                       size_t currentStep, size_t blockID);     \
-    template void JuleaCDO::ComputeBlockStat(                                 \
-        core::Variable<T> &variable, const T *data, T &blockResult,  \
-        JDAIStatistic statistic);           \
-    template void JuleaCDO::ComputeBlockStatsStandard(                                 \
+    template void JuleaCDO::ComputeBlockStat(core::Variable<T> &variable,      \
+                                             const T *data, T &blockResult,    \
+                                             JDAIStatistic statistic);         \
+    template void JuleaCDO::ComputeBlockStatsStandard(                         \
         core::Variable<T> &variable, const T *data, T &blockMin, T &blockMax,  \
         T &blockMean, T &blockSum, T &blockSumSquares, T &blockVar);           \
-    template void JuleaCDO::PutCDOStatsToBuffers(                              \
-        core::Variable<T> &variable, T blockMin, T blockMean, T blockMax,      \
-        size_t currentStep, size_t blockID);
+    template void JuleaCDO::BufferCDOStats(                                 \
+        core::Variable<T> &variable, T blockMin, T blockMean, T blockMax);
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
 

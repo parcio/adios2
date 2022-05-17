@@ -21,9 +21,9 @@
 #include <iostream>
 #include <memory>
 #include <numeric>
+#include <stdexcept> // std::out_of_range
 #include <string>
 #include <utility>
-#include <stdexcept>      // std::out_of_range
 
 #include <mpi.h>
 
@@ -34,7 +34,8 @@ namespace core
 namespace engine
 {
 
-// void JuleaDBDAIWriter::JuleaDBDAICheckPrecomputes(std::string fileName, std::string varName, )
+// void JuleaDBDAIWriter::JuleaDBDAICheckPrecomputes(std::string fileName,
+// std::string varName, )
 // {
 
 // }
@@ -277,40 +278,44 @@ namespace engine
 //     // TODO implement?
 // }
 
-// template <class T>
-// void JuleaDBDAIWriter::JuleaDBDAIStepValues(Variable<T> &variable, T
-// blockMin,
-//                                             T blockMean, T blockMax)
-// {
-// }
+template <class T>
+void JuleaDBDAIWriter::ManageBlockStepMetadataOriginal(Variable<T> &variable,
+                                                       const T *data)
+{
+    T blockMin;
+    T blockMax;
+    //will be ignored when writing
+    T blockMean;
+    m_JuleaCDO.SetMinMax(variable, data, blockMin, blockMax, m_CurrentStep,
+                         m_CurrentBlockID);
 
-// /** Add means per step to buffer to make computation of "daily" means easier,
-//  * i.e. no reading from database required*/
-// template <>
-// void JuleaDBDAIWriter::JuleaDBDAIStepValues<double>(Variable<double>
-// &variable,
-//                                                     double blockMin,
-//                                                     double blockMean,
-//                                                     double blockMax)
-// {
-//     if (variable.m_Name == m_JuleaCDO.m_TemperatureName)
-//     {
-//         m_JuleaCDO.m_HTempMin.push_back(blockMin);
-//         m_JuleaCDO.m_HTempMean.push_back(blockMean);
-//         m_JuleaCDO.m_HTempMax.push_back(blockMax);
-//     }
+    m_JuleaCDO.BufferCDOStats(variable, blockMin, blockMean, blockMax);
+}
 
-//     if (variable.m_Name == m_JuleaCDO.m_PrecipitationName)
-//     {
-//         m_JuleaCDO.m_HPrecMin.push_back(blockMin);
-//         m_JuleaCDO.m_HPrecMean.push_back(blockMean);
-//         m_JuleaCDO.m_HPrecMax.push_back(blockMax);
-//     }
-// }
+template <>
+void JuleaDBDAIWriter::ManageBlockStepMetadataOriginal<std::string>(
+    Variable<std::string> &variable, const std::string *data)
+{
+    // TODO implement?
+}
+
+template <>
+void JuleaDBDAIWriter::ManageBlockStepMetadataOriginal<std::complex<float>>(
+    Variable<std::complex<float>> &variable, const std::complex<float> *data)
+{
+    // TODO implement?
+}
+
+template <>
+void JuleaDBDAIWriter::ManageBlockStepMetadataOriginal<std::complex<double>>(
+    Variable<std::complex<double>> &variable, const std::complex<double> *data)
+{
+    // TODO implement?
+}
 
 template <class T>
 void JuleaDBDAIWriter::ManageBlockStepMetadataStandard(Variable<T> &variable,
-                                               const T *data)
+                                                       const T *data)
 {
     T blockMin;
     T blockMax;
@@ -335,8 +340,8 @@ void JuleaDBDAIWriter::ManageBlockStepMetadataStandard(Variable<T> &variable,
     double testDouble = 42.0;
 
     m_JuleaCDO.ComputeBlockStatsStandard(variable, data, blockMin, blockMax,
-                                      blockMean, blockSum, blockSumSquares,
-                                      blockVar);
+                                         blockMean, blockSum, blockSumSquares,
+                                         blockVar);
 
     /**  to initialize the global min/max, they are set to the
         first min/max for the first block of the first step */
@@ -386,9 +391,8 @@ void JuleaDBDAIWriter::ManageBlockStepMetadataStandard(Variable<T> &variable,
         variable.m_Max = stepMax;
     }
 
-    // FIXME: put step values to climate index buffer
-    m_JuleaCDO.PutCDOStatsToBuffers(variable, blockMin, blockMean, blockMax,
-                                    m_CurrentStep, m_CurrentBlockID);
+    m_JuleaCDO.BufferCDOStats(variable, blockMin, blockMean, blockMax);
+
     // FIXME: write metadata to julea
 }
 
@@ -516,114 +520,49 @@ void JuleaDBDAIWriter::PutSyncToJulea(
     {
         ComputeGlobalDimensions(variable);
     }
-    // const DataType type = helper::GetDataType<T>();
-    // T blockMin;
-    // T blockMax;
-    // T blockMean;
-    // T blockSum;
-    // T blockSumSquares;
-    // T blockVar;
 
-    // T stepMin;
-    // T stepMax;
-    // T stepMean;
-    // T stepSum;
-    // T stepSumSquares;
-    // T stepVar;
-
-    //     auto number_elements =
-    //     adios2::helper::GetTotalSize(variable.m_Count);
-
-    // // T blockStd;
     uint32_t entryID = 0;
-    // std::vector<double> testBuffer;
-    // std::vector<T> testBuffer2;
-    // double testDouble = 42.0;
+    auto it = m_JuleaCDO.m_Precomputes.find(
+        std::pair<std::string, std::string>(m_Name, variable.m_Name));
 
-    // // JuleaDBDAISetMinMax(variable, data, blockMin, blockMax, blockMean);
-    // m_JuleaCDO.SetMinMax(variable, data, blockMin, blockMax, m_CurrentStep, m_CurrentBlockID);
-
-    // m_JuleaCDO.ComputeBlockStats(variable, data, blockMin, blockMax,
-    // blockMean, blockSum, blockSumSquares, blockVar);
-
-    // // TODO: check whether this is incorrect
-    // // there may be some cases where this is not working
-    // /**  to initialize the global min/max, they are set to the
-    //     first min/max for the first block of the first step */
-    // if ((m_CurrentStep == 0) && (m_CurrentBlockID == 0))
-    // {
-    //     variable.m_Min = blockMin;
-    //     variable.m_Max = blockMax;
-    //     stepMin = blockMin;
-    //     stepMax = blockMax;
-    // }
-    //     /** reduce only necessary if more than one process*/
-    // if (m_WriterRank > 0)
-    // {
-    //     /** const T *sendbuf, T *recvbuf, size_t count, Op op, int root,
-    //     const std::string &hint = std::string()) */ m_Comm.Reduce(&blockMin,
-    //     &stepMin, 1, helper::Comm::Op::Min, 0); m_Comm.Reduce(&blockMax,
-    //     &stepMax, 1, helper::Comm::Op::Max, 0); m_Comm.Reduce(&blockSum,
-    //     &stepSum, 1, helper::Comm::Op::Sum, 0);
-
-    //     /** not required since blockSum is also computed now */
-    //     // m_Comm.Reduce(&blockMean, &stepMean, 1, helper::Comm::Op::Sum, 0);
-
-    //     // if (variable.m_Name == m_PrecipitationName)
-    //     // {
-    //     //     m_Comm.Reduce(&blockMean, &stepSum, 1, helper::Comm::Op::Sum,
-    //     0);
-    //     //     m_HPrecSum.push_back(stepSum);
-    //     // }
-    // }
-
-    // stepMean = stepSum / (number_elements * m_Comm.Size());
-
-    // if (stepMin < variable.m_Min)
-    // {
-    //     // std::cout << "updated global min from " << variable.m_Min << " to
-    //     "
-    //     //   << stepMin << std::endl;
-    //     variable.m_Min = stepMin;
-    // }
-
-    // if (stepMax > variable.m_Max)
-    // {
-    //     // std::cout << "updated global max from "  << variable.m_Max << " to
-    //     "
-    //     // << stepMax << std::endl;
-    //     variable.m_Max = stepMax;
-    // }
-
-
-    auto it = m_JuleaCDO.m_Precomputes.find(std::pair<std::string,std::string>(m_Name, variable.m_Name)); 
-
-    if (it == m_JuleaCDO.m_Precomputes.end()) 
+    if (it == m_JuleaCDO.m_Precomputes.end())
     {
-        //TODO: figure out whether ....Standard (=mean,sum,etc.) should be called here
-        ManageBlockStepMetadataStandard(variable, data);
+
+        ManageBlockStepMetadataOriginal(variable, data);
     }
     else
     {
-        T blockResult;
-        for(std::list<std::pair<JDAIStatistic,JDAIGranularity>>::iterator it2=it->second.begin(); it2 != it->second.end(); ++it )
+        if (m_ComputeStatsCombined)
         {
-            std::pair<JDAIStatistic,JDAIGranularity> pair = *it2;
-            switch(pair.second)
+            ManageBlockStepMetadataStandard(variable, data);
+        }
+        else
+        {
+            T blockResult;
+            std::vector<T> blockResults;
+            for (std::list<std::pair<JDAIStatistic, JDAIGranularity>>::iterator
+                     it2 = it->second.begin();
+                 it2 != it->second.end(); ++it2)
             {
+                std::pair<JDAIStatistic, JDAIGranularity> pair = *it2;
+                switch (pair.second)
+                {
                 case J_DAI_GRAN_BLOCK:
-                    m_JuleaCDO.ComputeBlockStat(variable, data, blockResult, pair.first);
+                    m_JuleaCDO.ComputeBlockStat(variable, data, blockResult,
+                                                pair.first);
                     break;
                 case J_DAI_GRAN_STEP:
-                    //TODO: compute something
+                    // TODO: compute something
                     break;
                 case J_DAI_GRAN_VARIABLE:
-                    //TODO: compute something
+                    // TODO: compute something
                     break;
+                    blockResults.push_back(blockResult);
+                }
+                // TODO write these results to JULEA
             }
         }
     }
-
 
     // FIXME: compute step values
     //  JuleaDBDAIStepValues(variable, blockMin, blockMean, blockMax);

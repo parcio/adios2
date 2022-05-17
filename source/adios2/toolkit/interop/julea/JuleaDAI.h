@@ -19,7 +19,7 @@
 #include "adios2/core/IO.h" // for CreateVar
 // #include "adios2/core/Variable.h"
 
-#include <julea-dai.h>      // for enums
+#include <julea-dai.h> // for enums
 #include <julea.h>
 
 #include <string>
@@ -35,7 +35,7 @@ class JuleaDAI
 {
 public:
     JuleaDAI(helper::Comm const &comm);
-    //JuleaDAI();
+    // JuleaDAI();
     ~JuleaDAI() = default;
 
     helper::Comm const &m_Comm; ///< multi-process communicator from Engine
@@ -45,12 +45,14 @@ public:
 
     struct Tag
     {
-        // std::string m_projectNamespace; //TODO: check whether sensible to store here...
-        std::string m_TagName;          //determines the table name
+        // std::string m_projectNamespace; //TODO: check whether sensible to
+        // store here...
+        std::string m_TagName; // determines the table name
         std::string m_FileName;
         std::string m_VariableName;
-        // feature that should be tagged -> could be a stat, could be new feature -> more flexible
-        std::string m_FeatureName;      // default "mean"
+        // feature that should be tagged -> could be a stat, could be new
+        // feature -> more flexible
+        std::string m_FeatureName; // default "mean"
 
         // only one of them is used but since JULEA has not many types these two
         // are sufficient for now
@@ -58,31 +60,30 @@ public:
         float m_Threshold_f;
 
         // JDAIStatistic m_Statistic;
-        JDAIOperator m_Operator;            //default ">"
-        JDAIGranularity m_Granularity;      // default "block level"
+        JDAIOperator m_Operator;       // default ">"
+        JDAIGranularity m_Granularity; // default "block level"
     };
 
     // this is the struct holding the information which functions should be
     // precomputed
     struct Precompute
     {
-        // std::string m_projectNamespace; //TODO: check whether sensible to store here... probably better in engine itself
+        // std::string m_projectNamespace; //TODO: check whether sensible to
+        // store here... probably better in engine itself
         std::string m_FileName;
         std::string m_VariableName;
 
         JDAIStatistic m_Statistic;
-        JDAIGranularity m_Granularity; //default block level
+        JDAIGranularity m_Granularity; // default block level
     };
 
     std::vector<Tag> m_Tags;
     std::vector<Precompute> m_Precomputes;
 
-
     // 1) read all those new tables that the DAI component created and create
     // the tables accordingly 2) add compute functions to list that needs to be
     // computed
-    void
-    trackFeature();
+    void trackFeature();
     void customTag();
     void createTag();
 
@@ -90,9 +91,8 @@ public:
 
     bool IsCriteriumMet_i(JDAIOperator op, size_t threshold, size_t data);
     bool IsCriteriumMet_d(JDAIOperator op, double threshold, double data);
+
 private:
-
-
 };
 
 } // end namespace interop
