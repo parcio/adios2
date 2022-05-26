@@ -28,15 +28,15 @@ namespace interop
 {
 
 template <class T>
-void JuleaInteraction::PutVariableDataToJulea(core::Variable<T> &variable,
-                                              const T *data,
-                                              const std::string nameSpace,
-                                              uint32_t entryID) const
+void JuleaInteraction::PutVariableDataToJulea(
+    core::Variable<T> &variable, const T *data,
+    const std::string projectNamespace, const std::string fileName,
+    uint32_t entryID) const
 {
     // std::cout << "--- PutVariableDataToJulea ----- " << std::endl;
     // std::cout << "data: " << data[0] << std::endl;
     // std::cout << "data: " << data[1] << std::endl;
-
+    // FIXME: use projectNamespace
     guint64 bytesWritten = 0;
     std::string objName = "variableblocks";
 
@@ -49,9 +49,8 @@ void JuleaInteraction::PutVariableDataToJulea(core::Variable<T> &variable,
 
     // auto stepBlockID = g_strdup_printf("%lu_%lu", currStep, block);
     auto uniqueID = g_strdup_printf("%d", entryID);
-    auto stringDataObject =
-        g_strdup_printf("%s_%s_%s", nameSpace.c_str(), variable.m_Name.c_str(),
-                        objName.c_str());
+    auto stringDataObject = g_strdup_printf(
+        "%s_%s_%s", fileName.c_str(), variable.m_Name.c_str(), objName.c_str());
     // const char id = (char) entryID;
 
     // auto dataObject = j_object_new(stringDataObject, stepBlockID);
@@ -80,6 +79,7 @@ void JuleaInteraction::PutVariableDataToJulea(core::Variable<T> &variable,
     // std::cout << "++ Julea Interaction: PutVariableDataToJulea" << std::endl;
 }
 
+// FIXME: needs projectnamespace parameter + rename nameSpace to fileNames
 template <class T>
 void JuleaInteraction::GetVariableDataFromJulea(core::Variable<T> &variable,
                                                 T *data,

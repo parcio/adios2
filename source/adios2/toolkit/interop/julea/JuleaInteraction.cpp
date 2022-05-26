@@ -129,7 +129,8 @@ void JuleaInteraction::SetMinMaxValueFields(std::string *minField,
 #define declare_template_instantiation(T)                                      \
     template void JuleaInteraction::PutVariableDataToJulea(                    \
         core::Variable<T> &variable, const T *data,                            \
-        const std::string nameSpace, uint32_t entryID) const;                  \
+        const std::string projectNamespace, const std::string fileName,        \
+        uint32_t entryID) const;                                               \
     template void JuleaInteraction::GetVariableDataFromJulea(                  \
         core::Variable<T> &variable, T *data, const std::string nameSpace,     \
         size_t offset, long unsigned int dataSize, uint32_t entryID) const;

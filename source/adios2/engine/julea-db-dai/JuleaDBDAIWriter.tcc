@@ -393,19 +393,19 @@ void JuleaDBDAIWriter::PutSyncToJulea(
         // TODO: add mean value to DB
         /** updates the variable metadata as there is a new block now */
         m_JuleaDBInteractionWriter.PutVariableMetadataToJulea(
-            variable, m_Name, variable.m_Name, m_CurrentStep, m_CurrentBlockID,
-            original);
+            variable, m_ProjectNamespace, m_Name, variable.m_Name,
+            m_CurrentStep, m_CurrentBlockID, original);
     }
 
     /** put block metadata to DB */
     m_JuleaDBInteractionWriter.PutBlockMetadataToJulea(
-        variable, m_Name, variable.m_Name, m_CurrentStep, m_CurrentBlockID,
-        blockInfo, blockMin, blockMax, blockMean, blockSum, blockVar, entryID,
-        original);
+        variable, m_ProjectNamespace, m_Name, variable.m_Name, m_CurrentStep,
+        m_CurrentBlockID, blockInfo, blockMin, blockMax, blockMean, blockSum,
+        blockVar, entryID, original);
 
     /** put data to object store */
-    m_JuleaDBInteractionWriter.PutVariableDataToJulea(variable, data, m_Name,
-                                                      entryID);
+    m_JuleaDBInteractionWriter.PutVariableDataToJulea(
+        variable, data, m_ProjectNamespace, m_Name, entryID);
 }
 
 template <class T>

@@ -32,9 +32,11 @@ namespace adios2
 namespace interop
 {
 
+// TODO: use projectnamespace
 template <class T>
 void AddEntriesForVariableMD(core::Variable<T> &variable,
-                             const std::string nameSpace,
+                             const std::string projectNamespace,
+                             const std::string fileName,
                              const std::string varName, size_t currStep,
                              JDBSchema *schema, JDBEntry *entry, bool original)
 {
@@ -103,10 +105,10 @@ void AddEntriesForVariableMD(core::Variable<T> &variable,
         std::cout << "m_StepsCount: " << variable.m_StepsCount << std::endl;
     }
 
-    j_db_entry_set_field(entry, "file", nameSpace.c_str(),
-                         strlen(nameSpace.c_str()) + 1, NULL);
+    j_db_entry_set_field(entry, "file", fileName.c_str(),
+                         strlen(fileName.c_str()) + 1, NULL);
     j_db_entry_set_field(entry, "variableName", varName.c_str(),
-                         strlen(nameSpace.c_str()) + 1, NULL);
+                         strlen(fileName.c_str()) + 1, NULL);
 
     j_db_entry_set_field(entry, "isConstantDims", &tmp, sizeof(tmp), NULL);
     j_db_entry_set_field(entry, "isReadAsJoined", &tmp2, sizeof(tmp2), NULL);
@@ -159,11 +161,12 @@ void AddEntriesForVariableMD(core::Variable<T> &variable,
                          sizeof(variable.m_Max), NULL);
 }
 
+// TODO: use projectNamespace
 template <class T>
 void AddEntriesForBlockMD(core::Variable<T> &variable,
-                          const std::string nameSpace,
-                          const std::string varName, size_t currStep,
-                          size_t block,
+                          const std::string projectNamespace,
+                          const std::string fileName, const std::string varName,
+                          size_t currStep, size_t block,
                           const typename core::Variable<T>::Info &blockInfo,
                           JDBSchema *schema, JDBEntry *entry, T &blockMin,
                           T &blockMax, T &blockMean, T &blockSum, T &blockVar,
@@ -205,8 +208,8 @@ void AddEntriesForBlockMD(core::Variable<T> &variable,
         // std::cout << "blockID: " << blockID << std::endl;
     }
 
-    j_db_entry_set_field(entry, "file", nameSpace.c_str(),
-                         strlen(nameSpace.c_str()) + 1, NULL);
+    j_db_entry_set_field(entry, "file", fileName.c_str(),
+                         strlen(fileName.c_str()) + 1, NULL);
     j_db_entry_set_field(entry, "variableName", varName.c_str(),
                          strlen(varName.c_str()) + 1, NULL);
     j_db_entry_set_field(entry, "step", &stepID, sizeof(stepID), NULL);
@@ -286,10 +289,12 @@ void AddEntriesForBlockMD(core::Variable<T> &variable,
     // j_db_entry_set_field(entry, "blockID", &blockID, sizeof(blockID), NULL);
 }
 
+// TODO: use projectnamespace
 template <class T>
 void JuleaDBInteractionWriter::PutVariableMetadataToJulea(
-    core::Variable<T> &variable, const std::string nameSpace,
-    const std::string varName, size_t currStep, size_t block, bool original)
+    core::Variable<T> &variable, const std::string projectNamespace,
+    const std::string fileName, const std::string varName, size_t currStep,
+    size_t block, bool original)
 {
     int err = 0;
     g_autoptr(JDBSchema) schema = NULL;
@@ -309,13 +314,13 @@ void JuleaDBInteractionWriter::PutVariableMetadataToJulea(
     err = j_batch_execute(batch);
 
     entry = j_db_entry_new(schema, NULL);
-    AddEntriesForVariableMD(variable, nameSpace, varName, currStep, schema,
-                            entry, original);
+    AddEntriesForVariableMD(variable, projectNamespace, fileName, varName,
+                            currStep, schema, entry, original);
 
     /** check whether variable needs to be updated or inserted */
     selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
     j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
-                            nameSpace.c_str(), strlen(nameSpace.c_str()) + 1,
+                            fileName.c_str(), strlen(fileName.c_str()) + 1,
                             NULL);
     j_db_selector_add_field(selector, "variableName", J_DB_SELECTOR_OPERATOR_EQ,
                             varName.c_str(), strlen(varName.c_str()) + 1, NULL);
@@ -341,12 +346,14 @@ void JuleaDBInteractionWriter::PutVariableMetadataToJulea(
     j_semantics_unref(semantics);
 }
 
+// TODO: use projectnamespace
 template <class T>
 void JuleaDBInteractionWriter::PutBlockMetadataToJulea(
-    core::Variable<T> &variable, const std::string nameSpace,
-    const std::string varName, size_t step, size_t block,
-    const typename core::Variable<T>::Info &blockInfo, T &blockMin, T &blockMax,
-    T &blockMean, T &blockSum, T &blockVar, uint32_t &entryID, bool original)
+    core::Variable<T> &variable, const std::string projectNamespace,
+    const std::string fileName, const std::string varName, size_t step,
+    size_t block, const typename core::Variable<T>::Info &blockInfo,
+    T &blockMin, T &blockMax, T &blockMean, T &blockSum, T &blockVar,
+    uint32_t &entryID, bool original)
 {
     int err = 0;
     g_autoptr(JDBSchema) schema = NULL;
@@ -370,14 +377,14 @@ void JuleaDBInteractionWriter::PutBlockMetadataToJulea(
 
     entry = j_db_entry_new(schema, NULL);
 
-    AddEntriesForBlockMD(variable, nameSpace, varName, step, block, blockInfo,
-                         schema, entry, blockMin, blockMax, blockMean, blockSum,
-                         blockVar, original);
+    AddEntriesForBlockMD(variable, projectNamespace, fileName, varName, step,
+                         block, blockInfo, schema, entry, blockMin, blockMax,
+                         blockMean, blockSum, blockVar, original);
 
     /** check whether blcock needs to be updated or inserted */
     selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
     j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
-                            nameSpace.c_str(), strlen(nameSpace.c_str()) + 1,
+                            fileName.c_str(), strlen(fileName.c_str()) + 1,
                             NULL);
     j_db_selector_add_field(selector, "variableName", J_DB_SELECTOR_OPERATOR_EQ,
                             varName.c_str(), strlen(varName.c_str()) + 1, NULL);
