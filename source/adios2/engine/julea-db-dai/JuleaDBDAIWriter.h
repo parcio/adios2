@@ -96,8 +96,8 @@ private:
     size_t m_FlushStepsCount = 1;
 
     // size_t m_DayIntervall = 24;
-    size_t m_CustomGranularity = 24; // in steps
-    bool m_ComputeStatsCombined = false;
+    size_t m_CustomGranularity = 24;     // in steps
+    bool m_ComputeStatsCombined = false; // FIXME: needs function to set in DAI
 
     /** manages all communication tasks in aggregation */
     // aggregator::MPIChain m_Aggregator;
@@ -159,10 +159,13 @@ private:
                    T &blockMax, T &blockMean);
 
     template <class T>
-    void ManageBlockStepMetadataStandard(Variable<T> &variable, const T *data);
+    void ManageBlockStepMetadataStandard(Variable<T> &variable, const T *data,
+                                         T &blockMin, T &blockMax, T &blockMean,
+                                         T &blockSum, T &blockVar);
 
     template <class T>
-    void ManageBlockStepMetadataOriginal(Variable<T> &variable, const T *data);
+    void ManageBlockStepMetadataOriginal(Variable<T> &variable, const T *data,
+                                         T &blockMin, T &blockMax);
 
     template <class T>
     void BufferTemperature(Variable<T> &variable, T blockMin, T blockMean,

@@ -36,7 +36,7 @@ template <class T>
 void AddEntriesForVariableMD(core::Variable<T> &variable,
                              const std::string nameSpace,
                              const std::string varName, size_t currStep,
-                             JDBSchema *schema, JDBEntry *entry)
+                             JDBSchema *schema, JDBEntry *entry, bool original)
 {
     bool isConstantDims = variable.IsConstantDims();
     int tmp = isConstantDims ? 1 : 0;
@@ -166,7 +166,8 @@ void AddEntriesForBlockMD(core::Variable<T> &variable,
                           size_t block,
                           const typename core::Variable<T>::Info &blockInfo,
                           JDBSchema *schema, JDBEntry *entry, T &blockMin,
-                          T &blockMax, T &blockMean, T &blockSum, T &blockVar)
+                          T &blockMax, T &blockMean, T &blockSum, T &blockVar,
+                          bool original)
 {
     size_t shapeSize = variable.m_Shape.size();
     size_t startSize = variable.m_Start.size();
@@ -254,8 +255,13 @@ void AddEntriesForBlockMD(core::Variable<T> &variable,
 
     j_db_entry_set_field(entry, minField.c_str(), &blockMin, minLen, NULL);
     j_db_entry_set_field(entry, maxField.c_str(), &blockMax, maxLen, NULL);
-    j_db_entry_set_field(entry, meanField.c_str(), &blockMean, meanLen, NULL);
-    j_db_entry_set_field(entry, sumField.c_str(), &blockSum, sumLen, NULL);
+    if (!original)
+    {
+
+        j_db_entry_set_field(entry, meanField.c_str(), &blockMean, meanLen,
+                             NULL);
+        j_db_entry_set_field(entry, sumField.c_str(), &blockSum, sumLen, NULL);
+    }
 
     j_db_entry_set_field(entry, "isValue", &tmp, sizeof(tmp), NULL);
 
@@ -283,7 +289,7 @@ void AddEntriesForBlockMD(core::Variable<T> &variable,
 template <class T>
 void JuleaDBInteractionWriter::PutVariableMetadataToJulea(
     core::Variable<T> &variable, const std::string nameSpace,
-    const std::string varName, size_t currStep, size_t block)
+    const std::string varName, size_t currStep, size_t block, bool original)
 {
     int err = 0;
     g_autoptr(JDBSchema) schema = NULL;
@@ -304,7 +310,7 @@ void JuleaDBInteractionWriter::PutVariableMetadataToJulea(
 
     entry = j_db_entry_new(schema, NULL);
     AddEntriesForVariableMD(variable, nameSpace, varName, currStep, schema,
-                            entry);
+                            entry, original);
 
     /** check whether variable needs to be updated or inserted */
     selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
@@ -340,7 +346,7 @@ void JuleaDBInteractionWriter::PutBlockMetadataToJulea(
     core::Variable<T> &variable, const std::string nameSpace,
     const std::string varName, size_t step, size_t block,
     const typename core::Variable<T>::Info &blockInfo, T &blockMin, T &blockMax,
-    T &blockMean, T &blockSum, T &blockVar, uint32_t &entryID)
+    T &blockMean, T &blockSum, T &blockVar, uint32_t &entryID, bool original)
 {
     int err = 0;
     g_autoptr(JDBSchema) schema = NULL;
@@ -363,9 +369,10 @@ void JuleaDBInteractionWriter::PutBlockMetadataToJulea(
     // g_assert_true(j_batch_execute(batch) == true);
 
     entry = j_db_entry_new(schema, NULL);
+
     AddEntriesForBlockMD(variable, nameSpace, varName, step, block, blockInfo,
                          schema, entry, blockMin, blockMax, blockMean, blockSum,
-                         blockVar);
+                         blockVar, original);
 
     /** check whether blcock needs to be updated or inserted */
     selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
@@ -424,6 +431,101 @@ void JuleaDBInteractionWriter::PutBlockMetadataToJulea(
     j_batch_unref(batch2);
     j_semantics_unref(semantics);
 }
+
+// template <class T>
+// void JuleaDBInteractionWriter::PutBlockMetadataToJuleaOriginal(
+//     core::Variable<T> &variable, const std::string nameSpace,
+//     const std::string varName, size_t step, size_t block,
+//     const typename core::Variable<T>::Info &blockInfo, T &blockMin, T
+//     &blockMax, uint32_t &entryID)
+// {
+//     int err = 0;
+//     boolean original = true;
+//     g_autoptr(JDBSchema) schema = NULL;
+//     g_autoptr(JDBEntry) entry = NULL;
+//     g_autoptr(JDBSelector) selector = NULL;
+//     g_autoptr(JDBIterator) iterator = NULL;
+//     JDBType jdbType;
+//     guint64 db_length = 0;
+//     uint32_t *tmpID;
+//     // uint32_t entryID = 0;
+
+//     // void *namesBuf = NULL;
+//     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+//     auto batch = j_batch_new(semantics);
+//     auto batch2 = j_batch_new(semantics);
+
+//     schema = j_db_schema_new("adios2", "block-metadata", NULL);
+//     j_db_schema_get(schema, batch, NULL);
+//     err = j_batch_execute(batch);
+//     // g_assert_true(j_batch_execute(batch) == true);
+
+//     entry = j_db_entry_new(schema, NULL);
+//     AddEntriesForBlockMD(variable, nameSpace, varName, step, block,
+//     blockInfo,
+//                          schema, entry, blockMin, blockMax, NULL, NULL,
+//                          NULL, original);
+
+//     /** check whether blcock needs to be updated or inserted */
+//     selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
+//     j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
+//                             nameSpace.c_str(), strlen(nameSpace.c_str()) + 1,
+//                             NULL);
+//     j_db_selector_add_field(selector, "variableName",
+//     J_DB_SELECTOR_OPERATOR_EQ,
+//                             varName.c_str(), strlen(varName.c_str()) + 1,
+//                             NULL);
+//     j_db_selector_add_field(selector, "step", J_DB_SELECTOR_OPERATOR_EQ,
+//     &step,
+//                             sizeof(step), NULL);
+//     j_db_selector_add_field(selector, "block", J_DB_SELECTOR_OPERATOR_EQ,
+//                             &block, sizeof(block), NULL);
+
+//     iterator = j_db_iterator_new(schema, selector, NULL);
+
+//     if (j_db_iterator_next(iterator, NULL))
+//     {
+//         j_db_entry_update(entry, selector, batch2, NULL);
+//         err = j_batch_execute(batch2);
+//         // j_db_iterator_get_field(iterator, "_id", &jdbType, (gpointer
+//         // *)&tmpID,
+//         //                         &db_length, NULL);
+//         // std::cout << "_id: " << *tmpID << std::endl;
+//         // entryID = *tmpID;
+//     }
+//     else
+//     {
+//         // std::cout << "Variable metadata does not exist yet." << std::endl;
+//         j_db_entry_insert(entry, batch2, NULL);
+//         err = j_batch_execute(batch2);
+
+//         iterator = j_db_iterator_new(schema, selector, NULL);
+//         j_db_iterator_next(iterator, NULL);
+//         // j_db_iterator_get_field(iterator, "_id", &jdbType, (gpointer
+//         // *)&tmpID,
+//         //                         &db_length, NULL);
+
+//         // std::cout << "_id: " << *tmpID << std::endl;
+//         // entryID = *tmpID;
+//     }
+//     j_db_iterator_get_field(iterator, "_id", &jdbType, (gpointer *)&tmpID,
+//                             &db_length, NULL);
+
+//     // std::cout << "_id: " << *tmpID << std::endl;
+//     entryID = *tmpID;
+//     // variable->m_AvailableStepBlockIndexOffsets[step].
+
+//     // TODO: how to use this function?
+//     // j_db_entry_get_id(entry, )
+
+//     // g_assert_true(j_batch_execute(batch2) == true);
+
+//     // j_db_entry_unref(entry);
+//     // j_db_schema_unref(schema);
+//     j_batch_unref(batch);
+//     j_batch_unref(batch2);
+//     j_semantics_unref(semantics);
+// }
 
 // template <class T>
 // void DAIDBPutVariableDataToJulea(Variable<T> &variable, const T *data,

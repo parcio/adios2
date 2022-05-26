@@ -699,13 +699,14 @@ void JuleaDBInteractionWriter::InitDBSchemas()
 #define declare_template_instantiation(T)                                      \
     template void JuleaDBInteractionWriter::PutVariableMetadataToJulea(        \
         core::Variable<T> &variable, const std::string nameSpace,              \
-        const std::string varName, size_t currStep, size_t block);             \
+        const std::string varName, size_t currStep, size_t block,              \
+        bool original);                                                        \
     template void JuleaDBInteractionWriter::PutBlockMetadataToJulea(           \
         core::Variable<T> &variable, const std::string nameSpace,              \
         const std::string varName, size_t step, size_t block,                  \
         const typename core::Variable<T>::Info &blockInfo, T &blockMin,        \
         T &blockMax, T &blockMean, T &blockSum, T &blockVar,                   \
-        uint32_t &entryID);
+        uint32_t &entryID, bool original);
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
 

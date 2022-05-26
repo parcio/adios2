@@ -277,7 +277,7 @@ void JuleaCDO::ComputeYearlyStats(std::string variableName)
     template void JuleaCDO::ComputeBlockStatsStandard(                         \
         core::Variable<T> &variable, const T *data, T &blockMin, T &blockMax,  \
         T &blockMean, T &blockSum, T &blockSumSquares, T &blockVar);           \
-    template void JuleaCDO::BufferCDOStats(                                 \
+    template void JuleaCDO::BufferCDOStats(                                    \
         core::Variable<T> &variable, T blockMin, T blockMean, T blockMax);
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation

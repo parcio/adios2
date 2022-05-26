@@ -44,7 +44,7 @@ public:
     void PutVariableMetadataToJulea(core::Variable<T> &variable,
                                     const std::string nameSpace,
                                     const std::string varName, size_t currStep,
-                                    size_t block);
+                                    size_t block, bool original);
     /**
      * Put the metadata for a specific block in a specific step to JULEA
      * key-value store.
@@ -59,7 +59,15 @@ public:
         core::Variable<T> &variable, const std::string nameSpace,
         const std::string varName, size_t step, size_t block,
         const typename core::Variable<T>::Info &blockInfo, T &blockMin,
-        T &blockMax, T &blockMean, T &blockSum, T &blockVar, uint32_t &entryID);
+        T &blockMax, T &blockMean, T &blockSum, T &blockVar, uint32_t &entryID,
+        bool original);
+
+    // template <class T>
+    // void PutBlockMetadataToJuleaOriginal(
+    //     core::Variable<T> &variable, const std::string nameSpace,
+    //     const std::string varName, size_t step, size_t block,
+    //     const typename core::Variable<T>::Info &blockInfo, T &blockMin,
+    //     T &blockMax, uint32_t &entryID);
 
     /** --- Attributes --- */
     // TODO: support attributes again
@@ -107,15 +115,23 @@ private:
 #define declare_template_instantiation(T)                                      \
     extern template void JuleaDBInteractionWriter::PutVariableMetadataToJulea( \
         core::Variable<T> &variable, const std::string nameSpace,              \
-        const std::string varName, size_t currStep, size_t block);             \
+        const std::string varName, size_t currStep, size_t block,              \
+        bool original);                                                        \
     extern template void JuleaDBInteractionWriter::PutBlockMetadataToJulea(    \
         core::Variable<T> &variable, const std::string nameSpace,              \
         const std::string varName, size_t step, size_t block,                  \
         const typename core::Variable<T>::Info &blockInfo, T &blockMin,        \
         T &blockMax, T &blockMean, T &blockSum, T &blockVar,                   \
-        uint32_t &entryID);
+        uint32_t &entryID, bool original);
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
+
+// extern template void                                                       \
+//     JuleaDBInteractionWriter::PutBlockMetadataToJuleaOriginal(                 \
+//         core::Variable<T> &variable, const std::string nameSpace,              \
+//         const std::string varName, size_t step, size_t block,                  \
+//         const typename core::Variable<T>::Info &blockInfo, T &blockMin,        \
+//         T &blockMax, uint32_t &entryID);
 
 } // end namespace interop
 } // end namespace adios2
