@@ -86,12 +86,7 @@ void JuleaDBDAIWriter::ManageBlockStepMetadataStandard(Variable<T> &variable,
                                                        T &blockMean,
                                                        T &blockSum, T &blockVar)
 {
-    // T blockMin;
-    // T blockMax;
-    // T blockMean;
-    // T blockSum;
     T blockSumSquares;
-    // T blockVar;
 
     T stepMin;
     T stepMax;
@@ -317,10 +312,6 @@ void JuleaDBDAIWriter::PutSyncToJulea(
     {
         original = true;
         ManageBlockStepMetadataOriginal(variable, data, blockMin, blockMax);
-        // m_JuleaDBInteractionWriter.PutBlockMetadataToJulea(
-        //     variable, m_Name, variable.m_Name, m_CurrentStep,
-        //     m_CurrentBlockID, blockInfo, blockMin, blockMax, NULL, NULL,
-        //     NULL, entryID, original);
     }
     else
     {
@@ -328,10 +319,6 @@ void JuleaDBDAIWriter::PutSyncToJulea(
         {
             ManageBlockStepMetadataStandard(variable, data, blockMin, blockMax,
                                             blockMean, blockSum, blockVar);
-            // m_JuleaDBInteractionWriter.PutBlockMetadataToJulea(
-            //     variable, m_Name, variable.m_Name, m_CurrentStep,
-            //     m_CurrentBlockID, blockInfo, blockMin, blockMax, blockMean,
-            //     blockSum, blockVar, entryID, original);
         }
         else
         {
@@ -356,7 +343,7 @@ void JuleaDBDAIWriter::PutSyncToJulea(
                     break;
                     blockResults.push_back(blockResult);
                 }
-                // TODO write these results to JULEA
+                // FIXME: write these results to JULEA
             }
         }
     }
@@ -410,23 +397,13 @@ void JuleaDBDAIWriter::PutSyncToJulea(
             original);
     }
 
-    // FIXME: fix parameters + implementation
     /** put block metadata to DB */
-    // m_JuleaDBInteractionWriter.PutBlockMetadataToJulea(
-    //     variable, m_Name, variable.m_Name, m_CurrentStep, m_CurrentBlockID,
-    //     blockInfo, blockMin, blockMax, blockMean, blockSum, blockVar,
-    //     entryID);
     m_JuleaDBInteractionWriter.PutBlockMetadataToJulea(
         variable, m_Name, variable.m_Name, m_CurrentStep, m_CurrentBlockID,
         blockInfo, blockMin, blockMax, blockMean, blockSum, blockVar, entryID,
         original);
 
-    // std::cout << "entryID: " << entryID << std::endl;
     /** put data to object store */
-    // DBPutVariableDataToJulea(variable, data, m_Name, m_CurrentStep,
-    // m_CurrentBlockID);
-
-    // DAIDBPutVariableDataToJulea(variable, data, m_Name, entryID);
     m_JuleaDBInteractionWriter.PutVariableDataToJulea(variable, data, m_Name,
                                                       entryID);
 }

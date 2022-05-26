@@ -62,13 +62,6 @@ public:
         T &blockMax, T &blockMean, T &blockSum, T &blockVar, uint32_t &entryID,
         bool original);
 
-    // template <class T>
-    // void PutBlockMetadataToJuleaOriginal(
-    //     core::Variable<T> &variable, const std::string nameSpace,
-    //     const std::string varName, size_t step, size_t block,
-    //     const typename core::Variable<T>::Info &blockInfo, T &blockMin,
-    //     T &blockMax, uint32_t &entryID);
-
     /** --- Attributes --- */
     // TODO: support attributes again
 
@@ -125,13 +118,6 @@ private:
         uint32_t &entryID, bool original);
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
-
-// extern template void                                                       \
-//     JuleaDBInteractionWriter::PutBlockMetadataToJuleaOriginal(                 \
-//         core::Variable<T> &variable, const std::string nameSpace,              \
-//         const std::string varName, size_t step, size_t block,                  \
-//         const typename core::Variable<T>::Info &blockInfo, T &blockMin,        \
-//         T &blockMax, uint32_t &entryID);
 
 } // end namespace interop
 } // end namespace adios2
