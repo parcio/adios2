@@ -248,16 +248,25 @@ void JuleaDBDAIWriter::Init()
     m_JuleaSemantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
 
     InitParameters();
+    InitDAI(); // FIXME: needs implementation etc.
+
+    if (m_JuleaCDO.m_Precomputes.empty())
+    {
+        m_IsOriginalFormat = true;
+        // ManageBlockStepMetadataOriginal(variable, data, blockMin, blockMax);
+    }
+
     if (m_WriterRank == 0)
     {
         std::cout << "JDB Writer (" << m_WriterRank << ") : InitDBSchemas()\n";
         // std::cout << "InitDBSchemas" << std::endl;
 
-        m_JuleaDBInteractionWriter.InitDBSchemas();
+        m_JuleaDBInteractionWriter.InitDBSchemas(m_IsOriginalFormat);
         // Init();
         std::cout << "JDB Writer (" << m_WriterRank
                   << ") : InitDBSchemas finished()\n";
     }
+
     // TODO: figuring out how communicator work in ADIOS when used with
     // inheritance etc
     //  m_JuleaCDO.Init(m_Comm);
@@ -311,6 +320,8 @@ void JuleaDBDAIWriter::InitParameters()
         }
     }
 }
+
+void JuleaDBDAIWriter::InitDAI() {}
 
 /**
  * [JuleaWriter::InitVariables description]

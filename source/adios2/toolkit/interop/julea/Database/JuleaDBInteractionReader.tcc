@@ -31,10 +31,12 @@ namespace adios2
 namespace interop
 {
 
+// TODO: filename etc. needed? or is just the entryID sufficient?
 template <class T>
 void JuleaDBInteractionReader::GetCountFromBlockMetadata(
-    const std::string nameSpace, const std::string varName, size_t step,
-    size_t block, Dims *count, size_t entryID, bool isLocalValue, T *value)
+    const std::string projectNamespace, const std::string fileName,
+    const std::string varName, size_t step, size_t block, Dims *count,
+    size_t entryID, bool isLocalValue, T *value)
 {
     // std::cout << "------ GetCountFromBlockMetadata ----------" << std::endl;
     int err = 0;

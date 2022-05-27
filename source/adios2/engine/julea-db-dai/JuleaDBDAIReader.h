@@ -64,6 +64,7 @@ private:
     interop::JuleaDBInteractionReader m_JuleaDBInteractionReader;
     JSemantics *m_JuleaSemantics;
     StepMode m_StepMode = StepMode::Append;
+    std::string m_ProjectNamespace;
 
     /**
      * This is not at all beautiful!

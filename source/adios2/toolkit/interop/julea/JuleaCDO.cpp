@@ -274,11 +274,13 @@ void JuleaCDO::ComputeYearlyStats(std::string variableName)
     template void JuleaCDO::ComputeBlockStat(core::Variable<T> &variable,      \
                                              const T *data, T &blockResult,    \
                                              JDAIStatistic statistic);         \
-    template void JuleaCDO::ComputeBlockStatsStandard(                         \
+    template void JuleaCDO::ComputeAllBlockStats(                              \
         core::Variable<T> &variable, const T *data, T &blockMin, T &blockMax,  \
-        T &blockMean, T &blockSum, T &blockSumSquares, T &blockVar);           \
+        T &blockMean, T &blockSum, T &blockSumSquares, T &blockVar,            \
+        bool isOriginalFormat);                                                \
     template void JuleaCDO::BufferCDOStats(                                    \
-        core::Variable<T> &variable, T blockMin, T blockMean, T blockMax);
+        core::Variable<T> &variable, T blockMin, T blockMax, T blockMean,      \
+        T blockSum, T blockVar, bool isOriginalFormat);
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
 

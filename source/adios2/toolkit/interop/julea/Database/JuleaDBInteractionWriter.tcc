@@ -32,7 +32,6 @@ namespace adios2
 namespace interop
 {
 
-// TODO: use projectnamespace
 template <class T>
 void AddEntriesForVariableMD(core::Variable<T> &variable,
                              const std::string projectNamespace,
@@ -105,6 +104,8 @@ void AddEntriesForVariableMD(core::Variable<T> &variable,
         std::cout << "m_StepsCount: " << variable.m_StepsCount << std::endl;
     }
 
+    j_db_entry_set_field(entry, "projectNamespace", projectNamespace.c_str(),
+                         strlen(projectNamespace.c_str()) + 1, NULL);
     j_db_entry_set_field(entry, "file", fileName.c_str(),
                          strlen(fileName.c_str()) + 1, NULL);
     j_db_entry_set_field(entry, "variableName", varName.c_str(),
@@ -161,7 +162,6 @@ void AddEntriesForVariableMD(core::Variable<T> &variable,
                          sizeof(variable.m_Max), NULL);
 }
 
-// TODO: use projectNamespace
 template <class T>
 void AddEntriesForBlockMD(core::Variable<T> &variable,
                           const std::string projectNamespace,
@@ -208,6 +208,8 @@ void AddEntriesForBlockMD(core::Variable<T> &variable,
         // std::cout << "blockID: " << blockID << std::endl;
     }
 
+    j_db_entry_set_field(entry, "projectNamespace", projectNamespace.c_str(),
+                         strlen(projectNamespace.c_str()) + 1, NULL);
     j_db_entry_set_field(entry, "file", fileName.c_str(),
                          strlen(fileName.c_str()) + 1, NULL);
     j_db_entry_set_field(entry, "variableName", varName.c_str(),
@@ -289,7 +291,6 @@ void AddEntriesForBlockMD(core::Variable<T> &variable,
     // j_db_entry_set_field(entry, "blockID", &blockID, sizeof(blockID), NULL);
 }
 
-// TODO: use projectnamespace
 template <class T>
 void JuleaDBInteractionWriter::PutVariableMetadataToJulea(
     core::Variable<T> &variable, const std::string projectNamespace,
@@ -319,6 +320,9 @@ void JuleaDBInteractionWriter::PutVariableMetadataToJulea(
 
     /** check whether variable needs to be updated or inserted */
     selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
+    j_db_selector_add_field(selector, "projectNamespace",
+                            J_DB_SELECTOR_OPERATOR_EQ, projectNamespace.c_str(),
+                            strlen(projectNamespace.c_str()) + 1, NULL);
     j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
                             fileName.c_str(), strlen(fileName.c_str()) + 1,
                             NULL);
@@ -346,7 +350,6 @@ void JuleaDBInteractionWriter::PutVariableMetadataToJulea(
     j_semantics_unref(semantics);
 }
 
-// TODO: use projectnamespace
 template <class T>
 void JuleaDBInteractionWriter::PutBlockMetadataToJulea(
     core::Variable<T> &variable, const std::string projectNamespace,
@@ -383,6 +386,9 @@ void JuleaDBInteractionWriter::PutBlockMetadataToJulea(
 
     /** check whether blcock needs to be updated or inserted */
     selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
+    j_db_selector_add_field(selector, "projectNamespace",
+                            J_DB_SELECTOR_OPERATOR_EQ, projectNamespace.c_str(),
+                            strlen(projectNamespace.c_str()) + 1, NULL);
     j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
                             fileName.c_str(), strlen(fileName.c_str()) + 1,
                             NULL);

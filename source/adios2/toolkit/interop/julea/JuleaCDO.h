@@ -96,14 +96,15 @@ public:
                           T &blockResult, JDAIStatistic statistic);
 
     template <class T>
-    void ComputeBlockStatsStandard(core::Variable<T> &variable, const T *data,
-                                   T &blockMin, T &blockMax, T &blockMean,
-                                   T &blockSum, T &blockSumSquares,
-                                   T &blockVar);
+    void ComputeAllBlockStats(core::Variable<T> &variable, const T *data,
+                              T &blockMin, T &blockMax, T &blockMean,
+                              T &blockSum, T &blockSumSquares, T &blockVar,
+                              bool isOriginalFormat);
 
     template <class T>
-    void BufferCDOStats(core::Variable<T> &variable, T blockMin, T blockMean,
-                        T blockMax);
+    void BufferCDOStats(core::Variable<T> &variable, T blockMin, T blockMax,
+                        T blockMean, T blockSum, T blockVar,
+                        bool isOriginalFormat);
 
     // template <class T>
     // void BufferTemperatureOriginal(core::Variable<T> &variable, T blockMin,
@@ -172,41 +173,43 @@ public:
     std::vector<double> m_DTempMin;  // 24 hours
     std::vector<double> m_DTempMean; // 24 hours
     std::vector<double> m_DTempMax;  // 24 hours
-    // std::vector<double> m_DTempSum;  // 24 hours
-    // std::vector<double> m_DTempVar;  // 24 hours
+    std::vector<double> m_DTempSum;  // 24 hours
+    std::vector<double> m_DTempVar;  // 24 hours
 
     // monthly temperature min/mean/max
     std::vector<double> m_MTempMin;  // 30 days
     std::vector<double> m_MTempMean; // 30 days
     std::vector<double> m_MTempMax;  // 30 days
-    // std::vector<double> m_MTempVar;  // 30 days
+    std::vector<double> m_MTempSum;  // 30 days
+    std::vector<double> m_MTempVar;  // 30 days
 
     // yearly temperature min/mean/max
     std::vector<double> m_YTempMin;  // 12 months
     std::vector<double> m_YTempMean; // 12 months
     std::vector<double> m_YTempMax;  // 12 months
-    // std::vector<double> m_YTempVar;  // 12 months
+    std::vector<double> m_YTempSum;  // 12 months
+    std::vector<double> m_YTempVar;  // 12 months
 
     // daily precipitation min/mean/max/sum
     std::vector<double> m_DPrecMin;  // 24 hour
     std::vector<double> m_DPrecMean; // 24 hour
     std::vector<double> m_DPrecMax;  // 24 hour
     std::vector<double> m_DPrecSum;  // 24 hour
-    // std::vector<double> m_DPrecVar;  // 24 hour
+    std::vector<double> m_DPrecVar;  // 24 hour
 
     // monthly precipitation min/mean/max/sum
     std::vector<double> m_MPrecMin;  // 30 days
     std::vector<double> m_MPrecMean; // 30 days
     std::vector<double> m_MPrecMax;  // 30 days
     std::vector<double> m_MPrecSum;  // 30 days
-    // std::vector<double> m_MPrecVar;  // 30 days
+    std::vector<double> m_MPrecVar;  // 30 days
 
     // yearly precipitation min/mean/max/sum
     std::vector<double> m_YPrecMin;  // 12 months
     std::vector<double> m_YPrecMean; // 12 months
     std::vector<double> m_YPrecMax;  // 12 months
     std::vector<double> m_YPrecSum;  // 12 months
-    // std::vector<double> m_YPrecVar;  // 12 months
+    std::vector<double> m_YPrecVar;  // 12 months
 
 private:
     helper::Comm const &m_Comm; ///< multi-process communicator from Engine
@@ -218,12 +221,15 @@ private:
     std::vector<double> m_HTempMin;  // 1 step
     std::vector<double> m_HTempMean; // 1 step
     std::vector<double> m_HTempMax;  // 1 step
+    std::vector<double> m_HTempSum;  // 1 step
+    std::vector<double> m_HTempVar;  // 1 step
 
     // hourly precipitation min/mean/max/sum
     std::vector<double> m_HPrecMin;  // 1 step
     std::vector<double> m_HPrecMean; // 1 step
     std::vector<double> m_HPrecMax;  // 1 step
     std::vector<double> m_HPrecSum;  // 1 step
+    std::vector<double> m_HPrecVar;  // 1 step
 
     // compute frost days: daily min temperature < 0°C
     void ComputeFrostDays(double dailyTempMin);

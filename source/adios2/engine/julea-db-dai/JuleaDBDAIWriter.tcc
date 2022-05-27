@@ -40,51 +40,57 @@ namespace engine
 
 // }
 
+// template <class T>
+// void JuleaDBDAIWriter::ManageBlockStepMetadataOriginal(Variable<T> &variable,
+//                                                        const T *data,
+//                                                        T &blockMin, T
+//                                                        &blockMax)
+// {
+//     // T blockMin;
+//     // T blockMax;
+//     bool isOriginal = true;
+//     // will be ignored when writing
+//     T blockMean;
+//     T blockSum;
+//     T blockVar;
+
+//     m_JuleaCDO.SetMinMax(variable, data, blockMin, blockMax, m_CurrentStep,
+//                          m_CurrentBlockID);
+
+//     m_JuleaCDO.BufferCDOStats(variable, blockMin, blockMax, blockMean,
+//     blockSum, blockVar, isOriginal);
+// }
+
+// template <>
+// void JuleaDBDAIWriter::ManageBlockStepMetadataOriginal<std::string>(
+//     Variable<std::string> &variable, const std::string *data,
+//     std::string &blockMin, std::string &blockMax)
+// {
+//     // TODO implement?
+// }
+
+// template <>
+// void JuleaDBDAIWriter::ManageBlockStepMetadataOriginal<std::complex<float>>(
+//     Variable<std::complex<float>> &variable, const std::complex<float> *data,
+//     std::complex<float> &blockMin, std::complex<float> &blockMax)
+// {
+//     // TODO implement?
+// }
+
+// template <>
+// void JuleaDBDAIWriter::ManageBlockStepMetadataOriginal<std::complex<double>>(
+//     Variable<std::complex<double>> &variable, const std::complex<double>
+//     *data, std::complex<double> &blockMin, std::complex<double> &blockMax)
+// {
+//     // TODO implement?
+// }
+
+// based on isOriginalFormat different MD is computed
 template <class T>
-void JuleaDBDAIWriter::ManageBlockStepMetadataOriginal(Variable<T> &variable,
-                                                       const T *data,
-                                                       T &blockMin, T &blockMax)
-{
-    // T blockMin;
-    // T blockMax;
-    // will be ignored when writing
-    T blockMean;
-    m_JuleaCDO.SetMinMax(variable, data, blockMin, blockMax, m_CurrentStep,
-                         m_CurrentBlockID);
-
-    m_JuleaCDO.BufferCDOStats(variable, blockMin, blockMean, blockMax);
-}
-
-template <>
-void JuleaDBDAIWriter::ManageBlockStepMetadataOriginal<std::string>(
-    Variable<std::string> &variable, const std::string *data,
-    std::string &blockMin, std::string &blockMax)
-{
-    // TODO implement?
-}
-
-template <>
-void JuleaDBDAIWriter::ManageBlockStepMetadataOriginal<std::complex<float>>(
-    Variable<std::complex<float>> &variable, const std::complex<float> *data,
-    std::complex<float> &blockMin, std::complex<float> &blockMax)
-{
-    // TODO implement?
-}
-
-template <>
-void JuleaDBDAIWriter::ManageBlockStepMetadataOriginal<std::complex<double>>(
-    Variable<std::complex<double>> &variable, const std::complex<double> *data,
-    std::complex<double> &blockMin, std::complex<double> &blockMax)
-{
-    // TODO implement?
-}
-
-template <class T>
-void JuleaDBDAIWriter::ManageBlockStepMetadataStandard(Variable<T> &variable,
-                                                       const T *data,
-                                                       T &blockMin, T &blockMax,
-                                                       T &blockMean,
-                                                       T &blockSum, T &blockVar)
+void JuleaDBDAIWriter::ManageBlockStepMetadata(Variable<T> &variable,
+                                               const T *data, T &blockMin,
+                                               T &blockMax, T &blockMean,
+                                               T &blockSum, T &blockVar)
 {
     T blockSumSquares;
 
@@ -103,9 +109,18 @@ void JuleaDBDAIWriter::ManageBlockStepMetadataStandard(Variable<T> &variable,
     std::vector<T> testBuffer2;
     double testDouble = 42.0;
 
-    m_JuleaCDO.ComputeBlockStatsStandard(variable, data, blockMin, blockMax,
-                                         blockMean, blockSum, blockSumSquares,
-                                         blockVar);
+    // if(m_isOriginalFormat)
+    // {
+    //     m_JuleaCDO.SetMinMax(variable, data, blockMin, blockMax,
+    //     m_CurrentStep,
+    //                      m_CurrentBlockID);
+    //     m_JuleaCDO.BufferCDOStats(variable, blockMin, blockMax, blockMean,
+    //     blockSum, blockVar, m_isOriginalFormat);
+    // }
+
+    m_JuleaCDO.ComputeAllBlockStats(variable, data, blockMin, blockMax,
+                                    blockMean, blockSum, blockSumSquares,
+                                    blockVar, m_IsOriginalFormat);
 
     /**  to initialize the global min/max, they are set to the
         first min/max for the first block of the first step */
@@ -124,9 +139,12 @@ void JuleaDBDAIWriter::ManageBlockStepMetadataStandard(Variable<T> &variable,
         std::string &hint = std::string()) */
         m_Comm.Reduce(&blockMin, &stepMin, 1, helper::Comm::Op::Min, 0);
         m_Comm.Reduce(&blockMax, &stepMax, 1, helper::Comm::Op::Max, 0);
-        m_Comm.Reduce(&blockSum, &stepSum, 1, helper::Comm::Op::Sum, 0);
-        m_Comm.Reduce(&blockSumSquares, &stepSumSquares, 1,
-                      helper::Comm::Op::Sum, 0);
+        if (!m_IsOriginalFormat)
+        {
+            m_Comm.Reduce(&blockSum, &stepSum, 1, helper::Comm::Op::Sum, 0);
+            m_Comm.Reduce(&blockSumSquares, &stepSumSquares, 1,
+                          helper::Comm::Op::Sum, 0);
+        }
 
         /** not required since blockSum is also computed now */
         // m_Comm.Reduce(&blockMean, &stepMean, 1, helper::Comm::Op::Sum, 0);
@@ -138,8 +156,11 @@ void JuleaDBDAIWriter::ManageBlockStepMetadataStandard(Variable<T> &variable,
         // }
     }
 
-    stepMean = stepSum / (number_elements * m_Comm.Size());
-    stepVar = stepSumSquares / (number_elements * m_Comm.Size());
+    if (!m_IsOriginalFormat)
+    {
+        stepMean = stepSum / (number_elements * m_Comm.Size());
+        stepVar = stepSumSquares / (number_elements * m_Comm.Size());
+    }
 
     if (stepMin < variable.m_Min)
     {
@@ -155,16 +176,12 @@ void JuleaDBDAIWriter::ManageBlockStepMetadataStandard(Variable<T> &variable,
         variable.m_Max = stepMax;
     }
 
-    m_JuleaCDO.BufferCDOStats(variable, blockMin, blockMean, blockMax);
-
-    // FIXME: write metadata to julea
-    // m_JuleaDBInteractionWriter.PutBlockMetadataToJulea(
-    // variable, m_Name, variable.m_Name, m_CurrentStep, m_CurrentBlockID,
-    // blockInfo, blockMin, blockMax, blockMean, blockSum, blockVar, entryID);
+    m_JuleaCDO.BufferCDOStats(variable, blockMin, blockMax, blockMean, blockSum,
+                              blockVar, m_IsOriginalFormat);
 }
 
 template <>
-void JuleaDBDAIWriter::ManageBlockStepMetadataStandard<std::string>(
+void JuleaDBDAIWriter::ManageBlockStepMetadata<std::string>(
     Variable<std::string> &variable, const std::string *data,
     std::string &blockMin, std::string &blockMax, std::string &blockMean,
     std::string &blockSum, std::string &blockVar)
@@ -173,7 +190,7 @@ void JuleaDBDAIWriter::ManageBlockStepMetadataStandard<std::string>(
 }
 
 template <>
-void JuleaDBDAIWriter::ManageBlockStepMetadataStandard<std::complex<float>>(
+void JuleaDBDAIWriter::ManageBlockStepMetadata<std::complex<float>>(
     Variable<std::complex<float>> &variable, const std::complex<float> *data,
     std::complex<float> &blockMin, std::complex<float> &blockMax,
     std::complex<float> &blockMean, std::complex<float> &blockSum,
@@ -183,7 +200,7 @@ void JuleaDBDAIWriter::ManageBlockStepMetadataStandard<std::complex<float>>(
 }
 
 template <>
-void JuleaDBDAIWriter::ManageBlockStepMetadataStandard<std::complex<double>>(
+void JuleaDBDAIWriter::ManageBlockStepMetadata<std::complex<double>>(
     Variable<std::complex<double>> &variable, const std::complex<double> *data,
     std::complex<double> &blockMin, std::complex<double> &blockMax,
     std::complex<double> &blockMean, std::complex<double> &blockSum,
@@ -278,13 +295,14 @@ void JuleaDBDAIWriter::PutSyncToJulea(
     Variable<T> &variable, const T *data,
     const typename Variable<T>::Info &blockInfo)
 {
-    bool original = false;
+    // bool original = false;
     T blockMin;
     T blockMax;
     T blockMean;
     T blockSum;
     T blockSumSquares;
     T blockVar;
+    uint32_t entryID = 0;
 
     if (m_Verbosity == 5)
     {
@@ -304,24 +322,25 @@ void JuleaDBDAIWriter::PutSyncToJulea(
         ComputeGlobalDimensions(variable);
     }
 
-    uint32_t entryID = 0;
-    auto it = m_JuleaCDO.m_Precomputes.find(
-        std::pair<std::string, std::string>(m_Name, variable.m_Name));
-
-    if (it == m_JuleaCDO.m_Precomputes.end())
+    if (m_ComputeStatsCombined)
     {
-        original = true;
-        ManageBlockStepMetadataOriginal(variable, data, blockMin, blockMax);
+        // m_IsOriginalFormat determines which MD to compute
+        ManageBlockStepMetadata(variable, data, blockMin, blockMax, blockMean,
+                                blockSum, blockVar);
     }
     else
     {
-        if (m_ComputeStatsCombined)
+
+        auto it = m_JuleaCDO.m_Precomputes.find(
+            std::pair<std::string, std::string>(m_Name, variable.m_Name));
+        if (it == m_JuleaCDO.m_Precomputes.end())
         {
-            ManageBlockStepMetadataStandard(variable, data, blockMin, blockMax,
-                                            blockMean, blockSum, blockVar);
+            // TODO: should not happen; is checked in init whether there is
+            // anything in tag table
         }
         else
         {
+
             T blockResult;
             std::vector<T> blockResults;
             for (std::list<std::pair<JDAIStatistic, JDAIGranularity>>::iterator
@@ -394,14 +413,14 @@ void JuleaDBDAIWriter::PutSyncToJulea(
         /** updates the variable metadata as there is a new block now */
         m_JuleaDBInteractionWriter.PutVariableMetadataToJulea(
             variable, m_ProjectNamespace, m_Name, variable.m_Name,
-            m_CurrentStep, m_CurrentBlockID, original);
+            m_CurrentStep, m_CurrentBlockID, m_IsOriginalFormat);
     }
 
     /** put block metadata to DB */
     m_JuleaDBInteractionWriter.PutBlockMetadataToJulea(
         variable, m_ProjectNamespace, m_Name, variable.m_Name, m_CurrentStep,
         m_CurrentBlockID, blockInfo, blockMin, blockMax, blockMean, blockSum,
-        blockVar, entryID, original);
+        blockVar, entryID, m_IsOriginalFormat);
 
     /** put data to object store */
     m_JuleaDBInteractionWriter.PutVariableDataToJulea(
@@ -415,7 +434,7 @@ void JuleaDBDAIWriter::PutSyncCommon(
     if (m_Verbosity == 5)
     {
         std::cout << "JDB Writer (" << m_WriterRank << ") : PutSyncCommon("
-                  << variable.m_Name << ") --- Namespace = " << m_Name
+                  << variable.m_Name << ") --- File = " << m_Name
                   << " --- CurrentStep = " << m_CurrentStep << "\n";
     }
 
@@ -428,7 +447,7 @@ void JuleaDBDAIWriter::PutSyncCommon(Variable<T> &variable, const T *data)
     if (m_Verbosity == 5)
     {
         std::cout << "JDB Writer (" << m_WriterRank << ") : PutSyncCommon("
-                  << variable.m_Name << ") --- Namespace = " << m_Name
+                  << variable.m_Name << ") --- File = " << m_Name
                   << " --- CurrentStep = " << m_CurrentStep << "\n";
     }
 

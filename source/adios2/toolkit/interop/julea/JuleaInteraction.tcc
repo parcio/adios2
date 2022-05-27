@@ -49,8 +49,12 @@ void JuleaInteraction::PutVariableDataToJulea(
 
     // auto stepBlockID = g_strdup_printf("%lu_%lu", currStep, block);
     auto uniqueID = g_strdup_printf("%d", entryID);
+    // auto stringDataObject = g_strdup_printf(
+    //     "%s_%s_%s", fileName.c_str(), variable.m_Name.c_str(),
+    //     objName.c_str());
     auto stringDataObject = g_strdup_printf(
-        "%s_%s_%s", fileName.c_str(), variable.m_Name.c_str(), objName.c_str());
+        "%s_%s_%s_%s", projectNamespace.c_str(), fileName.c_str(),
+        variable.m_Name.c_str(), objName.c_str());
     // const char id = (char) entryID;
 
     // auto dataObject = j_object_new(stringDataObject, stepBlockID);
@@ -81,11 +85,10 @@ void JuleaInteraction::PutVariableDataToJulea(
 
 // FIXME: needs projectnamespace parameter + rename nameSpace to fileNames
 template <class T>
-void JuleaInteraction::GetVariableDataFromJulea(core::Variable<T> &variable,
-                                                T *data,
-                                                const std::string nameSpace,
-                                                size_t offset, size_t dataSize,
-                                                uint32_t entryID) const
+void JuleaInteraction::GetVariableDataFromJulea(
+    core::Variable<T> &variable, T *data, const std::string projectNamespace,
+    const std::string fileName, size_t offset, size_t dataSize,
+    uint32_t entryID) const
 {
     // std::cout << "-- GetVariableDataFromJulea ----- " << std::endl;
 
@@ -93,9 +96,13 @@ void JuleaInteraction::GetVariableDataFromJulea(core::Variable<T> &variable,
     const char *varName = variable.m_Name.c_str();
 
     std::string objName = "variableblocks";
-    auto stringDataObject =
-        g_strdup_printf("%s_%s_%s", nameSpace.c_str(), variable.m_Name.c_str(),
-                        objName.c_str());
+    // auto stringDataObject =
+    //     g_strdup_printf("%s_%s_%s", nameSpace.c_str(),
+    //     variable.m_Name.c_str(),
+    //                     objName.c_str());
+    auto stringDataObject = g_strdup_printf(
+        "%s_%s_%s_%s", projectNamespace.c_str(), fileName.c_str(),
+        variable.m_Name.c_str(), objName.c_str());
     // std::cout << "stringDataObject: " << stringDataObject << std::endl;
     auto uniqueID = g_strdup_printf("%d", entryID);
 

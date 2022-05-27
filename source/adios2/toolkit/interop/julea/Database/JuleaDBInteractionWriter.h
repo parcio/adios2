@@ -30,12 +30,14 @@ public:
     ~JuleaDBInteractionWriter() = default;
 
     /** --- Variables --- */
-    void InitDBSchemas();
+    void InitDBSchemas(bool isOriginalFormat);
 
     /**
      * Put the variable metadata that does not change from block to block into
      * the JULEA key-value store
-     * @param nameSpace file name
+     * @param projectNamespace namespace provided by user to encapsulate
+     * different metadata requirements from another
+     * @param fileName file name (name of I/O)
      * @param buffer    buffer of serialized metadata
      * @param bufferLen length of buffer
      * @param varName   variable name = key for the kv store
@@ -49,7 +51,9 @@ public:
     /**
      * Put the metadata for a specific block in a specific step to JULEA
      * key-value store.
-     * @param nameSpace   file name
+     * @param projectNamespace namespace provided by user to encapsulate
+     * different metadata requirements from another
+     * @param fileName file name (name of I/O)
      * @param varName     variableName; is part of the kv-namespace
      * @param buffer      buffer of serialized metadata
      * @param bufferLen   length of buffer
@@ -67,14 +71,36 @@ public:
     // TODO: support attributes again
 
 private:
+    /**
+     *   ------------- Create table schemas ----------------
+     */
     // schemas for CDO related statistics
     void AddFieldsForClimateIndexTable(JDBSchema *schema);
     // void AddFieldsForYearlyLocalStatsTable(JDBSchema *schema);
     void AddFieldsForDailyGlobalStatsTable(JDBSchema *schema);
     void AddFieldsForDailyLocalStatsTable(JDBSchema *schema);
 
+    /**  Tables contain only original information (= BP formats) */
+    void AddFieldsForVariableMD_Original(JDBSchema *schema);
+    void AddFieldsForBlockMD_Original(JDBSchema *schema);
+
+    /**  Tables contain only doubles and original information (= BP formats) */
+    void AddFieldsForVariableMD_OriginalDouble(JDBSchema *schema);
+    void AddFieldsForBlockMD_OriginalDouble(JDBSchema *schema);
+
+    /** Tables contain additional statistics (mean, sum, var) */
+    void AddFieldsForBlockMD_AllTypes_AdditionalStats(JDBSchema *schema);
+
+    /** Tables contain only doubles additional statistics (mean, sum, var) */
+    void AddFieldsForVariableMD_Eval(JDBSchema *schema);
+    void AddFieldsForBlockMD_Eval(JDBSchema *schema);
+
+    /**
+     *   ------------- Add metadata to tables ----------------
+     */
     // should only be called from master
-    void AddEntriesForClimateIndexTable(const std::string nameSpace,
+    void AddEntriesForClimateIndexTable(const std::string projectNamespace,
+                                        const std::string fileName,
                                         const std::string varName,
                                         size_t currentStep,
                                         interop::JuleaCDO &JuleaCDO);
@@ -83,22 +109,14 @@ private:
     //                                         size_t currentStep,
     //                                         interop::JuleaCDO &JuleaCDO,
     //                                         int writerRank);
-    void AddEntriesForDailyGlobalStatsTable(const std::string nameSpace,
+    void AddEntriesForDailyGlobalStatsTable(const std::string projectNamespace,
+                                            const std::string fileName,
                                             const std::string varName,
                                             size_t currentStep,
                                             interop::JuleaCDO &JuleaCDO,
                                             int writerRank, int year, int month,
                                             int day);
     // void AddEntriesForDailyLocalStatsTable(JDBSchema *schema);
-
-    // Supports only those types required in thesis evaluation
-    void AddFieldsForVariableMDEval(JDBSchema *schema);
-    void AddFieldsForBlockMDEval(JDBSchema *schema);
-
-    // Supports all AdiosTypes
-    void AddFieldsForVariableMD(JDBSchema *schema);
-    void AddFieldsForBlockMD(JDBSchema *schema);
-
     void AddEntriesForCDOStatistics(const std::string nameSpace,
                                     const std::string varName,
                                     size_t currentStep,

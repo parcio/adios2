@@ -243,10 +243,10 @@ void JuleaCDO::ComputeBlockStat<std::complex<double>>(
 // blockSumSquares = sum of the "fehlerquadrate"
 // blockVar = block variance
 template <class T>
-void JuleaCDO::ComputeBlockStatsStandard(core::Variable<T> &variable,
-                                         const T *data, T &blockMin,
-                                         T &blockMax, T &blockMean, T &blockSum,
-                                         T &blockSumSquares, T &blockVar)
+void JuleaCDO::ComputeAllBlockStats(core::Variable<T> &variable, const T *data,
+                                    T &blockMin, T &blockMax, T &blockMean,
+                                    T &blockSum, T &blockSumSquares,
+                                    T &blockVar, bool isOriginalFormat)
 {
     if (m_Verbosity == 5)
     {
@@ -260,52 +260,57 @@ void JuleaCDO::ComputeBlockStatsStandard(core::Variable<T> &variable,
     /** accumulate does not work with type T data, so need to do it by hand */
     // blockSum = std::accumulate(data.begin(), data.end(), 0)
 
-    for (size_t i = 0; i < number_elements; ++i)
+    if (!isOriginalFormat)
     {
-        blockSum += data[i];
+        for (size_t i = 0; i < number_elements; ++i)
+        {
+            blockSum += data[i];
+        }
+
+        blockMean = blockSum / (double)number_elements;
+
+        for (size_t i = 0; i < number_elements; ++i)
+        {
+            blockSumSquares += std::pow(data[i] - blockMean, 2);
+        }
+
+        blockVar = blockSumSquares / number_elements;
     }
-
-    blockMean = blockSum / (double)number_elements;
-
-    for (size_t i = 0; i < number_elements; ++i)
-    {
-        blockSumSquares += std::pow(data[i] - blockMean, 2);
-    }
-
-    blockVar = blockSumSquares / number_elements;
 }
 
 template <>
-void JuleaCDO::ComputeBlockStatsStandard<std::string>(
+void JuleaCDO::ComputeAllBlockStats<std::string>(
     core::Variable<std::string> &variable, const std::string *data,
     std::string &blockMin, std::string &blockMax, std::string &blockMean,
-    std::string &blockSum, std::string &blockSumSquares, std::string &blockVar)
+    std::string &blockSum, std::string &blockSumSquares, std::string &blockVar,
+    bool isOriginalFormat)
 {
 }
 
 template <>
-void JuleaCDO::ComputeBlockStatsStandard<std::complex<float>>(
+void JuleaCDO::ComputeAllBlockStats<std::complex<float>>(
     core::Variable<std::complex<float>> &variable,
     const std::complex<float> *data, std::complex<float> &blockMin,
     std::complex<float> &blockMax, std::complex<float> &blockMean,
     std::complex<float> &blockSum, std::complex<float> &blockSumSquares,
-    std::complex<float> &blockVar)
+    std::complex<float> &blockVar, bool isOriginalFormat)
 {
 }
 
 template <>
-void JuleaCDO::ComputeBlockStatsStandard<std::complex<double>>(
+void JuleaCDO::ComputeAllBlockStats<std::complex<double>>(
     core::Variable<std::complex<double>> &variable,
     const std::complex<double> *data, std::complex<double> &blockMin,
     std::complex<double> &blockMax, std::complex<double> &blockMean,
     std::complex<double> &blockSum, std::complex<double> &blockSumSquares,
-    std::complex<double> &blockVar)
+    std::complex<double> &blockVar, bool isOriginalFormat)
 {
 }
 
 template <class T>
 void JuleaCDO::BufferCDOStats(core::Variable<T> &variable, T blockMin,
-                              T blockMean, T blockMax)
+                              T blockMax, T blockMean, T blockSum, T blockVar,
+                              bool isOriginalFormat)
 {
 }
 
@@ -315,21 +320,32 @@ void JuleaCDO::BufferCDOStats(core::Variable<T> &variable, T blockMin,
  */
 template <>
 void JuleaCDO::BufferCDOStats<double>(core::Variable<double> &variable,
-                                      double blockMin, double blockMean,
-                                      double blockMax)
+                                      double blockMin, double blockMax,
+                                      double blockMean, double blockSum,
+                                      double blockVar, bool original)
 {
     if (variable.m_Name == m_TemperatureName)
     {
         m_HTempMin.push_back(blockMin);
-        m_HTempMean.push_back(blockMean);
         m_HTempMax.push_back(blockMax);
+        if (!original)
+        {
+            m_HTempMean.push_back(blockMean);
+            m_HTempSum.push_back(blockSum);
+            m_HTempVar.push_back(blockVar);
+        }
     }
 
     if (variable.m_Name == m_PrecipitationName)
     {
         m_HPrecMin.push_back(blockMin);
-        m_HPrecMean.push_back(blockMean);
         m_HPrecMax.push_back(blockMax);
+        if (!original)
+        {
+            m_HPrecMean.push_back(blockMean);
+            m_HPrecSum.push_back(blockSum);
+            m_HPrecVar.push_back(blockVar);
+        }
     }
 }
 

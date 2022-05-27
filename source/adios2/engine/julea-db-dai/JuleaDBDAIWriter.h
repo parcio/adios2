@@ -67,6 +67,12 @@ private:
 
     // TODO: set namespace
     std::string m_ProjectNamespace;
+    // indicates whether anything else should be computed; since all variables
+    // in the namespace will use the same table schema it is sufficient to use a
+    // bool for the entire engine here
+    bool m_IsOriginalFormat =
+        false; // indicates whether anything else should be computed
+
     // interop::JuleaSerializer m_JuleaSerializer;
     // interop::JuleaDBInteraction m_JuleaDBInteractionWriter;
     // interop::JuleaDBInteractionWriter m_JuleaDBInteractionWriter;
@@ -125,6 +131,7 @@ private:
 
     void InitVariables();
     void InitDB();
+    void InitDAI();
 
 #define declare_type(T)                                                        \
     void DoPutSync(Variable<T> &variable, const T *) final;                    \
@@ -159,13 +166,21 @@ private:
                    T &blockMax, T &blockMean);
 
     template <class T>
-    void ManageBlockStepMetadataStandard(Variable<T> &variable, const T *data,
-                                         T &blockMin, T &blockMax, T &blockMean,
-                                         T &blockSum, T &blockVar);
+    void ManageBlockStepMetadata(Variable<T> &variable, const T *data,
+                                 T &blockMin, T &blockMax, T &blockMean,
+                                 T &blockSum, T &blockVar);
 
-    template <class T>
-    void ManageBlockStepMetadataOriginal(Variable<T> &variable, const T *data,
-                                         T &blockMin, T &blockMax);
+    // template <class T>
+    // void ManageBlockStepMetadataStandard(Variable<T> &variable, const T
+    // *data,
+    //                                      T &blockMin, T &blockMax, T
+    //                                      &blockMean, T &blockSum, T
+    //                                      &blockVar);
+
+    // template <class T>
+    // void ManageBlockStepMetadataOriginal(Variable<T> &variable, const T
+    // *data,
+    //                                      T &blockMin, T &blockMax);
 
     template <class T>
     void BufferTemperature(Variable<T> &variable, T blockMin, T blockMean,

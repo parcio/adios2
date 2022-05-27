@@ -44,7 +44,7 @@ void JuleaDBDAIReader::GetSyncCommon(Variable<std::string> &variable,
     {
         long unsigned int dataSize = 0;
         guint32 buffer_len = 0;
-        std::string nameSpace = m_Name;
+        std::string fileName = m_Name;
         std::string stepBlockID;
         gpointer md_buffer = nullptr;
 
@@ -65,7 +65,7 @@ void JuleaDBDAIReader::GetSyncCommon(Variable<std::string> &variable,
         // std::cout << "blocksInfos.size: " << variable.m_BlocksInfo.size()
         // << std::endl;
 
-        // GetBlockMetadataFromJulea(nameSpace, variable.m_Name, &md_buffer,
+        // GetBlockMetadataFromJulea(fileName, variable.m_Name, &md_buffer,
         // &buffer_len, stepBlockID);
         // DeserializeBlockMetadata(variable, md_buffer, variable.m_BlockID,
         // blockInfo);
@@ -167,7 +167,7 @@ void JuleaDBDAIReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
     size_t step = 0;
     std::string stepBlockID;
     Dims count;
-    std::string nameSpace = m_Name;
+    std::string fileName = m_Name;
 
     long unsigned int dataSize = 0;
     guint32 buffer_len = 0;
@@ -195,8 +195,8 @@ void JuleaDBDAIReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
      * determine block position in buffer and for AllStepsBlockInfo for bpls */
     auto entryID = variable.m_AvailableStepBlockIndexOffsets[step + 1][blockID];
     m_JuleaDBInteractionReader.GetCountFromBlockMetadata(
-        nameSpace, variable.m_Name, step, blockID, &count, entryID,
-        variable.m_SingleValue, data);
+        m_ProjectNamespace, fileName, variable.m_Name, step, blockID, &count,
+        entryID, variable.m_SingleValue, data);
     if (variable.m_SingleValue)
     {
         // FIXME: get Value from DB
@@ -209,7 +209,7 @@ void JuleaDBDAIReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
     size_t offset = 0;
 
     // FIXME:
-    // DBGetVariableDataFromJulea(variable, data, nameSpace, offset, dataSize,
+    // DBGetVariableDataFromJulea(variable, data, fileName, offset, dataSize,
     // stepBlockID);
 }
 
@@ -265,8 +265,7 @@ void JuleaDBDAIReader::ReadVariableBlocks(Variable<T> &variable)
     if (m_Verbosity == 5)
     {
         std::cout << "\n__________ReadVariableBlocks_____________" << std::endl;
-        std::cout << "Julea DB Reader " << m_ReaderRank
-                  << " Namespace: " << m_Name
+        std::cout << "Julea DB Reader " << m_ReaderRank << " File: " << m_Name
                   << " Variable name: " << variable.m_Name << std::endl;
     }
 
@@ -347,7 +346,7 @@ void JuleaDBDAIReader::ReadVariableBlocks(Variable<T> &variable)
 
                     // char *buffer = nullptr;
                     std::string stepBlockID;
-                    std::string nameSpace = m_Name;
+                    std::string fileName = m_Name;
                     long unsigned int dataSize = 0;
                     // TODO: -1 because BP stuff starts at 1
 
@@ -379,7 +378,7 @@ void JuleaDBDAIReader::ReadVariableBlocks(Variable<T> &variable)
                     {
                         // std::cout << "--- m_UseKeysForBPLS ---" << std::endl;
                         // DBGetVariableDataFromJulea(
-                        //     variable, data, nameSpace, dataSize,
+                        //     variable, data, fileName, dataSize,
                         //     variable.m_StepsStart, variable.m_BlockID);
 
                         // TODO: the following is just the else copied
@@ -390,8 +389,8 @@ void JuleaDBDAIReader::ReadVariableBlocks(Variable<T> &variable)
                         // T data[dataSize];
                         std::vector<T> data = std::vector<T>(dataSize);
                         m_JuleaDBInteractionReader.GetVariableDataFromJulea(
-                            variable, data.data(), nameSpace, offset, dataSize,
-                            subStreamBoxInfo.SubStreamID);
+                            variable, data.data(), m_ProjectNamespace, fileName,
+                            offset, dataSize, subStreamBoxInfo.SubStreamID);
 
                         const Dims blockInfoStart =
                             (variable.m_ShapeID == ShapeID::LocalArray &&
@@ -416,8 +415,8 @@ void JuleaDBDAIReader::ReadVariableBlocks(Variable<T> &variable)
                         // T data[dataSize];
                         std::vector<T> data = std::vector<T>(dataSize);
                         m_JuleaDBInteractionReader.GetVariableDataFromJulea(
-                            variable, data.data(), nameSpace, offset, dataSize,
-                            subStreamBoxInfo.SubStreamID);
+                            variable, data.data(), m_ProjectNamespace, fileName,
+                            offset, dataSize, subStreamBoxInfo.SubStreamID);
 
                         const Dims blockInfoStart =
                             (variable.m_ShapeID == ShapeID::LocalArray &&
@@ -468,7 +467,7 @@ JuleaDBDAIReader::AllStepsBlocksInfo(const core::Variable<T> &variable) const
             std::cout << "\n__________AllStepsBlocksInfo_____________"
                       << std::endl;
             std::cout << "Julea DB Reader " << m_ReaderRank
-                      << " Namespace: " << m_Name
+                      << " File: " << m_Name
                       << " Variable name: " << variable.m_Name << std::endl;
             std::cout << "--- step: " << step
                       << " blockPositions: " << blockPositions.data()[0]
@@ -491,8 +490,7 @@ JuleaDBDAIReader::BlocksInfoCommon(
     if (m_Verbosity == 5)
     {
         std::cout << "\n__________BlocksInfoCommon_____________" << std::endl;
-        std::cout << "Julea DB Reader " << m_ReaderRank
-                  << " Namespace: " << m_Name
+        std::cout << "Julea DB Reader " << m_ReaderRank << " File: " << m_Name
                   << " Variable name: " << variable.m_Name << std::endl;
         std::cout << "--- step: " << step << std::endl;
         std::cout << "blocksIndexOffsets.size(): " << blocksIndexOffsets.size()
@@ -507,13 +505,13 @@ JuleaDBDAIReader::BlocksInfoCommon(
         guint32 buffer_len = 0;
         gpointer md_buffer = nullptr;
 
-        auto nameSpace = m_Name;
+        auto fileName = m_Name;
         long unsigned int dataSize = 0;
         auto stepBlockID = g_strdup_printf("%lu_%lu", step, i);
         auto entryID = blocksIndexOffsets[i];
 
         typename core::Variable<T>::Info info =
-            // *DBGetBlockMetadata(variable, nameSpace, step, i, entryID);
+            // *DBGetBlockMetadata(variable, fileName, step, i, entryID);
             *m_JuleaDBInteractionReader.GetBlockMetadata(variable, entryID);
         info.IsReverseDims = false;
         info.Step = step;
@@ -533,8 +531,7 @@ JuleaDBDAIReader::AllRelativeStepsBlocksInfo(
     {
         std::cout << "\n__________AllRelativeStepsBlocksInfo_____________"
                   << std::endl;
-        std::cout << "Julea DB Reader " << m_ReaderRank
-                  << " Namespace: " << m_Name
+        std::cout << "Julea DB Reader " << m_ReaderRank << " File: " << m_Name
                   << " Variable name: " << variable.m_Name << std::endl;
     }
     std::vector<std::vector<typename core::Variable<T>::Info>>
@@ -560,8 +557,7 @@ JuleaDBDAIReader::BlocksInfo(const core::Variable<T> &variable,
     if (m_Verbosity == 5)
     {
         std::cout << "\n__________BlocksInfo_____________" << std::endl;
-        std::cout << "Julea DB Reader " << m_ReaderRank
-                  << " Namespace: " << m_Name
+        std::cout << "Julea DB Reader " << m_ReaderRank << " File: " << m_Name
                   << " Variable name: " << variable.m_Name << std::endl;
     }
 
@@ -584,8 +580,7 @@ JuleaDBDAIReader::InitVariableBlockInfo(core::Variable<T> &variable, T *data)
     {
         std::cout << "\n__________InitVariableBlockInfo_____________"
                   << std::endl;
-        std::cout << "Julea DB Reader " << m_ReaderRank
-                  << " Namespace: " << m_Name
+        std::cout << "Julea DB Reader " << m_ReaderRank << " File: " << m_Name
                   << " Variable name: " << variable.m_Name << std::endl;
     }
     const size_t stepsStart = variable.m_StepsStart;
@@ -673,7 +668,7 @@ void JuleaDBDAIReader::SetVariableBlockInfo(
                   << std::endl;
         std::cout << "Julea DB Reader " << m_ReaderRank
                   << " Reached SetVariableBlockInfo" << std::endl;
-        std::cout << "Julea Reader " << m_ReaderRank << " Namespace: " << m_Name
+        std::cout << "Julea Reader " << m_ReaderRank << " File: " << m_Name
                   << std::endl;
         std::cout << "Julea Reader " << m_ReaderRank
                   << " Variable name: " << variable.m_Name << std::endl;

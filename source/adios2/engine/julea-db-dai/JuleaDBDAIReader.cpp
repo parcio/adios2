@@ -255,7 +255,8 @@ void JuleaDBDAIReader::Init()
 // template <class T>
 void JuleaDBDAIReader::InitVariables()
 {
-    m_JuleaDBInteractionReader.InitVariablesFromDB(m_Name, &m_IO, *this);
+    m_JuleaDBInteractionReader.InitVariablesFromDB(m_ProjectNamespace, m_Name,
+                                                   &m_IO, *this);
 }
 
 void JuleaDBDAIReader::InitParameters()

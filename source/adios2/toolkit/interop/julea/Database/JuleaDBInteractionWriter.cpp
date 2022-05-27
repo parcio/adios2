@@ -30,12 +30,6 @@ namespace adios2
 namespace interop
 {
 
-JuleaDBInteractionWriter::JuleaDBInteractionWriter(helper::Comm const &comm)
-: JuleaInteraction(std::move(comm))
-{
-    // std::cout << "This is the constructor of the writer" << std::endl;
-}
-
 // Set Daily values; also set monthly, yearly values if -1 is passed for month
 // and/or day
 void SetDailyValues(JDBEntry *entry, interop::JuleaCDO &JuleaCDO,
@@ -56,9 +50,8 @@ void SetDailyValues(JDBEntry *entry, interop::JuleaCDO &JuleaCDO,
             j_db_entry_set_field(entry, "daily_globalSum",
                                  &JuleaCDO.m_NotComputedValue,
                                  sizeof(JuleaCDO.m_NotComputedValue), NULL);
-            // j_db_entry_set_field(entry, "daily_globalVar",
-            // &JuleaCDO.m_DTempVar,
-            //                      sizeof(JuleaCDO.m_DTempVar), NULL);
+            j_db_entry_set_field(entry, "daily_globalVar", &JuleaCDO.m_DTempVar,
+                                 sizeof(JuleaCDO.m_DTempVar), NULL);
         }
         if (varName == JuleaCDO.m_PrecipitationName)
         {
@@ -71,9 +64,8 @@ void SetDailyValues(JDBEntry *entry, interop::JuleaCDO &JuleaCDO,
                                  sizeof(JuleaCDO.m_DPrecMean), NULL);
             j_db_entry_set_field(entry, "daily_globalSum", &JuleaCDO.m_DPrecSum,
                                  sizeof(JuleaCDO.m_DPrecSum), NULL);
-            // j_db_entry_set_field(entry, "daily_globalVar",
-            // &JuleaCDO.m_DPrecVar,
-            //                      sizeof(JuleaCDO.m_DPrecVar), NULL);
+            j_db_entry_set_field(entry, "daily_globalVar", &JuleaCDO.m_DPrecVar,
+                                 sizeof(JuleaCDO.m_DPrecVar), NULL);
         }
         // monthly values
         else if (day == JuleaCDO.m_StoreMonthlyValue)
@@ -93,9 +85,9 @@ void SetDailyValues(JDBEntry *entry, interop::JuleaCDO &JuleaCDO,
                 j_db_entry_set_field(entry, "daily_globalSum",
                                      &JuleaCDO.m_NotComputedValue,
                                      sizeof(JuleaCDO.m_NotComputedValue), NULL);
-                // j_db_entry_set_field(entry, "daily_globalVar",
-                //                      &JuleaCDO.m_MTempVar,
-                //                      sizeof(JuleaCDO.m_MTempVar), NULL);
+                j_db_entry_set_field(entry, "daily_globalVar",
+                                     &JuleaCDO.m_MTempVar,
+                                     sizeof(JuleaCDO.m_MTempVar), NULL);
             }
             if (varName == JuleaCDO.m_PrecipitationName)
             {
@@ -111,9 +103,9 @@ void SetDailyValues(JDBEntry *entry, interop::JuleaCDO &JuleaCDO,
                 j_db_entry_set_field(entry, "daily_globalSum",
                                      &JuleaCDO.m_MPrecSum,
                                      sizeof(JuleaCDO.m_MPrecSum), NULL);
-                // j_db_entry_set_field(entry, "daily_globalVar",
-                //                      &JuleaCDO.m_MPrecVar,
-                //                      sizeof(JuleaCDO.m_MPrecVar), NULL);
+                j_db_entry_set_field(entry, "daily_globalVar",
+                                     &JuleaCDO.m_MPrecVar,
+                                     sizeof(JuleaCDO.m_MPrecVar), NULL);
             }
             // yearly values
             else if (day == JuleaCDO.m_StoreYearlyValue)
@@ -132,9 +124,9 @@ void SetDailyValues(JDBEntry *entry, interop::JuleaCDO &JuleaCDO,
                     j_db_entry_set_field(
                         entry, "daily_globalSum", &JuleaCDO.m_NotComputedValue,
                         sizeof(JuleaCDO.m_NotComputedValue), NULL);
-                    // j_db_entry_set_field(entry, "daily_globalVar",
-                    //                      &JuleaCDO.m_YTempVar,
-                    //                      sizeof(JuleaCDO.m_YTempVar), NULL);
+                    j_db_entry_set_field(entry, "daily_globalVar",
+                                         &JuleaCDO.m_YTempVar,
+                                         sizeof(JuleaCDO.m_YTempVar), NULL);
                 }
                 if (varName == JuleaCDO.m_PrecipitationName)
                 {
@@ -150,183 +142,27 @@ void SetDailyValues(JDBEntry *entry, interop::JuleaCDO &JuleaCDO,
                     j_db_entry_set_field(entry, "daily_globalSum",
                                          &JuleaCDO.m_YPrecSum,
                                          sizeof(JuleaCDO.m_YPrecSum), NULL);
-                    // j_db_entry_set_field(entry, "daily_globalVar",
-                    //                      &JuleaCDO.m_YPrecVar,
-                    //                      sizeof(JuleaCDO.m_YPrecVar), NULL);
+                    j_db_entry_set_field(entry, "daily_globalVar",
+                                         &JuleaCDO.m_YPrecVar,
+                                         sizeof(JuleaCDO.m_YPrecVar), NULL);
                 }
             }
         }
     }
 }
-/**
- * One table for all climate indeces that are computed for evaluation
- */
-void JuleaDBInteractionWriter::AddFieldsForClimateIndexTable(JDBSchema *schema)
+
+JuleaDBInteractionWriter::JuleaDBInteractionWriter(helper::Comm const &comm)
+: JuleaInteraction(std::move(comm))
 {
-    gchar const *fileIndex[] = {"file", NULL};
-    gchar const *varIndex[] = {"variableName", NULL};
-    // gchar const *minDoubleIndex[] = {"min_float64", NULL};
-    // gchar const *maxDoubleIndex[] = {"max_float64", NULL};
-    // gchar const *meanDoubleIndex[] = {"mean_float64", NULL};
-
-    j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
-    j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
-
-    j_db_schema_add_field(schema, "year", J_DB_TYPE_UINT32, NULL);
-    j_db_schema_add_field(schema, "precip_days_1mm", J_DB_TYPE_UINT32, NULL);
-    j_db_schema_add_field(schema, "precip_days_10mm", J_DB_TYPE_UINT32, NULL);
-    j_db_schema_add_field(schema, "precip_days_20mm", J_DB_TYPE_UINT32, NULL);
-    j_db_schema_add_field(schema, "frost_days", J_DB_TYPE_UINT32, NULL);
-    j_db_schema_add_field(schema, "summer_days", J_DB_TYPE_UINT32, NULL);
-    j_db_schema_add_field(schema, "tropical_nights", J_DB_TYPE_UINT32, NULL);
-    j_db_schema_add_field(schema, "icing_days", J_DB_TYPE_UINT32, NULL);
-
-    j_db_schema_add_index(schema, fileIndex, NULL);
-    j_db_schema_add_index(schema, varIndex, NULL);
+    // std::cout << "This is the constructor of the writer" << std::endl;
 }
 
 /**
- * Table for the daily min/max/mean/sum/var with "global" resolution
- * global resolution = daily values for the complete step -> over all
- * processes monthly stats: day set to -1 yearly stats: month and day
- * set to -1
+ * ---------------------------- Original format
+ * ------------------------------------
  */
-void JuleaDBInteractionWriter::AddFieldsForDailyGlobalStatsTable(
+void JuleaDBInteractionWriter::AddFieldsForVariableMD_Original(
     JDBSchema *schema)
-{
-    gchar const *fileIndex[] = {"file", NULL};
-    gchar const *varIndex[] = {"variableName", NULL};
-    gchar const *yearIndex[] = {"year", NULL};
-    gchar const *monthIndex[] = {"month", NULL};
-    gchar const *dayIndex[] = {"day", NULL};
-
-    j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
-    j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
-
-    j_db_schema_add_field(schema, "year", J_DB_TYPE_SINT32, NULL);
-    j_db_schema_add_field(schema, "month", J_DB_TYPE_SINT32, NULL);
-    j_db_schema_add_field(schema, "day", J_DB_TYPE_SINT32, NULL);
-
-    j_db_schema_add_field(schema, "daily_globalMin", J_DB_TYPE_FLOAT64, NULL);
-    j_db_schema_add_field(schema, "daily_globalMax", J_DB_TYPE_FLOAT64, NULL);
-    j_db_schema_add_field(schema, "daily_globalMean", J_DB_TYPE_FLOAT64, NULL);
-    j_db_schema_add_field(schema, "daily_globalSum", J_DB_TYPE_FLOAT64, NULL);
-    // j_db_schema_add_field(schema, "daily_globalVar", J_DB_TYPE_FLOAT64,
-    // NULL);
-
-    j_db_schema_add_index(schema, fileIndex, NULL);
-    j_db_schema_add_index(schema, varIndex, NULL);
-    j_db_schema_add_index(schema, yearIndex, NULL);
-    j_db_schema_add_index(schema, monthIndex, NULL);
-    j_db_schema_add_index(schema, dayIndex, NULL);
-}
-
-void JuleaDBInteractionWriter::AddFieldsForVariableMDEval(JDBSchema *schema)
-{
-    gchar const *fileIndex[] = {"file", NULL};
-    gchar const *varIndex[] = {"variableName", NULL};
-    gchar const *minDoubleIndex[] = {"min_float64", NULL};
-    gchar const *maxDoubleIndex[] = {"max_float64", NULL};
-    gchar const *meanDoubleIndex[] = {"mean_float64", NULL};
-
-    j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
-    j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
-
-    j_db_schema_add_field(schema, "isConstantDims", J_DB_TYPE_UINT32, NULL);
-    j_db_schema_add_field(schema, "isReadAsJoined", J_DB_TYPE_UINT32, NULL);
-    j_db_schema_add_field(schema, "isReadAsLocalValue", J_DB_TYPE_UINT32, NULL);
-    j_db_schema_add_field(schema, "isRandomAccess", J_DB_TYPE_UINT32, NULL);
-    j_db_schema_add_field(schema, "isSingleValue", J_DB_TYPE_UINT32, NULL);
-
-    j_db_schema_add_field(schema, "shapeID", J_DB_TYPE_UINT32, NULL);
-    // TODO: Check whether this renaming screws up anything in init
-    j_db_schema_add_field(schema, "typeInt", J_DB_TYPE_UINT32, NULL);
-
-    /** all vectors need to store their size */
-    j_db_schema_add_field(schema, "shapeSize", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "shape", J_DB_TYPE_BLOB, NULL);
-    j_db_schema_add_field(schema, "startSize", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "start", J_DB_TYPE_BLOB, NULL);
-    j_db_schema_add_field(schema, "countSize", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "count", J_DB_TYPE_BLOB, NULL);
-
-    /** number of blocks (steps are index starting at 0) */
-    j_db_schema_add_field(schema, "numberSteps", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "blockArray", J_DB_TYPE_BLOB, NULL);
-
-    j_db_schema_add_field(schema, "min_float64", J_DB_TYPE_FLOAT64, NULL);
-    j_db_schema_add_field(schema, "max_float64", J_DB_TYPE_FLOAT64, NULL);
-    j_db_schema_add_field(schema, "mean_float64", J_DB_TYPE_FLOAT64, NULL);
-    j_db_schema_add_field(schema, "sum_float64", J_DB_TYPE_FLOAT64, NULL);
-
-    j_db_schema_add_field(schema, "value_string", J_DB_TYPE_STRING, NULL);
-
-    j_db_schema_add_index(schema, fileIndex, NULL);
-    j_db_schema_add_index(schema, varIndex, NULL);
-    j_db_schema_add_index(schema, minDoubleIndex, NULL);
-    j_db_schema_add_index(schema, maxDoubleIndex, NULL);
-    j_db_schema_add_index(schema, meanDoubleIndex, NULL);
-}
-
-void JuleaDBInteractionWriter::AddFieldsForBlockMDEval(JDBSchema *schema)
-{
-    gchar const *fileIndex[] = {"file", NULL};
-    gchar const *varIndex[] = {"variableName", NULL};
-    gchar const *stepIndex[] = {"step", NULL};
-    gchar const *blockIndex[] = {"block", NULL};
-    gchar const *minDoubleIndex[] = {"min_float64", NULL};
-    gchar const *maxDoubleIndex[] = {"max_float64", NULL};
-    gchar const *meanDoubleIndex[] = {"mean_float64", NULL};
-
-    j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
-    j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
-    j_db_schema_add_field(schema, "step", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "block", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "X", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "Y", J_DB_TYPE_UINT64, NULL);
-
-    /** all vectors need to store their size */
-    j_db_schema_add_field(schema, "shapeSize", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "shape", J_DB_TYPE_BLOB, NULL);
-    j_db_schema_add_field(schema, "startSize", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "start", J_DB_TYPE_BLOB, NULL);
-    j_db_schema_add_field(schema, "countSize", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "count", J_DB_TYPE_BLOB, NULL);
-    j_db_schema_add_field(schema, "memoryStartSize", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "memoryStart", J_DB_TYPE_BLOB, NULL);
-    j_db_schema_add_field(schema, "memoryCountSize", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "memoryCount", J_DB_TYPE_BLOB, NULL);
-
-    j_db_schema_add_field(schema, "isValue", J_DB_TYPE_UINT32, NULL);
-    j_db_schema_add_field(schema, "year", J_DB_TYPE_UINT32, NULL);
-    j_db_schema_add_field(schema, "month", J_DB_TYPE_UINT32, NULL);
-    j_db_schema_add_field(schema, "day", J_DB_TYPE_UINT32, NULL);
-
-    j_db_schema_add_field(schema, "min_float64", J_DB_TYPE_FLOAT64, NULL);
-    j_db_schema_add_field(schema, "max_float64", J_DB_TYPE_FLOAT64, NULL);
-    // j_db_schema_add_field(schema, "value_float64", J_DB_TYPE_FLOAT64,
-    // NULL);
-    j_db_schema_add_field(schema, "mean_float64", J_DB_TYPE_FLOAT64, NULL);
-    j_db_schema_add_field(schema, "sum_float64", J_DB_TYPE_FLOAT64, NULL);
-    j_db_schema_add_field(schema, "variance_float64", J_DB_TYPE_FLOAT64, NULL);
-    // j_db_schema_add_field(schema, "std_float64", J_DB_TYPE_FLOAT64, NULL);
-
-    j_db_schema_add_field(schema, "value_string", J_DB_TYPE_STRING, NULL);
-
-    j_db_schema_add_field(schema, "stepsStart", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "stepsCount", J_DB_TYPE_UINT64, NULL);
-    // j_db_schema_add_field(schema, "blockID", J_DB_TYPE_UINT64, NULL);
-
-    j_db_schema_add_index(schema, fileIndex, NULL);
-    j_db_schema_add_index(schema, varIndex, NULL);
-    j_db_schema_add_index(schema, stepIndex, NULL);
-    j_db_schema_add_index(schema, blockIndex, NULL);
-    j_db_schema_add_index(schema, minDoubleIndex, NULL);
-    j_db_schema_add_index(schema, maxDoubleIndex, NULL);
-    j_db_schema_add_index(schema, meanDoubleIndex, NULL);
-}
-
-void JuleaDBInteractionWriter::AddFieldsForVariableMD(JDBSchema *schema)
 {
     gchar const *fileIndex[] = {"file", NULL};
     gchar const *varIndex[] = {"variableName", NULL};
@@ -395,7 +231,6 @@ void JuleaDBInteractionWriter::AddFieldsForVariableMD(JDBSchema *schema)
     j_db_schema_add_field(schema, "min_float64", J_DB_TYPE_FLOAT64, NULL);
     j_db_schema_add_field(schema, "max_float64", J_DB_TYPE_FLOAT64, NULL);
     j_db_schema_add_field(schema, "value_float64", J_DB_TYPE_FLOAT64, NULL);
-    j_db_schema_add_field(schema, "mean_float64", J_DB_TYPE_FLOAT64, NULL);
 
     // j_db_schema_add_field(schema, "min_string", J_DB_TYPE_STRING,
     // NULL); j_db_schema_add_field(schema, "max_string",
@@ -408,10 +243,201 @@ void JuleaDBInteractionWriter::AddFieldsForVariableMD(JDBSchema *schema)
     j_db_schema_add_index(schema, maxFloatIndex, NULL);
     j_db_schema_add_index(schema, minDoubleIndex, NULL);
     j_db_schema_add_index(schema, maxDoubleIndex, NULL);
-    j_db_schema_add_index(schema, meanDoubleIndex, NULL);
 }
 
-void JuleaDBInteractionWriter::AddFieldsForBlockMD(JDBSchema *schema)
+void JuleaDBInteractionWriter::AddFieldsForBlockMD_Original(JDBSchema *schema)
+{
+    gchar const *fileIndex[] = {"file", NULL};
+    gchar const *varIndex[] = {"variableName", NULL};
+    gchar const *stepIndex[] = {"step", NULL};
+    gchar const *blockIndex[] = {"block", NULL};
+    gchar const *minFloatIndex[] = {"variableName", NULL};
+    gchar const *maxFloatIndex[] = {"variableName", NULL};
+    gchar const *minDoubleIndex[] = {"variableName", NULL};
+    gchar const *maxDoubleIndex[] = {"variableName", NULL};
+    //    gchar const *minIndex[] = {"min_blob", NULL};
+    //    gchar const *maxIndex[] = {"max_blob", NULL};
+
+    j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "step", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "block", J_DB_TYPE_UINT64, NULL);
+
+    /** all vectors need to store their size */
+    j_db_schema_add_field(schema, "shapeSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "shape", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "startSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "start", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "countSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "count", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "memoryStartSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "memoryStart", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "memoryCountSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "memoryCount", J_DB_TYPE_BLOB, NULL);
+
+    j_db_schema_add_field(schema, "min_blob", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "max_blob", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "value_blob", J_DB_TYPE_BLOB, NULL);
+
+    // add min/max/value for every type for performance improvement of
+    // querying
+    j_db_schema_add_field(schema, "min_sint32", J_DB_TYPE_SINT32, NULL);
+    j_db_schema_add_field(schema, "max_sint32", J_DB_TYPE_SINT32, NULL);
+    j_db_schema_add_field(schema, "value_sint32", J_DB_TYPE_SINT32, NULL);
+
+    j_db_schema_add_field(schema, "min_uint32", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "max_uint32", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "value_uint32", J_DB_TYPE_UINT32, NULL);
+
+    j_db_schema_add_field(schema, "min_sint64", J_DB_TYPE_SINT64, NULL);
+    j_db_schema_add_field(schema, "max_sint64", J_DB_TYPE_SINT64, NULL);
+    j_db_schema_add_field(schema, "value_sint64", J_DB_TYPE_SINT64, NULL);
+
+    j_db_schema_add_field(schema, "min_uint64", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "max_uint64", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "value_uint64", J_DB_TYPE_UINT64, NULL);
+
+    j_db_schema_add_field(schema, "min_float32", J_DB_TYPE_FLOAT32, NULL);
+    j_db_schema_add_field(schema, "max_float32", J_DB_TYPE_FLOAT32, NULL);
+    j_db_schema_add_field(schema, "value_float32", J_DB_TYPE_FLOAT32, NULL);
+
+    j_db_schema_add_field(schema, "min_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "max_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "value_float64", J_DB_TYPE_FLOAT64, NULL);
+    // j_db_schema_add_field(schema, "std_float64", J_DB_TYPE_FLOAT64, NULL);
+
+    // j_db_schema_add_field(schema, "min_string", J_DB_TYPE_STRING,
+    // NULL); j_db_schema_add_field(schema, "max_string",
+    // J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "value_string", J_DB_TYPE_STRING, NULL);
+
+    j_db_schema_add_field(schema, "stepsStart", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "stepsCount", J_DB_TYPE_UINT64, NULL);
+    // j_db_schema_add_field(schema, "blockID", J_DB_TYPE_UINT64, NULL);
+
+    j_db_schema_add_index(schema, fileIndex, NULL);
+    j_db_schema_add_index(schema, varIndex, NULL);
+    j_db_schema_add_index(schema, stepIndex, NULL);
+    j_db_schema_add_index(schema, blockIndex, NULL);
+    j_db_schema_add_index(schema, minFloatIndex, NULL);
+    j_db_schema_add_index(schema, maxFloatIndex, NULL);
+    j_db_schema_add_index(schema, minDoubleIndex, NULL);
+    j_db_schema_add_index(schema, maxDoubleIndex, NULL);
+
+    //    j_db_schema_add_index(schema, minIndex, NULL);
+    //    j_db_schema_add_index(schema, maxIndex, NULL);
+}
+
+/**
+ * ---------------------------- Table only contains certain types
+ * ------------------------------------
+ */
+
+void JuleaDBInteractionWriter::AddFieldsForVariableMD_OriginalDouble(
+    JDBSchema *schema)
+{
+    gchar const *fileIndex[] = {"file", NULL};
+    gchar const *varIndex[] = {"variableName", NULL};
+    gchar const *minDoubleIndex[] = {"variableName", NULL};
+    gchar const *maxDoubleIndex[] = {"variableName", NULL};
+
+    j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
+
+    j_db_schema_add_field(schema, "isConstantDims", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "isReadAsJoined", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "isReadAsLocalValue", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "isRandomAccess", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "isSingleValue", J_DB_TYPE_UINT32, NULL);
+
+    j_db_schema_add_field(schema, "shapeID", J_DB_TYPE_UINT32, NULL);
+
+    // TODO: Check whether this renaming screws up anything in init
+    j_db_schema_add_field(schema, "typeInt", J_DB_TYPE_UINT32, NULL);
+
+    /** all vectors need to store their size */
+    j_db_schema_add_field(schema, "shapeSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "shape", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "startSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "start", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "countSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "count", J_DB_TYPE_BLOB, NULL);
+
+    /** number of blocks (steps are index starting at 0) */
+    j_db_schema_add_field(schema, "numberSteps", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "blockArray", J_DB_TYPE_BLOB, NULL);
+
+    j_db_schema_add_field(schema, "min_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "max_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "value_float64", J_DB_TYPE_FLOAT64, NULL);
+
+    // j_db_schema_add_field(schema, "min_string", J_DB_TYPE_STRING,
+    // NULL); j_db_schema_add_field(schema, "max_string",
+    // J_DB_TYPE_STRING, NULL);
+    // j_db_schema_add_field(schema, "value_string", J_DB_TYPE_STRING, NULL);
+
+    j_db_schema_add_index(schema, fileIndex, NULL);
+    j_db_schema_add_index(schema, varIndex, NULL);
+    j_db_schema_add_index(schema, minDoubleIndex, NULL);
+    j_db_schema_add_index(schema, maxDoubleIndex, NULL);
+}
+
+void JuleaDBInteractionWriter::AddFieldsForBlockMD_OriginalDouble(
+    JDBSchema *schema)
+{
+    gchar const *fileIndex[] = {"file", NULL};
+    gchar const *varIndex[] = {"variableName", NULL};
+    gchar const *stepIndex[] = {"step", NULL};
+    gchar const *blockIndex[] = {"block", NULL};
+    gchar const *minFloatIndex[] = {"variableName", NULL};
+    gchar const *maxFloatIndex[] = {"variableName", NULL};
+    gchar const *minDoubleIndex[] = {"variableName", NULL};
+    gchar const *maxDoubleIndex[] = {"variableName", NULL};
+    //    gchar const *minIndex[] = {"min_blob", NULL};
+    //    gchar const *maxIndex[] = {"max_blob", NULL};
+
+    j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "step", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "block", J_DB_TYPE_UINT64, NULL);
+
+    /** all vectors need to store their size */
+    j_db_schema_add_field(schema, "shapeSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "shape", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "startSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "start", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "countSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "count", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "memoryStartSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "memoryStart", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "memoryCountSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "memoryCount", J_DB_TYPE_BLOB, NULL);
+
+    // add min/max/value for every type for performance improvement of
+    // querying
+    j_db_schema_add_field(schema, "min_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "max_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "value_float64", J_DB_TYPE_FLOAT64, NULL);
+
+    j_db_schema_add_field(schema, "stepsStart", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "stepsCount", J_DB_TYPE_UINT64, NULL);
+    // j_db_schema_add_field(schema, "blockID", J_DB_TYPE_UINT64, NULL);
+
+    j_db_schema_add_index(schema, fileIndex, NULL);
+    j_db_schema_add_index(schema, varIndex, NULL);
+    j_db_schema_add_index(schema, stepIndex, NULL);
+    j_db_schema_add_index(schema, blockIndex, NULL);
+    j_db_schema_add_index(schema, minDoubleIndex, NULL);
+    j_db_schema_add_index(schema, maxDoubleIndex, NULL);
+}
+
+/**
+ * ---------------------------- Table contains all types  + mean, sum, var
+ * ------------------------------------
+ */
+
+void JuleaDBInteractionWriter::AddFieldsForBlockMD_AllTypes_AdditionalStats(
+    JDBSchema *schema)
 {
     gchar const *fileIndex[] = {"file", NULL};
     gchar const *varIndex[] = {"variableName", NULL};
@@ -429,8 +455,8 @@ void JuleaDBInteractionWriter::AddFieldsForBlockMD(JDBSchema *schema)
     j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
     j_db_schema_add_field(schema, "step", J_DB_TYPE_UINT64, NULL);
     j_db_schema_add_field(schema, "block", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "X", J_DB_TYPE_UINT64, NULL);
-    j_db_schema_add_field(schema, "Y", J_DB_TYPE_UINT64, NULL);
+    // j_db_schema_add_field(schema, "X", J_DB_TYPE_UINT64, NULL);
+    // j_db_schema_add_field(schema, "Y", J_DB_TYPE_UINT64, NULL);
 
     /** all vectors need to store their size */
     j_db_schema_add_field(schema, "shapeSize", J_DB_TYPE_UINT64, NULL);
@@ -520,9 +546,191 @@ void JuleaDBInteractionWriter::AddFieldsForBlockMD(JDBSchema *schema)
     //    j_db_schema_add_index(schema, maxIndex, NULL);
 }
 
+/**
+ * ---------------------------- Climate indices tables + global stats
+ * ------------------------------------
+ */
+
+/**
+ * One table for all climate indeces that are computed for evaluation
+ */
+void JuleaDBInteractionWriter::AddFieldsForClimateIndexTable(JDBSchema *schema)
+{
+    gchar const *fileIndex[] = {"file", NULL};
+    gchar const *varIndex[] = {"variableName", NULL};
+    // gchar const *minDoubleIndex[] = {"min_float64", NULL};
+    // gchar const *maxDoubleIndex[] = {"max_float64", NULL};
+    // gchar const *meanDoubleIndex[] = {"mean_float64", NULL};
+
+    j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
+
+    j_db_schema_add_field(schema, "year", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "precip_days_1mm", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "precip_days_10mm", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "precip_days_20mm", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "frost_days", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "summer_days", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "tropical_nights", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "icing_days", J_DB_TYPE_UINT32, NULL);
+
+    j_db_schema_add_index(schema, fileIndex, NULL);
+    j_db_schema_add_index(schema, varIndex, NULL);
+}
+
+/**
+ * Table for the daily min/max/mean/sum/var with "global" resolution
+ * global resolution = daily values for the complete step -> over all
+ * processes monthly stats: day set to -1 yearly stats: month and day
+ * set to -1
+ */
+void JuleaDBInteractionWriter::AddFieldsForDailyGlobalStatsTable(
+    JDBSchema *schema)
+{
+    gchar const *fileIndex[] = {"file", NULL};
+    gchar const *varIndex[] = {"variableName", NULL};
+    gchar const *yearIndex[] = {"year", NULL};
+    gchar const *monthIndex[] = {"month", NULL};
+    gchar const *dayIndex[] = {"day", NULL};
+
+    j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
+
+    j_db_schema_add_field(schema, "year", J_DB_TYPE_SINT32, NULL);
+    j_db_schema_add_field(schema, "month", J_DB_TYPE_SINT32, NULL);
+    j_db_schema_add_field(schema, "day", J_DB_TYPE_SINT32, NULL);
+
+    j_db_schema_add_field(schema, "daily_globalMin", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "daily_globalMax", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "daily_globalMean", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "daily_globalSum", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "daily_globalVar", J_DB_TYPE_FLOAT64, NULL);
+
+    j_db_schema_add_index(schema, fileIndex, NULL);
+    j_db_schema_add_index(schema, varIndex, NULL);
+    j_db_schema_add_index(schema, yearIndex, NULL);
+    j_db_schema_add_index(schema, monthIndex, NULL);
+    j_db_schema_add_index(schema, dayIndex, NULL);
+}
+
+/**
+ * ---------------------------- Climate indices tables + global stats
+ * ------------------------------------
+ */
+
+void JuleaDBInteractionWriter::AddFieldsForVariableMD_Eval(JDBSchema *schema)
+{
+    gchar const *fileIndex[] = {"file", NULL};
+    gchar const *varIndex[] = {"variableName", NULL};
+    gchar const *minDoubleIndex[] = {"min_float64", NULL};
+    gchar const *maxDoubleIndex[] = {"max_float64", NULL};
+    gchar const *meanDoubleIndex[] = {"mean_float64", NULL};
+
+    j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
+
+    j_db_schema_add_field(schema, "isConstantDims", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "isReadAsJoined", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "isReadAsLocalValue", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "isRandomAccess", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "isSingleValue", J_DB_TYPE_UINT32, NULL);
+
+    j_db_schema_add_field(schema, "shapeID", J_DB_TYPE_UINT32, NULL);
+    // TODO: Check whether this renaming screws up anything in init
+    j_db_schema_add_field(schema, "typeInt", J_DB_TYPE_UINT32, NULL);
+
+    /** all vectors need to store their size */
+    j_db_schema_add_field(schema, "shapeSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "shape", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "startSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "start", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "countSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "count", J_DB_TYPE_BLOB, NULL);
+
+    /** number of blocks (steps are index starting at 0) */
+    j_db_schema_add_field(schema, "numberSteps", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "blockArray", J_DB_TYPE_BLOB, NULL);
+
+    j_db_schema_add_field(schema, "min_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "max_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "mean_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "sum_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "var_float64", J_DB_TYPE_FLOAT64, NULL);
+
+    j_db_schema_add_field(schema, "value_string", J_DB_TYPE_STRING, NULL);
+
+    j_db_schema_add_index(schema, fileIndex, NULL);
+    j_db_schema_add_index(schema, varIndex, NULL);
+    j_db_schema_add_index(schema, minDoubleIndex, NULL);
+    j_db_schema_add_index(schema, maxDoubleIndex, NULL);
+    j_db_schema_add_index(schema, meanDoubleIndex, NULL);
+}
+
+void JuleaDBInteractionWriter::AddFieldsForBlockMD_Eval(JDBSchema *schema)
+{
+    gchar const *fileIndex[] = {"file", NULL};
+    gchar const *varIndex[] = {"variableName", NULL};
+    gchar const *stepIndex[] = {"step", NULL};
+    gchar const *blockIndex[] = {"block", NULL};
+    gchar const *minDoubleIndex[] = {"min_float64", NULL};
+    gchar const *maxDoubleIndex[] = {"max_float64", NULL};
+    gchar const *meanDoubleIndex[] = {"mean_float64", NULL};
+
+    j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "step", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "block", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "X", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "Y", J_DB_TYPE_UINT64, NULL);
+
+    /** all vectors need to store their size */
+    j_db_schema_add_field(schema, "shapeSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "shape", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "startSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "start", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "countSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "count", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "memoryStartSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "memoryStart", J_DB_TYPE_BLOB, NULL);
+    j_db_schema_add_field(schema, "memoryCountSize", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "memoryCount", J_DB_TYPE_BLOB, NULL);
+
+    j_db_schema_add_field(schema, "isValue", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "year", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "month", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "day", J_DB_TYPE_UINT32, NULL);
+
+    j_db_schema_add_field(schema, "min_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "max_float64", J_DB_TYPE_FLOAT64, NULL);
+    // j_db_schema_add_field(schema, "value_float64", J_DB_TYPE_FLOAT64,
+    // NULL);
+    j_db_schema_add_field(schema, "mean_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "sum_float64", J_DB_TYPE_FLOAT64, NULL);
+    j_db_schema_add_field(schema, "variance_float64", J_DB_TYPE_FLOAT64, NULL);
+    // j_db_schema_add_field(schema, "std_float64", J_DB_TYPE_FLOAT64, NULL);
+
+    j_db_schema_add_field(schema, "value_string", J_DB_TYPE_STRING, NULL);
+
+    j_db_schema_add_field(schema, "stepsStart", J_DB_TYPE_UINT64, NULL);
+    j_db_schema_add_field(schema, "stepsCount", J_DB_TYPE_UINT64, NULL);
+    // j_db_schema_add_field(schema, "blockID", J_DB_TYPE_UINT64, NULL);
+
+    j_db_schema_add_index(schema, fileIndex, NULL);
+    j_db_schema_add_index(schema, varIndex, NULL);
+    j_db_schema_add_index(schema, stepIndex, NULL);
+    j_db_schema_add_index(schema, blockIndex, NULL);
+    j_db_schema_add_index(schema, minDoubleIndex, NULL);
+    j_db_schema_add_index(schema, maxDoubleIndex, NULL);
+    j_db_schema_add_index(schema, meanDoubleIndex, NULL);
+}
+
+/**
+ * ---------------------------- Add metadata to tables
+ * ------------------------------------
+ */
 void JuleaDBInteractionWriter::AddEntriesForClimateIndexTable(
-    const std::string nameSpace, const std::string varName, size_t currentStep,
-    interop::JuleaCDO &JuleaCDO)
+    const std::string projectNamespace, const std::string fileName,
+    const std::string varName, size_t currentStep, interop::JuleaCDO &JuleaCDO)
 {
 
     int err = 0;
@@ -553,8 +761,10 @@ void JuleaDBInteractionWriter::AddEntriesForClimateIndexTable(
     // g_assert_true(j_batch_execute(batch) == true);
 
     entry = j_db_entry_new(schema, NULL);
-    j_db_entry_set_field(entry, "file", nameSpace.c_str(),
-                         strlen(nameSpace.c_str()) + 1, NULL);
+    j_db_entry_set_field(entry, "projectNamespace", projectNamespace.c_str(),
+                         strlen(projectNamespace.c_str()) + 1, NULL);
+    j_db_entry_set_field(entry, "file", fileName.c_str(),
+                         strlen(fileName.c_str()) + 1, NULL);
     j_db_entry_set_field(entry, "variableName", varName.c_str(),
                          strlen(varName.c_str()) + 1, NULL);
 
@@ -578,10 +788,10 @@ void JuleaDBInteractionWriter::AddEntriesForClimateIndexTable(
                          sizeof(size_t), NULL);
 }
 
-// TODO: rename parameters (nameSpace to Filename)
 void JuleaDBInteractionWriter::AddEntriesForDailyGlobalStatsTable(
-    const std::string nameSpace, const std::string varName, size_t currentStep,
-    interop::JuleaCDO &JuleaCDO, int writerRank, int year, int month, int day)
+    const std::string projectNamespace, const std::string fileName,
+    const std::string varName, size_t currentStep, interop::JuleaCDO &JuleaCDO,
+    int writerRank, int year, int month, int day)
 {
     int err = 0;
     g_autoptr(JDBSchema) schema = NULL;
@@ -603,8 +813,10 @@ void JuleaDBInteractionWriter::AddEntriesForDailyGlobalStatsTable(
     // g_assert_true(j_batch_execute(batch) == true);
 
     entry = j_db_entry_new(schema, NULL);
-    j_db_entry_set_field(entry, "file", nameSpace.c_str(),
-                         strlen(nameSpace.c_str()) + 1, NULL);
+    j_db_entry_set_field(entry, "projectNamespace", projectNamespace.c_str(),
+                         strlen(projectNamespace.c_str()) + 1, NULL);
+    j_db_entry_set_field(entry, "file", fileName.c_str(),
+                         strlen(fileName.c_str()) + 1, NULL);
     j_db_entry_set_field(entry, "variableName", varName.c_str(),
                          strlen(varName.c_str()) + 1, NULL);
 
@@ -615,7 +827,7 @@ void JuleaDBInteractionWriter::AddEntriesForDailyGlobalStatsTable(
     SetDailyValues(entry, JuleaCDO, varName, year, month, day);
 }
 
-void JuleaDBInteractionWriter::InitDBSchemas()
+void JuleaDBInteractionWriter::InitDBSchemas(bool isOriginalFormat)
 {
     // std::cout << "--- InitDBSchemas ---" << std::endl;
     int err = 0;
@@ -649,12 +861,14 @@ void JuleaDBInteractionWriter::InitDBSchemas()
     j_db_schema_get(dGlobalSchema, batch, NULL);
     bool existsDailyGlobal = j_batch_execute(batch);
 
+    // FIXME: differentiate between original tables and new ones
+
     if (existsVar == 0)
     {
         // std::cout << "variable schema does not exist" << std::endl;
         varSchema = j_db_schema_new("adios2", "variable-metadata", NULL);
         // AddFieldsForVariableMDEval(varSchema);
-        AddFieldsForVariableMD(varSchema);
+        AddFieldsForVariableMD_Original(varSchema);
         j_db_schema_create(varSchema, batch, NULL);
         g_assert_true(j_batch_execute(batch) == true);
     }
@@ -665,7 +879,7 @@ void JuleaDBInteractionWriter::InitDBSchemas()
         // std::cout << "block schema does not exist" << std::endl;
         blockSchema = j_db_schema_new("adios2", "block-metadata", NULL);
         // AddFieldsForBlockMDEval(blockSchema);
-        AddFieldsForBlockMD(blockSchema);
+        AddFieldsForBlockMD_Original(blockSchema);
         j_db_schema_create(blockSchema, batch2, NULL);
         g_assert_true(j_batch_execute(batch2) == true);
     }

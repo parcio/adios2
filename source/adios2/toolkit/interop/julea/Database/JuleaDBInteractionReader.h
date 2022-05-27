@@ -38,7 +38,7 @@ class JuleaDBInteractionReader : public JuleaInteraction
 public:
     JuleaDBInteractionReader(helper::Comm const &comm);
     ~JuleaDBInteractionReader() = default;
-    std::string m_JuleaNamespace = "adios2";
+    // std::string m_JuleaNamespace = "adios2";//TODO: needed?
     // std::string m_VariableTableName; in DBInteractionWriter
 
     // void SetMinMaxValueFields(std::string *minField, std::string *maxField,
@@ -56,7 +56,8 @@ public:
 
     void CheckSchemas();
 
-    void InitVariablesFromDB(const std::string nameSpace, core::IO *io,
+    void InitVariablesFromDB(const std::string projectNamespace,
+                             const std::string fileName, core::IO *io,
                              core::Engine &engine);
 
     /**
@@ -71,7 +72,8 @@ public:
     //                               size_t blockID,
     //                               typename core::Variable<T>::Info &info);
     template <class T>
-    void GetCountFromBlockMetadata(const std::string nameSpace,
+    void GetCountFromBlockMetadata(const std::string projectNamespace,
+                                   const std::string fileName,
                                    const std::string varName, size_t step,
                                    size_t block, Dims *count, size_t entryID,
                                    bool isLocalValue, T *value);
@@ -89,22 +91,25 @@ public:
                              size_t entryID);
 
     /* --- Variables --- */
-
+    // FIXME: parameter description needs updating: new namespace
     /** Retrieves all variable names from key-value store. They are all stored
      * in one bson. */
-    void GetNamesFromJulea(const std::string nameSpace, bson_t **bsonNames,
+    void GetNamesFromJulea(const std::string projectNamespace,
+                           const std::string fileName, bson_t **bsonNames,
                            unsigned int *varCount, bool isVariable);
 
     /** Retrieves the metadata buffer for the variable metadata that do not vary
      * from block to block. The key is the variable name. */
-    void GetVariableMetadataFromJulea(const std::string nameSpace,
+    void GetVariableMetadataFromJulea(const std::string projectNamespace,
+                                      const std::string fileName,
                                       const std::string varName,
                                       gpointer *buffer, guint32 *buffer_len);
 
     /** Retrieves the block metadata buffer from the key-value store. The key
      * is: currentStep_currentBlock. The variable name and the nameSpace from
      * the key-value namespace. */
-    void GetBlockMetadataFromJulea(const std::string nameSpace,
+    void GetBlockMetadataFromJulea(const std::string projectNamespace,
+                                   const std::string fileName,
                                    const std::string varName, gpointer *buffer,
                                    guint32 *buffer_len,
                                    const std::string stepBlockID);
@@ -115,9 +120,9 @@ private:
 
 #define variable_template_instantiation(T)                                     \
     extern template void JuleaDBInteractionReader::GetCountFromBlockMetadata(  \
-        const std::string nameSpace, const std::string varName, size_t step,   \
-        size_t block, Dims *count, size_t entryID, bool isLocalValue,          \
-        T *value);                                                             \
+        const std::string projectNamespace, const std::string fileName,        \
+        const std::string varName, size_t step, size_t block, Dims *count,     \
+        size_t entryID, bool isLocalValue, T *value);                          \
     extern template std::unique_ptr<typename core::Variable<T>::Info>          \
     JuleaDBInteractionReader::GetBlockMetadata(                                \
         const core::Variable<T> &variable, size_t entryID) const;              \
