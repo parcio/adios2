@@ -33,14 +33,8 @@ public:
     void InitDBSchemas(bool isOriginalFormat);
 
     /**
-     * Put the variable metadata that does not change from block to block into
-     * the JULEA key-value store
-     * @param projectNamespace namespace provided by user to encapsulate
-     * different metadata requirements from another
-     * @param fileName file name (name of I/O)
-     * @param buffer    buffer of serialized metadata
-     * @param bufferLen length of buffer
-     * @param varName   variable name = key for the kv store
+     * Put the metadata for a specific block in a specific step to JULEA
+     * database.
      */
     template <class T>
     void PutVariableMetadataToJulea(core::Variable<T> &variable,
@@ -50,14 +44,7 @@ public:
                                     size_t block, bool original);
     /**
      * Put the metadata for a specific block in a specific step to JULEA
-     * key-value store.
-     * @param projectNamespace namespace provided by user to encapsulate
-     * different metadata requirements from another
-     * @param fileName file name (name of I/O)
-     * @param varName     variableName; is part of the kv-namespace
-     * @param buffer      buffer of serialized metadata
-     * @param bufferLen   length of buffer
-     * @param stepBlockID key for the kv-store: currentStep_currentBlock
+     * database.
      */
     template <class T>
     void PutBlockMetadataToJulea(
