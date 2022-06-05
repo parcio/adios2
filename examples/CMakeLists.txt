@@ -11,6 +11,7 @@ add_subdirectory(inlineMWE)
 add_subdirectory(julea)
 # add_subdirectory(julea_IEEE_Cluster_2020)
 add_subdirectory(julea_EuroSys2021)
+add_subdirectory(thesis)
 
 if(ADIOS2_HAVE_MPI)
   add_subdirectory(heatTransfer)
