@@ -108,6 +108,7 @@ if(ADIOS2_USE_JULEA)
       julea-db
       julea-object
       julea-item
+      julea-dai
     )
   endif()
 
