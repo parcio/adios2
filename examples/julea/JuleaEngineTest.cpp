@@ -18,7 +18,7 @@
 void TestWriteVariableSync()
 {
     /** Application variable */
-    std::vector<float> myFloats = {12345.6, 1, 2, 3, 4, 5, 6, 7, 8, -42.333};
+    std::vector<float> myFloats = {12345.6, 1, 2, 3, 4, 5, 6, 7, 8, -42.3456};
     // std::vector<float> myFloats2 = {-6666.6, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     std::vector<int> myInts = {333, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     std::vector<int> myInts2 = {777, 42, 4242, 424242};
@@ -367,9 +367,9 @@ int main(int argc, char *argv[])
         TestWriteVariableSync();
         std::cout << "\n JuleaEngineTest :) Write variable finished \n"
                   << std::endl;
-        // TestReadVariableSync();
-        // std::cout << "\n JuleaEngineTest :) Read variable finished \n"
-                //   << std::endl;
+        TestReadVariableSync();
+        std::cout << "\n JuleaEngineTest :) Read variable finished \n"
+                  << std::endl;
                 
         // TestWriteAttribute();
         // std::cout << "\n JuleaEngineTest :) Write attribute finished \n"

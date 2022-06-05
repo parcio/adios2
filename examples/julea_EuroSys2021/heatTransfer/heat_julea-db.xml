@@ -11,7 +11,8 @@
         ====================================-->
 
     <io name="writer">
-        <engine type="julea-db">
+        <engine type="julea-db-dai">
+        <!-- <engine type="julea-db"> -->
             
             <!-- for vectorized memory operations, make sure your system 
                  enables threads--> 
@@ -62,7 +63,8 @@
         =======================================-->
 
     <io name="readerInput">
-        <engine type="julea-db">
+        <engine type="julea-db-dai">
+        <!-- <engine type="julea-db"> -->
             
             <!-- for vectorized memory operations, make sure your system 
                  enables threads--> 
