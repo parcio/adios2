@@ -23,9 +23,9 @@ public:
         JQUERY_ALL_IN_RANGE,
         JQUERY_HIGHEST_MEAN,
         JQUERY_DRASTIC_LOCAL_CHANGE_IN_TIME,
-        JQUERY_CI_DAYS,
         JQUERY_NUMBER_DAYS_COLDER_THAN,
-        JQUERY_LOWEST_VARIANCE_OVER_FILES,
+        JQUERY_CI_DAYS,
+        JQUERY_LOWEST_TEMP_OVER_FILES,
         JQUERY_RAIN_TEMP_COMBINED,
     };
     typedef enum JuleaQueryID JuleaQueryID;
@@ -34,9 +34,9 @@ public:
     std::string m_Configfile;
     std::string m_Inputfile;
     std::string m_Outputfile;
-    
+
     std::string m_ProjectNamespace;
-    
+
     unsigned int npx; // Number of processes in X (slow) dimension
     unsigned int npy; // Number of processes in Y (fast) dimension
 

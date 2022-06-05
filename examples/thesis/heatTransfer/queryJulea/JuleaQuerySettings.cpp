@@ -109,6 +109,7 @@ JuleaQuerySettings::JuleaQuerySettings(int argc, char *argv[], int rank,
 //     offset.push_back(offsx);
 //     offset.push_back(offsy);
 
-//     // std::cout << "rank " << rank << " reads 2D slice " << ndx << " x " << ndy
+//     // std::cout << "rank " << rank << " reads 2D slice " << ndx << " x " <<
+//     ndy
 //     // << " from offset (" << offsx << "," << offsy << ")" << std::endl;
 // }
