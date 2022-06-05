@@ -186,16 +186,17 @@ void QueryAllInRange(std::string projectNamespace, std::string fileName)
     j_dai_get_entries_in_range_d(projectNamespace.c_str(), fileName.c_str(), "T", J_DAI_STAT_MEAN, -42, 42, J_DAI_GRAN_BLOCK, &numberResults, &entryIDs);
 
     // for (size_t entry: entryIDs)
-    for (int i = 0; i < numberResults; ++i)
-    {
-        j_dai_get_coordinates_for_entry(projectNamespace.c_str(), entryIDs[i], &nDims, &coordinates);
-        //TODO: remove for evaluation
-        for(int j = 0; j < nDims; ++j)
-        {
-            std::cout << "X:" << coordinates[0] << "\n";
-            std::cout << "Y:" << coordinates[1] << "\n";
-        }
-    }
+    // for (int i = 0; i < numberResults; ++i)
+    // {
+    //     // j_dai_get_coordinates_for_entry(projectNamespace.c_str(), entryIDs[i], &nDims, &coordinates);
+    //     j_dai_entry_get_coordinates(projectNamespace.c_str(), entryIDs[i], &nDims, &coordinates);
+    //     //TODO: remove for evaluation
+    //     for(int j = 0; j < nDims; ++j)
+    //     {
+    //         std::cout << "X:" << coordinates[0] << "\n";
+    //         std::cout << "Y:" << coordinates[1] << "\n";
+    //     }
+    // }
     stopRead = high_resolution_clock::now();
     startCompute = high_resolution_clock::now();
     //nothing to compute here
@@ -208,8 +209,10 @@ void QueryHighestMean(std::string projectNamespace, std::string fileName)
 {
     double result;
     startRead = high_resolution_clock::now();
-    j_dai_get_max_stat_d(projectNamespace.c_str(), fileName.c_str(), "T", J_DAI_STAT_MEAN, J_DAI_GRAN_BLOCK, &result);
-        stopRead = high_resolution_clock::now();
+    j_dai_get_global_max_stat_d(projectNamespace.c_str(), fileName.c_str(), "T", J_DAI_STAT_MEAN, J_DAI_GRAN_BLOCK, &result);
+    // j_dai_get_max_stat_d(projectNamespace.c_str(), fileName.c_str(), "T", J_DAI_STAT_MEAN, J_DAI_GRAN_BLOCK, &result);
+
+    stopRead = high_resolution_clock::now();
     startCompute = high_resolution_clock::now();
     //nothing to compute here
     stopCompute = high_resolution_clock::now();
@@ -221,21 +224,52 @@ void QueryDrasticLocalChangeInTimeInterval(std::string projectNamespace, std::st
     //get max temperatures for step 1 and step 8760
     // compute difference for each block
     // find max difference
-    size_t* coordinates;
-    size_t* nDims;
+    // size_t* coordinates;
+    size_t* entryIDs1;
+    size_t* entryIDs2;
+    size_t nIDs1;
+    size_t nIDs2;
+    double result;
+    double result2;
+    double diff;
+    // std::vector<double> diffs;
+    double maxDiff = 0;
 
-    void j_dai_get_global_coordinates(projectNamespace.c_str(), fileName.c_str(), size_t enentry_idtryID, size_t* n_dims, &coordinates);
-    void j_dai_get_entry_ids(projectNamespace.c_str(), fileName.c_str(), "T", JDAIStatistic statistic, size_t threshold, JDAIOperator op, JDAIGranularity granularity, size_t** entry_ids)
+    // void j_dai_get_global_coordinates(projectNamespace.c_str(), fileName.c_str(), size_t enentry_idtryID, size_t* n_dims, &coordinates);
+    j_dai_step_get_entry_ids(projectNamespace.c_str(), fileName.c_str(), "T", 1, &nIDs1, &entryIDs1);
+    j_dai_step_get_entry_ids(projectNamespace.c_str(), fileName.c_str(), "T", 8760, &nIDs2, &entryIDs2);
+
+    if (nIDs1 == nIDs2)
+    {
+
+    for (int i = 0; i < nIDs1; ++i )
+    {
+        j_dai_entry_get_stat_d(projectNamespace.c_str(), entryIDs1[i], J_DAI_STAT_MAX, &result);
+        j_dai_entry_get_stat_d(projectNamespace.c_str(), entryIDs2[i], J_DAI_STAT_MAX, &result2);
+
+        diff = std::abs(result - result2);
+        if( diff >  maxDiff)
+        {
+            maxDiff = diff;
+        } 
+        // diffs.push_back(std::abs(result - result2));
+    }
+    }
+    else
+    {  
+        //problem
+    }
+    
     // while (i < nDims)
     // {
-        for (int j= 0; j < coordinates[i]; ++j )
-        {
-            for(int k = 0; k < coordinates[i+1]; ++k)
-            {
-                void j_dai_entry_get_stat_d(gchar const* name_space,size_t entry_id, JDAIStatistic statistic, double* result);
+        // for (int j= 0; j < coordinates[i]; ++j )
+        // {
+        //     for(int k = 0; k < coordinates[i+1]; ++k)
+        //     {
+        //         void j_dai_entry_get_stat_d(gchar const* name_space,size_t entry_id, JDAIStatistic statistic, double* result);
 
-            }
-        }
+        //     }
+        // }
         // j_dai_get_block_result_d((projectNamespace.c_str(), fileName.c_str(), "T", 0, size_t block, JDAIStatistic statistic, size_t threshold, J_DAI_OP_NULL, double** result);
         
     // }
