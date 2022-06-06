@@ -248,7 +248,7 @@ void JuleaDBDAIWriter::Init()
     m_JuleaSemantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
 
     InitParameters();
-    InitDAI(); // FIXME: needs implementation etc.
+    InitDAI(); // FIXME: project namespace as part of db namespace not separate column
 
     if (m_JuleaCDO.m_Precomputes.empty())
     {

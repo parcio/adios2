@@ -60,7 +60,6 @@ public:
     void EndStep() final;
     void Flush(const int transportIndex = -1) final;
 
-    // interop::JuleaInteraction m_JuleaDBInteractionWriter;
 private:
     interop::JuleaDBInteractionWriter m_JuleaDBInteractionWriter;
     interop::JuleaCDO m_JuleaCDO;
@@ -72,11 +71,6 @@ private:
     // bool for the entire engine here
     bool m_IsOriginalFormat =
         false; // indicates whether anything else should be computed
-
-    // interop::JuleaSerializer m_JuleaSerializer;
-    // interop::JuleaDBInteraction m_JuleaDBInteractionWriter;
-    // interop::JuleaDBInteractionWriter m_JuleaDBInteractionWriter;
-    // interop::JuleaInteraction m_JuleaDBInteractionWriter;
 
     JSemantics *m_JuleaSemantics;
     StepMode m_StepMode = StepMode::Append;
@@ -169,18 +163,6 @@ private:
     void ManageBlockStepMetadata(Variable<T> &variable, const T *data,
                                  T &blockMin, T &blockMax, T &blockMean,
                                  T &blockSum, T &blockVar);
-
-    // template <class T>
-    // void ManageBlockStepMetadataStandard(Variable<T> &variable, const T
-    // *data,
-    //                                      T &blockMin, T &blockMax, T
-    //                                      &blockMean, T &blockSum, T
-    //                                      &blockVar);
-
-    // template <class T>
-    // void ManageBlockStepMetadataOriginal(Variable<T> &variable, const T
-    // *data,
-    //                                      T &blockMin, T &blockMax);
 
     template <class T>
     void BufferTemperature(Variable<T> &variable, T blockMin, T blockMean,
