@@ -183,9 +183,13 @@ void QueryAllInRange(std::string projectNamespace, std::string fileName)
     size_t nDims = 0;
 
     startRead = high_resolution_clock::now();
-    j_dai_get_entries_in_range_d(projectNamespace.c_str(), fileName.c_str(),
-                                 "T", J_DAI_STAT_MEAN, -42, 42,
-                                 J_DAI_GRAN_BLOCK, &numberResults, &entryIDs);
+    // j_dai_get_entries_in_range_d(projectNamespace.c_str(), fileName.c_str(),
+    //                              "T", J_DAI_STAT_MEAN, -42, 42,
+    //                              J_DAI_GRAN_BLOCK, &numberResults,
+    //                              &entryIDs);
+    j_dai_range_query_get_ids_d(projectNamespace.c_str(), fileName.c_str(), "T",
+                                J_DAI_GRAN_BLOCK, J_DAI_STAT_MEAN, -42, 42,
+                                &numberResults, &entryIDs);
 
     // for (size_t entry: entryIDs)
     // for (int i = 0; i < numberResults; ++i)
@@ -212,8 +216,9 @@ void QueryHighestMean(std::string projectNamespace, std::string fileName)
 {
     double result = 0;
     startRead = high_resolution_clock::now();
-    j_dai_get_global_max_stat_d(projectNamespace.c_str(), fileName.c_str(), "T",
-                                J_DAI_STAT_MEAN, J_DAI_GRAN_BLOCK, &result);
+    j_dai_query_get_global_stat_d(projectNamespace.c_str(), fileName.c_str(),
+                                  "T", J_DAI_STAT_MAX, J_DAI_STAT_MEAN,
+                                  J_DAI_GRAN_BLOCK, &result);
     // j_dai_get_max_stat_d(projectNamespace.c_str(), fileName.c_str(), "T",
     // J_DAI_STAT_MEAN, J_DAI_GRAN_BLOCK, &result);
 
@@ -238,10 +243,10 @@ void QueryDrasticLocalChangeInTimeInterval(std::string projectNamespace,
     double maxDiff = 0;
 
     startRead = high_resolution_clock::now();
-    j_dai_step_get_entry_ids(projectNamespace.c_str(), fileName.c_str(), "T", 1,
-                             &nIDs1, &entryIDs1);
-    j_dai_step_get_entry_ids(projectNamespace.c_str(), fileName.c_str(), "T",
-                             8760, &nIDs2, &entryIDs2);
+    j_dai_step_get_ids(projectNamespace.c_str(), fileName.c_str(), "T", 1,
+                       &nIDs1, &entryIDs1);
+    j_dai_step_get_ids(projectNamespace.c_str(), fileName.c_str(), "T", 8760,
+                       &nIDs2, &entryIDs2);
 
     if (nIDs1 == nIDs2)
     {
@@ -334,8 +339,11 @@ void QueryRainTemperatureCombinedSimple(std::string projectNamespace,
     startRead = high_resolution_clock::now();
 
     // get every entry where T > 40
-    j_dai_get_entry_ids_d(projectNamespace.c_str(), fileName.c_str(), "T",
-                          J_DAI_STAT_MAX, 40, J_DAI_OP_GT, J_DAI_GRAN_BLOCK,
+    // j_dai_step_get_ids_d(projectNamespace.c_str(), fileName.c_str(), "T",
+    //                   J_DAI_GRAN_BLOCK, J_DAI_STAT_MAX,  J_DAI_OP_GT, 40,
+    //                   &nIDs, &entryIDs);
+    j_dai_query_get_ids_d(projectNamespace.c_str(), fileName.c_str(), "T",
+                          J_DAI_GRAN_BLOCK, J_DAI_STAT_MAX, J_DAI_OP_GT, 40,
                           &nIDs, &entryIDs);
 
     for (int i = 0; i < nIDs; ++i)
@@ -343,9 +351,9 @@ void QueryRainTemperatureCombinedSimple(std::string projectNamespace,
         j_dai_entry_get_step(projectNamespace.c_str(), entryIDs[i], &step);
         j_dai_entry_get_blockID(projectNamespace.c_str(), entryIDs[i], &block);
 
-        j_dai_entry_meets_req_d(projectNamespace.c_str(), fileName.c_str(), "P",
-                                step, block, J_DAI_STAT_MAX, 20, J_DAI_OP_GT,
-                                &result);
+        j_dai_entry_meets_query_d(projectNamespace.c_str(), fileName.c_str(),
+                                  "P", step, block, J_DAI_STAT_MAX, 20,
+                                  J_DAI_OP_GT, &result);
         if (result)
         {
             steps[i] = step;
@@ -372,9 +380,9 @@ void QueryLowestTemp(std::string projectNamespace, std::string fileName)
     for (int i = 0; i < nResults; ++i)
     {
 
-        j_dai_get_global_min_stat_d(projectNamespace.c_str(), fileName.c_str(),
-                                    "T", J_DAI_STAT_MEAN, J_DAI_GRAN_BLOCK,
-                                    &minTemp);
+        j_dai_query_get_global_stat_d(
+            projectNamespace.c_str(), fileName.c_str(), "T", J_DAI_STAT_MIN,
+            J_DAI_STAT_MEAN, J_DAI_GRAN_BLOCK, &minTemp);
         //    j_dai_get_global_min_stat_d(projectNamespace.c_str(),
         //    fileName.c_str(), "T", J_DAI_STAT_MIN, J_DAI_GRAN_BLOCK,
         //    &minTemp);
@@ -406,13 +414,11 @@ void QueryDaysColderThan(std::string projectNamespace, std::string fileName)
     j_dai_tag_get_entries_ids(projectNamespace.c_str(), tagName.c_str(),
                               fileName.c_str(), "T", &nIDs, &entryIDs);
 
-    // how many = nIDs
-
     for (int i = 0; i < nIDs; ++i)
     {
         // j_dai_entry_get_date(projectNamespace.c_str(), entryIDs[i], &date);
-        j_dai_entry_get_date_int(projectNamespace.c_str(), entryIDs[i], &year,
-                                 &month, &day);
+        j_dai_entry_get_date(projectNamespace.c_str(), entryIDs[i], &year,
+                             &month, &day);
         // do something with returned date?
         // dates.push_back(std::string(date));
     }
@@ -455,8 +461,6 @@ void QueryCIDays(std::string projectNamespace, std::string fileName)
     stopCompute = high_resolution_clock::now();
 }
 
-// void ReadQuery(JuleaQuerySettings::JuleaQueryID queryID, std::string
-// projectNamespace, std::string fileName)
 void Query(JuleaQuerySettings::JuleaQueryID queryID,
            std::string projectNamespace, std::string fileName)
 {

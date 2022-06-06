@@ -41,7 +41,7 @@ void printUsage()
 
 void SetupDAI(std::string projectNamespace, std::string fileName)
 {
-    j_dai_init(projectNamespace.c_str());
+    // j_dai_init(projectNamespace.c_str());
 
     // j_dai_create_project_namespace(projectNamespace.c_str());
 
@@ -87,9 +87,10 @@ int main(int argc, char *argv[])
         double timeStart = MPI_Wtime();
         Settings settings(argc, argv, rank, nproc);
         HeatTransfer ht(settings);
-        IO io(settings, mpiHeatTransferComm);
 
-        // SetupDAI("Postprocess_evaluation");
+        SetupDAI("Thesis_eval", settings.outputfile);
+
+        IO io(settings, mpiHeatTransferComm);
 
         ht.init(false);
         // ht.printT("Initialized T:", mpiHeatTransferComm);
