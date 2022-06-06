@@ -12,55 +12,58 @@ add_executable(thesis_eval_heatTransfer_write_adios2
 target_link_libraries(thesis_eval_heatTransfer_write_adios2
   adios2::cxx11_mpi MPI::MPI_C ${CMAKE_THREAD_LIBS_INIT}
 )
+target_link_libraries(
+  thesis_eval_heatTransfer_write_adios2 PkgConfig::JULEA)
 
-add_executable(thesis_eval_heatTransfer_write_ascii
-  main.cpp
-  HeatTransfer.cpp
-  Settings.cpp
-  IO_ascii.cpp
-)
-target_link_libraries(thesis_eval_heatTransfer_write_ascii
-  MPI::MPI_C ${CMAKE_THREAD_LIBS_INIT}
-)
 
-if(ADIOS2_HAVE_HDF5)
-  add_executable(thesis_eval_heatTransfer_write_hdf5
-    main.cpp
-    HeatTransfer.cpp
-    Settings.cpp
-    IO_hdf5_a.cpp
-  )
-  target_include_directories(thesis_eval_heatTransfer_write_hdf5
-    PRIVATE ${HDF5_C_INCLUDE_DIRS}
-  )
-  target_link_libraries(thesis_eval_heatTransfer_write_hdf5
-    ${HDF5_C_LIBRARIES} MPI::MPI_C ${CMAKE_THREAD_LIBS_INIT}
-  )
+# add_executable(thesis_eval_heatTransfer_write_ascii
+#   main.cpp
+#   HeatTransfer.cpp
+#   Settings.cpp
+#   IO_ascii.cpp
+# )
+# target_link_libraries(thesis_eval_heatTransfer_write_ascii
+#   MPI::MPI_C ${CMAKE_THREAD_LIBS_INIT}
+# )
 
-  if(HDF5_IS_PARALLEL)
-    add_executable(thesis_eval_heatTransfer_write_ph5
-      main.cpp
-      HeatTransfer.cpp
-      Settings.cpp
-      IO_ph5.cpp
-    )
-    target_include_directories(thesis_eval_heatTransfer_write_ph5
-      PRIVATE ${HDF5_C_INCLUDE_DIRS}
-    )
-    target_link_libraries(thesis_eval_heatTransfer_write_ph5
-      ${HDF5_C_LIBRARIES} MPI::MPI_C ${CMAKE_THREAD_LIBS_INIT}
-    )
-  endif()
+# if(ADIOS2_HAVE_HDF5)
+#   add_executable(thesis_eval_heatTransfer_write_hdf5
+#     main.cpp
+#     HeatTransfer.cpp
+#     Settings.cpp
+#     IO_hdf5_a.cpp
+#   )
+#   target_include_directories(thesis_eval_heatTransfer_write_hdf5
+#     PRIVATE ${HDF5_C_INCLUDE_DIRS}
+#   )
+#   target_link_libraries(thesis_eval_heatTransfer_write_hdf5
+#     ${HDF5_C_LIBRARIES} MPI::MPI_C ${CMAKE_THREAD_LIBS_INIT}
+#   )
 
-  if(NOT (HDF5_VERSION VERSION_LESS 1.11))
-    add_executable(thesis_eval_heatTransfer_write_h5mixer
-      main.cpp
-      HeatTransfer.cpp
-      Settings.cpp
-      IO_h5mixer.cpp
-    ) 
-    target_link_libraries(thesis_eval_heatTransfer_write_h5mixer
-      adios2::cxx11_mpi MPI::MPI_C ${CMAKE_THREAD_LIBS_INIT}
-    )
-  endif()
-endif()
+#   if(HDF5_IS_PARALLEL)
+#     add_executable(thesis_eval_heatTransfer_write_ph5
+#       main.cpp
+#       HeatTransfer.cpp
+#       Settings.cpp
+#       IO_ph5.cpp
+#     )
+#     target_include_directories(thesis_eval_heatTransfer_write_ph5
+#       PRIVATE ${HDF5_C_INCLUDE_DIRS}
+#     )
+#     target_link_libraries(thesis_eval_heatTransfer_write_ph5
+#       ${HDF5_C_LIBRARIES} MPI::MPI_C ${CMAKE_THREAD_LIBS_INIT}
+#     )
+#   endif()
+
+#   if(NOT (HDF5_VERSION VERSION_LESS 1.11))
+#     add_executable(thesis_eval_heatTransfer_write_h5mixer
+#       main.cpp
+#       HeatTransfer.cpp
+#       Settings.cpp
+#       IO_h5mixer.cpp
+#     ) 
+#     target_link_libraries(thesis_eval_heatTransfer_write_h5mixer
+#       adios2::cxx11_mpi MPI::MPI_C ${CMAKE_THREAD_LIBS_INIT}
+#     )
+#   endif()
+# endif()

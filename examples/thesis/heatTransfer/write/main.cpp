@@ -18,6 +18,9 @@
 #include <stdexcept>
 #include <string>
 
+#include <julea-dai.h>
+#include <julea.h>
+
 #include "HeatTransfer.h"
 #include "IO.h"
 #include "Settings.h"
@@ -34,6 +37,26 @@ void printUsage()
               << "  ny:     local array size in Y dimension per processor\n"
               << "  steps:  the total number of steps to output\n"
               << "  iterations: one step consist of this many iterations\n\n";
+}
+
+void SetupDAI(std::string projectNamespace, std::string fileName)
+{
+    j_dai_init(projectNamespace.c_str());
+
+    // j_dai_create_project_namespace(projectNamespace.c_str());
+
+    j_dai_add_tag_d(projectNamespace.c_str(), fileName.c_str(), "T",
+                    "ColderThanMinus12", J_DAI_STAT_MAX, J_DAI_OP_LT,
+                    J_DAI_GRAN_BLOCK, -12.0);
+    j_dai_pc_ic(projectNamespace.c_str(), fileName.c_str(), "T",
+                (JDAIClimateIndex)(J_DAI_CI_SU | J_DAI_CI_FD | J_DAI_CI_ID |
+                                   J_DAI_CI_TR));
+    j_dai_compute_stats_combined(projectNamespace.c_str(), fileName.c_str(),
+                                 "T");
+    j_dai_pc_block_stat(projectNamespace.c_str(), fileName.c_str(), "T",
+                        (JDAIStatistic)(J_DAI_STAT_MIN | J_DAI_STAT_MAX |
+                                        J_DAI_STAT_MEAN | J_DAI_STAT_SUM |
+                                        J_DAI_STAT_VAR));
 }
 
 int main(int argc, char *argv[])
@@ -65,6 +88,8 @@ int main(int argc, char *argv[])
         Settings settings(argc, argv, rank, nproc);
         HeatTransfer ht(settings);
         IO io(settings, mpiHeatTransferComm);
+
+        // SetupDAI("Postprocess_evaluation");
 
         ht.init(false);
         // ht.printT("Initialized T:", mpiHeatTransferComm);
@@ -145,6 +170,7 @@ int main(int argc, char *argv[])
         std::cout << "Exception caught\n";
         std::cout << e.what() << std::endl;
     }
+    // j_dai_fini();
 
     MPI_Finalize();
     return 0;
