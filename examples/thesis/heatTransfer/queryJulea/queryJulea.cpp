@@ -339,9 +339,6 @@ void QueryRainTemperatureCombinedSimple(std::string projectNamespace,
     startRead = high_resolution_clock::now();
 
     // get every entry where T > 40
-    // j_dai_step_get_ids_d(projectNamespace.c_str(), fileName.c_str(), "T",
-    //                   J_DAI_GRAN_BLOCK, J_DAI_STAT_MAX,  J_DAI_OP_GT, 40,
-    //                   &nIDs, &entryIDs);
     j_dai_query_get_ids_d(projectNamespace.c_str(), fileName.c_str(), "T",
                           J_DAI_GRAN_BLOCK, J_DAI_STAT_MAX, J_DAI_OP_GT, 40,
                           &nIDs, &entryIDs);
@@ -380,9 +377,12 @@ void QueryLowestTemp(std::string projectNamespace, std::string fileName)
     for (int i = 0; i < nResults; ++i)
     {
 
+        // j_dai_query_get_global_stat_d(
+        // projectNamespace.c_str(), fileName.c_str(), "T", J_DAI_STAT_MIN,
+        // J_DAI_STAT_MEAN, J_DAI_GRAN_BLOCK, &minTemp);
         j_dai_query_get_global_stat_d(
             projectNamespace.c_str(), fileName.c_str(), "T", J_DAI_STAT_MIN,
-            J_DAI_STAT_MEAN, J_DAI_GRAN_BLOCK, &minTemp);
+            J_DAI_STAT_MIN, J_DAI_GRAN_BLOCK, &minTemp);
         //    j_dai_get_global_min_stat_d(projectNamespace.c_str(),
         //    fileName.c_str(), "T", J_DAI_STAT_MIN, J_DAI_GRAN_BLOCK,
         //    &minTemp);
@@ -416,7 +416,6 @@ void QueryDaysColderThan(std::string projectNamespace, std::string fileName)
 
     for (int i = 0; i < nIDs; ++i)
     {
-        // j_dai_entry_get_date(projectNamespace.c_str(), entryIDs[i], &date);
         j_dai_entry_get_date(projectNamespace.c_str(), entryIDs[i], &year,
                              &month, &day);
         // do something with returned date?
