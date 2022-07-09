@@ -217,8 +217,8 @@ void QueryHighestMean(std::string projectNamespace, std::string fileName)
     double result = 0;
     startRead = high_resolution_clock::now();
     j_dai_query_get_global_stat_d(projectNamespace.c_str(), fileName.c_str(),
-                                  "T", J_DAI_STAT_MAX, J_DAI_STAT_MEAN,
-                                  J_DAI_GRAN_BLOCK, &result);
+                                  "T",J_DAI_GRAN_BLOCK, J_DAI_STAT_MAX, J_DAI_STAT_MEAN,
+                                   &result);
     // j_dai_get_max_stat_d(projectNamespace.c_str(), fileName.c_str(), "T",
     // J_DAI_STAT_MEAN, J_DAI_GRAN_BLOCK, &result);
 
@@ -381,8 +381,8 @@ void QueryLowestTemp(std::string projectNamespace, std::string fileName)
         // projectNamespace.c_str(), fileName.c_str(), "T", J_DAI_STAT_MIN,
         // J_DAI_STAT_MEAN, J_DAI_GRAN_BLOCK, &minTemp);
         j_dai_query_get_global_stat_d(
-            projectNamespace.c_str(), fileName.c_str(), "T", J_DAI_STAT_MIN,
-            J_DAI_STAT_MIN, J_DAI_GRAN_BLOCK, &minTemp);
+            projectNamespace.c_str(), fileName.c_str(), "T",J_DAI_GRAN_BLOCK, J_DAI_STAT_MIN,
+            J_DAI_STAT_MIN, &minTemp);
         //    j_dai_get_global_min_stat_d(projectNamespace.c_str(),
         //    fileName.c_str(), "T", J_DAI_STAT_MIN, J_DAI_GRAN_BLOCK,
         //    &minTemp);
@@ -499,6 +499,12 @@ void SetupQueries(std::vector<JuleaQuerySettings::JuleaQueryID> allQueries)
     allQueries.push_back(JuleaQuerySettings::JQUERY_CI_DAYS);
     allQueries.push_back(JuleaQuerySettings::JQUERY_LOWEST_TEMP_OVER_FILES);
     allQueries.push_back(JuleaQuerySettings::JQUERY_RAIN_TEMP_COMBINED);
+}
+
+void InitDAI(std::string projectNamespace, std::string fileName)
+{
+    j_dai_pc_ic(projectNamespace.c_str(),fileName.c_str(), "T",(JDAIClimateIndex)(J_DAI_CI_SU| J_DAI_CI_FD | J_DAI_CI_ID | J_DAI_CI_TR));
+    j_dai_pc_ic(projectNamespace.c_str(),fileName.c_str(), "P",(JDAIClimateIndex)(J_DAI_CI_PR1| J_DAI_CI_PR10 | J_DAI_CI_PR20));
 }
 
 int main(int argc, char *argv[])
