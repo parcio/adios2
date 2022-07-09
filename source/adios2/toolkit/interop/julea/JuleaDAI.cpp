@@ -40,7 +40,7 @@ JuleaDAI::JuleaDAI(helper::Comm const &comm) : m_Comm(comm)
 
 void JuleaDAI::Init(helper::Comm const &comm)
 {
-    //    m_Comm = comm;
+    //    m_Comm = comm;z
 }
 // #define declare_template_instantiation(T)                                      \
 

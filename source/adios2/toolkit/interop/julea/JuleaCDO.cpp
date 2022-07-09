@@ -277,7 +277,7 @@ void JuleaCDO::ComputeYearlyStats(std::string variableName)
     template void JuleaCDO::ComputeAllBlockStats(                              \
         core::Variable<T> &variable, const T *data, T &blockMin, T &blockMax,  \
         T &blockMean, T &blockSum, T &blockSumSquares, T &blockVar,            \
-        bool isOriginalFormat);                                                \
+        bool isOriginalFormat,std::string fileName);                                                \
     template void JuleaCDO::BufferCDOStats(                                    \
         core::Variable<T> &variable, T blockMin, T blockMax, T blockMean,      \
         T blockSum, T blockVar, bool isOriginalFormat);

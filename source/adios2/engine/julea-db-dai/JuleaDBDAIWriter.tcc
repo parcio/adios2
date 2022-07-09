@@ -85,6 +85,90 @@ namespace engine
 //     // TODO implement?
 // }
 
+
+// had data parameter bur currently no way to indicate that tags should be set when actual data meets query.
+// only works on min/max/mean/sum/var; not on data buffer
+template <class T>
+void JuleaDBDAIWriter::TaggingDataIfRequired(std::string fileName, std::string varName, size_t currentStep, size_t blockID, T blockMin, T blockMax, T blockMean, T blockSum, T blockVar)
+{
+//   JDAIStatistic statistic;
+//   JDAIOperator op;
+//   JDAIGranularity granularity;
+
+    double threshold = 0;
+
+       auto it = m_JuleaCDO.m_Tags.find(std::pair<std::string, std::string>(fileName, varName));
+        if (it == m_JuleaCDO.m_Tags.end())
+        {
+            // TODO: should not happen; is checked in init whether there is
+            // anything in tag table
+        }
+        else
+        {
+            if (blockMax < m_JuleaCDO.m_TagThreshold)
+            {
+                //TODO: add tag entry
+                m_JuleaDBInteractionWriter.AddEntriesForTagTable(fileName, varName, currentStep, blockID, blockMax);
+            }
+            // statistic = it->m_Statistic;
+        //    auto statistic = it->m_Statistic;
+            // op = m_Operator;
+            // threshold = m_Threshold_d;
+    
+            //    switch (granularity)
+            //     {
+            //     case J_DAI_GRAN_BLOCK:
+            //         switch (op)
+            //         {
+            //             case J_DAI_OP_GT:
+            //             if (data > threshold)
+            //             {
+            //                 //TODO: add tag entry
+            //             }
+            //             break;
+            //             case J_DAI_OP_LT:
+            //             if (data < threshold)
+            //             {
+            //                 //TODO: add tag entry
+            //             }
+            //             break;
+            //         }
+            //     case J_DAI_GRAN_BLOCK:
+            //         break;
+            //     case J_DAI_GRAN_STEP:
+            //         // TODO: compute something
+            //         break;
+            //     case J_DAI_GRAN_VARIABLE:
+            //         // TODO: compute something
+            //         break;
+            //         // blockResults.push_back(blockResult);
+            //     }
+            //     // FIXME: write these results to JULEA
+        }
+
+
+       
+}
+
+template <>
+void JuleaDBDAIWriter::TaggingDataIfRequired<std::string>(std::string fileName, std::string varName, size_t currentStep, size_t blockID, std::string blockMin,std::string blockMax, std::string blockMean, std::string blockSum, std::string blockVar)
+{
+    // TODO implement?
+}
+
+template <>
+void JuleaDBDAIWriter::TaggingDataIfRequired<std::complex<float>>(std::string fileName, std::string varName, size_t currentStep, size_t blockID, std::complex<float> blockMin,std::complex<float> blockMax, std::complex<float> blockMean, std::complex<float> blockSum, std::complex<float> blockVar)
+{
+    // TODO implement?
+}
+
+template <>
+void JuleaDBDAIWriter::TaggingDataIfRequired<std::complex<double>>(std::string fileName, std::string varName, size_t currentStep, size_t blockID, std::complex<double> blockMin,std::complex<double> blockMax, std::complex<double> blockMean, std::complex<double> blockSum, std::complex<double> blockVar)
+{
+    // TODO implement?
+}
+
+
 // based on isOriginalFormat different MD is computed
 template <class T>
 void JuleaDBDAIWriter::ManageBlockStepMetadata(Variable<T> &variable,
@@ -120,7 +204,7 @@ void JuleaDBDAIWriter::ManageBlockStepMetadata(Variable<T> &variable,
 
     m_JuleaCDO.ComputeAllBlockStats(variable, data, blockMin, blockMax,
                                     blockMean, blockSum, blockSumSquares,
-                                    blockVar, m_IsOriginalFormat);
+                                    blockVar, m_IsOriginalFormat,m_Name);
 
     /**  to initialize the global min/max, they are set to the
         first min/max for the first block of the first step */
@@ -327,6 +411,9 @@ void JuleaDBDAIWriter::PutSyncToJulea(
         // m_IsOriginalFormat determines which MD to compute
         ManageBlockStepMetadata(variable, data, blockMin, blockMax, blockMean,
                                 blockSum, blockVar);
+        TaggingDataIfRequired(m_Name, variable.m_Name, m_CurrentStep, m_CurrentBlockID, blockMin, blockMax, blockMean,
+                                blockSum, blockVar);
+
     }
     else
     {
@@ -366,6 +453,20 @@ void JuleaDBDAIWriter::PutSyncToJulea(
             }
         }
     }
+
+    auto it2 = m_JuleaCDO.m_Tags.find(
+            std::pair<std::string, std::string>(m_Name, variable.m_Name));
+        if (it2 == m_JuleaCDO.m_Tags.end())
+        {
+            // TODO: should not happen; is checked in init whether there is
+            // anything in tag table
+        }
+        else
+        {
+
+            //TODO: check whether tag query is met
+        }
+
 
     // FIXME: compute step values
     //  JuleaDBDAIStepValues(variable, blockMin, blockMean, blockMax);

@@ -30,7 +30,8 @@ public:
     ~JuleaDBInteractionWriter() = default;
 
     /** --- Variables --- */
-    void InitDBSchemas(bool isOriginalFormat);
+    void InitDBSchemas(std::string projectNamespace, bool isOriginalFormat);
+    void InitTagTables(std::string projectNamespace);
 
     /**
      * Put the metadata for a specific block in a specific step to JULEA
@@ -54,6 +55,8 @@ public:
         T &blockMin, T &blockMax, T &blockMean, T &blockSum, T &blockVar,
         uint32_t &entryID, bool original);
 
+    template <class T>
+void AddEntriesForTagTable(const std::string fileName, const std::string varName, size_t currentStep, size_t block, const T data);
     /** --- Attributes --- */
     // TODO: support attributes again
 
@@ -66,6 +69,9 @@ private:
     // void AddFieldsForYearlyLocalStatsTable(JDBSchema *schema);
     void AddFieldsForDailyGlobalStatsTable(JDBSchema *schema);
     void AddFieldsForDailyLocalStatsTable(JDBSchema *schema);
+
+    void AddFieldsForTagTable(JDBSchema *schema);
+    void AddFieldsForPrecomputationTable(JDBSchema *schema);
 
     /**  Tables contain only original information (= BP formats) */
     void AddFieldsForVariableMD_Original(JDBSchema *schema);
@@ -108,10 +114,15 @@ private:
                                     const std::string varName,
                                     size_t currentStep,
                                     interop::JuleaCDO &m_JuleaCDO);
+    // void AddEntriesForPrecomputation(const std::string nameSpace,
+    //                                 const std::string varName,
+    //                                 size_t currentStep,
+    //                                 interop::JuleaCDO &m_JuleaCDO);
 
 }; // end namespace JuleaDBInteractionWriter
 
 #define declare_template_instantiation(T)                                      \
+    extern template void JuleaDBInteractionWriter::AddEntriesForTagTable(const std::string fileName, const std::string varName, size_t currentStep, size_t block, const T data);\
     extern template void JuleaDBInteractionWriter::PutVariableMetadataToJulea( \
         core::Variable<T> &variable, const std::string projectNamespace,       \
         const std::string fileName, const std::string varName,                 \

@@ -261,7 +261,7 @@ void JuleaDBDAIWriter::Init()
         std::cout << "JDB Writer (" << m_WriterRank << ") : InitDBSchemas()\n";
         // std::cout << "InitDBSchemas" << std::endl;
 
-        m_JuleaDBInteractionWriter.InitDBSchemas(m_IsOriginalFormat);
+        m_JuleaDBInteractionWriter.InitDBSchemas(m_ProjectNamespace, m_IsOriginalFormat);
         // Init();
         std::cout << "JDB Writer (" << m_WriterRank
                   << ") : InitDBSchemas finished()\n";
@@ -321,7 +321,15 @@ void JuleaDBDAIWriter::InitParameters()
     }
 }
 
-void JuleaDBDAIWriter::InitDAI() {}
+void JuleaDBDAIWriter::InitDAI() {
+    //     if (m_JuleaCDO.m_Tags.empty())
+    // {
+    //     m_JuleaCDO.m_HasTags = false;
+    // }
+    // else{
+        m_JuleaDBInteractionWriter.InitTagTables(m_ProjectNamespace);
+    // }
+}
 
 /**
  * [JuleaWriter::InitVariables description]
