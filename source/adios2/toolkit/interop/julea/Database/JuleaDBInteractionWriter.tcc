@@ -33,7 +33,10 @@ namespace interop
 {
 
 template <class T>
-void JuleaDBInteractionWriter::AddEntriesForTagTable(const std::string fileName, const std::string varName, size_t currentStep, size_t block, const T data)
+void JuleaDBInteractionWriter::AddEntriesForTagTable(const std::string fileName,
+                                                     const std::string varName,
+                                                     size_t currentStep,
+                                                     size_t block, const T data)
 {
     int err = 0;
     g_autoptr(JDBSchema) schema = NULL;
@@ -246,7 +249,7 @@ void AddEntriesForBlockMD(core::Variable<T> &variable,
     }
 
     // j_db_entry_set_field(entry, "projectNamespace", projectNamespace.c_str(),
-                        //  strlen(projectNamespace.c_str()) + 1, NULL);
+    //  strlen(projectNamespace.c_str()) + 1, NULL);
     j_db_entry_set_field(entry, "file", fileName.c_str(),
                          strlen(fileName.c_str()) + 1, NULL);
     j_db_entry_set_field(entry, "variableName", varName.c_str(),
@@ -345,8 +348,8 @@ void JuleaDBInteractionWriter::PutVariableMetadataToJulea(
     auto batch = j_batch_new(semantics);
     auto batch2 = j_batch_new(semantics);
 
-    auto completeNamespace = g_strdup_printf(
-		"%s_%s", "adios2-", projectNamespace.c_str());
+    auto completeNamespace =
+        g_strdup_printf("%s_%s", "adios2-", projectNamespace.c_str());
     schema = j_db_schema_new(completeNamespace, "variable-metadata", NULL);
 
     // TODO: necessary to get schema every time?
@@ -360,7 +363,8 @@ void JuleaDBInteractionWriter::PutVariableMetadataToJulea(
     /** check whether variable needs to be updated or inserted */
     selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
     // j_db_selector_add_field(selector, "projectNamespace",
-    //                         J_DB_SELECTOR_OPERATOR_EQ, projectNamespace.c_str(),
+    //                         J_DB_SELECTOR_OPERATOR_EQ,
+    //                         projectNamespace.c_str(),
     //                         strlen(projectNamespace.c_str()) + 1, NULL);
     j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
                             fileName.c_str(), strlen(fileName.c_str()) + 1,
@@ -412,8 +416,8 @@ void JuleaDBInteractionWriter::PutBlockMetadataToJulea(
     auto batch = j_batch_new(semantics);
     auto batch2 = j_batch_new(semantics);
 
-    auto completeNamespace = g_strdup_printf(
-		"%s_%s", "adios2-", projectNamespace.c_str());
+    auto completeNamespace =
+        g_strdup_printf("%s_%s", "adios2-", projectNamespace.c_str());
     schema = j_db_schema_new(completeNamespace, "block-metadata", NULL);
     j_db_schema_get(schema, batch, NULL);
     err = j_batch_execute(batch);
@@ -428,7 +432,8 @@ void JuleaDBInteractionWriter::PutBlockMetadataToJulea(
     /** check whether blcock needs to be updated or inserted */
     selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
     // j_db_selector_add_field(selector, "projectNamespace",
-    //                         J_DB_SELECTOR_OPERATOR_EQ, projectNamespace.c_str(),
+    //                         J_DB_SELECTOR_OPERATOR_EQ,
+    //                         projectNamespace.c_str(),
     //                         strlen(projectNamespace.c_str()) + 1, NULL);
     j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
                             fileName.c_str(), strlen(fileName.c_str()) + 1,

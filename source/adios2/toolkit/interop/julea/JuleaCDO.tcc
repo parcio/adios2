@@ -246,7 +246,8 @@ template <class T>
 void JuleaCDO::ComputeAllBlockStats(core::Variable<T> &variable, const T *data,
                                     T &blockMin, T &blockMax, T &blockMean,
                                     T &blockSum, T &blockSumSquares,
-                                    T &blockVar, bool isOriginalFormat, std::string fileName)
+                                    T &blockVar, bool isOriginalFormat,
+                                    std::string fileName)
 {
     if (m_Verbosity == 5)
     {
@@ -284,7 +285,7 @@ void JuleaCDO::ComputeAllBlockStats<std::string>(
     core::Variable<std::string> &variable, const std::string *data,
     std::string &blockMin, std::string &blockMax, std::string &blockMean,
     std::string &blockSum, std::string &blockSumSquares, std::string &blockVar,
-    bool isOriginalFormat,std::string fileName)
+    bool isOriginalFormat, std::string fileName)
 {
 }
 
@@ -294,7 +295,7 @@ void JuleaCDO::ComputeAllBlockStats<std::complex<float>>(
     const std::complex<float> *data, std::complex<float> &blockMin,
     std::complex<float> &blockMax, std::complex<float> &blockMean,
     std::complex<float> &blockSum, std::complex<float> &blockSumSquares,
-    std::complex<float> &blockVar, bool isOriginalFormat,std::string fileName)
+    std::complex<float> &blockVar, bool isOriginalFormat, std::string fileName)
 {
 }
 
@@ -304,7 +305,7 @@ void JuleaCDO::ComputeAllBlockStats<std::complex<double>>(
     const std::complex<double> *data, std::complex<double> &blockMin,
     std::complex<double> &blockMax, std::complex<double> &blockMean,
     std::complex<double> &blockSum, std::complex<double> &blockSumSquares,
-    std::complex<double> &blockVar, bool isOriginalFormat,std::string fileName)
+    std::complex<double> &blockVar, bool isOriginalFormat, std::string fileName)
 {
 }
 

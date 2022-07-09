@@ -157,124 +157,133 @@ JuleaDBInteractionWriter::JuleaDBInteractionWriter(helper::Comm const &comm)
     // std::cout << "This is the constructor of the writer" << std::endl;
 }
 
-void JuleaDBInteractionWriter::AddFieldsForTagTable(
-    JDBSchema *schema)
+void JuleaDBInteractionWriter::AddFieldsForTagTable(JDBSchema *schema)
 {
-     gchar const *fileIndex[] = {"file", NULL};
+    gchar const *fileIndex[] = {"file", NULL};
     gchar const *varIndex[] = {"variableName", NULL};
     gchar const *stepIndex[] = {"step", NULL};
     gchar const *blockIndex[] = {"block", NULL};
 
-	// j_db_schema_add_field(schema, "projectNamespace", J_DB_TYPE_STRING, NULL);
+    // j_db_schema_add_field(schema, "projectNamespace", J_DB_TYPE_STRING,
+    // NULL);
 
-	// j_db_schema_add_field(schema, "tagName", J_DB_TYPE_STRING, NULL);
+    // j_db_schema_add_field(schema, "tagName", J_DB_TYPE_STRING, NULL);
     j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
     j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
     j_db_schema_add_field(schema, "step", J_DB_TYPE_UINT64, NULL);
     j_db_schema_add_field(schema, "block", J_DB_TYPE_UINT64, NULL);
 
-    //could be useful to have the entryID directly in tag table
+    // could be useful to have the entryID directly in tag table
     j_db_schema_add_field(schema, "entryID", J_DB_TYPE_UINT64, NULL);
 
-    //FIXME: is JDAIStatistic not string
-	// j_db_schema_add_field(schema, "statisticName", J_DB_TYPE_STRING, NULL);
-	j_db_schema_add_field(schema, "stat", J_DB_TYPE_UINT32, NULL);
-	// j_db_schema_add_field(schema, "operator", J_DB_TYPE_UINT32, NULL);
-	// j_db_schema_add_field(schema, "granularity", J_DB_TYPE_UINT32, NULL);
+    // FIXME: is JDAIStatistic not string
+    //  j_db_schema_add_field(schema, "statisticName", J_DB_TYPE_STRING, NULL);
+    j_db_schema_add_field(schema, "stat", J_DB_TYPE_UINT32, NULL);
+    // j_db_schema_add_field(schema, "operator", J_DB_TYPE_UINT32, NULL);
+    // j_db_schema_add_field(schema, "granularity", J_DB_TYPE_UINT32, NULL);
 
-	// j_db_schema_add_field(schema, "threshold_i", J_DB_TYPE_UINT32, NULL);
-	// j_db_schema_add_field(schema, "threshold_d", J_DB_TYPE_FLOAT64, NULL);
+    // j_db_schema_add_field(schema, "threshold_i", J_DB_TYPE_UINT32, NULL);
+    // j_db_schema_add_field(schema, "threshold_d", J_DB_TYPE_FLOAT64, NULL);
     j_db_schema_add_index(schema, fileIndex, NULL);
-     j_db_schema_add_index(schema, varIndex, NULL);
+    j_db_schema_add_index(schema, varIndex, NULL);
 }
 
-void InitTagsFromConfigDB(std::string projectNamespace, gchar** tagName, gchar** fileName, gchar** variableName, JDAIGranularity* granularity, JDAIStatistic* statistic, JDAIOperator* op, double* threshold)
-    {
+void InitTagsFromConfigDB(std::string projectNamespace, gchar **tagName,
+                          gchar **fileName, gchar **variableName,
+                          JDAIGranularity *granularity,
+                          JDAIStatistic *statistic, JDAIOperator *op,
+                          double *threshold)
+{
     size_t err = 0;
-	size_t db_length = 0;
-	JDBType type;
-	// gchar* db_field = NULL;
-	gchar* completeNamespace = NULL;
+    size_t db_length = 0;
+    JDBType type;
+    // gchar* db_field = NULL;
+    gchar *completeNamespace = NULL;
 
+    g_autoptr(JBatch) batch = NULL;
+    g_autoptr(JSemantics) semantics = NULL;
+    g_autoptr(JDBSchema) schema = NULL;
+    g_autoptr(JDBEntry) entry = NULL;
+    g_autoptr(JDBIterator) iterator = NULL;
+    g_autoptr(JDBSelector) selector = NULL;
 
-	g_autoptr(JBatch) batch = NULL;
-	g_autoptr(JSemantics) semantics = NULL;
-	g_autoptr(JDBSchema) schema = NULL;
-	g_autoptr(JDBEntry) entry = NULL;
-	g_autoptr(JDBIterator) iterator = NULL;
-	g_autoptr(JDBSelector) selector = NULL;
+    semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    batch = j_batch_new(semantics);
 
-	semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-	batch = j_batch_new(semantics);
+    completeNamespace =
+        g_strdup_printf("%s_%s", "adios2-", projectNamespace.c_str());
+    auto tag_schema = j_db_schema_new(completeNamespace, "tags", NULL);
 
-    completeNamespace = g_strdup_printf(
-		"%s_%s", "adios2-", projectNamespace.c_str());
-	    auto tag_schema = j_db_schema_new(completeNamespace, "tags", NULL);
+    // complete_namespace = g_strdup_printf(
+    // 	"%s_%s", "adios2-", name_space);
 
-	// complete_namespace = g_strdup_printf(
-	// 	"%s_%s", "adios2-", name_space);
+    // schema = j_db_schema_new(complete_namespace, "variable-metadata", NULL);
+    j_db_schema_get(schema, batch, NULL);
+    err = j_batch_execute(batch);
 
-	// schema = j_db_schema_new(complete_namespace, "variable-metadata", NULL);
-	j_db_schema_get(schema, batch, NULL);
-	err = j_batch_execute(batch);
-
-	if (err == 0)
-	{
-		//TODO error handling
-	}
-	selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
-	j_db_selector_add_field(selector, "projectNamespace",
-				J_DB_SELECTOR_OPERATOR_EQ, projectNamespace.c_str(),
-				strlen(projectNamespace.c_str()) + 1, NULL);
-    // j_db_selector_add_field(selector, "file",
-	// 			J_DB_SELECTOR_OPERATOR_EQ, fileName.c_str(),
-	// 			strlen(fileName.c_str()) + 1, NULL);
-	iterator = j_db_iterator_new(schema, selector, NULL);
-
-	while (j_db_iterator_next(iterator, NULL))
-	{
-		j_db_iterator_get_field(iterator, "tagName", &type, (gpointer*)&tagName, &db_length, NULL);
-		j_db_iterator_get_field(iterator, "file", &type, (gpointer*)&fileName, &db_length, NULL);
-		j_db_iterator_get_field(iterator, "variableName", &type, (gpointer*)variableName, &db_length, NULL);
-		j_db_iterator_get_field(iterator, "granularity", &type, (gpointer*)&granularity, &db_length, NULL);
-		j_db_iterator_get_field(iterator, "statistic", &type, (gpointer*)&stat, &db_length, NULL);
-		j_db_iterator_get_field(iterator, "operator", &type, (gpointer*)&op, &db_length, NULL);
-		j_db_iterator_get_field(iterator, "threshold_d", &type, (gpointer*)&threshold, &db_length, NULL);
-	}
-
-	j_db_schema_unref(schema);
-	j_db_selector_unref(selector);
+    if (err == 0)
+    {
+        // TODO error handling
     }
+    selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
+    j_db_selector_add_field(selector, "projectNamespace",
+                            J_DB_SELECTOR_OPERATOR_EQ, projectNamespace.c_str(),
+                            strlen(projectNamespace.c_str()) + 1, NULL);
+    // j_db_selector_add_field(selector, "file",
+    // 			J_DB_SELECTOR_OPERATOR_EQ, fileName.c_str(),
+    // 			strlen(fileName.c_str()) + 1, NULL);
+    iterator = j_db_iterator_new(schema, selector, NULL);
+
+    while (j_db_iterator_next(iterator, NULL))
+    {
+        j_db_iterator_get_field(iterator, "tagName", &type,
+                                (gpointer *)&tagName, &db_length, NULL);
+        j_db_iterator_get_field(iterator, "file", &type, (gpointer *)&fileName,
+                                &db_length, NULL);
+        j_db_iterator_get_field(iterator, "variableName", &type,
+                                (gpointer *)variableName, &db_length, NULL);
+        j_db_iterator_get_field(iterator, "granularity", &type,
+                                (gpointer *)&granularity, &db_length, NULL);
+        j_db_iterator_get_field(iterator, "statistic", &type, (gpointer *)&stat,
+                                &db_length, NULL);
+        j_db_iterator_get_field(iterator, "operator", &type, (gpointer *)&op,
+                                &db_length, NULL);
+        j_db_iterator_get_field(iterator, "threshold_d", &type,
+                                (gpointer *)&threshold, &db_length, NULL);
+    }
+
+    j_db_schema_unref(schema);
+    j_db_selector_unref(selector);
+}
 
 void JuleaDBInteractionWriter::InitTagTables(std::string projectNamespace)
 {
-     // std::cout << "--- InitDBSchemas ---" << std::endl;
+    // std::cout << "--- InitDBSchemas ---" << std::endl;
     int err = 0;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
-    gchar* fileName = NULL;
-    gchar* tagName = NULL;
-    gchar* variableName = NULL;
+    gchar *fileName = NULL;
+    gchar *tagName = NULL;
+    gchar *variableName = NULL;
     // gchar* statisticName = NULL;
 
     JDAIStatistic stat;
     JDAIOperator op;
     JDAIGranularity granularity;
     double threshold = 0;
- 
+
     g_autoptr(JDBSchema) varSchema = NULL;
 
-    InitTagsFromConfigDB(projectNamespace, &tagName, &fileName, &variableName,&granularity, &stat, &op, &threshold);
-    
-    auto completeNamespace = g_strdup_printf(
-		"%s_%s", "adios2-", projectNamespace.c_str());
-	    auto tagSchema = j_db_schema_new(completeNamespace, tagName, NULL);
-	    // auto tag_schema = j_db_schema_new(completeNamespace, "tags", NULL); 
+    InitTagsFromConfigDB(projectNamespace, &tagName, &fileName, &variableName,
+                         &granularity, &stat, &op, &threshold);
+
+    auto completeNamespace =
+        g_strdup_printf("%s_%s", "adios2-", projectNamespace.c_str());
+    auto tagSchema = j_db_schema_new(completeNamespace, tagName, NULL);
+    // auto tag_schema = j_db_schema_new(completeNamespace, "tags", NULL);
 
     j_db_schema_get(tagSchema, batch, NULL);
     bool existsVar = j_batch_execute(batch);
-
-
 
     if (existsVar == 0)
     {
@@ -886,8 +895,8 @@ void JuleaDBInteractionWriter::AddEntriesForClimateIndexTable(
     auto batch = j_batch_new(semantics);
     auto batch2 = j_batch_new(semantics);
 
-        auto completeNamespace = g_strdup_printf(
-		"%s_%s", "adios2-", projectNamespace.c_str());
+    auto completeNamespace =
+        g_strdup_printf("%s_%s", "adios2-", projectNamespace.c_str());
     schema = j_db_schema_new(completeNamespace, "climate-indices", NULL);
     j_db_schema_get(schema, batch, NULL);
     err = j_batch_execute(batch);
@@ -940,9 +949,10 @@ void JuleaDBInteractionWriter::AddEntriesForDailyGlobalStatsTable(
     auto batch = j_batch_new(semantics);
     auto batch2 = j_batch_new(semantics);
 
-    auto completeNamespace = g_strdup_printf(
-		"%s_%s", "adios2-", projectNamespace.c_str());
-    schema = j_db_schema_new(completeNamespace, "daily-global-statistics", NULL);
+    auto completeNamespace =
+        g_strdup_printf("%s_%s", "adios2-", projectNamespace.c_str());
+    schema =
+        j_db_schema_new(completeNamespace, "daily-global-statistics", NULL);
     j_db_schema_get(schema, batch, NULL);
     err = j_batch_execute(batch);
     // g_assert_true(j_batch_execute(batch) == true);
@@ -962,7 +972,8 @@ void JuleaDBInteractionWriter::AddEntriesForDailyGlobalStatsTable(
     SetDailyValues(entry, JuleaCDO, varName, year, month, day);
 }
 
-void JuleaDBInteractionWriter::InitDBSchemas(std::string projectNamespace, bool isOriginalFormat)
+void JuleaDBInteractionWriter::InitDBSchemas(std::string projectNamespace,
+                                             bool isOriginalFormat)
 {
     // std::cout << "--- InitDBSchemas ---" << std::endl;
     int err = 0;
@@ -976,16 +987,17 @@ void JuleaDBInteractionWriter::InitDBSchemas(std::string projectNamespace, bool 
     g_autoptr(JDBSchema) cIndexSchema = NULL;  // climate indices table
     g_autoptr(JDBSchema) dGlobalSchema = NULL; // daily global statistics table
 
-    auto completeNamespace = g_strdup_printf(
-		"%s_%s", "adios2-", projectNamespace.c_str());
-	    auto tag_schema = j_db_schema_new(completeNamespace, "tags", NULL);
+    auto completeNamespace =
+        g_strdup_printf("%s_%s", "adios2-", projectNamespace.c_str());
+    auto tag_schema = j_db_schema_new(completeNamespace, "tags", NULL);
     varSchema = j_db_schema_new(completeNamespace, "variable-metadata", NULL);
     blockSchema = j_db_schema_new(completeNamespace, "block-metadata", NULL);
 
     // TODO: check whether tables are required by user
     // readDAISettings
     cIndexSchema = j_db_schema_new(completeNamespace, "climate-indices", NULL);
-    dGlobalSchema = j_db_schema_new(completeNamespace, "daily-global-statistics", NULL);
+    dGlobalSchema =
+        j_db_schema_new(completeNamespace, "daily-global-statistics", NULL);
 
     j_db_schema_get(varSchema, batch, NULL);
     bool existsVar = j_batch_execute(batch);
@@ -1004,7 +1016,8 @@ void JuleaDBInteractionWriter::InitDBSchemas(std::string projectNamespace, bool 
     if (existsVar == 0)
     {
         // std::cout << "variable schema does not exist" << std::endl;
-        varSchema = j_db_schema_new(completeNamespace, "variable-metadata", NULL);
+        varSchema =
+            j_db_schema_new(completeNamespace, "variable-metadata", NULL);
         // AddFieldsForVariableMDEval(varSchema);
         AddFieldsForVariableMD_Original(varSchema);
         j_db_schema_create(varSchema, batch, NULL);
@@ -1015,7 +1028,8 @@ void JuleaDBInteractionWriter::InitDBSchemas(std::string projectNamespace, bool 
     {
 
         // std::cout << "block schema does not exist" << std::endl;
-        blockSchema = j_db_schema_new(completeNamespace, "block-metadata", NULL);
+        blockSchema =
+            j_db_schema_new(completeNamespace, "block-metadata", NULL);
         // AddFieldsForBlockMDEval(blockSchema);
         AddFieldsForBlockMD_Original(blockSchema);
         j_db_schema_create(blockSchema, batch2, NULL);
@@ -1024,7 +1038,8 @@ void JuleaDBInteractionWriter::InitDBSchemas(std::string projectNamespace, bool 
 
     if (existsClimaIndex == 0)
     {
-        cIndexSchema = j_db_schema_new(completeNamespace, "climate-indices", NULL);
+        cIndexSchema =
+            j_db_schema_new(completeNamespace, "climate-indices", NULL);
         AddFieldsForClimateIndexTable(cIndexSchema);
         j_db_schema_create(cIndexSchema, batch3, NULL);
         g_assert_true(j_batch_execute(batch3) == true);
@@ -1050,7 +1065,9 @@ void JuleaDBInteractionWriter::InitDBSchemas(std::string projectNamespace, bool 
 }
 
 #define declare_template_instantiation(T)                                      \
-template void JuleaDBInteractionWriter::AddEntriesForTagTable(const std::string fileName, const std::string varName, size_t currentStep, size_t block, const T data);\
+    template void JuleaDBInteractionWriter::AddEntriesForTagTable(             \
+        const std::string fileName, const std::string varName,                 \
+        size_t currentStep, size_t block, const T data);                       \
     template void JuleaDBInteractionWriter::PutVariableMetadataToJulea(        \
         core::Variable<T> &variable, const std::string projectNamespace,       \
         const std::string fileName, const std::string varName,                 \

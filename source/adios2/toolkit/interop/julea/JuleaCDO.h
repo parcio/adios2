@@ -42,28 +42,7 @@ public:
     // JuleaCDO();
     ~JuleaCDO() = default;
 
-    struct Tag2
-    {
-        // std::string m_projectNamespace; //TODO: check whether sensible to
-        // store here...
-        std::string m_TagName; // determines the table name
-        std::string m_FileName;
-        std::string m_VariableName;
-        // feature that should be tagged -> could be a stat, could be new
-        // feature -> more flexible
-        std::string m_FeatureName; // default "mean"
-
-        // only one of them is used but since JULEA has not many types these two
-        // are sufficient for now
-        size_t m_Threshold_i;
-        float m_Threshold_f;
-
-        // JDAIStatistic m_Statistic;
-        JDAIOperator m_Operator;       // default ">"
-        JDAIGranularity m_Granularity; // default "block level"
-    };
-
-        struct Tag
+    struct Tag
     {
         // std::string m_projectNamespace; //TODO: check whether sensible to
         // store here...
@@ -107,12 +86,14 @@ public:
     std::map<std::pair<std::string, std::string>,
              std::list<std::pair<JDAIStatistic, JDAIGranularity>>>
         m_Precomputes;
-    
-    std::map<std::pair<std::string, std::string>,
-             std::list<Tag>> m_Tags;
+
+    std::map<std::pair<std::string, std::string>, std::list<Tag>> m_Tags;
 
     template <class T>
-void TaggingDataIfRequired(const T data, std::string fileName, std::string varName, size_t currentStep, size_t blockID, T blockMin, T blockMax, T blockMean, T blockSum, T blockVar);
+    void TaggingDataIfRequired(const T data, std::string fileName,
+                               std::string varName, size_t currentStep,
+                               size_t blockID, T blockMin, T blockMax,
+                               T blockMean, T blockSum, T blockVar);
 
     template <class T>
     void SetMinMax(core::Variable<T> &variable, const T *data, T &blockMin,
@@ -126,7 +107,7 @@ void TaggingDataIfRequired(const T data, std::string fileName, std::string varNa
     void ComputeAllBlockStats(core::Variable<T> &variable, const T *data,
                               T &blockMin, T &blockMax, T &blockMean,
                               T &blockSum, T &blockSumSquares, T &blockVar,
-                              bool isOriginalFormat,std::string fileName);
+                              bool isOriginalFormat, std::string fileName);
 
     template <class T>
     void BufferCDOStats(core::Variable<T> &variable, T blockMin, T blockMax,

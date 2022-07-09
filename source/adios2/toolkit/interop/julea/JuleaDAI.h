@@ -54,7 +54,8 @@ public:
     //     // feature -> more flexible
     //     std::string m_FeatureName; // default "mean"
 
-    //     // only one of them is used but since JULEA has not many types these two
+    //     // only one of them is used but since JULEA has not many types these
+    //     two
     //     // are sufficient for now
     //     size_t m_Threshold_i;
     //     float m_Threshold_f;

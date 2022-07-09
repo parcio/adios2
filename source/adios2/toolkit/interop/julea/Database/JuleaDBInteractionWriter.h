@@ -56,7 +56,9 @@ public:
         uint32_t &entryID, bool original);
 
     template <class T>
-void AddEntriesForTagTable(const std::string fileName, const std::string varName, size_t currentStep, size_t block, const T data);
+    void AddEntriesForTagTable(const std::string fileName,
+                               const std::string varName, size_t currentStep,
+                               size_t block, const T data);
     /** --- Attributes --- */
     // TODO: support attributes again
 
@@ -122,7 +124,9 @@ private:
 }; // end namespace JuleaDBInteractionWriter
 
 #define declare_template_instantiation(T)                                      \
-    extern template void JuleaDBInteractionWriter::AddEntriesForTagTable(const std::string fileName, const std::string varName, size_t currentStep, size_t block, const T data);\
+    extern template void JuleaDBInteractionWriter::AddEntriesForTagTable(      \
+        const std::string fileName, const std::string varName,                 \
+        size_t currentStep, size_t block, const T data);                       \
     extern template void JuleaDBInteractionWriter::PutVariableMetadataToJulea( \
         core::Variable<T> &variable, const std::string projectNamespace,       \
         const std::string fileName, const std::string varName,                 \
