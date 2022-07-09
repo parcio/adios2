@@ -15,6 +15,9 @@
 
 #include <adios2.h>
 
+#include <julea-dai.h>
+#include <julea.h>
+
 void TestWriteVariableSync()
 {
     /** Application variable */
@@ -354,6 +357,27 @@ void TestReadVariableDeferred()
     juleaReader.Close();
 }
 
+void SetupDAI(std::string projectNamespace, std::string fileName)
+{
+    j_dai_init(projectNamespace.c_str());
+
+    // j_dai_create_project_namespace(projectNamespace.c_str());
+
+    j_dai_add_tag_d(projectNamespace.c_str(), fileName.c_str(), "T",
+                    "ColderThanMinus12", J_DAI_GRAN_BLOCK, J_DAI_STAT_MAX,
+                    J_DAI_OP_LT, -12.0);
+    j_dai_pc_ic(projectNamespace.c_str(), fileName.c_str(), "T",
+                (JDAIClimateIndex)(J_DAI_CI_SU | J_DAI_CI_FD | J_DAI_CI_ID |
+                                   J_DAI_CI_TR));
+    j_dai_compute_stats_combined(projectNamespace.c_str(), fileName.c_str(),
+                                 "T");
+    j_dai_pc_stat(
+        projectNamespace.c_str(), fileName.c_str(), "T", J_DAI_GRAN_BLOCK,
+        (JDAIStatistic)(J_DAI_STAT_MIN | J_DAI_STAT_MAX | J_DAI_STAT_MEAN |
+                        J_DAI_STAT_SUM | J_DAI_STAT_VAR),
+        0);
+}
+
 int main(int argc, char *argv[])
 {
     /** Application variable */
@@ -363,6 +387,8 @@ int main(int argc, char *argv[])
 
     try
     {
+        SetupDAI("Thesis_eval", "testFile.jb");
+
         std::cout << "JuleaEngineTest :)" << std::endl;
         TestWriteVariableSync();
         std::cout << "\n JuleaEngineTest :) Write variable finished \n"

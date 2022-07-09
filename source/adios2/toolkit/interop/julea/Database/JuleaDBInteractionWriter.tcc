@@ -349,7 +349,7 @@ void JuleaDBInteractionWriter::PutVariableMetadataToJulea(
     auto batch2 = j_batch_new(semantics);
 
     auto completeNamespace =
-        g_strdup_printf("%s_%s", "adios2-", projectNamespace.c_str());
+        g_strdup_printf("%s_%s", "adios2", projectNamespace.c_str());
     schema = j_db_schema_new(completeNamespace, "variable-metadata", NULL);
 
     // TODO: necessary to get schema every time?
@@ -417,7 +417,7 @@ void JuleaDBInteractionWriter::PutBlockMetadataToJulea(
     auto batch2 = j_batch_new(semantics);
 
     auto completeNamespace =
-        g_strdup_printf("%s_%s", "adios2-", projectNamespace.c_str());
+        g_strdup_printf("%s_%s", "adios2", projectNamespace.c_str());
     schema = j_db_schema_new(completeNamespace, "block-metadata", NULL);
     j_db_schema_get(schema, batch, NULL);
     err = j_batch_execute(batch);

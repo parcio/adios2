@@ -65,7 +65,7 @@ private:
     interop::JuleaCDO m_JuleaCDO;
 
     // TODO: set namespace
-    std::string m_ProjectNamespace;
+    std::string m_ProjectNamespace = "Thesis_eval";
     // indicates whether anything else should be computed; since all variables
     // in the namespace will use the same table schema it is sufficient to use a
     // bool for the entire engine here

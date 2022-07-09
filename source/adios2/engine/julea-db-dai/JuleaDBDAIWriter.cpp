@@ -248,7 +248,7 @@ void JuleaDBDAIWriter::Init()
     m_JuleaSemantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
 
     InitParameters();
-    InitDAI(); // FIXME: project namespace as part of db namespace not separate column
+    InitDAI();
 
     if (m_JuleaCDO.m_Precomputes.empty())
     {
@@ -322,6 +322,11 @@ void JuleaDBDAIWriter::InitParameters()
 }
 
 void JuleaDBDAIWriter::InitDAI() {
+     if (m_Verbosity == 5)
+    {
+        std::cout << "JDB Writer (Rank " << m_WriterRank
+                  << ") : InitDAI()\n";
+    }
     //     if (m_JuleaCDO.m_Tags.empty())
     // {
     //     m_JuleaCDO.m_HasTags = false;
