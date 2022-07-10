@@ -121,15 +121,15 @@ void HeatTransfer::heatEdges()
         std::fill_n(m_TCurrent[0], m_s.ndy + 2, edgetemp);
 
     if (m_s.posx == m_s.npx - 1)
-        std::fill_n(m_TCurrent[m_s.ndx + 1], m_s.ndy + 2, edgetemp);
+        std::fill_n(m_TCurrent[m_s.ndx + 1], m_s.ndy + 2, edgetemp2);
 
     if (m_s.posy == 0)
         for (unsigned int i = 0; i < m_s.ndx + 2; ++i)
-            m_TCurrent[i][0] = edgetemp;
+            m_TCurrent[i][0] = edgetemp3;
 
     if (m_s.posy == m_s.npy - 1)
         for (unsigned int i = 0; i < m_s.ndx + 2; ++i)
-            m_TCurrent[i][m_s.ndy + 1] = edgetemp;
+            m_TCurrent[i][m_s.ndy + 1] = edgetemp4;
 }
 
 void HeatTransfer::exchange(MPI_Comm comm)

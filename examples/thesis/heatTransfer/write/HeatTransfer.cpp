@@ -140,15 +140,15 @@ void HeatTransfer::heatEdges()
 
     if (m_s.posx == m_s.npx - 1)
         for (unsigned int j = 0; j < m_s.ndy + 2; ++j)
-            m_TCurrent[m_s.ndx + 1][j] = edgetemp;
+            m_TCurrent[m_s.ndx + 1][j] = edgetemp2;
 
     if (m_s.posy == 0)
         for (unsigned int i = 0; i < m_s.ndx + 2; ++i)
-            m_TCurrent[i][0] = edgetemp;
+            m_TCurrent[i][0] = edgetemp3;
 
     if (m_s.posy == m_s.npy - 1)
         for (unsigned int i = 0; i < m_s.ndx + 2; ++i)
-            m_TCurrent[i][m_s.ndy + 1] = edgetemp;
+            m_TCurrent[i][m_s.ndy + 1] = edgetemp4;
 }
 
 void HeatTransfer::exchange(MPI_Comm comm)
