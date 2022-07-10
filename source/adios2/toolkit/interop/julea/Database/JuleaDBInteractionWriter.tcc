@@ -60,7 +60,7 @@ void JuleaDBInteractionWriter::AddEntriesForTagTable(
     std::cout << "data: " << data << "\n";
     std::cout << "data: " << &data << "\n";
     // std::cout << "data: " << *data << "\n"; // no match for ‘operator* ...
-    std::cout << "data: " << (gpointer )&data << "\n";
+    std::cout << "data: " << (gpointer)&data << "\n";
     std::cout << "data: " << (gpointer *)&data << "\n";
 
     const T *tmpData = &data;
@@ -88,20 +88,24 @@ void JuleaDBInteractionWriter::AddEntriesForTagTable(
                          NULL);
     j_db_entry_set_field(entry, "block", &block, sizeof(block), NULL);
     // j_db_entry_set_field(
-        // entry, "entryID", &block, sizeof(block),
-        // NULL); // FIXME: has to be set later on when entryID is known
-    // j_db_entry_set_field(entry, "stat", (gpointer )&data, sizeof(data), NULL);
-    // j_db_entry_set_field(entry, "stat", (gpointer *)&tmpData, sizeof(data), NULL);
-    // j_db_entry_set_field(entry, "stat", (gpointer )&tmpData, sizeof(data), NULL);
-    // j_db_entry_set_field(entry, "stat", (gpointer) tmpData, sizeof(data), NULL);
-    // j_db_entry_set_field(entry, "stat", &(*tmpData), sizeof(data), NULL);
-    // j_db_entry_set_field(entry, "stat", *tmpData, sizeof(data), NULL);  // cannot convert ‘const double’ to ‘gconstpointer'
-    // j_db_entry_set_field(entry, "stat", (gpointer)*tmpData, sizeof(data), NULL);  // invalid cast from type ‘y´ to type ‘gpointer’ {aka ‘void*’}
-    j_db_entry_set_field(entry, "stat", tmpData, sizeof(data), NULL);
+    // entry, "entryID", &block, sizeof(block),
+    // NULL); // FIXME: has to be set later on when entryID is known
+    // j_db_entry_set_field(entry, "stat", (gpointer )&data, sizeof(data),
+    // NULL); j_db_entry_set_field(entry, "stat", (gpointer *)&tmpData,
+    // sizeof(data), NULL); j_db_entry_set_field(entry, "stat", (gpointer
+    // )&tmpData, sizeof(data), NULL); j_db_entry_set_field(entry, "stat",
+    // (gpointer) tmpData, sizeof(data), NULL); j_db_entry_set_field(entry,
+    // "stat", &(*tmpData), sizeof(data), NULL); j_db_entry_set_field(entry,
+    // "stat", *tmpData, sizeof(data), NULL);  // cannot convert ‘const double’
+    // to ‘gconstpointer' j_db_entry_set_field(entry, "stat",
+    // (gpointer)*tmpData, sizeof(data), NULL);  // invalid cast from type ‘y´
+    // to type ‘gpointer’ {aka ‘void*’}
+    j_db_entry_set_field(entry, "stat_d", tmpData, sizeof(data), NULL);
     // j_db_entry_set_field(entry, "stat", &data, sizeof(data), NULL);
 
     j_db_entry_insert(entry, batch2, NULL);
     g_assert_true(j_batch_execute(batch2) == true);
+    j_db_schema_unref(tagSchema);
 }
 
 template <class T>

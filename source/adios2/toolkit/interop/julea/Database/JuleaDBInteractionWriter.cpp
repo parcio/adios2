@@ -178,6 +178,7 @@ void JuleaDBInteractionWriter::AddFieldsForTagTable(JDBSchema *schema)
     // could be useful to have the entryID directly in tag table
     j_db_schema_add_field(schema, "entryID", J_DB_TYPE_UINT64, NULL);
     j_db_schema_add_field(schema, "stat", J_DB_TYPE_UINT32, NULL);
+    j_db_schema_add_field(schema, "stat_d", J_DB_TYPE_FLOAT64, NULL);
 
     //  j_db_schema_add_field(schema, "statisticName", J_DB_TYPE_STRING, NULL);
     // j_db_schema_add_field(schema, "operator", J_DB_TYPE_UINT32, NULL);
@@ -318,16 +319,17 @@ void JuleaDBInteractionWriter::InitTagTables(std::string projectNamespace)
 
     completeNamespace = g_strdup_printf("%s_%s_%s", "adios2",
                                         projectNamespace.c_str(), "config");
-    auto tagSchema = j_db_schema_new(completeNamespace, "tags", NULL);
+    auto tagConfigSchema = j_db_schema_new(completeNamespace, "tags", NULL);
 
-    j_db_schema_get(tagSchema, batch, NULL);
+    j_db_schema_get(tagConfigSchema, batch, NULL);
     g_assert_true(j_batch_execute(batch) == true);
 
-    auto selector = j_db_selector_new(tagSchema, J_DB_SELECTOR_MODE_AND, NULL);
+    auto selector =
+        j_db_selector_new(tagConfigSchema, J_DB_SELECTOR_MODE_AND, NULL);
     j_db_selector_add_field(selector, "projectNamespace",
                             J_DB_SELECTOR_OPERATOR_EQ, projectNamespace.c_str(),
                             strlen(projectNamespace.c_str()) + 1, NULL);
-    auto iterator = j_db_iterator_new(tagSchema, selector, NULL);
+    auto iterator = j_db_iterator_new(tagConfigSchema, selector, NULL);
 
     while (j_db_iterator_next(iterator, NULL))
     {
@@ -386,8 +388,12 @@ void JuleaDBInteractionWriter::InitTagTables(std::string projectNamespace)
             j_db_schema_create(tagSchema, batch, NULL);
             g_assert_true(j_batch_execute(batch) == true);
         }
+        j_db_schema_unref(tagSchema);
     }
     j_batch_unref(batch);
+    j_db_schema_unref(tagConfigSchema);
+    j_db_selector_unref(selector);
+    j_db_iterator_unref(iterator);
 }
 
 /**
