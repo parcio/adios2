@@ -160,7 +160,7 @@ JuleaDBInteractionWriter::JuleaDBInteractionWriter(helper::Comm const &comm)
 
 void JuleaDBInteractionWriter::AddFieldsForTagTable(JDBSchema *schema)
 {
-    std::cout << "--- AddFieldsForTagTable ---" << std::endl;
+    // std::cout << "--- AddFieldsForTagTable ---" << std::endl;
     gchar const *fileIndex[] = {"file", NULL};
     gchar const *varIndex[] = {"variableName", NULL};
     gchar const *stepIndex[] = {"step", NULL};
@@ -169,7 +169,6 @@ void JuleaDBInteractionWriter::AddFieldsForTagTable(JDBSchema *schema)
     // j_db_schema_add_field(schema, "projectNamespace", J_DB_TYPE_STRING,
     // NULL);
 
-    // j_db_schema_add_field(schema, "tagName", J_DB_TYPE_STRING, NULL);
     j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, NULL);
     j_db_schema_add_field(schema, "variableName", J_DB_TYPE_STRING, NULL);
     j_db_schema_add_field(schema, "step", J_DB_TYPE_UINT64, NULL);
@@ -180,40 +179,34 @@ void JuleaDBInteractionWriter::AddFieldsForTagTable(JDBSchema *schema)
     j_db_schema_add_field(schema, "stat_i", J_DB_TYPE_UINT32, NULL);
     j_db_schema_add_field(schema, "stat_d", J_DB_TYPE_FLOAT64, NULL);
 
-    //  j_db_schema_add_field(schema, "statisticName", J_DB_TYPE_STRING, NULL);
-    // j_db_schema_add_field(schema, "operator", J_DB_TYPE_UINT32, NULL);
-    // j_db_schema_add_field(schema, "granularity", J_DB_TYPE_UINT32, NULL);
-
-    // j_db_schema_add_field(schema, "threshold_i", J_DB_TYPE_UINT32, NULL);
-    // j_db_schema_add_field(schema, "threshold_d", J_DB_TYPE_FLOAT64, NULL);
     j_db_schema_add_index(schema, fileIndex, NULL);
     j_db_schema_add_index(schema, varIndex, NULL);
-    std::cout << "--- End of AddFieldsForTagTable ---\n";
+    // std::cout << "--- End of AddFieldsForTagTable ---\n";
 }
 
 void JuleaDBInteractionWriter::InitTagTables(std::string projectNamespace)
 {
-    std::cout << "--- InitTagTables ---" << std::endl;
+    // std::cout << "--- InitTagTables ---" << std::endl;
     int err = 0;
-    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    auto batch = j_batch_new(semantics);
+    size_t db_length = 0;
     gchar *fileName = NULL;
     gchar *tagName = NULL;
     gchar *variableName = NULL;
-    // gchar* statisticName = NULL;
 
+    JDBType type;
     JDAIStatistic stat;
     JDAIOperator op;
     JDAIGranularity granularity;
-    double threshold = 0;
-
-    size_t db_length = 0;
-    JDBType type;
-    gchar *completeNamespace = NULL;
-    double *tmp = nullptr;
     JDAIGranularity *tmpGran = nullptr;
     JDAIStatistic *tmpStat = nullptr;
     JDAIOperator *tmpOp = nullptr;
+    double threshold = 0;
+    double *tmp = nullptr;
+
+    gchar *completeNamespace = NULL;
+
+    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
 
     completeNamespace = g_strdup_printf("%s_%s_%s", "adios2",
                                         projectNamespace.c_str(), "config");
@@ -268,10 +261,6 @@ void JuleaDBInteractionWriter::InitTagTables(std::string projectNamespace)
         // create tables for every tag
         auto completeNamespace =
             g_strdup_printf("%s_%s", "adios2", projectNamespace.c_str());
-        // std::cout << " in InitTagTables: completeNamespace = " <<
-        // completeNamespace
-        // << "\n";
-        std::cout << "tagName = " << tagName << "\n";
         auto tagSchema = j_db_schema_new(completeNamespace, tagName, NULL);
         // auto tag_schema = j_db_schema_new(completeNamespace, "tags", NULL);
 
@@ -1064,10 +1053,6 @@ void JuleaDBInteractionWriter::InitDBSchemas(std::string projectNamespace,
     }
 
     // g_assert_true(j_batch_execute(batch2) == true);
-    // j_db_schema_unref(varSchema);
-    // j_db_schema_unref(blockSchema);
-    // j_db_schema_unref(cIndexSchema);
-    // j_db_schema_unref(dGlobalSchema);
     j_batch_unref(batch);
     j_batch_unref(batch2);
     j_batch_unref(batch3);

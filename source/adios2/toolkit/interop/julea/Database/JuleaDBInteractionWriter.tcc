@@ -39,15 +39,8 @@ void JuleaDBInteractionWriter::AddEntriesForTagTable(
     size_t block, const T data)
 {
     int err = 0;
-    // g_autoptr(JDBSchema) schema = NULL;
     g_autoptr(JDBEntry) entry = NULL;
-    // g_autoptr(JDBSelector) selector = NULL;
-    // g_autoptr(JDBIterator) iterator = NULL;
-    // JDBType jdbType;
-    // guint64 db_length = 0;
-    // uint32_t *tmpID;
 
-    // void *namesBuf = NULL;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
     auto batch2 = j_batch_new(semantics);
@@ -55,30 +48,15 @@ void JuleaDBInteractionWriter::AddEntriesForTagTable(
 
     auto completeNamespace =
         g_strdup_printf("%s_%s", "adios2", projectNamespace.c_str());
-    // std::cout << "tagName = " << tagName << "\n";
     auto tagSchema = j_db_schema_new(completeNamespace, tagName.c_str(), NULL);
-    std::cout << "completeNamespace = " << completeNamespace << "\n";
-    std::cout << "data: " << data << "\n";
-    // std::cout << "data: " << &data << "\n";
-    // // std::cout << "data: " << *data << "\n"; // no match for ‘operator* ...
-    // std::cout << "data: " << (gpointer)&data << "\n";
-    // std::cout << "data: " << (gpointer *)&data << "\n";
 
     const T *tmpData = &data;
-    std::cout << "data: " << *tmpData << "\n";
-    // std::cout << "data: " << (gpointer *)&tmpData << "\n";
-    // std::cout << "data: " << &tmpData << "\n";
-    // std::cout << "data: " << tmpData << "\n";
-    // std::cout << "data: " << &(*tmpData) << "\n";
 
-    // schema = j_db_schema_new("adios2", "daily-global-statistics", NULL);
     j_db_schema_get(tagSchema, batch, NULL);
-    err = j_batch_execute(batch);
-    // g_assert_true(j_batch_execute(batch) == true);
+    // err = j_batch_execute(batch);
+    g_assert_true(j_batch_execute(batch) == true);
 
     entry = j_db_entry_new(tagSchema, NULL);
-    // j_db_entry_set_field(entry, "projectNamespace", projectNamespace.c_str(),
-    //  strlen(projectNamespace.c_str()) + 1, NULL);
     j_db_entry_set_field(entry, "file", fileName.c_str(),
                          strlen(fileName.c_str()) + 1, NULL);
     j_db_entry_set_field(entry, "variableName", varName.c_str(),
@@ -99,11 +77,7 @@ void JuleaDBInteractionWriter::AddEntriesForTagTable(
     case adios2::DataType::Int16:
     case adios2::DataType::UInt16:
     case adios2::DataType::Int32:
-        // *minField = "min_sint32";
-        // *maxField = "max_sint32";
-        // *valueField = "value_sint32";
-        // *meanField = "mean_sint32";
-        // *sumField = "sum_sint32";
+
     j_db_entry_set_field(entry, "stat_i", &data, sizeof(data), NULL);
         break;
     case adios2::DataType::UInt32:
