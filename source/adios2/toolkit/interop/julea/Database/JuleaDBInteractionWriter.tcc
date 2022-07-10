@@ -39,10 +39,10 @@ void JuleaDBInteractionWriter::AddEntriesForTagTable(
     size_t block, const T data)
 {
     int err = 0;
-    g_autoptr(JDBSchema) schema = NULL;
+    // g_autoptr(JDBSchema) schema = NULL;
     g_autoptr(JDBEntry) entry = NULL;
-    g_autoptr(JDBSelector) selector = NULL;
-    g_autoptr(JDBIterator) iterator = NULL;
+    // g_autoptr(JDBSelector) selector = NULL;
+    // g_autoptr(JDBIterator) iterator = NULL;
     // JDBType jdbType;
     // guint64 db_length = 0;
     // uint32_t *tmpID;
@@ -51,6 +51,7 @@ void JuleaDBInteractionWriter::AddEntriesForTagTable(
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
     auto batch2 = j_batch_new(semantics);
+    auto type = helper::GetDataType<T>();
 
     auto completeNamespace =
         g_strdup_printf("%s_%s", "adios2", projectNamespace.c_str());
@@ -58,19 +59,17 @@ void JuleaDBInteractionWriter::AddEntriesForTagTable(
     auto tagSchema = j_db_schema_new(completeNamespace, tagName.c_str(), NULL);
     std::cout << "completeNamespace = " << completeNamespace << "\n";
     std::cout << "data: " << data << "\n";
-    std::cout << "data: " << &data << "\n";
-    // std::cout << "data: " << *data << "\n"; // no match for ‘operator* ...
-    std::cout << "data: " << (gpointer)&data << "\n";
-    std::cout << "data: " << (gpointer *)&data << "\n";
+    // std::cout << "data: " << &data << "\n";
+    // // std::cout << "data: " << *data << "\n"; // no match for ‘operator* ...
+    // std::cout << "data: " << (gpointer)&data << "\n";
+    // std::cout << "data: " << (gpointer *)&data << "\n";
 
     const T *tmpData = &data;
-    const T *tmpData2 = nullptr;
-    // tmpData2 = (gpointer) data;
     std::cout << "data: " << *tmpData << "\n";
-    std::cout << "data: " << (gpointer *)&tmpData << "\n";
-    std::cout << "data: " << &tmpData << "\n";
-    std::cout << "data: " << tmpData << "\n";
-    std::cout << "data: " << &(*tmpData) << "\n";
+    // std::cout << "data: " << (gpointer *)&tmpData << "\n";
+    // std::cout << "data: " << &tmpData << "\n";
+    // std::cout << "data: " << tmpData << "\n";
+    // std::cout << "data: " << &(*tmpData) << "\n";
 
     // schema = j_db_schema_new("adios2", "daily-global-statistics", NULL);
     j_db_schema_get(tagSchema, batch, NULL);
@@ -90,22 +89,58 @@ void JuleaDBInteractionWriter::AddEntriesForTagTable(
     // j_db_entry_set_field(
     // entry, "entryID", &block, sizeof(block),
     // NULL); // FIXME: has to be set later on when entryID is known
-    // j_db_entry_set_field(entry, "stat", (gpointer )&data, sizeof(data),
-    // NULL); j_db_entry_set_field(entry, "stat", (gpointer *)&tmpData,
-    // sizeof(data), NULL); j_db_entry_set_field(entry, "stat", (gpointer
-    // )&tmpData, sizeof(data), NULL); j_db_entry_set_field(entry, "stat",
-    // (gpointer) tmpData, sizeof(data), NULL); j_db_entry_set_field(entry,
-    // "stat", &(*tmpData), sizeof(data), NULL); j_db_entry_set_field(entry,
-    // "stat", *tmpData, sizeof(data), NULL);  // cannot convert ‘const double’
-    // to ‘gconstpointer' j_db_entry_set_field(entry, "stat",
-    // (gpointer)*tmpData, sizeof(data), NULL);  // invalid cast from type ‘y´
-    // to type ‘gpointer’ {aka ‘void*’}
-    j_db_entry_set_field(entry, "stat_d", tmpData, sizeof(data), NULL);
-    // j_db_entry_set_field(entry, "stat", &data, sizeof(data), NULL);
+    switch (type)
+    {
+    case adios2::DataType::None:
+        // TODO: Do something?
+        break;
+    case adios2::DataType::Int8:
+    case adios2::DataType::UInt8:
+    case adios2::DataType::Int16:
+    case adios2::DataType::UInt16:
+    case adios2::DataType::Int32:
+        // *minField = "min_sint32";
+        // *maxField = "max_sint32";
+        // *valueField = "value_sint32";
+        // *meanField = "mean_sint32";
+        // *sumField = "sum_sint32";
+    j_db_entry_set_field(entry, "stat_i", &data, sizeof(data), NULL);
+        break;
+    case adios2::DataType::UInt32:
+        //TODO: implement
+        break;
+    case adios2::DataType::Int64:
+        //TODO: implement
+        break;
+    case adios2::DataType::UInt64:
+        //TODO: implement
+        break;
+    case adios2::DataType::Float:
+        //TODO: implement
+        break;
+    case adios2::DataType::Double:
+        j_db_entry_set_field(entry, "stat_d", tmpData, sizeof(data), NULL);
+        break;
+    case adios2::DataType::LongDouble:
+    case adios2::DataType::FloatComplex:
+    case adios2::DataType::DoubleComplex:
+        //TODO: implement
+        break;
+    case adios2::DataType::String:
+        // *valueField = "value_sint32";
+        break;
+    case adios2::DataType::Compound:
+        std::cout << "Compound variables not supported";
+        break;
+    }
 
+    // g_free(tmpData);
     j_db_entry_insert(entry, batch2, NULL);
     g_assert_true(j_batch_execute(batch2) == true);
     j_db_schema_unref(tagSchema);
+    j_semantics_unref(semantics);
+    j_batch_unref(batch);
+    j_batch_unref(batch2);
 }
 
 template <class T>
@@ -522,6 +557,7 @@ void JuleaDBInteractionWriter::PutBlockMetadataToJulea(
 
     // j_db_entry_unref(entry);
     // j_db_schema_unref(schema);
+    g_free(tmpID);
     j_batch_unref(batch);
     j_batch_unref(batch2);
     j_semantics_unref(semantics);
