@@ -47,8 +47,8 @@ public:
         // std::string m_projectNamespace; //TODO: check whether sensible to
         // store here...
         std::string m_TagName; // determines the table name
-        std::string m_FileName;
-        std::string m_VariableName;
+        // std::string m_FileName;
+        // std::string m_VariableName;
         // feature that should be tagged -> could be a stat, could be new
         // feature -> more flexible
         // std::string m_Statistic; // default "mean"

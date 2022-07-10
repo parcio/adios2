@@ -64,6 +64,14 @@ public:
     /** --- Attributes --- */
     // TODO: support attributes again
 
+    // stores all tags that should be marked.
+    // map
+    // key: pair of filename and variable name
+    // value: list of tags (struct)
+    std::map<std::pair<std::string, std::string>,
+             std::list<adios2::interop::JuleaCDO::Tag>>
+        m_Tags;
+
 private:
     /**
      *   ------------- Create table schemas ----------------

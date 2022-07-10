@@ -252,31 +252,36 @@ void JuleaCDO::ComputeAllBlockStats(core::Variable<T> &variable, const T *data,
     if (m_Verbosity == 5)
     {
         std::cout << "JuleaCDO (" << m_WriterRank
-                  << ") : ComputeBlockStats()\n";
+                  << ") : ComputeAllBlockStats()\n";
     }
-
-    auto number_elements = adios2::helper::GetTotalSize(variable.m_Count);
-    adios2::helper::GetMinMax(data, number_elements, blockMin, blockMax);
-
+    std::cout << "varName: " << variable.m_Name << " \n";
+    // T tmpBlockMin;
+    // T tmpBlockMax;
+    auto numberElements = adios2::helper::GetTotalSize(variable.m_Count);
+    std::cout << "numberElements " << numberElements << "\n";
+    adios2::helper::GetMinMax(data, numberElements, blockMin, blockMax);
+    // adios2::helper::GetMinMax(data, numberElements, tmpBlockMin, tmpBlockMax);
+    std::cout << "min: " << blockMin << "\n";
+    std::cout << "max: " << blockMax << "\n";
     /** accumulate does not work with type T data, so need to do it by hand */
     // blockSum = std::accumulate(data.begin(), data.end(), 0)
 
     if (!isOriginalFormat)
     {
-        for (size_t i = 0; i < number_elements; ++i)
+        for (size_t i = 0; i < numberElements; ++i)
         {
             blockSum += data[i];
             // TaggingDataIfRequired(data[i],fileName, variable.m_Name);
         }
 
-        blockMean = blockSum / (double)number_elements;
+        blockMean = blockSum / (double)numberElements;
 
-        for (size_t i = 0; i < number_elements; ++i)
+        for (size_t i = 0; i < numberElements; ++i)
         {
             blockSumSquares += std::pow(data[i] - blockMean, 2);
         }
 
-        blockVar = blockSumSquares / number_elements;
+        blockVar = blockSumSquares / numberElements;
     }
 }
 

@@ -32,7 +32,6 @@ namespace adios2
 namespace interop
 {
 
-// TODO: tagName as param
 template <class T>
 void JuleaDBInteractionWriter::AddEntriesForTagTable(
     const std::string projectNamespace, const std::string tagName,
@@ -44,19 +43,34 @@ void JuleaDBInteractionWriter::AddEntriesForTagTable(
     g_autoptr(JDBEntry) entry = NULL;
     g_autoptr(JDBSelector) selector = NULL;
     g_autoptr(JDBIterator) iterator = NULL;
-    JDBType jdbType;
-    guint64 db_length = 0;
-    uint32_t *tmpID;
+    // JDBType jdbType;
+    // guint64 db_length = 0;
+    // uint32_t *tmpID;
 
-    void *namesBuf = NULL;
+    // void *namesBuf = NULL;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
-    // auto batch2 = j_batch_new(semantics);
+    auto batch2 = j_batch_new(semantics);
 
     auto completeNamespace =
         g_strdup_printf("%s_%s", "adios2", projectNamespace.c_str());
     // std::cout << "tagName = " << tagName << "\n";
     auto tagSchema = j_db_schema_new(completeNamespace, tagName.c_str(), NULL);
+    std::cout << "completeNamespace = " << completeNamespace << "\n";
+    std::cout << "data: " << data << "\n";
+    std::cout << "data: " << &data << "\n";
+    // std::cout << "data: " << *data << "\n"; // no match for ‘operator* ...
+    std::cout << "data: " << (gpointer )&data << "\n";
+    std::cout << "data: " << (gpointer *)&data << "\n";
+
+    const T *tmpData = &data;
+    const T *tmpData2 = nullptr;
+    // tmpData2 = (gpointer) data;
+    std::cout << "data: " << *tmpData << "\n";
+    std::cout << "data: " << (gpointer *)&tmpData << "\n";
+    std::cout << "data: " << &tmpData << "\n";
+    std::cout << "data: " << tmpData << "\n";
+    std::cout << "data: " << &(*tmpData) << "\n";
 
     // schema = j_db_schema_new("adios2", "daily-global-statistics", NULL);
     j_db_schema_get(tagSchema, batch, NULL);
@@ -73,8 +87,21 @@ void JuleaDBInteractionWriter::AddEntriesForTagTable(
     j_db_entry_set_field(entry, "step", &currentStep, sizeof(currentStep),
                          NULL);
     j_db_entry_set_field(entry, "block", &block, sizeof(block), NULL);
-    // j_db_entry_set_field(entry, "entryID", &blockID, sizeof(blockID), NULL);
-    j_db_entry_set_field(entry, "stat", &data, sizeof(data), NULL);
+    // j_db_entry_set_field(
+        // entry, "entryID", &block, sizeof(block),
+        // NULL); // FIXME: has to be set later on when entryID is known
+    // j_db_entry_set_field(entry, "stat", (gpointer )&data, sizeof(data), NULL);
+    // j_db_entry_set_field(entry, "stat", (gpointer *)&tmpData, sizeof(data), NULL);
+    // j_db_entry_set_field(entry, "stat", (gpointer )&tmpData, sizeof(data), NULL);
+    // j_db_entry_set_field(entry, "stat", (gpointer) tmpData, sizeof(data), NULL);
+    // j_db_entry_set_field(entry, "stat", &(*tmpData), sizeof(data), NULL);
+    // j_db_entry_set_field(entry, "stat", *tmpData, sizeof(data), NULL);  // cannot convert ‘const double’ to ‘gconstpointer'
+    // j_db_entry_set_field(entry, "stat", (gpointer)*tmpData, sizeof(data), NULL);  // invalid cast from type ‘y´ to type ‘gpointer’ {aka ‘void*’}
+    j_db_entry_set_field(entry, "stat", tmpData, sizeof(data), NULL);
+    // j_db_entry_set_field(entry, "stat", &data, sizeof(data), NULL);
+
+    j_db_entry_insert(entry, batch2, NULL);
+    g_assert_true(j_batch_execute(batch2) == true);
 }
 
 template <class T>

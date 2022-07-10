@@ -168,20 +168,6 @@ void JuleaDBDAIWriter::PerformPuts()
     {                                                                          \
         Variable<T> &variable = FindVariable<T>(                               \
             variableName, "in call to PerformPuts, EndStep or Close");         \
-        if (m_CurrentStep % m_JuleaCDO.m_StepsPerDay == 0)                     \
-        {                                                                      \
-            m_JuleaCDO.ComputeDailyStats(variableName);                        \
-        }                                                                      \
-                                                                               \
-        if (m_CurrentStep % m_JuleaCDO.m_StepsPerMonth == 0)                   \
-        {                                                                      \
-            m_JuleaCDO.ComputeMonthlyStats(variableName);                      \
-        }                                                                      \
-                                                                               \
-        if (m_CurrentStep % m_JuleaCDO.m_StepsPerYear == 0)                    \
-        {                                                                      \
-            m_JuleaCDO.ComputeYearlyStats(variableName);                       \
-        }                                                                      \
         PerformPutCommon(variable);                                            \
     }
         ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)

@@ -94,6 +94,7 @@ void JuleaDBDAIWriter::TaggingDataIfRequired(
     std::string fileName, std::string varName, size_t currentStep,
     size_t blockID, T blockMin, T blockMax, T blockMean, T blockSum, T blockVar)
 {
+    std::cout << "Debug: TaggingDataIfRequired \n";
     JDAIStatistic statistic;
     JDAIOperator op;
     JDAIGranularity granularity;
@@ -101,23 +102,25 @@ void JuleaDBDAIWriter::TaggingDataIfRequired(
 
     double threshold = 0;
 
-    auto it = m_JuleaCDO.m_Tags.find(
+    // auto it = m_JuleaCDO.m_Tags.find(
+    auto it = m_JuleaDBInteractionWriter.m_Tags.find(
         std::pair<std::string, std::string>(fileName, varName));
-    if (it == m_JuleaCDO.m_Tags.end())
+    if (it == m_JuleaDBInteractionWriter.m_Tags.end())
     {
         // TODO: should not happen; is checked in init whether there is
         // anything in tag table
     }
     else
     {
-        // Hard-coded way for eval
-        if (blockMax < m_JuleaCDO.m_TagThreshold)
-        {
-            // TODO: add tag entry
-            m_JuleaDBInteractionWriter.AddEntriesForTagTable(
-                m_Name, tagName, fileName, varName, currentStep, blockID,
-                blockMax);
-        }
+        std::cout << "Debug: else reached \n";
+
+        // // Hard-coded way for eval
+        // if (blockMax < m_JuleaCDO.m_TagThreshold)
+        // {
+        //     m_JuleaDBInteractionWriter.AddEntriesForTagTable(
+        //         m_Name, tagName, fileName, varName, currentStep, blockID,
+        //         blockMax);
+        // }
 
         for (std::list<adios2::interop::JuleaCDO::Tag>::iterator it2 =
                  it->second.begin();
@@ -126,6 +129,7 @@ void JuleaDBDAIWriter::TaggingDataIfRequired(
             adios2::interop::JuleaCDO::Tag currentTag = *it2;
 
             tagName = currentTag.m_TagName;
+            std::cout << "tagName: " << tagName << "\n";
             statistic = currentTag.m_Statistic;
             op = currentTag.m_Operator;
             granularity = currentTag.m_Granularity;
@@ -135,115 +139,124 @@ void JuleaDBDAIWriter::TaggingDataIfRequired(
             switch (granularity)
             {
             case J_DAI_GRAN_BLOCK:
+                std::cout << "Debug: J_DAI_GRAN_BLOCK reached \n";
+
                 // ----------------- Statistic -------------------------
                 switch (statistic)
                 {
-                case J_DAI_STAT_MIN:
-                    // ----------------- Operator
-                    switch (op)
-                    {
-                    case J_DAI_OP_GT:
-                        if (blockMin > threshold)
-                        {
-                            m_JuleaDBInteractionWriter.AddEntriesForTagTable(
-                                m_Name, tagName, fileName, varName, currentStep,
-                                blockID, blockMin);
-                        }
-                        break;
-                    case J_DAI_OP_LT:
-                        if (blockMin < threshold)
-                        {
-                            m_JuleaDBInteractionWriter.AddEntriesForTagTable(
-                                m_Name, tagName, fileName, varName, currentStep,
-                                blockID, blockMin);
-                        }
-                        break;
-                    } // end op
-                    break;
+                // case J_DAI_STAT_MIN:
+                //     std::cout << "Debug: J_DAI_STAT_MIN reached \n";
+                //     // ----------------- Operator
+                //     switch (op)
+                //     {
+                //     case J_DAI_OP_GT:
+                //         std::cout << "Debug: J_DAI_OP_GT reached \n";
+                //         if (blockMin > threshold)
+                //         {
+                //             m_JuleaDBInteractionWriter.AddEntriesForTagTable(
+                //                 m_ProjectNamespace, tagName, fileName, varName, currentStep,
+                //                 blockID, blockMin);
+                //         }
+                //         break;
+                //     case J_DAI_OP_LT:
+                //         if (blockMin < threshold)
+                //         {
+                //             m_JuleaDBInteractionWriter.AddEntriesForTagTable(
+                //                 m_ProjectNamespace, tagName, fileName, varName, currentStep,
+                //                 blockID, blockMin);
+                //         }
+                //         break;
+                //     } // end op
+                //     break;
                 case J_DAI_STAT_MAX:
+                    std::cout << "Debug: J_DAI_STAT_MAX reached \n";
                     // ----------------- Operator
                     switch (op)
                     {
                     case J_DAI_OP_GT:
+                    std::cout << "Debug: J_DAI_OP_GT reached \n";
                         if (blockMax > threshold)
                         {
                             m_JuleaDBInteractionWriter.AddEntriesForTagTable(
-                                m_Name, tagName, fileName, varName, currentStep,
+                                m_ProjectNamespace, tagName, fileName, varName, currentStep,
                                 blockID, blockMax);
                         }
                         break;
                     case J_DAI_OP_LT:
+                    std::cout << "Debug: J_DAI_OP_LT reached \n";
+                    std::cout << "blockMax: " << blockMax << " Threshold: " << threshold << "\n";
                         if (blockMax < threshold)
                         {
+                            std::cout << "Debug: This is the correct case for the query app\n";
                             m_JuleaDBInteractionWriter.AddEntriesForTagTable(
-                                m_Name, tagName, fileName, varName, currentStep,
+                                m_ProjectNamespace, tagName, fileName, varName, currentStep,
                                 blockID, blockMax);
                         }
                         break;
                     } // end op
-                case J_DAI_STAT_MEAN:
-                    // ----------------- Operator
-                    switch (op)
-                    {
-                    case J_DAI_OP_GT:
-                        if (blockMean > threshold)
-                        {
-                            m_JuleaDBInteractionWriter.AddEntriesForTagTable(
-                                m_Name, tagName, fileName, varName, currentStep,
-                                blockID, blockMean);
-                        }
-                        break;
-                    case J_DAI_OP_LT:
-                        if (blockMean < threshold)
-                        {
-                            m_JuleaDBInteractionWriter.AddEntriesForTagTable(
-                                m_Name, tagName, fileName, varName, currentStep,
-                                blockID, blockMean);
-                        }
-                        break;
-                    } // end op
-                case J_DAI_STAT_SUM:
-                    // ----------------- Operator
-                    switch (op)
-                    {
-                    case J_DAI_OP_GT:
-                        if (blockSum > threshold)
-                        {
-                            m_JuleaDBInteractionWriter.AddEntriesForTagTable(
-                                m_Name, tagName, fileName, varName, currentStep,
-                                blockID, blockSum);
-                        }
-                        break;
-                    case J_DAI_OP_LT:
-                        if (blockSum < threshold)
-                        {
-                            m_JuleaDBInteractionWriter.AddEntriesForTagTable(
-                                m_Name, tagName, fileName, varName, currentStep,
-                                blockID, blockSum);
-                        }
-                        break;
-                    } // end op
-                case J_DAI_STAT_VAR:
-                    // ----------------- Operator
-                    switch (op)
-                    {
-                    case J_DAI_OP_GT:
-                        if (blockVar > threshold)
-                        {
-                            m_JuleaDBInteractionWriter.AddEntriesForTagTable(
-                                m_Name, tagName, fileName, varName, currentStep,
-                                blockID, blockVar);
-                        }
-                        break;
-                    case J_DAI_OP_LT:
-                        if (blockVar < threshold)
-                        {
-                            m_JuleaDBInteractionWriter.AddEntriesForTagTable(
-                                m_Name, tagName, fileName, varName, currentStep,
-                                blockID, blockVar);
-                        }
-                        break;
-                    } // end op
+                // case J_DAI_STAT_MEAN:
+                //     // ----------------- Operator
+                //     switch (op)
+                //     {
+                //     case J_DAI_OP_GT:
+                //         if (blockMean > threshold)
+                //         {
+                //             m_JuleaDBInteractionWriter.AddEntriesForTagTable(
+                //                 m_ProjectNamespace, tagName, fileName, varName, currentStep,
+                //                 blockID, blockMean);
+                //         }
+                //         break;
+                //     case J_DAI_OP_LT:
+                //         if (blockMean < threshold)
+                //         {
+                //             m_JuleaDBInteractionWriter.AddEntriesForTagTable(
+                //                 m_ProjectNamespace, tagName, fileName, varName, currentStep,
+                //                 blockID, blockMean);
+                //         }
+                //         break;
+                //     } // end op
+                // case J_DAI_STAT_SUM:
+                //     // ----------------- Operator
+                //     switch (op)
+                //     {
+                //     case J_DAI_OP_GT:
+                //         if (blockSum > threshold)
+                //         {
+                //             m_JuleaDBInteractionWriter.AddEntriesForTagTable(
+                //                 m_ProjectNamespace, tagName, fileName, varName, currentStep,
+                //                 blockID, blockSum);
+                //         }
+                //         break;
+                //     case J_DAI_OP_LT:
+                //         if (blockSum < threshold)
+                //         {
+                //             m_JuleaDBInteractionWriter.AddEntriesForTagTable(
+                //                 m_ProjectNamespace, tagName, fileName, varName, currentStep,
+                //                 blockID, blockSum);
+                //         }
+                //         break;
+                //     } // end op
+                // case J_DAI_STAT_VAR:
+                //     // ----------------- Operator
+                //     switch (op)
+                //     {
+                //     case J_DAI_OP_GT:
+                //         if (blockVar > threshold)
+                //         {
+                //             m_JuleaDBInteractionWriter.AddEntriesForTagTable(
+                //                 m_ProjectNamespace, tagName, fileName, varName, currentStep,
+                //                 blockID, blockVar);
+                //         }
+                //         break;
+                //     case J_DAI_OP_LT:
+                //         if (blockVar < threshold)
+                //         {
+                //             m_JuleaDBInteractionWriter.AddEntriesForTagTable(
+                //                 m_ProjectNamespace, tagName, fileName, varName, currentStep,
+                //                 blockID, blockVar);
+                //         }
+                //         break;
+                //     } // end op
                 }     // end statistic
                 break;
             case J_DAI_GRAN_STEP:
@@ -379,6 +392,21 @@ void JuleaDBDAIWriter::ManageBlockStepMetadata(Variable<T> &variable,
 
     m_JuleaCDO.BufferCDOStats(variable, blockMin, blockMax, blockMean, blockSum,
                               blockVar, m_IsOriginalFormat);
+
+    if (m_CurrentStep % m_JuleaCDO.m_StepsPerDay == 0)
+    {
+        m_JuleaCDO.ComputeDailyStats(variable.m_Name);
+    }
+
+    if (m_CurrentStep % m_JuleaCDO.m_StepsPerMonth == 0)
+    {
+        m_JuleaCDO.ComputeMonthlyStats(variable.m_Name);
+    }
+
+    if (m_CurrentStep % m_JuleaCDO.m_StepsPerYear == 0)
+    {
+        m_JuleaCDO.ComputeYearlyStats(variable.m_Name);
+    }
 }
 
 template <>
@@ -526,6 +554,7 @@ void JuleaDBDAIWriter::PutSyncToJulea(
     if (m_ComputeStatsCombined)
     {
         // m_IsOriginalFormat determines which MD to compute
+        std::cout << "--- m_ComputeStatsCombined = true \n ";
         ManageBlockStepMetadata(variable, data, blockMin, blockMax, blockMean,
                                 blockSum, blockVar);
         TaggingDataIfRequired(m_Name, variable.m_Name, m_CurrentStep,
