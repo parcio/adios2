@@ -32,11 +32,12 @@ namespace adios2
 namespace interop
 {
 
+// TODO: tagName as param
 template <class T>
-void JuleaDBInteractionWriter::AddEntriesForTagTable(const std::string fileName,
-                                                     const std::string varName,
-                                                     size_t currentStep,
-                                                     size_t block, const T data)
+void JuleaDBInteractionWriter::AddEntriesForTagTable(
+    const std::string projectNamespace, const std::string tagName,
+    const std::string fileName, const std::string varName, size_t currentStep,
+    size_t block, const T data)
 {
     int err = 0;
     g_autoptr(JDBSchema) schema = NULL;
@@ -47,29 +48,33 @@ void JuleaDBInteractionWriter::AddEntriesForTagTable(const std::string fileName,
     guint64 db_length = 0;
     uint32_t *tmpID;
 
-    // void *namesBuf = NULL;
-    // auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
-    // auto batch = j_batch_new(semantics);
+    void *namesBuf = NULL;
+    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
     // auto batch2 = j_batch_new(semantics);
 
+    auto completeNamespace =
+        g_strdup_printf("%s_%s", "adios2", projectNamespace.c_str());
+    // std::cout << "tagName = " << tagName << "\n";
+    auto tagSchema = j_db_schema_new(completeNamespace, tagName.c_str(), NULL);
+
     // schema = j_db_schema_new("adios2", "daily-global-statistics", NULL);
-    // j_db_schema_get(schema, batch, NULL);
-    // err = j_batch_execute(batch);
-    // // g_assert_true(j_batch_execute(batch) == true);
+    j_db_schema_get(tagSchema, batch, NULL);
+    err = j_batch_execute(batch);
+    // g_assert_true(j_batch_execute(batch) == true);
 
-    // entry = j_db_entry_new(schema, NULL);
+    entry = j_db_entry_new(tagSchema, NULL);
     // j_db_entry_set_field(entry, "projectNamespace", projectNamespace.c_str(),
-    //                      strlen(projectNamespace.c_str()) + 1, NULL);
-    // j_db_entry_set_field(entry, "file", fileName.c_str(),
-    //                      strlen(fileName.c_str()) + 1, NULL);
-    // j_db_entry_set_field(entry, "variableName", varName.c_str(),
-    //                      strlen(varName.c_str()) + 1, NULL);
-
-    // j_db_entry_set_field(entry, "year", &year, sizeof(year), NULL);
-    // j_db_entry_set_field(entry, "month", &month, sizeof(month), NULL);
-    // j_db_entry_set_field(entry, "day", &day, sizeof(day), NULL);
-
-    // SetDailyValues(entry, JuleaCDO, varName, year, month, day);
+    //  strlen(projectNamespace.c_str()) + 1, NULL);
+    j_db_entry_set_field(entry, "file", fileName.c_str(),
+                         strlen(fileName.c_str()) + 1, NULL);
+    j_db_entry_set_field(entry, "variableName", varName.c_str(),
+                         strlen(varName.c_str()) + 1, NULL);
+    j_db_entry_set_field(entry, "step", &currentStep, sizeof(currentStep),
+                         NULL);
+    j_db_entry_set_field(entry, "block", &block, sizeof(block), NULL);
+    // j_db_entry_set_field(entry, "entryID", &blockID, sizeof(blockID), NULL);
+    j_db_entry_set_field(entry, "stat", &data, sizeof(data), NULL);
 }
 
 template <class T>

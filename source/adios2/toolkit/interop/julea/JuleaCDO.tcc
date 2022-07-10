@@ -351,6 +351,8 @@ void JuleaCDO::BufferCDOStats<double>(core::Variable<double> &variable,
     }
 }
 
+
+
 } // end namespace interop
 } // end namespace adios
 

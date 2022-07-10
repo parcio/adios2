@@ -163,8 +163,10 @@ private:
     void ManageBlockStepMetadata(Variable<T> &variable, const T *data,
                                  T &blockMin, T &blockMax, T &blockMean,
                                  T &blockSum, T &blockVar);
-        template <class T>
-void TaggingDataIfRequired(std::string fileName, std::string varName, size_t currentStep, size_t blockID, T blockMin, T blockMax, T blockMean, T blockSum, T blockVar);
+    template <class T>
+    void TaggingDataIfRequired(std::string fileName, std::string varName,
+                               size_t currentStep, size_t blockID, T blockMin,
+                               T blockMax, T blockMean, T blockSum, T blockVar);
 
     template <class T>
     void BufferTemperature(Variable<T> &variable, T blockMin, T blockMean,

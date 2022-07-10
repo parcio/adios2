@@ -159,7 +159,7 @@ JuleaDBInteractionWriter::JuleaDBInteractionWriter(helper::Comm const &comm)
 
 void JuleaDBInteractionWriter::AddFieldsForTagTable(JDBSchema *schema)
 {
-        std::cout << "--- AddFieldsForTagTable ---" << std::endl;
+    std::cout << "--- AddFieldsForTagTable ---" << std::endl;
     gchar const *fileIndex[] = {"file", NULL};
     gchar const *varIndex[] = {"variableName", NULL};
     gchar const *stepIndex[] = {"step", NULL};
@@ -176,10 +176,9 @@ void JuleaDBInteractionWriter::AddFieldsForTagTable(JDBSchema *schema)
 
     // could be useful to have the entryID directly in tag table
     j_db_schema_add_field(schema, "entryID", J_DB_TYPE_UINT64, NULL);
-
-    // FIXME: is JDAIStatistic not string
-    //  j_db_schema_add_field(schema, "statisticName", J_DB_TYPE_STRING, NULL);
     j_db_schema_add_field(schema, "stat", J_DB_TYPE_UINT32, NULL);
+
+    //  j_db_schema_add_field(schema, "statisticName", J_DB_TYPE_STRING, NULL);
     // j_db_schema_add_field(schema, "operator", J_DB_TYPE_UINT32, NULL);
     // j_db_schema_add_field(schema, "granularity", J_DB_TYPE_UINT32, NULL);
 
@@ -212,8 +211,8 @@ void InitTagsFromConfigDB(std::string projectNamespace, gchar **tagName,
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
-    completeNamespace =
-        g_strdup_printf("%s_%s_%s", "adios2", projectNamespace.c_str(), "config");
+    completeNamespace = g_strdup_printf("%s_%s_%s", "adios2",
+                                        projectNamespace.c_str(), "config");
     auto tagSchema = j_db_schema_new(completeNamespace, "tags", NULL);
 
     // complete_namespace = g_strdup_printf(
@@ -226,7 +225,7 @@ void InitTagsFromConfigDB(std::string projectNamespace, gchar **tagName,
     if (err != 0)
     {
         // TODO error handling
-        std::cout << "there was an error with the tagSchema \n"; 
+        std::cout << "there was an error with the tagSchema \n";
     }
     std::cout << "This is after a potential error with tagSchema \n";
 
@@ -284,7 +283,8 @@ void JuleaDBInteractionWriter::InitTagTables(std::string projectNamespace)
 
     auto completeNamespace =
         g_strdup_printf("%s_%s", "adios2", projectNamespace.c_str());
-    std::cout << " in InitTagTables: completeNamespace = " << completeNamespace << "\n";
+    std::cout << " in InitTagTables: completeNamespace = " << completeNamespace
+              << "\n";
     std::cout << "tagName = " << tagName << "\n";
     auto tagSchema = j_db_schema_new(completeNamespace, tagName, NULL);
     // auto tag_schema = j_db_schema_new(completeNamespace, "tags", NULL);
@@ -1073,6 +1073,7 @@ void JuleaDBInteractionWriter::InitDBSchemas(std::string projectNamespace,
 
 #define declare_template_instantiation(T)                                      \
     template void JuleaDBInteractionWriter::AddEntriesForTagTable(             \
+        const std::string projectNamespace, const std::string tagName,         \
         const std::string fileName, const std::string varName,                 \
         size_t currentStep, size_t block, const T data);                       \
     template void JuleaDBInteractionWriter::PutVariableMetadataToJulea(        \

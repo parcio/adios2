@@ -87,13 +87,19 @@ public:
              std::list<std::pair<JDAIStatistic, JDAIGranularity>>>
         m_Precomputes;
 
+    // stores all tags that should be marked.
+    // map
+    // key: pair of filename and variable name
+    // value: list of tags (struct)
     std::map<std::pair<std::string, std::string>, std::list<Tag>> m_Tags;
+    // std::map<std::pair<std::string, std::string>, std::vector<Tag>> m_Tags;
 
-    template <class T>
-    void TaggingDataIfRequired(const T data, std::string fileName,
-                               std::string varName, size_t currentStep,
-                               size_t blockID, T blockMin, T blockMax,
-                               T blockMean, T blockSum, T blockVar);
+    // template <class T>
+    // void TaggingDataIfRequired(std::string projectName, std::string fileName,
+    //                            std::string varName, size_t currentStep,
+    //                            size_t blockID, T blockMin, T blockMax,
+    //                            T blockMean, T blockSum, T blockVar);
+                               
 
     template <class T>
     void SetMinMax(core::Variable<T> &variable, const T *data, T &blockMin,

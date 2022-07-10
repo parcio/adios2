@@ -39,6 +39,7 @@ JuleaCDO::JuleaCDO(helper::Comm const &comm) : m_Comm(comm)
     // std::cout << "This is the constructor" << std::endl;
     // m_TemperatureName =
     // m_PrecipitationName =
+    Tag testTag;
 }
 
 void JuleaCDO::ComputeCoordinatesFromRank(int rank, int &x, int &y)
