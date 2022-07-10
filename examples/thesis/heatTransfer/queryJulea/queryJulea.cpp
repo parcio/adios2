@@ -411,7 +411,7 @@ void QueryDaysColderThan(std::string projectNamespace, std::string fileName)
     int day = 0;
 
     startRead = high_resolution_clock::now();
-    j_dai_tag_get_entries_ids(projectNamespace.c_str(), tagName.c_str(),
+    j_dai_tag_get_entry_ids(projectNamespace.c_str(), tagName.c_str(),
                               fileName.c_str(), "T", &nIDs, &entryIDs);
 
     for (int i = 0; i < nIDs; ++i)

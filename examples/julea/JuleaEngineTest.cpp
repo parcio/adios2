@@ -22,6 +22,7 @@ void TestWriteVariableSync()
 {
     /** Application variable */
     std::vector<float> myFloats = {12345.6, 1, 2, 3, 4, 5, 6, 7, 8, -42.3456};
+    std::vector<double> myDoubles = {-100, -99, -98, -95, -94, -93, -92, -91, -90, -42.3456};
     // std::vector<float> myFloats2 = {-6666.6, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     std::vector<int> myInts = {333, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     std::vector<int> myInts2 = {777, 42, 4242, 424242};
@@ -46,6 +47,8 @@ void TestWriteVariableSync()
      * { count (local) }, all are constant dimensions */
     adios2::Variable<float> juleaFloats = juleaIO.DefineVariable<float>(
         "juleaFloats", {Nx}, {0}, {Nx}, adios2::ConstantDims);
+    adios2::Variable<double> juleaDoubles = juleaIO.DefineVariable<double>(
+        "T", {Nx}, {0}, {Nx}, adios2::ConstantDims);
         
     // adios2::Variable<float> juleaFloats2 = juleaIO.DefineVariable<float>(
     // "juleaFloats2", {}, {}, {Nx}, adios2::ConstantDims);
@@ -60,6 +63,7 @@ void TestWriteVariableSync()
 
     /** Write variable for buffering */
     juleaWriter.Put<float>(juleaFloats, myFloats.data(), adios2::Mode::Deferred);
+    juleaWriter.Put<double>(juleaDoubles, myDoubles.data(), adios2::Mode::Deferred);
     // juleaWriter.Put<float>(juleaFloats,
     // myFloats.data(),adios2::Mode::Deferred);
     // juleaWriter.Put<float>(juleaFloats2,
@@ -363,19 +367,19 @@ void SetupDAI(std::string projectNamespace, std::string fileName)
 
     // j_dai_create_project_namespace(projectNamespace.c_str());
 
-    j_dai_add_tag_d(projectNamespace.c_str(), fileName.c_str(), "T",
-                    "ColderThanMinus12", J_DAI_GRAN_BLOCK, J_DAI_STAT_MAX,
+    j_dai_add_tag_d(projectNamespace.c_str(), "ColderThanMinus12", fileName.c_str(), "T",
+                    J_DAI_GRAN_BLOCK, J_DAI_STAT_MAX,
                     J_DAI_OP_LT, -12.0);
+    j_dai_pc_stat(
+        projectNamespace.c_str(), "computeAllForT", fileName.c_str(), "T", J_DAI_GRAN_BLOCK,
+        (JDAIStatistic)(J_DAI_STAT_MIN | J_DAI_STAT_MAX | J_DAI_STAT_MEAN |
+                        J_DAI_STAT_SUM | J_DAI_STAT_VAR),
+        0);
     j_dai_pc_ic(projectNamespace.c_str(), fileName.c_str(), "T",
                 (JDAIClimateIndex)(J_DAI_CI_SU | J_DAI_CI_FD | J_DAI_CI_ID |
                                    J_DAI_CI_TR));
     j_dai_compute_stats_combined(projectNamespace.c_str(), fileName.c_str(),
                                  "T");
-    j_dai_pc_stat(
-        projectNamespace.c_str(), fileName.c_str(), "T", J_DAI_GRAN_BLOCK,
-        (JDAIStatistic)(J_DAI_STAT_MIN | J_DAI_STAT_MAX | J_DAI_STAT_MEAN |
-                        J_DAI_STAT_SUM | J_DAI_STAT_VAR),
-        0);
 }
 
 int main(int argc, char *argv[])
