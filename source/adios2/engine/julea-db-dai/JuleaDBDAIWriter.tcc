@@ -151,16 +151,16 @@ void JuleaDBDAIWriter::TaggingDataIfRequired(
                         if (blockMin > threshold)
                         {
                             m_JuleaDBInteractionWriter.AddEntriesForTagTable(
-                                m_ProjectNamespace, tagName, fileName, varName, currentStep,
-                                blockID, blockMin);
+                                m_ProjectNamespace, tagName, fileName, varName,
+                                currentStep, blockID, blockMin);
                         }
                         break;
                     case J_DAI_OP_LT:
                         if (blockMin < threshold)
                         {
                             m_JuleaDBInteractionWriter.AddEntriesForTagTable(
-                                m_ProjectNamespace, tagName, fileName, varName, currentStep,
-                                blockID, blockMin);
+                                m_ProjectNamespace, tagName, fileName, varName,
+                                currentStep, blockID, blockMin);
                         }
                         break;
                     } // end op
@@ -171,21 +171,21 @@ void JuleaDBDAIWriter::TaggingDataIfRequired(
                     switch (op)
                     {
                     case J_DAI_OP_GT:
-                    // std::cout << "Debug: J_DAI_OP_GT reached \n";
+                        // std::cout << "Debug: J_DAI_OP_GT reached \n";
                         if (blockMax > threshold)
                         {
                             m_JuleaDBInteractionWriter.AddEntriesForTagTable(
-                                m_ProjectNamespace, tagName, fileName, varName, currentStep,
-                                blockID, blockMax);
+                                m_ProjectNamespace, tagName, fileName, varName,
+                                currentStep, blockID, blockMax);
                         }
                         break;
                     case J_DAI_OP_LT:
-                    // std::cout << "Debug: J_DAI_OP_LT reached \n";
+                        // std::cout << "Debug: J_DAI_OP_LT reached \n";
                         if (blockMax < threshold)
                         {
                             m_JuleaDBInteractionWriter.AddEntriesForTagTable(
-                                m_ProjectNamespace, tagName, fileName, varName, currentStep,
-                                blockID, blockMax);
+                                m_ProjectNamespace, tagName, fileName, varName,
+                                currentStep, blockID, blockMax);
                         }
                         break;
                     } // end op
@@ -197,16 +197,16 @@ void JuleaDBDAIWriter::TaggingDataIfRequired(
                         if (blockMean > threshold)
                         {
                             m_JuleaDBInteractionWriter.AddEntriesForTagTable(
-                                m_ProjectNamespace, tagName, fileName, varName, currentStep,
-                                blockID, blockMean);
+                                m_ProjectNamespace, tagName, fileName, varName,
+                                currentStep, blockID, blockMean);
                         }
                         break;
                     case J_DAI_OP_LT:
                         if (blockMean < threshold)
                         {
                             m_JuleaDBInteractionWriter.AddEntriesForTagTable(
-                                m_ProjectNamespace, tagName, fileName, varName, currentStep,
-                                blockID, blockMean);
+                                m_ProjectNamespace, tagName, fileName, varName,
+                                currentStep, blockID, blockMean);
                         }
                         break;
                     } // end op
@@ -218,16 +218,16 @@ void JuleaDBDAIWriter::TaggingDataIfRequired(
                         if (blockSum > threshold)
                         {
                             m_JuleaDBInteractionWriter.AddEntriesForTagTable(
-                                m_ProjectNamespace, tagName, fileName, varName, currentStep,
-                                blockID, blockSum);
+                                m_ProjectNamespace, tagName, fileName, varName,
+                                currentStep, blockID, blockSum);
                         }
                         break;
                     case J_DAI_OP_LT:
                         if (blockSum < threshold)
                         {
                             m_JuleaDBInteractionWriter.AddEntriesForTagTable(
-                                m_ProjectNamespace, tagName, fileName, varName, currentStep,
-                                blockID, blockSum);
+                                m_ProjectNamespace, tagName, fileName, varName,
+                                currentStep, blockID, blockSum);
                         }
                         break;
                     } // end op
@@ -239,16 +239,16 @@ void JuleaDBDAIWriter::TaggingDataIfRequired(
                         if (blockVar > threshold)
                         {
                             m_JuleaDBInteractionWriter.AddEntriesForTagTable(
-                                m_ProjectNamespace, tagName, fileName, varName, currentStep,
-                                blockID, blockVar);
+                                m_ProjectNamespace, tagName, fileName, varName,
+                                currentStep, blockID, blockVar);
                         }
                         break;
                     case J_DAI_OP_LT:
                         if (blockVar < threshold)
                         {
                             m_JuleaDBInteractionWriter.AddEntriesForTagTable(
-                                m_ProjectNamespace, tagName, fileName, varName, currentStep,
-                                blockID, blockVar);
+                                m_ProjectNamespace, tagName, fileName, varName,
+                                currentStep, blockID, blockVar);
                         }
                         break;
                     } // end op
@@ -390,7 +390,20 @@ void JuleaDBDAIWriter::ManageBlockStepMetadata(Variable<T> &variable,
 
     if (m_CurrentStep % m_JuleaCDO.m_StepsPerDay == 0)
     {
+        int day;
+        int month;
+        int year;
         m_JuleaCDO.ComputeDailyStats(variable.m_Name);
+        m_JuleaCDO.ComputeDateFromStep(m_CurrentStep, year, month, day);
+
+        std::cout << "Year: " << year << " Month: " << month << " Day: " << day
+                  << "\n";
+        if (m_WriterRank == 0)
+        {
+            m_JuleaDBInteractionWriter.AddEntriesForDailyGlobalStatsTable(
+                m_ProjectNamespace, m_Name, variable.m_Name, m_CurrentStep,
+                m_JuleaCDO, year, month, day);
+        }
     }
 
     if (m_CurrentStep % m_JuleaCDO.m_StepsPerMonth == 0)
@@ -401,6 +414,12 @@ void JuleaDBDAIWriter::ManageBlockStepMetadata(Variable<T> &variable,
     if (m_CurrentStep % m_JuleaCDO.m_StepsPerYear == 0)
     {
         m_JuleaCDO.ComputeYearlyStats(variable.m_Name);
+        if (m_WriterRank == 0)
+        {
+            m_JuleaDBInteractionWriter.AddEntriesForClimateIndexTable(
+                m_ProjectNamespace, m_Name, variable.m_Name, m_CurrentStep,
+                m_JuleaCDO);
+        }
     }
 }
 

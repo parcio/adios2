@@ -61,6 +61,22 @@ public:
                                const std::string fileName,
                                const std::string varName, size_t currentStep,
                                size_t block, const T data);
+
+    /**
+     *   ------------- Add metadata to tables ----------------
+     */
+    // should only be called from master
+    void AddEntriesForClimateIndexTable(const std::string projectNamespace,
+                                        const std::string fileName,
+                                        const std::string varName,
+                                        size_t currentStep,
+                                        interop::JuleaCDO &JuleaCDO);
+    void AddEntriesForDailyGlobalStatsTable(const std::string projectNamespace,
+                                            const std::string fileName,
+                                            const std::string varName,
+                                            size_t currentStep,
+                                            interop::JuleaCDO &JuleaCDO,
+                                            int year, int month, int day);
     /** --- Attributes --- */
     // TODO: support attributes again
 
@@ -100,27 +116,12 @@ private:
     void AddFieldsForVariableMD_Eval(JDBSchema *schema);
     void AddFieldsForBlockMD_Eval(JDBSchema *schema);
 
-    /**
-     *   ------------- Add metadata to tables ----------------
-     */
-    // should only be called from master
-    void AddEntriesForClimateIndexTable(const std::string projectNamespace,
-                                        const std::string fileName,
-                                        const std::string varName,
-                                        size_t currentStep,
-                                        interop::JuleaCDO &JuleaCDO);
     // void AddEntriesForYearlyLocalStatsTable(const std::string nameSpace,
     //                                         const std::string varName,
     //                                         size_t currentStep,
     //                                         interop::JuleaCDO &JuleaCDO,
     //                                         int writerRank);
-    void AddEntriesForDailyGlobalStatsTable(const std::string projectNamespace,
-                                            const std::string fileName,
-                                            const std::string varName,
-                                            size_t currentStep,
-                                            interop::JuleaCDO &JuleaCDO,
-                                            int writerRank, int year, int month,
-                                            int day);
+
     // void AddEntriesForDailyLocalStatsTable(JDBSchema *schema);
     void AddEntriesForCDOStatistics(const std::string nameSpace,
                                     const std::string varName,

@@ -233,9 +233,6 @@ void JuleaDBDAIWriter::Init()
 
     m_JuleaSemantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
 
-    InitParameters();
-    InitDAI();
-
     if (m_JuleaCDO.m_Precomputes.empty())
     {
         m_IsOriginalFormat = true;
@@ -246,6 +243,8 @@ void JuleaDBDAIWriter::Init()
     {
         std::cout << "JDB Writer (" << m_WriterRank << ") : InitDBSchemas()\n";
         // std::cout << "InitDBSchemas" << std::endl;
+        InitParameters();
+        InitDAI();
 
         m_JuleaDBInteractionWriter.InitDBSchemas(m_ProjectNamespace,
                                                  m_IsOriginalFormat);

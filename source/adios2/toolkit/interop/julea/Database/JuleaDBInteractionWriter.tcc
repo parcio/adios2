@@ -78,19 +78,19 @@ void JuleaDBInteractionWriter::AddEntriesForTagTable(
     case adios2::DataType::UInt16:
     case adios2::DataType::Int32:
 
-    j_db_entry_set_field(entry, "stat_i", &data, sizeof(data), NULL);
+        j_db_entry_set_field(entry, "stat_i", &data, sizeof(data), NULL);
         break;
     case adios2::DataType::UInt32:
-        //TODO: implement
+        // TODO: implement
         break;
     case adios2::DataType::Int64:
-        //TODO: implement
+        // TODO: implement
         break;
     case adios2::DataType::UInt64:
-        //TODO: implement
+        // TODO: implement
         break;
     case adios2::DataType::Float:
-        //TODO: implement
+        // TODO: implement
         break;
     case adios2::DataType::Double:
         j_db_entry_set_field(entry, "stat_d", tmpData, sizeof(data), NULL);
@@ -98,7 +98,7 @@ void JuleaDBInteractionWriter::AddEntriesForTagTable(
     case adios2::DataType::LongDouble:
     case adios2::DataType::FloatComplex:
     case adios2::DataType::DoubleComplex:
-        //TODO: implement
+        // TODO: implement
         break;
     case adios2::DataType::String:
         // *valueField = "value_sint32";

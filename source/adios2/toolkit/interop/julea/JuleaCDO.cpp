@@ -42,6 +42,24 @@ JuleaCDO::JuleaCDO(helper::Comm const &comm) : m_Comm(comm)
     Tag testTag;
 }
 
+void JuleaCDO::ComputeDateFromStep(int currentStep, int &year, int &month, int &day)
+{
+    // int days = currentStep/m_StepsPerDay;
+    // int months = days/m_DaysPerMonth;
+    // year = months/m_MonthsPerYear;
+    // month = 
+    // year = currentStep/ (m_MonthsPerYear*m_DaysPerMonth*m_StepsPerDay);
+    // int months = currentStep % (m_MonthsPerYear*m_DaysPerMonth*m_StepsPerDay); //
+    // month = months/(m_DaysPerMonth*m_StepsPerDay);
+    // int days = months%(m_DaysPerMonth*m_StepsPerDay);
+    year = currentStep/ m_StepsPerYear;
+    int months = currentStep % m_StepsPerYear; //
+    month = months/m_StepsPerMonth;
+    int days = months%m_StepsPerMonth;
+    day = days/m_StepsPerDay;
+
+}
+
 void JuleaCDO::ComputeCoordinatesFromRank(int rank, int &x, int &y)
 {
     x = rank % m_numberBlocksX;
@@ -118,16 +136,19 @@ void JuleaCDO::ComputeDailyStats(std::string variableName)
         // get daily minimum
         adios2::helper::GetMinMax(m_HTempMin.data(), m_HTempMin.size(),
                                   dailyMin, tmp);
+        std::cout << "dailyMin: " << dailyMin << "\n";
         // get daily maximum
         adios2::helper::GetMinMax(m_HTempMax.data(), m_HTempMax.size(), tmp,
                                   dailyMax);
+        std::cout << "dailyMax: " << dailyMax << "\n";
         dailyMean = std::accumulate(m_HTempMean.begin(), m_HTempMean.end(), 0) /
                     m_StepsPerDay;
+        std::cout << "dailyMean: " << dailyMean << "\n";
 
         m_DTempMin.push_back(dailyMin);
         m_DTempMean.push_back(dailyMean);
         m_DTempMax.push_back(dailyMax);
-
+        
         ComputeFrostDays(dailyMin);
         ComputeTropicalNights(dailyMin);
 

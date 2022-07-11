@@ -135,6 +135,7 @@ public:
     //                                   size_t blockID);
 
     void ComputeCoordinatesFromRank(int rank, int &x, int &y);
+    void ComputeDateFromStep(int currentStep, int &year, int &month, int &day);
     void ComputeDailyStats(std::string variableName);
     void ComputeMonthlyStats(std::string variableName);
     void ComputeYearlyStats(std::string variableName);
@@ -155,12 +156,17 @@ public:
     std::string m_TemperatureName = "T";
 
     /** Simplified durations */
-    size_t m_StepsPerDay = 24;
-    size_t m_DaysPerMonth = 30;
-    size_t m_StepsPerMonth = 720;
+    // size_t m_StepsPerDay = 24;
+    // size_t m_DaysPerMonth = 30;
+    // size_t m_MonthsPerYear = 12;
+    size_t m_StepsPerDay = 2;
+    size_t m_DaysPerMonth = 10;
     size_t m_MonthsPerYear = 12;
-    size_t m_DaysPerYear = 360;
-    size_t m_StepsPerYear = 8640;
+    size_t m_StepsPerMonth = m_StepsPerDay*m_DaysPerMonth;
+    size_t m_StepsPerYear = m_StepsPerMonth* m_MonthsPerYear;
+    // size_t m_StepsPerMonth = 720;
+    // size_t m_DaysPerYear = 360;
+    // size_t m_StepsPerYear = 8640;
 
     /** Climate indices*/
     size_t m_FrostDays = 0;

@@ -41,114 +41,124 @@ void SetDailyValues(JDBEntry *entry, interop::JuleaCDO &JuleaCDO,
     {
         if (varName == JuleaCDO.m_TemperatureName)
         {
-            j_db_entry_set_field(entry, "daily_globalMin", &JuleaCDO.m_DTempMin,
-                                 sizeof(JuleaCDO.m_DTempMin), NULL);
-            j_db_entry_set_field(entry, "daily_globalMax", &JuleaCDO.m_DTempMax,
-                                 sizeof(JuleaCDO.m_DTempMax), NULL);
+            j_db_entry_set_field(entry, "daily_globalMin",
+                                 &JuleaCDO.m_DTempMin[day],
+                                 sizeof(JuleaCDO.m_DTempMin[day]), NULL);
+            j_db_entry_set_field(entry, "daily_globalMax",
+                                 &JuleaCDO.m_DTempMax[day],
+                                 sizeof(JuleaCDO.m_DTempMax[day]), NULL);
             j_db_entry_set_field(entry, "daily_globalMean",
-                                 &JuleaCDO.m_DTempMean,
-                                 sizeof(JuleaCDO.m_DTempMean), NULL);
+                                 &JuleaCDO.m_DTempMean[day],
+                                 sizeof(JuleaCDO.m_DTempMean[day]), NULL);
             j_db_entry_set_field(entry, "daily_globalSum",
                                  &JuleaCDO.m_NotComputedValue,
                                  sizeof(JuleaCDO.m_NotComputedValue), NULL);
-            j_db_entry_set_field(entry, "daily_globalVar", &JuleaCDO.m_DTempVar,
-                                 sizeof(JuleaCDO.m_DTempVar), NULL);
+            j_db_entry_set_field(
+                entry, "daily_globalVar", &JuleaCDO.m_DTempVar,
+                sizeof(JuleaCDO.m_DTempVar),
+                NULL); // TODO: error when daily value is accessed
         }
         if (varName == JuleaCDO.m_PrecipitationName)
         {
-            j_db_entry_set_field(entry, "daily_globalMin", &JuleaCDO.m_DPrecMin,
-                                 sizeof(JuleaCDO.m_DPrecMin), NULL);
-            j_db_entry_set_field(entry, "daily_globalMax", &JuleaCDO.m_DPrecMax,
-                                 sizeof(JuleaCDO.m_DPrecMax), NULL);
+            j_db_entry_set_field(entry, "daily_globalMin",
+                                 &JuleaCDO.m_DPrecMin[day],
+                                 sizeof(JuleaCDO.m_DPrecMin[day]), NULL);
+            j_db_entry_set_field(entry, "daily_globalMax",
+                                 &JuleaCDO.m_DPrecMax[day],
+                                 sizeof(JuleaCDO.m_DPrecMax[day]), NULL);
             j_db_entry_set_field(entry, "daily_globalMean",
-                                 &JuleaCDO.m_DPrecMean,
-                                 sizeof(JuleaCDO.m_DPrecMean), NULL);
-            j_db_entry_set_field(entry, "daily_globalSum", &JuleaCDO.m_DPrecSum,
-                                 sizeof(JuleaCDO.m_DPrecSum), NULL);
-            j_db_entry_set_field(entry, "daily_globalVar", &JuleaCDO.m_DPrecVar,
-                                 sizeof(JuleaCDO.m_DPrecVar), NULL);
+                                 &JuleaCDO.m_DPrecMean[day],
+                                 sizeof(JuleaCDO.m_DPrecMean[day]), NULL);
+            j_db_entry_set_field(entry, "daily_globalSum",
+                                 &JuleaCDO.m_DPrecSum[day],
+                                 sizeof(JuleaCDO.m_DPrecSum[day]), NULL);
+            j_db_entry_set_field(entry, "daily_globalVar",
+                                 &JuleaCDO.m_DPrecVar[day],
+                                 sizeof(JuleaCDO.m_DPrecVar[day]), NULL);
         }
-        // monthly values
-        else if (day == JuleaCDO.m_StoreMonthlyValue)
+        // // monthly values
+        // else if (day == JuleaCDO.m_StoreMonthlyValue)
 
-        {
-            if (varName == JuleaCDO.m_TemperatureName)
-            {
-                j_db_entry_set_field(entry, "daily_globalMin",
-                                     &JuleaCDO.m_MTempMin,
-                                     sizeof(JuleaCDO.m_MTempMin), NULL);
-                j_db_entry_set_field(entry, "daily_globalMax",
-                                     &JuleaCDO.m_MTempMax,
-                                     sizeof(JuleaCDO.m_MTempMax), NULL);
-                j_db_entry_set_field(entry, "daily_globalMean",
-                                     &JuleaCDO.m_MTempMean,
-                                     sizeof(JuleaCDO.m_MTempMean), NULL);
-                j_db_entry_set_field(entry, "daily_globalSum",
-                                     &JuleaCDO.m_NotComputedValue,
-                                     sizeof(JuleaCDO.m_NotComputedValue), NULL);
-                j_db_entry_set_field(entry, "daily_globalVar",
-                                     &JuleaCDO.m_MTempVar,
-                                     sizeof(JuleaCDO.m_MTempVar), NULL);
-            }
-            if (varName == JuleaCDO.m_PrecipitationName)
-            {
-                j_db_entry_set_field(entry, "daily_globalMin",
-                                     &JuleaCDO.m_MPrecMin,
-                                     sizeof(JuleaCDO.m_MPrecMin), NULL);
-                j_db_entry_set_field(entry, "daily_globalMax",
-                                     &JuleaCDO.m_MPrecMax,
-                                     sizeof(JuleaCDO.m_MPrecMax), NULL);
-                j_db_entry_set_field(entry, "daily_globalMean",
-                                     &JuleaCDO.m_MPrecMean,
-                                     sizeof(JuleaCDO.m_MPrecMean), NULL);
-                j_db_entry_set_field(entry, "daily_globalSum",
-                                     &JuleaCDO.m_MPrecSum,
-                                     sizeof(JuleaCDO.m_MPrecSum), NULL);
-                j_db_entry_set_field(entry, "daily_globalVar",
-                                     &JuleaCDO.m_MPrecVar,
-                                     sizeof(JuleaCDO.m_MPrecVar), NULL);
-            }
-            // yearly values
-            else if (day == JuleaCDO.m_StoreYearlyValue)
-            {
-                if (varName == JuleaCDO.m_TemperatureName)
-                {
-                    j_db_entry_set_field(entry, "daily_globalMin",
-                                         &JuleaCDO.m_YTempMin,
-                                         sizeof(JuleaCDO.m_YTempMin), NULL);
-                    j_db_entry_set_field(entry, "daily_globalMax",
-                                         &JuleaCDO.m_YTempMax,
-                                         sizeof(JuleaCDO.m_YTempMax), NULL);
-                    j_db_entry_set_field(entry, "daily_globalMean",
-                                         &JuleaCDO.m_YTempMean,
-                                         sizeof(JuleaCDO.m_YTempMean), NULL);
-                    j_db_entry_set_field(
-                        entry, "daily_globalSum", &JuleaCDO.m_NotComputedValue,
-                        sizeof(JuleaCDO.m_NotComputedValue), NULL);
-                    j_db_entry_set_field(entry, "daily_globalVar",
-                                         &JuleaCDO.m_YTempVar,
-                                         sizeof(JuleaCDO.m_YTempVar), NULL);
-                }
-                if (varName == JuleaCDO.m_PrecipitationName)
-                {
-                    j_db_entry_set_field(entry, "daily_globalMin",
-                                         &JuleaCDO.m_YPrecMin,
-                                         sizeof(JuleaCDO.m_YPrecMin), NULL);
-                    j_db_entry_set_field(entry, "daily_globalMax",
-                                         &JuleaCDO.m_YPrecMax,
-                                         sizeof(JuleaCDO.m_YPrecMax), NULL);
-                    j_db_entry_set_field(entry, "daily_globalMean",
-                                         &JuleaCDO.m_YPrecMean,
-                                         sizeof(JuleaCDO.m_YPrecMean), NULL);
-                    j_db_entry_set_field(entry, "daily_globalSum",
-                                         &JuleaCDO.m_YPrecSum,
-                                         sizeof(JuleaCDO.m_YPrecSum), NULL);
-                    j_db_entry_set_field(entry, "daily_globalVar",
-                                         &JuleaCDO.m_YPrecVar,
-                                         sizeof(JuleaCDO.m_YPrecVar), NULL);
-                }
-            }
-        }
+        // {
+        //     if (varName == JuleaCDO.m_TemperatureName)
+        //     {
+        //         j_db_entry_set_field(entry, "daily_globalMin",
+        //                              &JuleaCDO.m_MTempMin,
+        //                              sizeof(JuleaCDO.m_MTempMin), NULL);
+        //         j_db_entry_set_field(entry, "daily_globalMax",
+        //                              &JuleaCDO.m_MTempMax,
+        //                              sizeof(JuleaCDO.m_MTempMax), NULL);
+        //         j_db_entry_set_field(entry, "daily_globalMean",
+        //                              &JuleaCDO.m_MTempMean,
+        //                              sizeof(JuleaCDO.m_MTempMean), NULL);
+        //         j_db_entry_set_field(entry, "daily_globalSum",
+        //                              &JuleaCDO.m_NotComputedValue,
+        //                              sizeof(JuleaCDO.m_NotComputedValue),
+        //                              NULL);
+        //         j_db_entry_set_field(entry, "daily_globalVar",
+        //                              &JuleaCDO.m_MTempVar,
+        //                              sizeof(JuleaCDO.m_MTempVar), NULL);
+        //     }
+        //     if (varName == JuleaCDO.m_PrecipitationName)
+        //     {
+        //         j_db_entry_set_field(entry, "daily_globalMin",
+        //                              &JuleaCDO.m_MPrecMin,
+        //                              sizeof(JuleaCDO.m_MPrecMin), NULL);
+        //         j_db_entry_set_field(entry, "daily_globalMax",
+        //                              &JuleaCDO.m_MPrecMax,
+        //                              sizeof(JuleaCDO.m_MPrecMax), NULL);
+        //         j_db_entry_set_field(entry, "daily_globalMean",
+        //                              &JuleaCDO.m_MPrecMean,
+        //                              sizeof(JuleaCDO.m_MPrecMean), NULL);
+        //         j_db_entry_set_field(entry, "daily_globalSum",
+        //                              &JuleaCDO.m_MPrecSum,
+        //                              sizeof(JuleaCDO.m_MPrecSum), NULL);
+        //         j_db_entry_set_field(entry, "daily_globalVar",
+        //                              &JuleaCDO.m_MPrecVar,
+        //                              sizeof(JuleaCDO.m_MPrecVar), NULL);
+        //     }
+        //     // yearly values
+        //     else if (day == JuleaCDO.m_StoreYearlyValue)
+        //     {
+        //         if (varName == JuleaCDO.m_TemperatureName)
+        //         {
+        //             j_db_entry_set_field(entry, "daily_globalMin",
+        //                                  &JuleaCDO.m_YTempMin,
+        //                                  sizeof(JuleaCDO.m_YTempMin), NULL);
+        //             j_db_entry_set_field(entry, "daily_globalMax",
+        //                                  &JuleaCDO.m_YTempMax,
+        //                                  sizeof(JuleaCDO.m_YTempMax), NULL);
+        //             j_db_entry_set_field(entry, "daily_globalMean",
+        //                                  &JuleaCDO.m_YTempMean,
+        //                                  sizeof(JuleaCDO.m_YTempMean), NULL);
+        //             j_db_entry_set_field(
+        //                 entry, "daily_globalSum",
+        //                 &JuleaCDO.m_NotComputedValue,
+        //                 sizeof(JuleaCDO.m_NotComputedValue), NULL);
+        //             j_db_entry_set_field(entry, "daily_globalVar",
+        //                                  &JuleaCDO.m_YTempVar,
+        //                                  sizeof(JuleaCDO.m_YTempVar), NULL);
+        //         }
+        //         if (varName == JuleaCDO.m_PrecipitationName)
+        //         {
+        //             j_db_entry_set_field(entry, "daily_globalMin",
+        //                                  &JuleaCDO.m_YPrecMin,
+        //                                  sizeof(JuleaCDO.m_YPrecMin), NULL);
+        //             j_db_entry_set_field(entry, "daily_globalMax",
+        //                                  &JuleaCDO.m_YPrecMax,
+        //                                  sizeof(JuleaCDO.m_YPrecMax), NULL);
+        //             j_db_entry_set_field(entry, "daily_globalMean",
+        //                                  &JuleaCDO.m_YPrecMean,
+        //                                  sizeof(JuleaCDO.m_YPrecMean), NULL);
+        //             j_db_entry_set_field(entry, "daily_globalSum",
+        //                                  &JuleaCDO.m_YPrecSum,
+        //                                  sizeof(JuleaCDO.m_YPrecSum), NULL);
+        //             j_db_entry_set_field(entry, "daily_globalVar",
+        //                                  &JuleaCDO.m_YPrecVar,
+        //                                  sizeof(JuleaCDO.m_YPrecVar), NULL);
+        //         }
+        //     }
+        // }
     }
 }
 
@@ -872,18 +882,20 @@ void JuleaDBInteractionWriter::AddEntriesForClimateIndexTable(
     guint64 db_length = 0;
     uint32_t *tmpID;
     size_t year = 0;
+    size_t stepsPerYear = JuleaCDO.m_StepsPerDay * JuleaCDO.m_DaysPerMonth *
+                          JuleaCDO.m_MonthsPerYear;
     // size_t month = 0;
     // size_t day = 0;
     // uint32_t entryID = 0;
 
-    if (currentStep >= JuleaCDO.m_StepsPerYear)
+    if (currentStep >= stepsPerYear)
     {
-        year = (size_t)currentStep / JuleaCDO.m_StepsPerYear;
+        year = (size_t)currentStep / stepsPerYear;
     }
     // void *namesBuf = NULL;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
-    // auto batch2 = j_batch_new(semantics);
+    auto batch2 = j_batch_new(semantics);
 
     auto completeNamespace =
         g_strdup_printf("%s_%s", "adios2", projectNamespace.c_str());
@@ -918,16 +930,20 @@ void JuleaDBInteractionWriter::AddEntriesForClimateIndexTable(
                          sizeof(size_t), NULL);
     j_db_entry_set_field(entry, "icing_days", &JuleaCDO.m_IcingDays,
                          sizeof(size_t), NULL);
+
+    j_db_entry_insert(entry, batch2, NULL);
+    g_assert_true(j_batch_execute(batch2) == true);
     // j_db_schema_unref(schema);
     // j_db_entry_unref(entry);
-    // j_batch_unref(batch);
-    // j_semantics_unref(semantics);
+    j_batch_unref(batch);
+    j_batch_unref(batch2);
+    j_semantics_unref(semantics);
 }
 
 void JuleaDBInteractionWriter::AddEntriesForDailyGlobalStatsTable(
     const std::string projectNamespace, const std::string fileName,
     const std::string varName, size_t currentStep, interop::JuleaCDO &JuleaCDO,
-    int writerRank, int year, int month, int day)
+    int year, int month, int day)
 {
     int err = 0;
     g_autoptr(JDBSchema) schema = NULL;
@@ -941,7 +957,7 @@ void JuleaDBInteractionWriter::AddEntriesForDailyGlobalStatsTable(
     // void *namesBuf = NULL;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
-    // auto batch2 = j_batch_new(semantics);
+    auto batch2 = j_batch_new(semantics);
 
     auto completeNamespace =
         g_strdup_printf("%s_%s", "adios2", projectNamespace.c_str());
@@ -964,9 +980,13 @@ void JuleaDBInteractionWriter::AddEntriesForDailyGlobalStatsTable(
     j_db_entry_set_field(entry, "day", &day, sizeof(day), NULL);
 
     SetDailyValues(entry, JuleaCDO, varName, year, month, day);
+
+    j_db_entry_insert(entry, batch2, NULL);
+    g_assert_true(j_batch_execute(batch2) == true);
     // j_db_schema_unref(schema);
     // j_db_entry_unref(entry);
     j_batch_unref(batch);
+    j_batch_unref(batch2);
     j_semantics_unref(semantics);
 }
 
