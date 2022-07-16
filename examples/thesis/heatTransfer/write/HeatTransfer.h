@@ -36,6 +36,8 @@ public:
     // return (1D) pointer to current T data without ghost cells, ndx*ndy
     // elements
     std::vector<double> data_noghost() const;
+    // return (1D) pointer to current T data, ndx+2 * ndy+2 elements
+    double *precipdata() const { return m_TCurrent[0]; };
 
     void printT(std::string message,
                 MPI_Comm comm) const; // debug: print local TCurrent on stdout
@@ -53,6 +55,12 @@ private:
     double **m_T2; // another 2D array
     double **m_TCurrent; // pointer to T1 or T2
     double **m_TNext;    // pointer to T2 or T1
+
+    double **m_P1; // 2D array (ndx+2) * (ndy+2) size, including ghost cells
+    double **m_P2; // another 2D array
+    double **m_PCurrent; // pointer to P1 or P2
+    double **m_PNext;    // pointer to T2 or T1
+
     const Settings &m_s;
     void switchCurrentNext(); // switch the current array with the next array
 };

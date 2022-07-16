@@ -1036,8 +1036,8 @@ void JuleaDBInteractionWriter::InitDBSchemas(std::string projectNamespace,
         // std::cout << "variable schema does not exist" << std::endl;
         varSchema =
             j_db_schema_new(completeNamespace, "variable-metadata", NULL);
-        // AddFieldsForVariableMDEval(varSchema);
-        AddFieldsForVariableMD_Original(varSchema);
+        // AddFieldsForVariableMD_Original(varSchema);
+        AddFieldsForVariableMD_Eval(varSchema);
         j_db_schema_create(varSchema, batch, NULL);
         g_assert_true(j_batch_execute(batch) == true);
     }
@@ -1048,8 +1048,8 @@ void JuleaDBInteractionWriter::InitDBSchemas(std::string projectNamespace,
         // std::cout << "block schema does not exist" << std::endl;
         blockSchema =
             j_db_schema_new(completeNamespace, "block-metadata", NULL);
-        // AddFieldsForBlockMDEval(blockSchema);
-        AddFieldsForBlockMD_Original(blockSchema);
+        // AddFieldsForBlockMD_Original(blockSchema);
+        AddFieldsForBlockMD_Eval(blockSchema);
         j_db_schema_create(blockSchema, batch2, NULL);
         g_assert_true(j_batch_execute(batch2) == true);
     }

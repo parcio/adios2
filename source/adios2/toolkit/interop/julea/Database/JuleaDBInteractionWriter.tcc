@@ -93,7 +93,8 @@ void JuleaDBInteractionWriter::AddEntriesForTagTable(
         // TODO: implement
         break;
     case adios2::DataType::Double:
-        j_db_entry_set_field(entry, "stat_d", tmpData, sizeof(data), NULL);
+        j_db_entry_set_field(entry, "stat_d", &data, sizeof(data), NULL);
+        // j_db_entry_set_field(entry, "stat_d", tmpData, sizeof(data), NULL);
         break;
     case adios2::DataType::LongDouble:
     case adios2::DataType::FloatComplex:

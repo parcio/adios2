@@ -136,14 +136,13 @@ void JuleaCDO::ComputeDailyStats(std::string variableName)
         // get daily minimum
         adios2::helper::GetMinMax(m_HTempMin.data(), m_HTempMin.size(),
                                   dailyMin, tmp);
-        std::cout << "dailyMin: " << dailyMin << "\n";
         // get daily maximum
         adios2::helper::GetMinMax(m_HTempMax.data(), m_HTempMax.size(), tmp,
                                   dailyMax);
-        std::cout << "dailyMax: " << dailyMax << "\n";
-        dailyMean = std::accumulate(m_HTempMean.begin(), m_HTempMean.end(), 0) /
-                    m_StepsPerDay;
-        std::cout << "dailyMean: " << dailyMean << "\n";
+        // dailyMean = std::accumulate(m_HTempMean.begin(), m_HTempMean.end(), 0) /
+                    // m_StepsPerDay;
+        tmp = std::accumulate(m_HTempMean.begin(), m_HTempMean.end(), 0);
+        dailyMean = tmp/m_StepsPerDay;
 
         m_DTempMin.push_back(dailyMin);
         m_DTempMean.push_back(dailyMean);

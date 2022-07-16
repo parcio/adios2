@@ -62,15 +62,18 @@ void TestWriteVariableSync()
     // adios2::Engine juleaWriter = juleaIO.Open("testFile.jv", adios2::Mode::Write);
 
     /** Write variable for buffering */
-    juleaWriter.Put<float>(juleaFloats, myFloats.data(), adios2::Mode::Deferred);
     juleaWriter.Put<double>(juleaDoubles, myDoubles.data(), adios2::Mode::Deferred);
+
+    //TODO: uncommented to debug for eval setup
+    // juleaWriter.Put<float>(juleaFloats, myFloats.data(), adios2::Mode::Deferred);
+    // juleaWriter.Put<int>(juleaInts, myInts.data(), adios2::Mode::Deferred);
+    // juleaWriter.Put<int>(juleaInts2, myInts2.data(), adios2::Mode::Deferred);
+
     // juleaWriter.Put<float>(juleaFloats,
     // myFloats.data(),adios2::Mode::Deferred);
     // juleaWriter.Put<float>(juleaFloats2,
     // myFloats2.data(),adios2::Mode::Sync);
-    juleaWriter.Put<int>(juleaInts, myInts.data(), adios2::Mode::Deferred);
     // juleaWriter.Put<int>(juleaInts, myInts.data(),adios2::Mode::Deferred);
-    juleaWriter.Put<int>(juleaInts2, myInts2.data(), adios2::Mode::Deferred);
     // juleaWriter.Put<int>(juleaInts2, myInts2.data(),adios2::Mode::Deferred);
 
     /** Create bp file, engine becomes unreachable after this*/

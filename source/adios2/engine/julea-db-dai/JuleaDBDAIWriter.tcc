@@ -86,7 +86,7 @@ namespace engine
 //     // TODO implement?
 // }
 
-// had data parameter bur currently no way to indicate that tags should be set
+// had data parameter but currently no way to indicate that tags should be set
 // when actual data meets query. only works on min/max/mean/sum/var; not on data
 // buffer
 template <class T>
@@ -131,6 +131,7 @@ void JuleaDBDAIWriter::TaggingDataIfRequired(
             op = currentTag.m_Operator;
             granularity = currentTag.m_Granularity;
             threshold = currentTag.m_Threshold_d;
+
 
             // ----------------- Granularity -------------------------
             switch (granularity)
@@ -183,12 +184,15 @@ void JuleaDBDAIWriter::TaggingDataIfRequired(
                         // std::cout << "Debug: J_DAI_OP_LT reached \n";
                         if (blockMax < threshold)
                         {
+                            std::cout << "this case is called\n";
+                            std::cout << "blockMax: " << blockMax << "\n";
                             m_JuleaDBInteractionWriter.AddEntriesForTagTable(
                                 m_ProjectNamespace, tagName, fileName, varName,
                                 currentStep, blockID, blockMax);
                         }
                         break;
                     } // end op
+                    break;
                 case J_DAI_STAT_MEAN:
                     // ----------------- Operator
                     switch (op)
@@ -210,6 +214,7 @@ void JuleaDBDAIWriter::TaggingDataIfRequired(
                         }
                         break;
                     } // end op
+                    break;
                 case J_DAI_STAT_SUM:
                     // ----------------- Operator
                     switch (op)
@@ -231,6 +236,7 @@ void JuleaDBDAIWriter::TaggingDataIfRequired(
                         }
                         break;
                     } // end op
+                    break;
                 case J_DAI_STAT_VAR:
                     // ----------------- Operator
                     switch (op)
@@ -342,7 +348,8 @@ void JuleaDBDAIWriter::ManageBlockStepMetadata(Variable<T> &variable,
     }
 
     /** reduce only necessary if more than one process*/
-    if (m_WriterRank > 0)
+    if (m_Comm.Size() > 1)
+    // if (m_WriterRank > 0)
     {
         /** const T *sendbuf, T *recvbuf, size_t count, Op op, int root, const
         std::string &hint = std::string()) */
@@ -363,13 +370,23 @@ void JuleaDBDAIWriter::ManageBlockStepMetadata(Variable<T> &variable,
         //     m_Comm.Reduce(&blockMean, &stepSum, 1, helper::Comm::Op::Sum, 0);
         //     m_HPrecSum.push_back(stepSum);
         // }
-    }
-
     if (!m_IsOriginalFormat)
     {
+        
         stepMean = stepSum / (number_elements * m_Comm.Size());
         stepVar = stepSumSquares / (number_elements * m_Comm.Size());
     }
+    }
+    else if (m_Comm.Size() == 1)
+    {
+        stepMin = blockMin;
+        stepMax = blockMax;
+        stepMean = blockMean;
+        stepSum = blockSum;
+        stepSumSquares = blockSumSquares;
+        stepVar = blockVar;
+    }
+
 
     if (stepMin < variable.m_Min)
     {
@@ -570,6 +587,7 @@ void JuleaDBDAIWriter::PutSyncToJulea(
         // m_IsOriginalFormat determines which MD to compute
         ManageBlockStepMetadata(variable, data, blockMin, blockMax, blockMean,
                                 blockSum, blockVar);
+        // std::cout << "m_CurrentBlockID: " << m_CurrentBlockID << "   blockMax: " << blockMax <<   "\n";     
         TaggingDataIfRequired(m_Name, variable.m_Name, m_CurrentStep,
                               m_CurrentBlockID, blockMin, blockMax, blockMean,
                               blockSum, blockVar);

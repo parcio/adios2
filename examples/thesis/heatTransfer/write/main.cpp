@@ -41,23 +41,26 @@ void printUsage()
 
 void SetupDAI(std::string projectNamespace, std::string fileName)
 {
-    // j_dai_init(projectNamespace.c_str());
+    j_dai_init(projectNamespace.c_str());
 
     // j_dai_create_project_namespace(projectNamespace.c_str());
 
     j_dai_add_tag_d(projectNamespace.c_str(), "ColderThanMinus12", fileName.c_str(), "T",
                     J_DAI_GRAN_BLOCK, J_DAI_STAT_MAX,
                     J_DAI_OP_LT, -12.0);
-    j_dai_pc_ic(projectNamespace.c_str(), fileName.c_str(), "T",
-                (JDAIClimateIndex)(J_DAI_CI_SU | J_DAI_CI_FD | J_DAI_CI_ID |
-                                   J_DAI_CI_TR));
-    j_dai_compute_stats_combined(projectNamespace.c_str(), fileName.c_str(),
-                                 "T");
     j_dai_pc_stat(
         projectNamespace.c_str(), "computeAllForT", fileName.c_str(), "T", J_DAI_GRAN_BLOCK,
         (JDAIStatistic)(J_DAI_STAT_MIN | J_DAI_STAT_MAX | J_DAI_STAT_MEAN |
                         J_DAI_STAT_SUM | J_DAI_STAT_VAR),
         0);
+    j_dai_pc_ic(projectNamespace.c_str(), fileName.c_str(), "T",
+                (JDAIClimateIndex)(J_DAI_CI_SU | J_DAI_CI_FD | J_DAI_CI_ID |
+                                   J_DAI_CI_TR));
+    //  j_dai_pc_ic(
+        // projectNamespace.c_str(), fileName.c_str(), "P",
+        // (JDAIClimateIndex)(J_DAI_CI_PR1 | J_DAI_CI_PR10 | J_DAI_CI_PR20));
+    j_dai_compute_stats_combined(projectNamespace.c_str(), fileName.c_str(),
+                                 "T");
 }
 
 int main(int argc, char *argv[])
@@ -89,7 +92,10 @@ int main(int argc, char *argv[])
         Settings settings(argc, argv, rank, nproc);
         HeatTransfer ht(settings);
 
-        SetupDAI("Thesis_eval", settings.outputfile);
+        if (wrank == 0)
+        {
+            SetupDAI("Thesis_eval", settings.outputfile);
+        }
 
         IO io(settings, mpiHeatTransferComm);
 

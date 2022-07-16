@@ -22,6 +22,7 @@ using namespace std::chrono;
 adios2::ADIOS ad;
 adios2::Engine bpWriter;
 adios2::Variable<double> varT;
+adios2::Variable<double> varP;
 adios2::Variable<unsigned int> varGndx;
 
 IO::IO(const Settings &s, MPI_Comm comm)
@@ -60,6 +61,21 @@ IO::IO(const Settings &s, MPI_Comm comm)
     if (bpio.EngineType() == "BP3")
     {
         varT.SetMemorySelection({{1, 1}, {s.ndx + 2, s.ndy + 2}});
+    }
+
+    // define T as 2D global array
+    varP = bpio.DefineVariable<double>(
+        "P",
+        // Global dimensions
+        {s.gndx, s.gndy},
+        // starting offset of the local array in the global space
+        {s.offsx, s.offsy},
+        // local size, could be defined later using SetSelection()
+        {s.ndx, s.ndy});
+
+    if (bpio.EngineType() == "BP3")
+    {
+        varP.SetMemorySelection({{1, 1}, {s.ndx + 2, s.ndy + 2}});
     }
 
     bpWriter = bpio.Open(m_outputfilename, adios2::Mode::Write, comm);
@@ -110,6 +126,7 @@ void IO::write(int step, const HeatTransfer &ht, const Settings &s,
 
         startPut = high_resolution_clock::now();
         bpWriter.Put<double>(varT, ht.data());
+        bpWriter.Put<double>(varP, ht.data());
         stopPut = high_resolution_clock::now();
 
         startEndStep = high_resolution_clock::now();
