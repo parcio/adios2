@@ -182,6 +182,11 @@ if(ADIOS2_HAVE_JULEA)
       engine/julea-db-dai/JuleaDBDAIWriter.cpp
       engine/julea-db-dai/JuleaDBDAIWriter.tcc
 
+      engine/julea-kv/JuleaKVReader.cpp
+      engine/julea-kv/JuleaKVReader.tcc
+      engine/julea-kv/JuleaKVWriter.cpp
+      engine/julea-kv/JuleaKVWriter.tcc
+
       # engine/julea-db-do/JuleaDB-DO-Reader.cpp
       # engine/julea-db-do/JuleaDB-DO-Reader.tcc
       # engine/julea-db-do/JuleaDB-DO-Writer.cpp

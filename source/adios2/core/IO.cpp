@@ -52,6 +52,8 @@
 #ifdef ADIOS2_HAVE_JULEA // external dependencies
 // #include "adios2/engine/julea-kv-old/JuleaKVReader.h"
 // #include "adios2/engine/julea-kv-old/JuleaKVWriter.h"
+#include "adios2/engine/julea-kv/JuleaKVReader.h"
+#include "adios2/engine/julea-kv/JuleaKVWriter.h"
 #include "adios2/engine/julea-db/JuleaDBReader.h"
 #include "adios2/engine/julea-db/JuleaDBWriter.h"
 #include "adios2/engine/julea-db-dai/JuleaDBDAIReader.h"
@@ -123,14 +125,14 @@ std::unordered_map<std::string, IO::EngineFactoryEntry> Factory = {
                        "Sst library, can't use Sst engine\n")
 #endif
     },
-//     {"julea-kv",
-// #ifdef ADIOS2_HAVE_JULEA
-//      {IO::MakeEngine<engine::JuleaKVReader>, IO::MakeEngine<engine::JuleaKVWriter>}
-// #else
-//      IO::NoEngineEntry("ERROR: this version didn't compile with "
-//                        "JULEA library, can't use JULEA key-value (julea-kv) engine\n")
-// #endif
-//     },
+    {"julea-kv",
+#ifdef ADIOS2_HAVE_JULEA
+     {IO::MakeEngine<engine::JuleaKVReader>, IO::MakeEngine<engine::JuleaKVWriter>}
+#else
+     IO::NoEngineEntry("ERROR: this version didn't compile with "
+                       "JULEA library, can't use JULEA key-value (julea-kv) engine\n")
+#endif
+    },
     {"julea-db",
 #ifdef ADIOS2_HAVE_JULEA
      {IO::MakeEngine<engine::JuleaDBReader>, IO::MakeEngine<engine::JuleaDBWriter>}
