@@ -53,7 +53,7 @@ JuleaDBDAIReader::JuleaDBDAIReader(IO &io, const std::string &name,
 
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea DB Reader " << m_ReaderRank << " Open(" << m_Name
+        std::cout << "JDB Reader " << m_ReaderRank << " Open(" << m_Name
                   << ") in constructor." << std::endl;
     }
 
@@ -66,7 +66,7 @@ JuleaDBDAIReader::~JuleaDBDAIReader()
     /* m_Skeleton deconstructor does close and finalize */
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea DB Reader " << m_ReaderRank << " deconstructor on "
+        std::cout << "JDB Reader " << m_ReaderRank << " deconstructor on "
                   << m_Name << "\n";
     }
 }
@@ -113,7 +113,7 @@ size_t JuleaDBDAIReader::CurrentStep() const
     // std::cout << "JULEA ENGINE: CurrentStep" << std::endl;
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea DB Reader " << m_ReaderRank
+        std::cout << "JDB Reader " << m_ReaderRank
                   << "   CurrentStep() returns " << m_CurrentStep << "\n";
     }
     return m_CurrentStep;
@@ -125,7 +125,7 @@ void JuleaDBDAIReader::EndStep()
     {
         std::cout << "\n______________EndStep _____________________"
                   << std::endl;
-        std::cout << "Julea DB Reader " << m_ReaderRank << "   EndStep()\n";
+        std::cout << "JDB Reader " << m_ReaderRank << "   EndStep()\n";
     }
 
     if (m_DeferredVariables.size() > 0)
@@ -142,7 +142,7 @@ void JuleaDBDAIReader::PerformGets()
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea DB Reader " << m_ReaderRank
+        std::cout << "JDB Reader " << m_ReaderRank
                   << "     PerformGets()\n";
     }
 
@@ -216,13 +216,13 @@ void JuleaDBDAIReader::Init()
         std::cout << "\n*********************** JULEA ENGINE READER "
                      "*************************"
                   << std::endl;
-        std::cout << "JULEA DB READER: Init" << std::endl;
+        std::cout << "JDB READER: Init" << std::endl;
         std::cout
             << "      .___. \n     /     \\ \n    | O _ O | \n    /  \\_/  \\ \n  .' / \
     \\ `. \n / _|       |_ \\ \n(_/ |       | \\_) \n    \\       / \n   __\\_>-<_/__ \
          \n   ~;/     \\;~"
             << std::endl;
-        std::cout << "JULEA DB READER: Namespace = " << m_Name << std::endl;
+        std::cout << "JDB READER: Namespace = " << m_Name << std::endl;
     }
 
     // if (m_DebugMode)
@@ -263,7 +263,7 @@ void JuleaDBDAIReader::InitParameters()
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea DB Reader " << m_ReaderRank
+        std::cout << "JDB Reader " << m_ReaderRank
                   << " InitParameters()\n";
     }
 }
@@ -273,7 +273,7 @@ void JuleaDBDAIReader::InitTransports()
     // Nothing to process from m_IO.m_TransportsParameters
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea DB Reader " << m_ReaderRank
+        std::cout << "JDB Reader " << m_ReaderRank
                   << " InitTransports()\n";
     }
 }
@@ -282,7 +282,7 @@ void JuleaDBDAIReader::DoClose(const int transportIndex)
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea DB Reader " << m_ReaderRank << " Close(" << m_Name
+        std::cout << "JDB Reader " << m_ReaderRank << " Close(" << m_Name
                   << ")\n";
     }
 }
