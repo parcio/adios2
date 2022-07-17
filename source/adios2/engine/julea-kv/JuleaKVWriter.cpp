@@ -16,10 +16,7 @@
 #include "adios2/toolkit/transport/file/FileFStream.h"
 
 #include <iostream>
-#include <julea-object.h> //needed?
 #include <numeric>
-
-// #include <julea-adios.h>
 
 namespace adios2
 {
@@ -28,18 +25,17 @@ namespace core
 namespace engine
 {
 
-JuleaKVWriter::JuleaKVWriter(IO &io, const std::string &name,
-                                   const Mode mode, helper::Comm comm)
+JuleaKVWriter::JuleaKVWriter(IO &io, const std::string &name, const Mode mode,
+                             helper::Comm comm)
 : Engine("JuleaKVWriter", io, name, mode, std::move(comm)),
-  //  m_JuleaDBInteractionWriter(m_Comm)
-  m_JuleaDBInteractionWriter(m_Comm), m_JuleaCDO(m_Comm)
+  m_JuleaKVInteractionWriter(m_Comm), m_JuleaCDO(m_Comm)
 {
     m_WriterRank = m_Comm.Rank();
     Init();
     if (m_Verbosity == 5)
     {
         m_Comm.Barrier();
-        std::cout << "JDB Writer (" << m_WriterRank << ") : Open(" << m_Name
+        std::cout << "JKV Writer (" << m_WriterRank << ") : Open(" << m_Name
                   << ")." << std::endl;
     }
 }
@@ -49,7 +45,7 @@ JuleaKVWriter::~JuleaKVWriter()
     // DoClose();
     if (m_Verbosity == 5)
     {
-        std::cout << "JDB Writer (" << m_WriterRank << ") : deconstructor on "
+        std::cout << "JKV Writer (" << m_WriterRank << ") : deconstructor on "
                   << m_Name << " \n";
     }
 }
@@ -57,8 +53,7 @@ JuleaKVWriter::~JuleaKVWriter()
 /**
  * Begins a step. Clears the deferred variable set.
  */
-StepStatus JuleaKVWriter::BeginStep(StepMode mode,
-                                       const float timeoutSeconds)
+StepStatus JuleaKVWriter::BeginStep(StepMode mode, const float timeoutSeconds)
 {
     if (m_Verbosity == 5)
     {
@@ -69,7 +64,7 @@ StepStatus JuleaKVWriter::BeginStep(StepMode mode,
                 << m_CurrentStep << std::endl;
         }
         m_Comm.Barrier();
-        std::cout << "JDB Writer (" << m_WriterRank << ") : BeginStep() "
+        std::cout << "JKV Writer (" << m_WriterRank << ") : BeginStep() "
                   << "\n";
     }
 
@@ -89,7 +84,7 @@ size_t JuleaKVWriter::CurrentStep() const
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "JDB Writer (" << m_WriterRank
+        std::cout << "JKV Writer (" << m_WriterRank
                   << ") : CurrentStep() --- step = " << m_CurrentStep << "\n";
     }
     return m_CurrentStep;
@@ -102,7 +97,7 @@ void JuleaKVWriter::EndStep()
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "JDB Writer (" << m_WriterRank << ") : EndStep()\n";
+        std::cout << "JKV Writer (" << m_WriterRank << ") : EndStep()\n";
     }
 
     if (m_DeferredVariables.size() > 0)
@@ -139,7 +134,7 @@ void JuleaKVWriter::PerformPuts()
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "JDB Writer (" << m_WriterRank << ") : PerformPuts()\n";
+        std::cout << "JKV Writer (" << m_WriterRank << ") : PerformPuts()\n";
     }
 
     /** if there are no deferred variables there is nothing to do */
@@ -182,13 +177,12 @@ void JuleaKVWriter::PerformPuts()
  * Flushes the aggregated data.
  * @param transportIndex [description]
  */
-// void JuleaKVWriter::Flush()
 void JuleaKVWriter::Flush(const int transportIndex)
 {
 
     if (m_Verbosity == 5)
     {
-        std::cout << "JDB Writer (" << m_WriterRank << ") : Flush()\n";
+        std::cout << "JKV Writer (" << m_WriterRank << ") : Flush()\n";
     }
     DoFlush(false);
 
@@ -206,15 +200,14 @@ void JuleaKVWriter::Init()
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "JDB Writer (" << m_WriterRank << ") : Init()\n";
+        std::cout << "JKV Writer (" << m_WriterRank << ") : Init()\n";
         std::cout << "Note this is the DB DAI engine\n";
     }
 
     if (m_OpenMode == Mode::Append)
     {
-        throw std::invalid_argument(
-            "JuleaKVWriter: OpenMode   -- Append --   "
-            "hasn't been implemented, yet");
+        throw std::invalid_argument("JuleaKVWriter: OpenMode   -- Append --   "
+                                    "hasn't been implemented, yet");
     }
     if (m_Penguin == 42)
     {
@@ -244,29 +237,15 @@ void JuleaKVWriter::Init()
 
     if (m_WriterRank == 0)
     {
-        std::cout << "JDB Writer (" << m_WriterRank << ") : InitDBSchemas()\n";
-        // std::cout << "InitDBSchemas" << std::endl;
+        std::cout << "JKV Writer (" << m_WriterRank << ") : InitDBSchemas()\n";
         InitParameters();
-        InitDAI();
 
-        m_JuleaDBInteractionWriter.InitDBSchemas(m_ProjectNamespace,
-                                                 m_IsOriginalFormat);
-        // Init();
-        std::cout << "JDB Writer (" << m_WriterRank
-                  << ") : InitDBSchemas finished()\n";
+        m_JuleaKVInteractionWriter.InitKV(m_ProjectNamespace,
+                                          m_IsOriginalFormat);
+        std::cout << "JKV Writer (" << m_WriterRank
+                  << ") : InitKV finished()\n";
     }
-
-    // TODO: figuring out how communicator work in ADIOS when used with
-    // inheritance etc
-    //  m_JuleaCDO.Init(m_Comm);
-
-    // DAIInitDBSchemas();
-    // TODO: nothing happening in InitVariables
-    // InitVariables();
 }
-
-// void JuleaKVWriter::InitDB() { m_JuleaDBInteractionWriter.InitDBSchemas();
-// }
 
 /**TODO needed?
  * see BP3Base InitParameters
@@ -275,7 +254,7 @@ void JuleaKVWriter::InitParameters()
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "JDB Writer (Rank " << m_WriterRank
+        std::cout << "JKV Writer (Rank " << m_WriterRank
                   << ") : InitParameters()\n";
     }
     // std::cout << "JULEA ENGINE: Init Parameters" << std::endl;
@@ -310,21 +289,6 @@ void JuleaKVWriter::InitParameters()
     }
 }
 
-void JuleaKVWriter::InitDAI()
-{
-    if (m_Verbosity == 5)
-    {
-        std::cout << "JDB Writer (Rank " << m_WriterRank << ") : InitDAI()\n";
-    }
-    //     if (m_JuleaCDO.m_Tags.empty())
-    // {
-    //     m_JuleaCDO.m_HasTags = false;
-    // }
-    // else{
-    m_JuleaDBInteractionWriter.InitTagTables(m_ProjectNamespace);
-    // }
-}
-
 /**
  * [JuleaWriter::InitVariables description]
  */
@@ -333,7 +297,7 @@ void JuleaKVWriter::InitVariables()
     // TODO: do something here with deferredVariables?
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea DB Writer " << m_WriterRank << " InitVariables()\n";
+        std::cout << "Julea KV Writer " << m_WriterRank << " InitVariables()\n";
     }
 }
 
@@ -345,11 +309,11 @@ void JuleaKVWriter::InitVariables()
  */
 
 #define declare_type(T)                                                        \
-    void JuleaKVWriter::DoPutSync(Variable<T> &variable, const T *data)     \
+    void JuleaKVWriter::DoPutSync(Variable<T> &variable, const T *data)        \
     {                                                                          \
         if (m_Verbosity == 5)                                                  \
         {                                                                      \
-            std::cout << "JDB Writer (" << m_WriterRank                        \
+            std::cout << "JKV Writer (" << m_WriterRank                        \
                       << ") : DoPutSync()\n";                                  \
         }                                                                      \
         SetBlockID(variable);                                                  \
@@ -357,11 +321,11 @@ void JuleaKVWriter::InitVariables()
         variable.m_BlocksInfo.pop_back();                                      \
         m_CurrentBlockID++;                                                    \
     }                                                                          \
-    void JuleaKVWriter::DoPutDeferred(Variable<T> &variable, const T *data) \
+    void JuleaKVWriter::DoPutDeferred(Variable<T> &variable, const T *data)    \
     {                                                                          \
         if (m_Verbosity == 5)                                                  \
         {                                                                      \
-            std::cout << "JDB Writer (" << m_WriterRank                        \
+            std::cout << "JKV Writer (" << m_WriterRank                        \
                       << ") : DoPutDeferred()\n";                              \
         }                                                                      \
         PutDeferredCommon(variable, data);                                     \
@@ -377,7 +341,7 @@ void JuleaKVWriter::DoClose(const int transportIndex)
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "JDB Writer (" << m_WriterRank << ") : DoClose()\n";
+        std::cout << "JKV Writer (" << m_WriterRank << ") : DoClose()\n";
     }
     // TODO: free semantics
     /* Write deferred variables*/
@@ -403,7 +367,7 @@ void JuleaKVWriter::DoFlush(const bool isFinal, const int transportIndex)
     //     std::cout << "\n___DoFlush___"
     //               << std::endl;
     //     // std::cout << "Julea DB Writer " << m_WriterRank << " DoFlush \n";
-    //     std::cout << "JDB Writer (" << m_WriterRank << ") : DoFlush()\n";
+    //     std::cout << "JKV Writer (" << m_WriterRank << ") : DoFlush()\n";
 
     // }
     // if (m_Aggregator.m_IsActive)
@@ -437,7 +401,7 @@ void JuleaKVWriter::InitParameterFlushStepsCount(const std::string value)
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "JDB Writer (" << m_WriterRank
+        std::cout << "JKV Writer (" << m_WriterRank
                   << ") : InitParameterFlushStepsCount()\n";
     }
 

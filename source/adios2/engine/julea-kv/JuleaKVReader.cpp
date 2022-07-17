@@ -33,8 +33,8 @@ namespace engine
 // : Engine("JuleaKVReader", io, name, mode, mpiComm),
 //   m_BP3Deserializer(mpiComm, m_DebugMode)
 
-JuleaKVReader::JuleaKVReader(IO &io, const std::string &name,
-                                   const Mode mode, helper::Comm comm)
+JuleaKVReader::JuleaKVReader(IO &io, const std::string &name, const Mode mode,
+                             helper::Comm comm)
 : Engine("JuleaKVReader", io, name, mode, std::move(comm)),
   m_JuleaDBInteractionReader(m_Comm)
 
@@ -72,7 +72,7 @@ JuleaKVReader::~JuleaKVReader()
 }
 
 StepStatus JuleaKVReader::BeginStep(const StepMode mode,
-                                       const float timeoutSeconds)
+                                    const float timeoutSeconds)
 {
     // if (m_DebugMode)
     // {
@@ -198,11 +198,11 @@ void JuleaKVReader::PerformGets()
 }
 
 #define declare_type(T)                                                        \
-    void JuleaKVReader::DoGetSync(Variable<T> &variable, T *data)           \
+    void JuleaKVReader::DoGetSync(Variable<T> &variable, T *data)              \
     {                                                                          \
         GetSyncCommon(variable, data);                                         \
     }                                                                          \
-    void JuleaKVReader::DoGetDeferred(Variable<T> &variable, T *data)       \
+    void JuleaKVReader::DoGetDeferred(Variable<T> &variable, T *data)          \
     {                                                                          \
         GetDeferredCommon(variable, data);                                     \
     }
@@ -289,18 +289,18 @@ void JuleaKVReader::DoClose(const int transportIndex)
 
 #define declare_type(T)                                                        \
     std::map<size_t, std::vector<typename Variable<T>::Info>>                  \
-    JuleaKVReader::DoAllStepsBlocksInfo(const Variable<T> &variable) const  \
+    JuleaKVReader::DoAllStepsBlocksInfo(const Variable<T> &variable) const     \
     {                                                                          \
         return AllStepsBlocksInfo(variable);                                   \
     }                                                                          \
     std::vector<std::vector<typename Variable<T>::Info>>                       \
-    JuleaKVReader::DoAllRelativeStepsBlocksInfo(                            \
-        const Variable<T> &variable) const                                     \
+    JuleaKVReader::DoAllRelativeStepsBlocksInfo(const Variable<T> &variable)   \
+        const                                                                  \
     {                                                                          \
         return AllRelativeStepsBlocksInfo(variable);                           \
     }                                                                          \
                                                                                \
-    std::vector<typename Variable<T>::Info> JuleaKVReader::DoBlocksInfo(    \
+    std::vector<typename Variable<T>::Info> JuleaKVReader::DoBlocksInfo(       \
         const Variable<T> &variable, const size_t step) const                  \
     {                                                                          \
         return BlocksInfo(variable, step);                                     \

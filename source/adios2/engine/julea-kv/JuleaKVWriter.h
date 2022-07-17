@@ -12,10 +12,9 @@
 #define ADIOS2_ENGINE_JuleaKVWriter_H_
 
 #include "adios2/core/Engine.h"
-#include "adios2/toolkit/interop/julea/KeyValue/JuleaKVInteractionWriter.h"
-#include "adios2/toolkit/interop/julea/Database/JuleaDBInteractionWriter.h"
 #include "adios2/toolkit/interop/julea/JuleaCDO.h"
 #include "adios2/toolkit/interop/julea/JuleaInteraction.h"
+#include "adios2/toolkit/interop/julea/KeyValue/JuleaKVInteractionWriter.h"
 
 #include "adios2/toolkit/transportman/TransportMan.h" //transport::TransportsMan
 
@@ -43,7 +42,7 @@ public:
      * @param debugMode
      */
     JuleaKVWriter(IO &adios, const std::string &name, const Mode mode,
-                     helper::Comm comm);
+                  helper::Comm comm);
 
     ~JuleaKVWriter(); // was =default -> meaning?
 
@@ -55,7 +54,7 @@ public:
     void Flush(const int transportIndex = -1) final;
 
 private:
-    interop::JuleaDBInteractionWriter m_JuleaDBInteractionWriter;
+    interop::JuleaKVInteractionWriter m_JuleaKVInteractionWriter;
     interop::JuleaCDO m_JuleaCDO;
 
     // TODO: set namespace

@@ -28,7 +28,7 @@ namespace engine
 // is separate data stored which needs to be read or just metadata?
 template <>
 void JuleaKVReader::GetSyncCommon(Variable<std::string> &variable,
-                                     std::string *data)
+                                  std::string *data)
 {
     if (m_Verbosity == 5)
     {
@@ -215,7 +215,7 @@ void JuleaKVReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
 
 template <class T>
 void JuleaKVReader::ReadBlockMD(typename core::Variable<T>::Info &blockInfo,
-                                   size_t blockID)
+                                size_t blockID)
 {
     // if (m_Verbosity == 5)
     // {
@@ -483,9 +483,9 @@ JuleaKVReader::AllStepsBlocksInfo(const core::Variable<T> &variable) const
 
 template <class T>
 std::vector<typename core::Variable<T>::Info>
-JuleaKVReader::BlocksInfoCommon(
-    const core::Variable<T> &variable,
-    const std::vector<size_t> &blocksIndexOffsets, size_t step) const
+JuleaKVReader::BlocksInfoCommon(const core::Variable<T> &variable,
+                                const std::vector<size_t> &blocksIndexOffsets,
+                                size_t step) const
 {
     if (m_Verbosity == 5)
     {
@@ -553,7 +553,7 @@ JuleaKVReader::AllRelativeStepsBlocksInfo(
 template <class T>
 std::vector<typename core::Variable<T>::Info>
 JuleaKVReader::BlocksInfo(const core::Variable<T> &variable,
-                             const size_t step) const
+                          const size_t step) const
 {
     if (m_Verbosity == 5)
     {

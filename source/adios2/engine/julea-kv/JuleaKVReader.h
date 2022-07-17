@@ -49,7 +49,7 @@ public:
      * @param hostLanguage
      */
     JuleaKVReader(IO &adios, const std::string &name, const Mode mode,
-                     helper::Comm comm);
+                  helper::Comm comm);
 
     ~JuleaKVReader();
     // StepStatus BeginStep(StepMode mode = StepMode::NextAvailable,
