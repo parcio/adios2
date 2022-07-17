@@ -550,7 +550,7 @@ JuleaDBInteractionReader::GetBlockMetadata(
         // std::cout << "tmpBool: " << &tmpBool << " \n";
         if (info->IsValue)
         {
-            std::cout << "Get Value from DB" << std::endl;
+            // std::cout << "Get Value from DB" << std::endl;
             j_db_iterator_get_field(iterator, valueField.c_str(), &type,
                                     (gpointer *)&value, &db_length, NULL);
             info->Value = *value;

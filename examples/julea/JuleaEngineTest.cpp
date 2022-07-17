@@ -133,8 +133,6 @@ void TestReadVariableSync()
 
     if (juleaDoubles)
     {
-        std::cout << "Right before reading" << std::endl;
-
         juleaReader.Get<double>(juleaDoubles, myDoubles.data(),
                                adios2::Mode::Sync);
     //TODO: uncommented for eval setup

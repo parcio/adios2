@@ -242,7 +242,7 @@ void JuleaDBDAIReader::Init()
 
     // InitParameters();
     // InitTransports();
-    m_JuleaDBInteractionReader.CheckSchemas();
+    m_JuleaDBInteractionReader.CheckSchemas(m_ProjectNamespace);
     InitVariables();
     // InitAttributes(); //TODO
 }

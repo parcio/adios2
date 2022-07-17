@@ -54,7 +54,7 @@ public:
                               std::string type, Dims shape, Dims start,
                               Dims count, bool constantDims, bool isLocalValue);
 
-    void CheckSchemas();
+    void CheckSchemas(std::string projectNamespace);
 
     void InitVariablesFromDB(const std::string projectNamespace,
                              const std::string fileName, core::IO *io,

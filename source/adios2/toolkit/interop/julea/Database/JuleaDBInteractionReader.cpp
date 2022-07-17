@@ -32,7 +32,7 @@ namespace interop
 JuleaDBInteractionReader::JuleaDBInteractionReader(helper::Comm const &comm)
 : JuleaInteraction(std::move(comm))
 {
-    std::cout << "This is the constructor of the reader" << std::endl;
+    // std::cout << "This is the constructor of the reader" << std::endl;
 }
 
 void InitVariable(core::IO *io, core::Engine &engine,
@@ -42,7 +42,7 @@ void InitVariable(core::IO *io, core::Engine &engine,
                   bool isReadAsJoined, bool isReadAsLocalValue,
                   bool isRandomAccess, bool isSingleValue)
 {
-    std::cout << "----- InitVariable --- " << varName << std::endl;
+    // std::cout << "----- InitVariable --- " << varName << std::endl;
     const adios2::DataType type(io->InquireVariableType(varName));
 
     // std::cout << "type(io->InquireVariableType(varName): " << type <<
@@ -69,23 +69,18 @@ void InitVariable(core::IO *io, core::Engine &engine,
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
-    auto completeBlockNamespace =
+    auto blockNamespace =
         g_strdup_printf("%s_%s", "adios2", projectNamespace.c_str());
-    blockSchema =
-        j_db_schema_new(completeBlockNamespace, "block-metadata", NULL);
-    // blockSchema = j_db_schema_new("adios2", "block-metadata", NULL);
+    blockSchema = j_db_schema_new(blockNamespace, "block-metadata", NULL);
     j_db_schema_get(blockSchema, batch, NULL);
     err = j_batch_execute(batch);
 
-    auto completeVarNamespace =
+    auto varNamespace =
         g_strdup_printf("%s_%s", "adios2", projectNamespace.c_str());
-    varSchema =
-        j_db_schema_new(completeVarNamespace, "variable-metadata", NULL);
+    varSchema = j_db_schema_new(varNamespace, "variable-metadata", NULL);
     j_db_schema_get(varSchema, batch, NULL);
     err = j_batch_execute(batch);
 
-    std::cout << "completeBlockNamespace: " << completeBlockNamespace << "\n";
-    std::cout << "completeVarNamespace: " << completeVarNamespace << "\n";
     std::string minField;
     std::string maxField;
     std::string valueField;
@@ -126,10 +121,8 @@ void InitVariable(core::IO *io, core::Engine &engine,
                                             sizeof(block), NULL);              \
                     g_autoptr(JDBIterator) iterator =                          \
                         j_db_iterator_new(blockSchema, selector, NULL);        \
-                    std::cout << "before first iterator\n";                    \
                     while (j_db_iterator_next(iterator, NULL))                 \
                     {                                                          \
-                        std::cout << "first iterator\n";                       \
                         j_db_iterator_get_field(iterator, "_id", &jdbType,     \
                                                 (gpointer *)&tmpID,            \
                                                 &db_length, NULL);             \
@@ -157,10 +150,8 @@ void InitVariable(core::IO *io, core::Engine &engine,
                                                                                \
             g_autoptr(JDBIterator) iterator =                                  \
                 j_db_iterator_new(varSchema, selector, NULL);                  \
-            std::cout << "before second iterator\n";                           \
             while (j_db_iterator_next(iterator, NULL))                         \
             {                                                                  \
-                std::cout << "second iterator\n";                              \
                 T *min;                                                        \
                 T *max;                                                        \
                 j_db_iterator_get_field(iterator, minField.c_str(), &jdbType,  \
@@ -215,7 +206,12 @@ void DefineVariableInEngineIO(core::IO *io, const std::string varName,
     // variable->m_AvailableShapes[characteristics.Statistics.Step] = \
                 //     variable->m_Shape;                                         \
 
-    std::cout << "--- DBDefineVariableInEngineIO" << std::endl;
+    // std::cout << "--- DBDefineVariableInEngineIO" << std::endl;
+                // std::cout << "ShapeID = GlobalValue" << std::endl;             \
+                // std::cout << "ShapeID = GlobalArray" << std::endl;             \
+                // std::cout << "ShapeID = LocalValue" << std::endl;              \
+                // std::cout << "ShapeID = LocalArray" << std::endl;              \
+
     if (type == DataType::Compound)
     {
     }
@@ -227,24 +223,20 @@ void DefineVariableInEngineIO(core::IO *io, const std::string varName,
             switch (shapeID)                                                   \
             {                                                                  \
             case (ShapeID::GlobalValue): {                                     \
-                std::cout << "ShapeID = GlobalValue" << std::endl;             \
                 variable = &io->DefineVariable<T>(varName);                    \
                 break;                                                         \
             }                                                                  \
             case (ShapeID::GlobalArray): {                                     \
-                std::cout << "ShapeID = GlobalArray" << std::endl;             \
                 variable = &io->DefineVariable<T>(                             \
                     varName, shape, Dims(shape.size(), 0), shape);             \
                 break;                                                         \
             }                                                                  \
             case (ShapeID::LocalValue): {                                      \
-                std::cout << "ShapeID = LocalValue" << std::endl;              \
                 variable = &io->DefineVariable<T>(varName, {1}, {0}, {1});     \
                 variable->m_ShapeID = ShapeID::LocalValue;                     \
                 break;                                                         \
             }                                                                  \
             case (ShapeID::LocalArray): {                                      \
-                std::cout << "ShapeID = LocalArray" << std::endl;              \
                 variable = &io->DefineVariable<T>(varName, {}, {}, count);     \
                 break;                                                         \
             }                                                                  \
@@ -479,7 +471,7 @@ void JuleaDBInteractionReader::DefineVariableInInit(
     // }
 }
 
-void JuleaDBInteractionReader::CheckSchemas()
+void JuleaDBInteractionReader::CheckSchemas(std::string projectNamespace)
 {
     // std::cout << "--- CheckSchemas" << std::endl;
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -488,13 +480,18 @@ void JuleaDBInteractionReader::CheckSchemas()
     g_autoptr(JDBSchema) varSchema = NULL;
     g_autoptr(JDBSchema) blockSchema = NULL;
 
-    varSchema = j_db_schema_new("adios2", "variable-metadata", NULL);
-    blockSchema = j_db_schema_new("adios2", "block-metadata", NULL);
+    auto varNamespace =
+        g_strdup_printf("%s_%s", "adios2", projectNamespace.c_str());
+    varSchema = j_db_schema_new(varNamespace, "variable-metadata", NULL);
+    auto blockNamespace =
+        g_strdup_printf("%s_%s", "adios2", projectNamespace.c_str());
+    blockSchema = j_db_schema_new(blockNamespace, "block-metadata", NULL);
+   
 
     j_db_schema_get(varSchema, batch, NULL);
     bool existsVar = j_batch_execute(batch);
-    j_db_schema_get(blockSchema, batch, NULL);
 
+    j_db_schema_get(blockSchema, batch, NULL);
     bool existsBlock = j_batch_execute(batch);
 
     if ((existsVar == 0) || (existsBlock == 0))
@@ -507,7 +504,7 @@ void JuleaDBInteractionReader::InitVariablesFromDB(
     const std::string projectNamespace, const std::string fileName,
     core::IO *io, core::Engine &engine)
 {
-    std::cout << "--- InitVariablesFromDB ---" << std::endl;
+    // std::cout << "--- InitVariablesFromDB ---" << std::endl;
     // int rank = engine.m_Comm.Rank();
     // int MPISize = engine.m_Comm.Size();
 
@@ -548,7 +545,6 @@ void JuleaDBInteractionReader::InitVariablesFromDB(
     auto completeNamespace =
         g_strdup_printf("%s_%s", "adios2", projectNamespace.c_str());
     schema = j_db_schema_new(completeNamespace, "variable-metadata", NULL);
-    std::cout << "completeNamespace: " << completeNamespace << "\n";
     j_db_schema_get(schema, batch, NULL);
     err = j_batch_execute(batch);
 
@@ -560,7 +556,6 @@ void JuleaDBInteractionReader::InitVariablesFromDB(
                             fileName.c_str(), strlen(fileName.c_str()) + 1,
                             NULL);
     iterator = j_db_iterator_new(schema, selector, NULL);
-    std::cout << "filename: " << fileName << "\n";
 
     int i = 0;
     while (j_db_iterator_next(iterator, NULL))
@@ -569,7 +564,6 @@ void JuleaDBInteractionReader::InitVariablesFromDB(
         Dims start;
         Dims count;
         // localValue = false;
-        std::cout << "Debug 1 \n";
         j_db_iterator_get_field(iterator, "variableName", &type,
                                 (gpointer *)&varName, &db_length, NULL);
 
@@ -726,7 +720,7 @@ void JuleaDBInteractionReader::GetNamesFromJulea(
     const std::string projectNamespace, const std::string fileName,
     bson_t **bsonNames, unsigned int *varCount, bool isVariable)
 {
-    std::cout << "-- GetNamesFromJulea ------" << std::endl;
+    // std::cout << "-- GetNamesFromJulea ------" << std::endl;
     guint32 valueLen = 0;
     int err = 0;
     void *namesBuf = NULL;
@@ -745,7 +739,6 @@ void JuleaDBInteractionReader::GetNamesFromJulea(
     }
 
     auto kvObject = j_kv_new(kvName.c_str(), fileName.c_str());
-    std::cout << "kvName :" << kvName << std::endl;
 
     j_kv_get(kvObject, &namesBuf, &valueLen, batch);
     err = j_batch_execute(batch);
