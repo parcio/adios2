@@ -81,6 +81,7 @@ public:
     template <class T>
     std::unique_ptr<typename core::Variable<T>::Info>
     GetBlockMetadata(const core::Variable<T> &variable,
+                     std::string projectNamespace,
                      // const std::string nameSpace, size_t step, size_t block,
                      size_t entryID) const;
 
@@ -125,7 +126,8 @@ private:
         size_t entryID, bool isLocalValue, T *value);                          \
     extern template std::unique_ptr<typename core::Variable<T>::Info>          \
     JuleaDBInteractionReader::GetBlockMetadata(                                \
-        const core::Variable<T> &variable, size_t entryID) const;              \
+        const core::Variable<T> &variable, std::string projectNamespace,       \
+        size_t entryID) const;                                                 \
                                                                                \
     extern template void JuleaDBInteractionReader::GetBlockMetadataNEW(        \
         core::Variable<T> &variable,                                           \

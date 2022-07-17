@@ -235,8 +235,10 @@ void JuleaDBDAIWriter::Init()
 
     if (m_JuleaCDO.m_Precomputes.empty())
     {
-        // m_IsOriginalFormat = true; //TODO: currently applications do not all use dai_precompute functions -> problem here, because mean etc will not get computed
-        
+        // m_IsOriginalFormat = true; //TODO: currently applications do not all
+        // use dai_precompute functions -> problem here, because mean etc will
+        // not get computed
+
         // ManageBlockStepMetadataOriginal(variable, data, blockMin, blockMax);
     }
 

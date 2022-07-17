@@ -132,7 +132,6 @@ void JuleaDBDAIWriter::TaggingDataIfRequired(
             granularity = currentTag.m_Granularity;
             threshold = currentTag.m_Threshold_d;
 
-
             // ----------------- Granularity -------------------------
             switch (granularity)
             {
@@ -370,12 +369,12 @@ void JuleaDBDAIWriter::ManageBlockStepMetadata(Variable<T> &variable,
         //     m_Comm.Reduce(&blockMean, &stepSum, 1, helper::Comm::Op::Sum, 0);
         //     m_HPrecSum.push_back(stepSum);
         // }
-    if (!m_IsOriginalFormat)
-    {
-        
-        stepMean = stepSum / (number_elements * m_Comm.Size());
-        stepVar = stepSumSquares / (number_elements * m_Comm.Size());
-    }
+        if (!m_IsOriginalFormat)
+        {
+
+            stepMean = stepSum / (number_elements * m_Comm.Size());
+            stepVar = stepSumSquares / (number_elements * m_Comm.Size());
+        }
     }
     else if (m_Comm.Size() == 1)
     {
@@ -386,7 +385,6 @@ void JuleaDBDAIWriter::ManageBlockStepMetadata(Variable<T> &variable,
         stepSumSquares = blockSumSquares;
         stepVar = blockVar;
     }
-
 
     if (stepMin < variable.m_Min)
     {
@@ -587,7 +585,8 @@ void JuleaDBDAIWriter::PutSyncToJulea(
         // m_IsOriginalFormat determines which MD to compute
         ManageBlockStepMetadata(variable, data, blockMin, blockMax, blockMean,
                                 blockSum, blockVar);
-        // std::cout << "m_CurrentBlockID: " << m_CurrentBlockID << "   blockMax: " << blockMax <<   "\n";     
+        // std::cout << "m_CurrentBlockID: " << m_CurrentBlockID << " blockMax:
+        // " << blockMax <<   "\n";
         TaggingDataIfRequired(m_Name, variable.m_Name, m_CurrentStep,
                               m_CurrentBlockID, blockMin, blockMax, blockMean,
                               blockSum, blockVar);

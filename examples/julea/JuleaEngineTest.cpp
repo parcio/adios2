@@ -85,6 +85,8 @@ void TestReadVariableSync()
     /** Application variable */
     std::vector<float> myFloats = {112, -42, -42, -42, -42,
                                    -42, -42, -42, -42, -42};
+    std::vector<double> myDoubles = {112, -42, -42, -42, -42,
+                                   -42, -42, -42, -42, -42};
     // std::vector<float> myFloats2 = {-42, -42, -42, -42, -42, -42, -42, -42,
     // -42, -42};
     std::vector<int> myInts = {113, -42, -42, -42, -42,
@@ -115,26 +117,34 @@ void TestReadVariableSync()
     // }
     /** global array: name, { shape (total dimensions) }, { start (local) },
      * { count (local) }, all are constant dimensions */
-    adios2::Variable<float> juleaFloats =
-        juleaIO.InquireVariable<float>("juleaFloats");
-    std::cout << "juleaFloats: " << juleaFloats << std::endl;
+
+
+    adios2::Variable<double> juleaDoubles = juleaIO.InquireVariable<double>("T");
     
+    //TODO: uncommented for eval setup
+    // adios2::Variable<float> juleaFloats =
+        // juleaIO.InquireVariable<float>("juleaFloats");
+    // std::cout << "juleaFloats: " << juleaFloats << std::endl;
     // adios2::Variable<float> juleaFloats2 = juleaIO.InquireVariable<float>(
     // "juleaFloats2");
-    adios2::Variable<int> juleaInts = juleaIO.InquireVariable<int>("juleaInts");
-    adios2::Variable<int> juleaInts2 = juleaIO.InquireVariable<int>(
-    "juleaInts2");
+    // adios2::Variable<int> juleaInts = juleaIO.InquireVariable<int>("juleaInts");
+    // adios2::Variable<int> juleaInts2 = juleaIO.InquireVariable<int>(
+    // "juleaInts2");
 
-    if (juleaFloats)
+    if (juleaDoubles)
     {
         std::cout << "Right before reading" << std::endl;
-        juleaReader.Get<float>(juleaFloats, myFloats.data(),
+
+        juleaReader.Get<double>(juleaDoubles, myDoubles.data(),
                                adios2::Mode::Sync);
+    //TODO: uncommented for eval setup
+        // juleaReader.Get<float>(juleaFloats, myFloats.data(),
+                            //    adios2::Mode::Sync);
+        // juleaReader.Get<int>(juleaInts, myInts.data(), adios2::Mode::Deferred);
+        // std::cout << "Data : " << juleaFloats.GetData() << std::endl;
+        // juleaReader.Get<int>(juleaInts2, myInts2.data(),adios2::Mode::Deferred);
         // juleaReader.Get<float>(juleaFloats2,
         // myFloats2.data(),adios2::Mode::Sync);
-        juleaReader.Get<int>(juleaInts, myInts.data(), adios2::Mode::Deferred);
-        // std::cout << "Data : " << juleaFloats.GetData() << std::endl;
-        juleaReader.Get<int>(juleaInts2, myInts2.data(),adios2::Mode::Deferred);
 
         juleaReader.PerformGets();
     }
@@ -144,24 +154,33 @@ void TestReadVariableSync()
         << "\n__________ Test application: Read variable __________________"
         << std::endl;
 
+
     for (int i = 0; i < 10; i++)
     {
-        std::cout << "juleaFloats contains now: " << myFloats[i] << std::endl;
+        std::cout << "juleaDoubles contains now: " << myDoubles[i] << std::endl;
         // std::cout << "juleaFloats2 contains now: " << myFloats2[i] <<
         // std::endl;
     }
     std::cout << "\n____________________________" << std::endl;
 
-    for (int i = 0; i < 10; i++)
-    {
-        std::cout << "juleaInts contains now: " << myInts[i] << std::endl;
-    }
-    std::cout << "\n____________________________" << std::endl;
+    // for (int i = 0; i < 10; i++)
+    // {
+    //     std::cout << "juleaFloats contains now: " << myFloats[i] << std::endl;
+    //     // std::cout << "juleaFloats2 contains now: " << myFloats2[i] <<
+    //     // std::endl;
+    // }
+    // std::cout << "\n____________________________" << std::endl;
 
-    for (int i = 0; i < 10; i++)
-    {
-        std::cout << "juleaInts2 contains now: " << myInts2[i] << std::endl;
-    }
+    // for (int i = 0; i < 10; i++)
+    // {
+    //     std::cout << "juleaInts contains now: " << myInts[i] << std::endl;
+    // }
+    // std::cout << "\n____________________________" << std::endl;
+
+    // for (int i = 0; i < 10; i++)
+    // {
+    //     std::cout << "juleaInts2 contains now: " << myInts2[i] << std::endl;
+    // }
     std::cout << std::endl;
     /** Create bp file, engine becomes unreachable after this*/
     juleaReader.Close();

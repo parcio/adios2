@@ -69,12 +69,23 @@ void InitVariable(core::IO *io, core::Engine &engine,
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
-    blockSchema = j_db_schema_new("adios2", "block-metadata", NULL);
+    auto completeBlockNamespace =
+        g_strdup_printf("%s_%s", "adios2", projectNamespace.c_str());
+    blockSchema =
+        j_db_schema_new(completeBlockNamespace, "block-metadata", NULL);
+    // blockSchema = j_db_schema_new("adios2", "block-metadata", NULL);
     j_db_schema_get(blockSchema, batch, NULL);
     err = j_batch_execute(batch);
-    varSchema = j_db_schema_new("adios2", "variable-metadata", NULL);
+
+    auto completeVarNamespace =
+        g_strdup_printf("%s_%s", "adios2", projectNamespace.c_str());
+    varSchema =
+        j_db_schema_new(completeVarNamespace, "variable-metadata", NULL);
     j_db_schema_get(varSchema, batch, NULL);
     err = j_batch_execute(batch);
+
+    std::cout << "completeBlockNamespace: " << completeBlockNamespace << "\n";
+    std::cout << "completeVarNamespace: " << completeVarNamespace << "\n";
     std::string minField;
     std::string maxField;
     std::string valueField;
@@ -102,10 +113,6 @@ void InitVariable(core::IO *io, core::Engine &engine,
                     g_autoptr(JDBSelector) selector = j_db_selector_new(       \
                         blockSchema, J_DB_SELECTOR_MODE_AND, NULL);            \
                     j_db_selector_add_field(                                   \
-                        selector, "projectNamespace",                          \
-                        J_DB_SELECTOR_OPERATOR_EQ, projectNamespace.c_str(),   \
-                        strlen(projectNamespace.c_str()) + 1, NULL);           \
-                    j_db_selector_add_field(                                   \
                         selector, "file", J_DB_SELECTOR_OPERATOR_EQ,           \
                         fileName.c_str(), strlen(fileName.c_str()) + 1, NULL); \
                     j_db_selector_add_field(                                   \
@@ -119,8 +126,10 @@ void InitVariable(core::IO *io, core::Engine &engine,
                                             sizeof(block), NULL);              \
                     g_autoptr(JDBIterator) iterator =                          \
                         j_db_iterator_new(blockSchema, selector, NULL);        \
+                    std::cout << "before first iterator\n";                    \
                     while (j_db_iterator_next(iterator, NULL))                 \
                     {                                                          \
+                        std::cout << "first iterator\n";                       \
                         j_db_iterator_get_field(iterator, "_id", &jdbType,     \
                                                 (gpointer *)&tmpID,            \
                                                 &db_length, NULL);             \
@@ -140,10 +149,6 @@ void InitVariable(core::IO *io, core::Engine &engine,
                 j_db_selector_new(varSchema, J_DB_SELECTOR_MODE_AND, NULL);    \
                                                                                \
             j_db_selector_add_field(                                           \
-                selector, "projectNamespace", J_DB_SELECTOR_OPERATOR_EQ,       \
-                projectNamespace.c_str(),                                      \
-                strlen(projectNamespace.c_str()) + 1, NULL);                   \
-            j_db_selector_add_field(                                           \
                 selector, "file", J_DB_SELECTOR_OPERATOR_EQ, fileName.c_str(), \
                 strlen(fileName.c_str()) + 1, NULL);                           \
             j_db_selector_add_field(                                           \
@@ -152,8 +157,10 @@ void InitVariable(core::IO *io, core::Engine &engine,
                                                                                \
             g_autoptr(JDBIterator) iterator =                                  \
                 j_db_iterator_new(varSchema, selector, NULL);                  \
+            std::cout << "before second iterator\n";                           \
             while (j_db_iterator_next(iterator, NULL))                         \
             {                                                                  \
+                std::cout << "second iterator\n";                              \
                 T *min;                                                        \
                 T *max;                                                        \
                 j_db_iterator_get_field(iterator, minField.c_str(), &jdbType,  \
@@ -538,18 +545,22 @@ void JuleaDBInteractionReader::InitVariablesFromDB(
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
-    schema = j_db_schema_new("adios2", "variable-metadata", NULL);
+    auto completeNamespace =
+        g_strdup_printf("%s_%s", "adios2", projectNamespace.c_str());
+    schema = j_db_schema_new(completeNamespace, "variable-metadata", NULL);
+    std::cout << "completeNamespace: " << completeNamespace << "\n";
     j_db_schema_get(schema, batch, NULL);
     err = j_batch_execute(batch);
 
     selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
-    j_db_selector_add_field(selector, "projectNamespace",
-                            J_DB_SELECTOR_OPERATOR_EQ, projectNamespace.c_str(),
-                            strlen(projectNamespace.c_str()) + 1, NULL);
+    // j_db_selector_add_field(selector, "projectNamespace",
+    // J_DB_SELECTOR_OPERATOR_EQ, projectNamespace.c_str(),
+    // strlen(projectNamespace.c_str()) + 1, NULL);
     j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ,
                             fileName.c_str(), strlen(fileName.c_str()) + 1,
                             NULL);
     iterator = j_db_iterator_new(schema, selector, NULL);
+    std::cout << "filename: " << fileName << "\n";
 
     int i = 0;
     while (j_db_iterator_next(iterator, NULL))
@@ -558,6 +569,7 @@ void JuleaDBInteractionReader::InitVariablesFromDB(
         Dims start;
         Dims count;
         // localValue = false;
+        std::cout << "Debug 1 \n";
         j_db_iterator_get_field(iterator, "variableName", &type,
                                 (gpointer *)&varName, &db_length, NULL);
 
@@ -779,7 +791,8 @@ void JuleaDBInteractionReader::GetNamesFromJulea(
         typename core::Variable<T>::Info &blockInfo, size_t entryID);          \
     template std::unique_ptr<typename core::Variable<T>::Info>                 \
     JuleaDBInteractionReader::GetBlockMetadata(                                \
-        const core::Variable<T> &variable, size_t entryID) const;
+        const core::Variable<T> &variable, std::string projectNamespace,       \
+        size_t entryID) const;
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 

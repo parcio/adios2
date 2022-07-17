@@ -512,7 +512,8 @@ JuleaDBDAIReader::BlocksInfoCommon(
 
         typename core::Variable<T>::Info info =
             // *DBGetBlockMetadata(variable, fileName, step, i, entryID);
-            *m_JuleaDBInteractionReader.GetBlockMetadata(variable, entryID);
+            *m_JuleaDBInteractionReader.GetBlockMetadata(
+                variable, m_ProjectNamespace, entryID);
         info.IsReverseDims = false;
         info.Step = step;
 
@@ -803,8 +804,8 @@ void JuleaDBDAIReader::SetVariableBlockInfo(
 
         // info = blockCharacteristics in BP3
         typename core::Variable<T>::Info info =
-            *m_JuleaDBInteractionReader.GetBlockMetadata(variable,
-                                                         blockIndexOffset);
+            *m_JuleaDBInteractionReader.GetBlockMetadata(
+                variable, m_ProjectNamespace, blockIndexOffset);
 
         // check if they intersect
         helper::SubStreamBoxInfo subStreamInfo;

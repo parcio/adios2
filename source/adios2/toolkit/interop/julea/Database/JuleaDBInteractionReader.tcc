@@ -155,6 +155,7 @@ void JuleaDBInteractionReader::GetBlockMetadataNEW(
 
     schema = j_db_schema_new("adios2", "block-metadata", NULL);
     j_db_schema_get(schema, batch, NULL);
+
     err = j_batch_execute(batch);
 
     selectorShort = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, NULL);
@@ -315,7 +316,7 @@ void JuleaDBInteractionReader::GetBlockMetadataNEW(
 template <class T>
 std::unique_ptr<typename core::Variable<T>::Info>
 JuleaDBInteractionReader::GetBlockMetadata(
-    const core::Variable<T> &variable,
+    const core::Variable<T> &variable, std::string projectNamespace,
     // const std::string nameSpace, size_t step, size_t block,
     size_t entryID) const
 {
@@ -335,6 +336,7 @@ JuleaDBInteractionReader::GetBlockMetadata(
     const char *varName = variable.m_Name.c_str();
 
     bool *isValue;
+    bool *tmpBool;
     T *min;
     T *max;
     T *value;
@@ -357,7 +359,11 @@ JuleaDBInteractionReader::GetBlockMetadata(
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
     auto batch = j_batch_new(semantics);
 
-    schema = j_db_schema_new("adios2", "block-metadata", NULL);
+    auto completeBlockNamespace =
+        g_strdup_printf("%s_%s", "adios2", projectNamespace.c_str());
+    schema = j_db_schema_new(completeBlockNamespace, "block-metadata", NULL);
+
+    // schema = j_db_schema_new("adios2", "block-metadata", NULL);
     j_db_schema_get(schema, batch, NULL);
     err = j_batch_execute(batch);
 
@@ -534,9 +540,17 @@ JuleaDBInteractionReader::GetBlockMetadata(
                                 (gpointer *)&isValue, &db_length, NULL);
 
         info->IsValue = *isValue;
-        if (isValue)
+        // std::cout << "isValue: " << isValue << " \n";
+        // std::cout << "isValue: " << *isValue << " \n";
+        // std::cout << "isValue: " << &isValue << " \n";
+
+        // *tmpBool = *isValue;
+        // std::cout << "tmpBool: " << tmpBool << " \n";
+        // std::cout << "tmpBool: " << *tmpBool << " \n";
+        // std::cout << "tmpBool: " << &tmpBool << " \n";
+        if (info->IsValue)
         {
-            // std::cout << "Get Value from DB" << std::endl;
+            std::cout << "Get Value from DB" << std::endl;
             j_db_iterator_get_field(iterator, valueField.c_str(), &type,
                                     (gpointer *)&value, &db_length, NULL);
             info->Value = *value;
@@ -566,7 +580,7 @@ JuleaDBInteractionReader::GetBlockMetadata(
             std::cout << "info->BlockID: " << info->BlockID << std::endl;
             std::cout << "info->IsValue: " << info->IsValue << std::endl;
         }
-        if (isValue)
+        if (info->IsValue)
         {
             g_free(value);
         }
