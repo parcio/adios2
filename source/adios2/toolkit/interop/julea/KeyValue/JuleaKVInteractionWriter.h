@@ -73,7 +73,6 @@ public:
 
     template <class T>
     void AppendMinMaxToBSON(core::Variable<T> &variable, bson_t *bsonMetadata);
-    
 
 private:
 }; // end namespace JuleaKVInteractionWriter

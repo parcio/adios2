@@ -29,7 +29,7 @@ namespace core
 namespace engine
 {
 
-class JuleaKVWriter : public core::Engine
+class JuleaKVWriter : public Engine
 {
 
 public:

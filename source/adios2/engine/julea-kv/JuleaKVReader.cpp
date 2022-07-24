@@ -9,7 +9,7 @@
  */
 
 #include "JuleaKVReader.h"
-// #include "JuleaDBDAIInteractionReader.h"
+// #include "JuleaKVDAIInteractionReader.h"
 #include "JuleaKVReader.tcc"
 
 #include "adios2/helper/adiosFunctions.h" // CSVToVector
@@ -36,7 +36,7 @@ namespace engine
 JuleaKVReader::JuleaKVReader(IO &io, const std::string &name, const Mode mode,
                              helper::Comm comm)
 : Engine("JuleaKVReader", io, name, mode, std::move(comm)),
-  m_JuleaDBInteractionReader(m_Comm)
+  m_JuleaKVInteractionReader(m_Comm)
 
 {
     // m_EndMessage = " in call to IO Open JuleaKVReader " + m_Name + "\n";
@@ -53,7 +53,7 @@ JuleaKVReader::JuleaKVReader(IO &io, const std::string &name, const Mode mode,
 
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea DB Reader " << m_ReaderRank << " Open(" << m_Name
+        std::cout << "JKV Reader " << m_ReaderRank << " Open(" << m_Name
                   << ") in constructor." << std::endl;
     }
 
@@ -66,7 +66,7 @@ JuleaKVReader::~JuleaKVReader()
     /* m_Skeleton deconstructor does close and finalize */
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea DB Reader " << m_ReaderRank << " deconstructor on "
+        std::cout << "JKV Reader " << m_ReaderRank << " deconstructor on "
                   << m_Name << "\n";
     }
 }
@@ -113,7 +113,7 @@ size_t JuleaKVReader::CurrentStep() const
     // std::cout << "JULEA ENGINE: CurrentStep" << std::endl;
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea DB Reader " << m_ReaderRank
+        std::cout << "JKV Reader " << m_ReaderRank
                   << "   CurrentStep() returns " << m_CurrentStep << "\n";
     }
     return m_CurrentStep;
@@ -125,7 +125,7 @@ void JuleaKVReader::EndStep()
     {
         std::cout << "\n______________EndStep _____________________"
                   << std::endl;
-        std::cout << "Julea DB Reader " << m_ReaderRank << "   EndStep()\n";
+        std::cout << "JKV Reader " << m_ReaderRank << "   EndStep()\n";
     }
 
     if (m_DeferredVariables.size() > 0)
@@ -142,8 +142,7 @@ void JuleaKVReader::PerformGets()
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea DB Reader " << m_ReaderRank
-                  << "     PerformGets()\n";
+        std::cout << "JKV Reader " << m_ReaderRank << "     PerformGets()\n";
     }
 
     /** if there are no deferred variables there is nothing to do */
@@ -216,13 +215,13 @@ void JuleaKVReader::Init()
         std::cout << "\n*********************** JULEA ENGINE READER "
                      "*************************"
                   << std::endl;
-        std::cout << "JULEA DB READER: Init" << std::endl;
+        std::cout << "JKV READER: Init" << std::endl;
         std::cout
             << "      .___. \n     /     \\ \n    | O _ O | \n    /  \\_/  \\ \n  .' / \
     \\ `. \n / _|       |_ \\ \n(_/ |       | \\_) \n    \\       / \n   __\\_>-<_/__ \
          \n   ~;/     \\;~"
             << std::endl;
-        std::cout << "JULEA DB READER: Namespace = " << m_Name << std::endl;
+        std::cout << "JKV READER: Namespace = " << m_Name << std::endl;
     }
 
     // if (m_DebugMode)
@@ -242,7 +241,7 @@ void JuleaKVReader::Init()
 
     // InitParameters();
     // InitTransports();
-    m_JuleaDBInteractionReader.CheckSchemas(m_ProjectNamespace);
+    // m_JuleaKVInteractionReader.CheckSchemas(m_ProjectNamespace);
     InitVariables();
     // InitAttributes(); //TODO
 }
@@ -255,16 +254,24 @@ void JuleaKVReader::Init()
 // template <class T>
 void JuleaKVReader::InitVariables()
 {
-    m_JuleaDBInteractionReader.InitVariablesFromDB(m_ProjectNamespace, m_Name,
+    // bson_iter_t b_iter;
+    // bson_t *bsonNames;
+    // std::string varName;
+    // std::string nameSpace = m_Name;
+    // std::string kvName = "variable_names";
+    // unsigned int varCount = 0;
+
+    // GetNamesFromJulea(nameSpace, &bsonNames, &varCount, true);
+    m_JuleaKVInteractionReader.InitVariablesFromKV(m_ProjectNamespace, m_Name,
                                                    &m_IO, *this);
+    
 }
 
 void JuleaKVReader::InitParameters()
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea DB Reader " << m_ReaderRank
-                  << " InitParameters()\n";
+        std::cout << "JKV Reader " << m_ReaderRank << " InitParameters()\n";
     }
 }
 
@@ -273,8 +280,7 @@ void JuleaKVReader::InitTransports()
     // Nothing to process from m_IO.m_TransportsParameters
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea DB Reader " << m_ReaderRank
-                  << " InitTransports()\n";
+        std::cout << "JKV Reader " << m_ReaderRank << " InitTransports()\n";
     }
 }
 
@@ -282,7 +288,7 @@ void JuleaKVReader::DoClose(const int transportIndex)
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea DB Reader " << m_ReaderRank << " Close(" << m_Name
+        std::cout << "JKV Reader " << m_ReaderRank << " Close(" << m_Name
                   << ")\n";
     }
 }

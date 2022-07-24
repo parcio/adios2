@@ -286,9 +286,8 @@ void JuleaKVWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
     }
     else
     {
-        //TODO: do something here?
+        // TODO: do something here?
     }
-
 
     // check whether variable name is already in variable_names DB
     auto itVariableWritten = m_WrittenVariableNames.find(variable.m_Name);

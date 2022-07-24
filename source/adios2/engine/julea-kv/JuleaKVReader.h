@@ -15,11 +15,8 @@
 #include "adios2/core/ADIOS.h"
 #include "adios2/core/Engine.h"
 #include "adios2/helper/adiosFunctions.h"
-#include "adios2/toolkit/interop/julea/Database/JuleaDBInteractionReader.h"
 #include "adios2/toolkit/interop/julea/JuleaInteraction.h"
-
-// #include "adios2/toolkit/format/bp3/BP3.h" //BP3Deserializer
-// #include "adios2/toolkit/format/bp/bp3/BP3Serializer.h"
+#include "adios2/toolkit/interop/julea/KeyValue/JuleaKVInteractionReader.h"
 #include "adios2/toolkit/transportman/TransportMan.h" //transport::TransportsMan
 
 #include <complex.h>
@@ -61,7 +58,7 @@ public:
     void PerformGets() final;
 
 private:
-    interop::JuleaDBInteractionReader m_JuleaDBInteractionReader;
+    interop::JuleaKVInteractionReader m_JuleaKVInteractionReader;
     JSemantics *m_JuleaSemantics;
     StepMode m_StepMode = StepMode::Append;
     std::string m_ProjectNamespace = "Thesis_eval";
@@ -89,7 +86,7 @@ private:
 
     static std::mutex m_Mutex;
 
-    int m_Verbosity = 0; // change from 0 to 5 for debugging
+    int m_Verbosity = 5; // change from 0 to 5 for debugging
     int m_Penguin = 42;  // change for debugging info from 0 to 42
     int m_ReaderRank;    // my rank in the readers' comm
     int m_SizeMPI = 1;   ///< current MPI processes size

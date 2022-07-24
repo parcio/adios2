@@ -34,8 +34,7 @@ void JuleaKVReader::GetSyncCommon(Variable<std::string> &variable,
     {
         std::cout << "\n______________GetSync String_____________________"
                   << std::endl;
-        std::cout << "Julea DB Reader " << m_ReaderRank
-                  << " Namespace: " << m_Name
+        std::cout << "JKV Reader " << m_ReaderRank << " Namespace: " << m_Name
                   << " Variable name: " << variable.m_Name << std::endl;
     }
 
@@ -86,7 +85,7 @@ void JuleaKVReader::GetSyncCommon(Variable<T> &variable, T *data)
     {
         std::cout << "\n______________GetSync T_____________________"
                   << std::endl;
-        std::cout << "Julea DB Reader " << m_ReaderRank
+        std::cout << "JKV Reader " << m_ReaderRank
                   << " Reached Get Sync Common (T, T)" << std::endl;
         std::cout << "Julea Reader " << m_ReaderRank << " Namespace: " << m_Name
                   << std::endl;
@@ -124,7 +123,7 @@ void JuleaKVReader::GetDeferredCommon(Variable<T> &variable, T *data)
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "Julea DB Reader " << m_ReaderRank << "     GetDeferred("
+        std::cout << "JKV Reader " << m_ReaderRank << "     GetDeferred("
                   << variable.m_Name << ")\n";
     }
 
@@ -194,7 +193,7 @@ void JuleaKVReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
     /** only retrieve Count. Everything is only needed for bp3 and bp4 to
      * determine block position in buffer and for AllStepsBlockInfo for bpls */
     auto entryID = variable.m_AvailableStepBlockIndexOffsets[step + 1][blockID];
-    m_JuleaDBInteractionReader.GetCountFromBlockMetadata(
+    m_JuleaKVInteractionReader.GetCountFromBlockMetadata(
         m_ProjectNamespace, fileName, variable.m_Name, step, blockID, &count,
         entryID, variable.m_SingleValue, data);
     if (variable.m_SingleValue)
@@ -265,7 +264,7 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
     if (m_Verbosity == 5)
     {
         std::cout << "\n__________ReadVariableBlocks_____________" << std::endl;
-        std::cout << "Julea DB Reader " << m_ReaderRank << " File: " << m_Name
+        std::cout << "JKV Reader " << m_ReaderRank << " File: " << m_Name
                   << " Variable name: " << variable.m_Name << std::endl;
     }
 
@@ -388,7 +387,7 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
 
                         // T data[dataSize];
                         std::vector<T> data = std::vector<T>(dataSize);
-                        m_JuleaDBInteractionReader.GetVariableDataFromJulea(
+                        m_JuleaKVInteractionReader.GetVariableDataFromJulea(
                             variable, data.data(), m_ProjectNamespace, fileName,
                             offset, dataSize, subStreamBoxInfo.SubStreamID);
 
@@ -414,7 +413,7 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
 
                         // T data[dataSize];
                         std::vector<T> data = std::vector<T>(dataSize);
-                        m_JuleaDBInteractionReader.GetVariableDataFromJulea(
+                        m_JuleaKVInteractionReader.GetVariableDataFromJulea(
                             variable, data.data(), m_ProjectNamespace, fileName,
                             offset, dataSize, subStreamBoxInfo.SubStreamID);
 
@@ -466,8 +465,7 @@ JuleaKVReader::AllStepsBlocksInfo(const core::Variable<T> &variable) const
         {
             std::cout << "\n__________AllStepsBlocksInfo_____________"
                       << std::endl;
-            std::cout << "Julea DB Reader " << m_ReaderRank
-                      << " File: " << m_Name
+            std::cout << "JKV Reader " << m_ReaderRank << " File: " << m_Name
                       << " Variable name: " << variable.m_Name << std::endl;
             std::cout << "--- step: " << step
                       << " blockPositions: " << blockPositions.data()[0]
@@ -490,7 +488,7 @@ JuleaKVReader::BlocksInfoCommon(const core::Variable<T> &variable,
     if (m_Verbosity == 5)
     {
         std::cout << "\n__________BlocksInfoCommon_____________" << std::endl;
-        std::cout << "Julea DB Reader " << m_ReaderRank << " File: " << m_Name
+        std::cout << "JKV Reader " << m_ReaderRank << " File: " << m_Name
                   << " Variable name: " << variable.m_Name << std::endl;
         std::cout << "--- step: " << step << std::endl;
         std::cout << "blocksIndexOffsets.size(): " << blocksIndexOffsets.size()
@@ -512,7 +510,7 @@ JuleaKVReader::BlocksInfoCommon(const core::Variable<T> &variable,
 
         typename core::Variable<T>::Info info =
             // *DBGetBlockMetadata(variable, fileName, step, i, entryID);
-            *m_JuleaDBInteractionReader.GetBlockMetadata(
+            *m_JuleaKVInteractionReader.GetBlockMetadata(
                 variable, m_ProjectNamespace, entryID);
         info.IsReverseDims = false;
         info.Step = step;
@@ -532,7 +530,7 @@ JuleaKVReader::AllRelativeStepsBlocksInfo(
     {
         std::cout << "\n__________AllRelativeStepsBlocksInfo_____________"
                   << std::endl;
-        std::cout << "Julea DB Reader " << m_ReaderRank << " File: " << m_Name
+        std::cout << "JKV Reader " << m_ReaderRank << " File: " << m_Name
                   << " Variable name: " << variable.m_Name << std::endl;
     }
     std::vector<std::vector<typename core::Variable<T>::Info>>
@@ -558,7 +556,7 @@ JuleaKVReader::BlocksInfo(const core::Variable<T> &variable,
     if (m_Verbosity == 5)
     {
         std::cout << "\n__________BlocksInfo_____________" << std::endl;
-        std::cout << "Julea DB Reader " << m_ReaderRank << " File: " << m_Name
+        std::cout << "JKV Reader " << m_ReaderRank << " File: " << m_Name
                   << " Variable name: " << variable.m_Name << std::endl;
     }
 
@@ -581,7 +579,7 @@ JuleaKVReader::InitVariableBlockInfo(core::Variable<T> &variable, T *data)
     {
         std::cout << "\n__________InitVariableBlockInfo_____________"
                   << std::endl;
-        std::cout << "Julea DB Reader " << m_ReaderRank << " File: " << m_Name
+        std::cout << "JKV Reader " << m_ReaderRank << " File: " << m_Name
                   << " Variable name: " << variable.m_Name << std::endl;
     }
     const size_t stepsStart = variable.m_StepsStart;
@@ -667,7 +665,7 @@ void JuleaKVReader::SetVariableBlockInfo(
     {
         std::cout << "\n______________SetVariableBlockInfo_____________________"
                   << std::endl;
-        std::cout << "Julea DB Reader " << m_ReaderRank
+        std::cout << "JKV Reader " << m_ReaderRank
                   << " Reached SetVariableBlockInfo" << std::endl;
         std::cout << "Julea Reader " << m_ReaderRank << " File: " << m_Name
                   << std::endl;
@@ -804,7 +802,7 @@ void JuleaKVReader::SetVariableBlockInfo(
 
         // info = blockCharacteristics in BP3
         typename core::Variable<T>::Info info =
-            *m_JuleaDBInteractionReader.GetBlockMetadata(
+            *m_JuleaKVInteractionReader.GetBlockMetadata(
                 variable, m_ProjectNamespace, blockIndexOffset);
 
         // check if they intersect

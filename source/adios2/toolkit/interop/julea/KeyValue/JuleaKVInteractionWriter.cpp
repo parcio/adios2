@@ -37,12 +37,11 @@ JuleaKVInteractionWriter::JuleaKVInteractionWriter(helper::Comm const &comm)
     // std::cout << "This is the constructor of the writer" << std::endl;
 }
 
-//TODO: needed?
+// TODO: needed?
 void JuleaKVInteractionWriter::InitKV(std::string projectNamespace,
                                       bool isOriginalFormat)
 {
     // std::cout << "--- InitKV ---" << std::endl;
-
 }
 //    template void JuleaKVInteractionWriter::AppendMinMaxToBSON(core::Variable<T> &variable,bson_t *bsonMetadata);\ 
 

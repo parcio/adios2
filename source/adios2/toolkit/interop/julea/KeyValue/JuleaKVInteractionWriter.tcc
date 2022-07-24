@@ -124,7 +124,7 @@ void JuleaKVInteractionWriter::ParseVariableToBSON(core::Variable<T> &variable,
     T min;
     T max;
 
-    std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
+    std::cout << "-- Variable bsonMetadata length: " << bsonMetadata->len << std::endl;
     uint data_size = 0;
     size_t number_elements = 0;
     char *key;
@@ -277,7 +277,7 @@ void JuleaKVInteractionWriter::ParseBlockToBSON(core::Variable<T> &variable,
     // bson_append_int64(bsonMetadata, "data_size", -1, data_size);
     // std::cout << "data_size: " << data_size << std::endl;
 
-    std::cout << "-- bsonMetadata length: " << bsonMetadata->len << std::endl;
+    std::cout << "-- block bsonMetadata length: " << bsonMetadata->len << std::endl;
     g_free(key);
 }
 
@@ -293,9 +293,12 @@ void JuleaKVInteractionWriter::PutVariableMetadataToJulea(
 
     auto completeNamespace = g_strdup_printf(
         "%s_%s_%s", "adios2", projectNamespace.c_str(), "variable-metadata");
-    auto fileVarStepBlock = g_strdup_printf(
-        "%s_%s_%d_%d", fileName.c_str(), variable.m_Name.c_str(), step, block);
-    auto varMetadata = j_kv_new(completeNamespace, fileVarStepBlock);
+    // auto fileVarStepBlock = g_strdup_printf(
+        // "%s_%s_%d_%d", fileName.c_str(), variable.m_Name.c_str(), step, block);
+    auto fileVar = g_strdup_printf(
+        "%s_%s", fileName.c_str(), variable.m_Name.c_str());
+    // auto varMetadata = j_kv_new(completeNamespace, fileVarStepBlock);
+    auto varMetadata = j_kv_new(completeNamespace, fileVar);
 
     ParseVariableToBSON(variable, bsonMetadata);
 
