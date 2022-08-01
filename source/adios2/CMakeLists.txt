@@ -207,9 +207,11 @@ if(ADIOS2_HAVE_JULEA)
   )
   target_include_directories(adios2_core PRIVATE
     ${JULEA_INCLUDE_DIRS}
+    ${MPI_INCLUDE_DIRS}
   )
   target_link_libraries(adios2_core PRIVATE
     PkgConfig::JULEA
+    MPI::MPI_C
     )
 endif()
 
