@@ -133,6 +133,219 @@ void printQueryDurations(
               << " \t " << durationAnalysis.count() << std::endl;
 }
 
+void AdiosQueryAllInRange(std::string fileName, adios2::IO inIO,
+                          adios2::Engine reader)
+{
+    // adios2::IO inIO = ad.DeclareIO("readerInput");
+    tempVar = inIO.InquireVariable<double>("T");
+
+    auto blocksInfo = tempVar.AllStepsBlocksInfo();
+    std::vector<size_t> blockIDs;
+
+    for (auto block : blocksInfo)
+    {
+        if ((block.Max() < 42) && (block.Min() > -42))
+        {
+            blockIDs.push_back(block.BlockID)
+        }
+    }
+}
+
+// compute mean for every block of every step, return highest mean
+void AdiosQueryHighestMean(std::string fileName, adios2::IO inIO,
+                           adios2::Engine reader)
+{
+    double mean = 0;
+    uint32_t dataSize = 0;
+    std::vector<double> tempData;
+    std::vector<double> blockMeans;
+
+    adios2::Variable<double> tempVar = inIO.InquireVariable<double>("T");
+
+    // get global dimensions of variable per step
+    for (auto element : tempVar.Shape())
+    {
+        dataSize *= element;
+    }
+
+    // tempData.resize(dataSize * tempVar.Sizeof());
+    // reader.Get<double>(temperature, tempData.data(), adios2::Mode::Sync);
+    // ComputeMean(tempData,)
+    // auto blocksInfo = vTin.AllStepsBlocksInfo();
+
+    std::vector<size_t> blockIDs;
+
+    for (int i = 0; i < tempVar.Steps(); i++)
+    {
+        auto blocksPerStep = reader.BlocksInfo(tempVar, i);
+
+        for (int j = 0; j < blocksPerStep.size(); j++)
+        {
+            tempVar.SetStepselection({i, 1});
+            tempVar.SetBlockSelection(j);
+            tempData.resize(dataSize * tempVar.Sizeof());
+            reader.Get<double>(tempVar, tempData.data(), adios2::Mode::Sync);
+            ComputeMean(tempData, mean);
+
+            blockMeans.push_back(mean);
+        }
+    }
+
+    double maxMean = *max_element(blockMeans.begin(), blockMeans.end());
+}
+
+// Find biggest difference in max temperature between step 1 and step 100
+void AdiosQueryDrasticLocalChangeInTimeInterval(std::string fileName,
+                                                adios2::IO inIO,
+                                                adios2::Engine reader)
+{
+    adios2::Variable<double> tempVar = inIO.InquireVariable<double>("T");
+
+    auto blocksInfo = vTin.AllStepsBlocksInfo();
+    double diff = 0;
+    double maxDiff = 0;
+
+    auto blockInfos1 = reader.BlocksInfo(tempVar, 1);
+    auto blockInfos100 = reader.BlocksInfo(tempVar, 100);
+
+    if (blockInfos1.size() == blockInfos100.size())
+    {
+        for (int i = 0; i < blockInfos1.size(); ++i)
+        {
+            result1 = blockInfos1[i].Max();
+            result1 = blockInfos100[i].Max();
+
+            diff = std::abs(result - result2);
+            if (diff > maxDiff)
+            {
+                maxDiff = diff;
+            }
+        }
+    }
+    std::cout << "maxDiff: " << maxDiff << "\n";
+}
+
+// where is block max T > 40 and sum max P > 20?
+
+/**
+ * @brief Find the blockID (=location) of the maximum precipiation block sum, where the maximum block temperature is > 40 
+ * 
+ * @param fileName 
+ * @param inIO 
+ * @param reader 
+ */
+void AdiosQueryRainTemperatureCombinedSimple(std::string fileName,
+                                             adios2::IO inIO,
+                                             adios2::Engine reader)
+{
+    auto tempVar = inIO.InquireVariable<double>("T");
+    auto precipVar = inIO.InquireVariable<double>("P");
+
+    std::vector<double> precipData;
+    std::vector<double> blockSums;
+
+    double sum = 0;
+    double maxSum = 0;
+
+    // index in vector = step; vector content = blockIDs for this step
+    std::vector<std::vector<size_t>>
+        blockIDsQueryMet; 
+
+    for (int i = 0; i < tempVar.Steps(); i++)
+    {
+        auto blockInfos = reader.BlocksInfo(tempVar, i);
+
+        //TODO: constructor or anything needed here?
+        std::vector<size_t> blockIDs; 
+        blockIDsQueryMet.push_back(blockIDs);
+
+        for (int j = 0; j < blockInfos.size(); j++)
+        {
+            if (blockInfos[j].Max() > 40)
+            {
+                blockIDsQueryMet[i].push_back(blockInfos[j].BlockID);
+            }
+        }
+    }
+
+    for (int i = 0; i < blockIDsQueryMet.size(); i++)
+    {
+        for (int j = 0; j < blockIDsQueryMet[i].size(); j++)
+        {
+            tempVar.SetStepselection({i, 1});
+            tempVar.SetBlockSelection(blockIDsQueryMet[i][j]);
+
+            data.resize(SelectionSize());
+            reader.Get<double>(precipVar, precipData.data(),
+                               adios2::Mode::Sync);
+            sum = std::accumulate(precipData.begin(), precipData.end());
+
+            blockSums.push_back(sum);
+        }
+    }
+
+    maxSum = *max_element(blockSums.begin(), blockSums.end());
+}
+
+// void AdiosQueryLowestTemp(std::string fileName, adios2::IO inIO,
+//                           adios2::Engine reader)
+// {
+// }
+
+
+// how many and which days had max temp below -12?
+void AdiosQueryDaysColderThan(std::string fileName, adios2::IO inIO,
+                              adios2::Engine reader)
+{
+}
+
+void AdiosQueryCIDays(std::string fileName, adios2::IO inIO,
+                      adios2::Engine reader)
+{
+}
+
+void AdiosQuery(AdiosQuerySettings::AdiosQueryID queryID, std::string fileName,
+                adios2::IO inIO, adios2::Engine reader)
+{
+    switch (queryID)
+    {
+    case AdiosQuerySettings::AQUERY_ALL_IN_RANGE:
+        QueryAllInRange(fileName, inIO, reader);
+        break;
+    case AdiosQuerySettings::AQUERY_HIGHEST_MEAN:
+        QueryHighestMean(fileName, inIO, reader);
+        break;
+    case AdiosQuerySettings::AQUERY_DRASTIC_LOCAL_CHANGE_IN_TIME:
+        QueryDrasticLocalChangeInTimeInterval(fileName, inIO, reader);
+        break;
+    case AdiosQuerySettings::AQUERY_RAIN_TEMP_COMBINED:
+        QueryRainTemperatureCombinedSimple(fileName, inIO, reader);
+        break;
+    case AdiosQuerySettings::AQUERY_LOWEST_TEMP_OVER_FILES:
+        // QueryLowestTemp(fileName, inIO, reader);
+        break;
+    case AdiosQuerySettings::AQUERY_NUMBER_DAYS_COLDER_THAN:
+        QueryDaysColderThan(fileName, inIO, reader);
+        break;
+    case AdiosQuerySettings::AQUERY_CI_DAYS:
+        QueryCIDays(fileName, inIO, reader);
+        break;
+    }
+}
+
+void AdiosSetupQueries(
+    std::vector<AdiosQuerySettings::AdiosQueryID> *allQueries)
+{
+    allQueries->push_back(AdiosQuerySettings::AQUERY_ALL_IN_RANGE);
+    allQueries->push_back(AdiosQuerySettings::AQUERY_HIGHEST_MEAN);
+    // allQueries->push_back(
+    //     JuleaQuerySettings::JQUERY_DRASTIC_LOCAL_CHANGE_IN_TIME);
+    // allQueries->push_back(JuleaQuerySettings::JQUERY_NUMBER_DAYS_COLDER_THAN);
+    // allQueries->push_back(JuleaQuerySettings::JQUERY_CI_DAYS);
+    // allQueries->push_back(JuleaQuerySettings::JQUERY_LOWEST_TEMP_OVER_FILES);
+    // allQueries->push_back(JuleaQuerySettings::JQUERY_RAIN_TEMP_COMBINED);
+}
+
 int main(int argc, char *argv[])
 {
     MPI_Init(&argc, &argv);
@@ -160,13 +373,12 @@ int main(int argc, char *argv[])
     try
     {
         double timeStart = MPI_Wtime();
-
-        QuerySettings settings(argc, argv, rank, nproc);
+        AdiosQuerySettings settings(argc, argv, rank, nproc);
         // std::cout << "configfile: " << settings.configfile << std::endl;
         adios2::ADIOS ad(settings.configfile, mpiQueryComm);
 
         adios2::IO inIO = ad.DeclareIO("readerInput");
-        adios2::IO outIO = ad.DeclareIO("readerOutput");
+        // adios2::IO outIO = ad.DeclareIO("readerOutput");
 
         // std::cout << "This is called -- 1" << std::endl;
         MPI_Barrier(mpiQueryComm); // who knows maybe this helps for mariadb...
@@ -175,127 +387,48 @@ int main(int argc, char *argv[])
             inIO.Open(settings.inputfile, adios2::Mode::Read, mpiQueryComm);
         // std::cout << "This is called -- 2" << std::endl;
 
-        std::vector<double> Tin1;
-        std::vector<double> meansTin1;
-        std::vector<double> Tin5;
-        std::vector<double> meansTin5;
-        std::vector<double> diffMeans;
-        adios2::Variable<double> vTin;
+        // std::cout << settings.inputfile << std::endl;
+        // std::cout << "steps = " << settings.steps << std::endl;
+        // settings.m_ProjectNamespace = "Postprocess_evaluation";
+        // settings.m_ProjectNamespace = "Thesis_eval";
+        std::vector<AdiosQuerySettings::AdiosQueryID> allQueries;
+        SetupQueries(&allQueries);
 
-        adios2::Engine writer;
-        bool firstStep = true;
-        int step = 0;
+        std::cout << "length AllQueries: " << allQueries.size() << "\n";
 
-        auto startEndStep = high_resolution_clock::now();
-        auto stopEndStep = high_resolution_clock::now();
-
-        auto startRead = high_resolution_clock::now();
-        auto stopRead = high_resolution_clock::now();
-        auto diffRead = stopRead - stopRead;
-
-        auto startCompute = high_resolution_clock::now();
-        auto stopCompute = high_resolution_clock::now();
-        auto diffCompute = stopCompute - stopCompute;
-
-        auto startAnalysis = high_resolution_clock::now();
-        auto stopAnalysis = high_resolution_clock::now();
-
-        vTin = inIO.InquireVariable<double>("T");
-
-        auto blocksInfo = vTin.AllStepsBlocksInfo();
-
-        auto blocksInfo1 = blocksInfo[1];
-        auto blocksInfo5 = blocksInfo[5];
-
-        startAnalysis = high_resolution_clock::now();
-
-        for (size_t i = 0; i < blocksInfo1.size(); i++)
+        if (rank == 0)
         {
-            double mean = 0;
-            std::vector<double> data;
-
-            vTin.SetStepSelection({1, 1});
-            vTin.SetBlockSelection(i);
-            data.resize(blocksInfo1[i].Count[0] * blocksInfo1[i].Count[1]);
-
-            startRead = high_resolution_clock::now();
-            reader.Get<double>(vTin, data.data(), adios2::Mode::Sync);
-            stopRead = high_resolution_clock::now();
-            diffRead += stopRead - startRead;
-
-            startCompute = high_resolution_clock::now();
-            ComputeMean(data, mean);
-            stopCompute = high_resolution_clock::now();
-            diffCompute = stopCompute - startCompute;
-            // std::cout << "mean: " << mean << std::endl;
-            // std::cout << "min: " << blocksInfo1[i].Min << std::endl;
-            // std::cout << "max: " << blocksInfo1[i].Max << std::endl;
-
-            meansTin1.push_back(mean);
-        }
-        std::cout << std::endl;
-
-        for (size_t i = 0; i < blocksInfo5.size(); i++)
-        {
-            double mean = 0;
-            std::vector<double> data;
-
-            vTin.SetStepSelection({5, 1});
-            vTin.SetBlockSelection(i);
-            data.resize(blocksInfo5[i].Count[0] * blocksInfo5[i].Count[1]);
-
-            startRead = high_resolution_clock::now();
-            reader.Get<double>(vTin, data.data(), adios2::Mode::Sync);
-            stopRead = high_resolution_clock::now();
-            diffRead += stopRead - startRead;
-
-            startCompute = high_resolution_clock::now();
-            ComputeMean(data, mean);
-            stopCompute = high_resolution_clock::now();
-            diffCompute = stopCompute - startCompute;
-            // std::cout << "mean: " << mean << std::endl;
-            // std::cout << "min: " << blocksInfo5[i].Min << std::endl;
-            // std::cout << "max: " << blocksInfo5[i].Max << std::endl;
-
-            meansTin5.push_back(mean);
+            std::cout << "\n# Read \t Compute \t Analysis" << std::endl;
         }
 
-        diffMeans.resize(meansTin1.size());
-
-        startCompute = high_resolution_clock::now();
-        for (size_t i = 0; i < meansTin1.size(); ++i)
+        // evaluate all post-processing queries
+        for (auto element : allQueries)
         {
-            diffMeans[i] = meansTin5[i] - meansTin1[i];
+            std::cout << "Query Loop starts\n";
+            startAnalysis = high_resolution_clock::now();
+            // startRead = high_resolution_clock::now();
+
+            AdiosQuery(element, settings.m_Inputfile, inIO, reader);
+            // ReadQuery(element, settings.m_ProjectNamespace,
+            // settings.m_Inputfile);
+
+            // stopRead = high_resolution_clock::now();
+            // startCompute = high_resolution_clock::now();
+
+            // ComputeQuery(element, settings.m_ProjectNamespace,
+            // settings.m_Inputfile);
+
+            // stopCompute = high_resolution_clock::now();
+            stopAnalysis = high_resolution_clock::now();
+
+            printQueryDurations(stopRead, startRead, stopCompute, startCompute,
+                                stopAnalysis, startAnalysis);
         }
-
-        size_t index =
-            std::distance(diffMeans.begin(),
-                          std::max_element(diffMeans.begin(), diffMeans.end()));
-        stopCompute = high_resolution_clock::now();
-        diffCompute = stopCompute - startCompute;
-
-        // std::cout << "index: " << index << "\tdiff: " << diffMeans[index]
-        // << std::endl;
-
-        stopAnalysis = high_resolution_clock::now();
-        auto durationAnalysis =
-            duration_cast<microseconds>(stopAnalysis - startAnalysis);
-        auto durationRead = duration_cast<microseconds>(diffRead);
-        auto durationCompute = duration_cast<microseconds>(diffCompute);
-
-        std::cout << "\n# Read \t Compute \t Analysis" << std::endl;
-        std::cout << durationRead.count() << " \t " << durationCompute.count()
-                  << " \t " << durationAnalysis.count() << std::endl;
-
-        reader.Close();
-        if (writer)
-            writer.Close();
-        // outFile.close();
-        MPI_Barrier(mpiQueryComm);
 
         double timeEnd = MPI_Wtime();
         if (rank == 0)
-            std::cout << "Total runtime = " << timeEnd - timeStart << "s\n" << std::endl;
+            std::cout << "Total runtime = " << timeEnd - timeStart << "s\n"
+                      << std::endl;
     }
     catch (std::invalid_argument &e) // command-line argument errors
     {

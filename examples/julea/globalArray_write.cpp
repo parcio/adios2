@@ -45,6 +45,8 @@ int main(int argc, char *argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &nproc);
 #endif
     const int NSTEPS = 4;
+    // const int NSTEPS = 2;
+    // const int NSTEPS = 1;
 
 #if ADIOS2_USE_MPI
     adios2::ADIOS adios(MPI_COMM_WORLD);
@@ -79,7 +81,8 @@ int main(int argc, char *argv[])
         // but Advance() will append steps to the same file.
         // io.SetEngine("bp4");
         // io.SetEngine("julea-db");
-        io.SetEngine("julea-db-dai");
+        // io.SetEngine("julea-db-dai");
+        io.SetEngine("julea-kv");
         adios2::Engine writer = io.Open("globalArray2.bp", adios2::Mode::Write);
 
         // std::cout << "-- GlobalArrayWrite -- \n";
@@ -98,11 +101,11 @@ int main(int argc, char *argv[])
             // adios2::SelectionBoundingBox sel();
             varGlobalArray.SetSelection(adios2::Box<adios2::Dims>(
                 {static_cast<size_t>(rank * 2), 0}, {2, 3}));
-            varGlobalArray2.SetSelection(adios2::Box<adios2::Dims>(
-                {static_cast<size_t>(rank * 2), 0}, {2, 3}));
+            // varGlobalArray2.SetSelection(adios2::Box<adios2::Dims>(
+                // {static_cast<size_t>(rank * 2), 0}, {2, 3}));
 
             writer.Put<double>(varGlobalArray, row.data());
-            writer.Put<double>(varGlobalArray2, row.data());
+            // writer.Put<double>(varGlobalArray2, row.data());
 
             // Indicate we are done for this step.
             // Disk I/O will be performed during this call unless
@@ -148,7 +151,8 @@ int main(int argc, char *argv[])
         adios2::IO read_io = adios.DeclareIO("Input");
         std::cout << "rank: " << rank << " declared input io" << std::endl;
         // read_io.SetEngine("bp4");
-        read_io.SetEngine("julea-db");
+        // read_io.SetEngine("julea-db");
+        read_io.SetEngine("julea-kv");
 
         /*
          * Define global array: type, name, global dimensions

@@ -229,6 +229,7 @@ void QueryHighestMean(std::string projectNamespace, std::string fileName)
 
 // Find biggest difference in max temperature between step 1 and step 8760 ->
 // one year later
+// update: now 100 steps
 void QueryDrasticLocalChangeInTimeInterval(std::string projectNamespace,
                                            std::string fileName)
 {
@@ -244,7 +245,7 @@ void QueryDrasticLocalChangeInTimeInterval(std::string projectNamespace,
     startRead = high_resolution_clock::now();
     j_dai_step_get_ids(projectNamespace.c_str(), fileName.c_str(), "T", 1,
                        &nIDs1, &entryIDs1);
-    j_dai_step_get_ids(projectNamespace.c_str(), fileName.c_str(), "T", 8760,
+    j_dai_step_get_ids(projectNamespace.c_str(), fileName.c_str(), "T", 100,
                        &nIDs2, &entryIDs2);
 
     if (nIDs1 == nIDs2)
@@ -321,8 +322,7 @@ void QueryDrasticLocalChangeInTimeInterval(std::string projectNamespace,
 //     stopCompute = high_resolution_clock::now();
 // }
 
-// highest global precipitation where max global T > 40
-// where is max T > 40 and max P > 20?
+// Find the blockID (=location) of the maximum precipiation block sum, where the maximum block temperature is > 40 
 void QueryRainTemperatureCombinedSimple(std::string projectNamespace,
                                         std::string fileName)
 {
@@ -351,7 +351,7 @@ void QueryRainTemperatureCombinedSimple(std::string projectNamespace,
         j_dai_entry_get_blockID(projectNamespace.c_str(), entryIDs[i], &block);
 
         j_dai_entry_meets_query_d(projectNamespace.c_str(), fileName.c_str(),
-                                  "P", step, block, J_DAI_STAT_MAX, 20,
+                                  "P", step, block, J_DAI_STAT_SUM, 20,
                                   J_DAI_OP_GT, &result);
         if (result)
         {
@@ -365,41 +365,41 @@ void QueryRainTemperatureCombinedSimple(std::string projectNamespace,
     stopCompute = high_resolution_clock::now();
 }
 
-// where was the min/mean temperature the lowest over all files in project?
-void QueryLowestTemp(std::string projectNamespace, std::string fileName)
-{
-    size_t nResults = 0;
-    gchar *fileNames;
-    double minTemp = 0;
-    double overallMin = 0;
+// // where was the min/mean temperature the lowest over all files in project?
+// void QueryLowestTemp(std::string projectNamespace, std::string fileName)
+// {
+//     size_t nResults = 0;
+//     gchar *fileNames;
+//     double minTemp = 0;
+//     double overallMin = 0;
 
-    std::cout << "--- QueryLowestTemp \n";
-    startRead = high_resolution_clock::now();
-    j_dai_project_get_files(projectNamespace.c_str(), &nResults, &fileNames);
+//     std::cout << "--- QueryLowestTemp \n";
+//     startRead = high_resolution_clock::now();
+//     j_dai_project_get_files(projectNamespace.c_str(), &nResults, &fileNames);
 
-    for (int i = 0; i < nResults; ++i)
-    {
+//     for (int i = 0; i < nResults; ++i)
+//     {
 
-        // j_dai_query_get_global_stat_d(
-        // projectNamespace.c_str(), fileName.c_str(), "T", J_DAI_STAT_MIN,
-        // J_DAI_STAT_MEAN, J_DAI_GRAN_BLOCK, &minTemp);
-        j_dai_query_get_global_stat_d(projectNamespace.c_str(),
-                                      fileName.c_str(), "T", J_DAI_GRAN_BLOCK,
-                                      J_DAI_STAT_MIN, J_DAI_STAT_MIN, &minTemp);
-        //    j_dai_get_global_min_stat_d(projectNamespace.c_str(),
-        //    fileName.c_str(), "T", J_DAI_STAT_MIN, J_DAI_GRAN_BLOCK,
-        //    &minTemp);
+//         // j_dai_query_get_global_stat_d(
+//         // projectNamespace.c_str(), fileName.c_str(), "T", J_DAI_STAT_MIN,
+//         // J_DAI_STAT_MEAN, J_DAI_GRAN_BLOCK, &minTemp);
+//         j_dai_query_get_global_stat_d(projectNamespace.c_str(),
+//                                       fileName.c_str(), "T", J_DAI_GRAN_BLOCK,
+//                                       J_DAI_STAT_MIN, J_DAI_STAT_MIN, &minTemp);
+//         //    j_dai_get_global_min_stat_d(projectNamespace.c_str(),
+//         //    fileName.c_str(), "T", J_DAI_STAT_MIN, J_DAI_GRAN_BLOCK,
+//         //    &minTemp);
 
-        if (minTemp < overallMin)
-        {
-            overallMin = minTemp;
-        }
-    }
-    stopRead = high_resolution_clock::now();
-    startCompute = high_resolution_clock::now();
-    // nothing to compute here
-    stopCompute = high_resolution_clock::now();
-}
+//         if (minTemp < overallMin)
+//         {
+//             overallMin = minTemp;
+//         }
+//     }
+//     stopRead = high_resolution_clock::now();
+//     startCompute = high_resolution_clock::now();
+//     // nothing to compute here
+//     stopCompute = high_resolution_clock::now();
+// }
 
 // how many and which days had max temp below -12?
 void QueryDaysColderThan(std::string projectNamespace, std::string fileName)
@@ -466,7 +466,7 @@ void QueryCIDays(std::string projectNamespace, std::string fileName)
     stopCompute = high_resolution_clock::now();
 }
 
-void Query(JuleaQuerySettings::JuleaQueryID queryID,
+void JuleaQuery(JuleaQuerySettings::JuleaQueryID queryID,
            std::string projectNamespace, std::string fileName)
 {
     switch (queryID)
@@ -495,7 +495,7 @@ void Query(JuleaQuerySettings::JuleaQueryID queryID,
     }
 }
 
-void SetupQueries(std::vector<JuleaQuerySettings::JuleaQueryID> *allQueries)
+void JuleaSetupQueries(std::vector<JuleaQuerySettings::JuleaQueryID> *allQueries)
 {
     allQueries->push_back(JuleaQuerySettings::JQUERY_ALL_IN_RANGE);
     allQueries->push_back(JuleaQuerySettings::JQUERY_HIGHEST_MEAN);
@@ -562,7 +562,7 @@ int main(int argc, char *argv[])
         // settings.m_ProjectNamespace = "Postprocess_evaluation";
         settings.m_ProjectNamespace = "Thesis_eval";
         std::vector<JuleaQuerySettings::JuleaQueryID> allQueries;
-        SetupQueries(&allQueries);
+        JuleaSetupQueries(&allQueries);
 
         std::cout << "length AllQueries: " << allQueries.size() << "\n";
 
@@ -578,7 +578,7 @@ int main(int argc, char *argv[])
             startAnalysis = high_resolution_clock::now();
             // startRead = high_resolution_clock::now();
 
-            Query(element, settings.m_ProjectNamespace, settings.m_Inputfile);
+            JuleaQuery(element, settings.m_ProjectNamespace, settings.m_Inputfile);
             // ReadQuery(element, settings.m_ProjectNamespace,
             // settings.m_Inputfile);
 

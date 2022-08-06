@@ -264,7 +264,6 @@ void JuleaKVReader::InitVariables()
     // GetNamesFromJulea(nameSpace, &bsonNames, &varCount, true);
     m_JuleaKVInteractionReader.InitVariablesFromKV(m_ProjectNamespace, m_Name,
                                                    &m_IO, *this);
-    
 }
 
 void JuleaKVReader::InitParameters()

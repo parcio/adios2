@@ -124,7 +124,8 @@ void JuleaKVInteractionWriter::ParseVariableToBSON(core::Variable<T> &variable,
     T min;
     T max;
 
-    std::cout << "-- Variable bsonMetadata length: " << bsonMetadata->len << std::endl;
+    std::cout << "-- Variable bsonMetadata length: " << bsonMetadata->len
+              << std::endl;
     uint data_size = 0;
     size_t number_elements = 0;
     char *key;
@@ -141,7 +142,7 @@ void JuleaKVInteractionWriter::ParseVariableToBSON(core::Variable<T> &variable,
 
         bson_append_int64(bsonMetadata, key, -1, variable.m_Shape[i]);
     }
-    bson_append_int32(bsonMetadata, "var_type", -1, type);
+    bson_append_int32(bsonMetadata, "shape_id", -1, type);
 
     bson_append_int64(bsonMetadata, "start_size", -1, variable.m_Start.size());
     for (guint i = 0; i < variable.m_Start.size(); ++i)
@@ -269,6 +270,7 @@ void JuleaKVInteractionWriter::ParseBlockToBSON(core::Variable<T> &variable,
     bson_append_int64(bsonMetadata, "steps_start", -1, variable.m_StepsStart);
     bson_append_int64(bsonMetadata, "steps_count", -1, variable.m_StepsCount);
 
+    // TODO: write blocks array?
     AppendMinMaxToBSON(variable, bsonMetadata);
 
     /* compute data_size; dimension entries !> 0 are ignored ?!*/
@@ -277,7 +279,8 @@ void JuleaKVInteractionWriter::ParseBlockToBSON(core::Variable<T> &variable,
     // bson_append_int64(bsonMetadata, "data_size", -1, data_size);
     // std::cout << "data_size: " << data_size << std::endl;
 
-    std::cout << "-- block bsonMetadata length: " << bsonMetadata->len << std::endl;
+    std::cout << "-- block bsonMetadata length: " << bsonMetadata->len
+              << std::endl;
     g_free(key);
 }
 
@@ -294,9 +297,9 @@ void JuleaKVInteractionWriter::PutVariableMetadataToJulea(
     auto completeNamespace = g_strdup_printf(
         "%s_%s_%s", "adios2", projectNamespace.c_str(), "variable-metadata");
     // auto fileVarStepBlock = g_strdup_printf(
-        // "%s_%s_%d_%d", fileName.c_str(), variable.m_Name.c_str(), step, block);
-    auto fileVar = g_strdup_printf(
-        "%s_%s", fileName.c_str(), variable.m_Name.c_str());
+    // "%s_%s_%d_%d", fileName.c_str(), variable.m_Name.c_str(), step, block);
+    auto fileVar =
+        g_strdup_printf("%s_%s", fileName.c_str(), variable.m_Name.c_str());
     // auto varMetadata = j_kv_new(completeNamespace, fileVarStepBlock);
     auto varMetadata = j_kv_new(completeNamespace, fileVar);
 

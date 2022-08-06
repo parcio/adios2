@@ -91,23 +91,23 @@ void IO::write(int step, const HeatTransfer &ht, const Settings &s,
                MPI_Comm comm)
 {
 
-    auto startBeginStep = high_resolution_clock::now();
-    auto stopBeginStep = high_resolution_clock::now();
+    // auto startBeginStep = high_resolution_clock::now();
+    // auto stopBeginStep = high_resolution_clock::now();
 
-    auto startEndStep = high_resolution_clock::now();
+    // auto startEndStep = high_resolution_clock::now();
     auto stopEndStep = high_resolution_clock::now();
 
     auto startPut = high_resolution_clock::now();
-    auto stopPut = high_resolution_clock::now();
+    // auto stopPut = high_resolution_clock::now();
 
     // right before and right after PUT; in case of deferred I/O nothing is
     // actually written
-    auto durationPut = duration_cast<microseconds>(stopPut - startPut);
+    // auto durationPut = duration_cast<microseconds>(stopPut - startPut);
 
     // right before and right after ENDSTEP; this is where deferred writes
     // happen
-    auto durationEndStep =
-        duration_cast<microseconds>(stopEndStep - startEndStep);
+    // auto durationEndStep =
+        // duration_cast<microseconds>(stopEndStep - startEndStep);
 
     // right before PUT and right after ENDSTEP; complete write time for
     // deferred writes

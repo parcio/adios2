@@ -35,12 +35,11 @@ JuleaKVInteractionReader::JuleaKVInteractionReader(helper::Comm const &comm)
     // std::cout << "This is the constructor of the reader" << std::endl;
 }
 
-void JuleaKVInteractionReader::InitVariable(core::IO *io, core::Engine &engine,
-                  const std::string projectNamespace,
-                  const std::string fileName, std::string varName,
-                  size_t *blocks, size_t numberSteps, ShapeID shapeID,
-                  bool isReadAsJoined, bool isReadAsLocalValue,
-                  bool isRandomAccess, bool isSingleValue)
+void JuleaKVInteractionReader::InitVariable(
+    core::IO *io, core::Engine &engine, const std::string projectNamespace,
+    const std::string fileName, std::string varName, size_t *blocks,
+    size_t numberSteps, ShapeID shapeID, bool isReadAsJoined,
+    bool isReadAsLocalValue, bool isRandomAccess, bool isSingleValue)
 {
     // std::cout << "----- InitVariable --- " << varName << std::endl;
     const adios2::DataType type(io->InquireVariableType(varName));
@@ -123,10 +122,10 @@ void JuleaKVInteractionReader::InitVariable(core::IO *io, core::Engine &engine,
     j_semantics_unref(semantics);
 }
 
-void JuleaKVInteractionReader::DefineVariableInEngineIO(core::IO *io, const std::string varName,
-                              adios2::DataType type, ShapeID shapeID,
-                              Dims shape, Dims start, Dims count,
-                              bool constantDims, bool isLocalValue)
+void JuleaKVInteractionReader::DefineVariableInEngineIO(
+    core::IO *io, const std::string varName, adios2::DataType type,
+    ShapeID shapeID, Dims shape, Dims start, Dims count, bool constantDims,
+    bool isLocalValue)
 {
     if (type == DataType::Compound)
     {
@@ -397,24 +396,27 @@ void JuleaKVInteractionReader::InitVariablesFromKV(
     void *mdBuf = NULL;
     guint32 mdLen = 0;
     guint32 nameLen = 0;
+    // void *metaDataBuf = NULL;
     // char *varTypePtr;
     // std::string varType;
-
+    bson_t bsonMetadata;
+    bson_iter_t bIter;
     // bool localValue;
-    bool *isConstantDims;
-    bool *isReadAsJoined;
-    bool *isReadAsLocalValue;
-    bool *isRandomAccess;
-    bool *isSingleValue;
+    bool isConstantDims;
+    bool isReadAsJoined;
+    bool isReadAsLocalValue;
+    bool isRandomAccess;
+    bool isSingleValue;
 
     // size_t typeLen;
     size_t *blocks;
     size_t *numberSteps;
-    size_t *shapeSize;
-    size_t *startSize;
-    size_t *countSize;
+    // size_t *shapeSize;
+    size_t shapeSize;
+    size_t startSize;
+    size_t countSize;
 
-    ShapeID *shapeID;
+    ShapeID shapeID;
     adios2::DataType typeInt;
     int *varTypeAsInt;
 
@@ -422,8 +424,9 @@ void JuleaKVInteractionReader::InitVariablesFromKV(
     auto batch = j_batch_new(semantics);
 
     // auto completeNamespace =
-        // g_strdup_printf("%s_%s", "adios2", projectNamespace.c_str());
-    //    auto schema = j_db_schema_new(completeNamespace, "variable-metadata", NULL);
+    // g_strdup_printf("%s_%s", "adios2", projectNamespace.c_str());
+    //    auto schema = j_db_schema_new(completeNamespace, "variable-metadata",
+    //    NULL);
     // j_db_schema_get(schema, batch, NULL);
 
     auto completeNamespace = g_strdup_printf(
@@ -434,201 +437,244 @@ void JuleaKVInteractionReader::InitVariablesFromKV(
     Dims shape;
     Dims start;
     Dims count;
-   
 
-    //TODO: get names from kv
-    // auto kvIterator = j_kv_iterator_new(gchar const * namespace, gchar const *prefix);
-    //get variable Name using kv iterator over namespace + prefix
+    // TODO: get names from kv
+    //  auto kvIterator = j_kv_iterator_new(gchar const * namespace, gchar const
+    //  *prefix);
+    // get variable Name using kv iterator over namespace + prefix
     auto kvIterator = j_kv_iterator_new(completeNamespace, fileName.c_str());
 
-
-	while (j_kv_iterator_next(kv_iterator))
-	{
-		gchar const* key;
-		gconstpointer value;
-		guint32 len;
-		gconstpointer adata = NULL;
-		gsize alen = 0;
+    while (j_kv_iterator_next(kvIterator))
+    {
+        gchar const *key;
+        gconstpointer value;
+        guint32 len;
+        gconstpointer data = NULL;
+        gsize alen = 0;
 
         // get variable name
-		key = j_kv_iterator_get(kv_iterator, &value, &nameLen);
-        varName = value;
-  
-        auto fileVar = g_strdup_printf(
-        "%s_%s", fileName.c_str(), varName);
+        key = j_kv_iterator_get(kvIterator, &value, &nameLen);
+        varName = (char *)value;
+
+        auto fileVar = g_strdup_printf("%s_%s", fileName.c_str(), varName);
         auto varMetadata = j_kv_new(completeNamespace, fileVar);
+
+        //Read name from kv -> TODO: do something with key
 
         j_kv_get(varMetadata, &mdBuf, &mdLen, batch);
         err = j_batch_execute(batch);
 
+        if (mdLen == 0)
+        {
+            // bson_names = bson_new();
+            printf("WARNING: The variable metadata is empty! \n");
+        }
+        else
+        {
+            bson_init_static(&bsonMetadata, (uint8_t *)mdBuf, mdLen);
+        }
 
-     if (mdLen == 0)
-    {
-        // bson_names = bson_new();
-        printf("WARNING: The variable metadata is empty! \n");
+        if (bson_iter_init(&bIter, &bsonMetadata))
+        {
+            std::cout << "++ Julea Client Logic: Bson iterator is valid"
+                      << std::endl;
+        }
+        else
+        {
+            std::cout << "ERROR: Bson iterator is not valid!" << std::endl;
+        }
+
+        /* probably not very efficient */
+        while (bson_iter_next(&bIter))
+        {
+            if (g_strcmp0(bson_iter_key(&bIter), "shape_size") == 0)
+            {
+                shapeSize = (std::size_t)bson_iter_int64(&bIter);
+                if (shapeSize > 0)
+                {
+                    for (guint i = 0; i < shapeSize; i++)
+                    {
+                        bson_iter_next(&bIter);
+                        key = g_strdup_printf("shape_%d", i);
+                        if (g_strcmp0(bson_iter_key(&bIter), key) == 0)
+                        {
+                            shape[i] = bson_iter_int64(&bIter);
+                        }
+                    }
+                }
+            }
+            else if (g_strcmp0(bson_iter_key(&bIter), "shape_id") == 0)
+            {
+                shapeID = (ShapeID) bson_iter_int64(&bIter);
+            }
+            else if (g_strcmp0(bson_iter_key(&bIter), "start_size") == 0)
+            {
+                startSize = (std::size_t)bson_iter_int64(&bIter);
+                if (startSize > 0)
+                {
+                    for (guint i = 0; i < startSize; i++)
+                    {
+                        bson_iter_next(&bIter);
+                        key = g_strdup_printf("start_%d", i);
+                        if (g_strcmp0(bson_iter_key(&bIter), key) == 0)
+                        {
+                            start[i] = bson_iter_int64(&bIter);
+                        }
+                    }
+                }
+            }
+            else if (g_strcmp0(bson_iter_key(&bIter), "count_size") == 0)
+            {
+                countSize = (std::size_t)bson_iter_int64(&bIter);
+                if (countSize > 0)
+                {
+                    for (guint i = 0; i < countSize; i++)
+                    {
+                        bson_iter_next(&bIter);
+                        key = g_strdup_printf("count_%d", i);
+                        if (g_strcmp0(bson_iter_key(&bIter), key) == 0)
+                        {
+                            count[i] = bson_iter_int64(&bIter);
+                        }
+                    }
+                }
+            }
+
+            // TODO: get blocks array
+
+            // j_db_iterator_get_field(iterator, "numberSteps", &type,
+            // (gpointer *)&numberSteps, &db_length, NULL);
+            size_t *tmpblocks[*numberSteps];
+            if (*numberSteps > 0)
+            {
+                // j_db_iterator_get_field(iterator, "blockArray", &type,
+                // (gpointer *)tmpblocks, &db_length, NULL);
+                blocks = *tmpblocks;
+                // memcpy(blocks, *tmpblocks, sizeof(*tmpblocks));
+            }
+
+            // TODO: get all fields from BSON
+
+            else if (g_strcmp0(bson_iter_key(&bIter), "is_single_value") == 0)
+            {
+                isSingleValue = (bool)bson_iter_bool(&bIter);
+            }
+            else if (g_strcmp0(bson_iter_key(&bIter), "is_constant_dims") == 0)
+            {
+                isConstantDims = (bool)bson_iter_bool(&bIter);
+            }
+            else if (g_strcmp0(bson_iter_key(&bIter), "is_read_as_joined") == 0)
+            {
+                isReadAsJoined = (bool)bson_iter_bool(&bIter);
+            }
+            else if (g_strcmp0(bson_iter_key(&bIter),
+                               "is_read_as_local_value") == 0)
+            {
+                isReadAsLocalValue = (bool)bson_iter_bool(&bIter);
+            }
+            else if (g_strcmp0(bson_iter_key(&bIter), "is_random_access") == 0)
+            {
+                isRandomAccess = (bool)bson_iter_bool(&bIter);
+            }
+            // else if (g_strcmp0(bson_iter_key(&bIter),
+            // "is_first_streaming_step") ==
+            //          0)
+            // {
+            //     metadata->is_first_streaming_step =
+            //     (bool)bson_iter_bool(&bIter);
+            // }
+            // TODO: data size needed?
+            // g_assert_true(bson_append_int64(bsonMetadata, "data_size", -1,
+            // metadata->data_size));
+
+            // j_db_iterator_get_field(iterator, "typeString", &type,
+            // (gpointer *)&varTypePtr, &db_length, NULL);
+            // std::string varType(varTypePtr);
+
+            // j_db_iterator_get_field(iterator, "typeInt", &type,
+            // (gpointer *)&typeInt, &db_length, NULL);
+            // j_db_iterator_get_field(iterator, "typeInt", &type,
+            //                         (gpointer *)&varTypeAsInt, &db_length,
+            //                         NULL);
+
+            if (false)
+            {
+                // std::cout << "numberSteps: " << blocks[0] << std::endl;
+                // std::cout << "numberSteps: " << blocks[1] << std::endl;
+                std::cout << "\nvarName = " << varName << std::endl;
+                // std::cout << "length: " << db_length << std::endl;
+                std::cout << "constantDims: " << isConstantDims << std::endl;
+                std::cout << "isReadAsJoined: " << isReadAsJoined << std::endl;
+                std::cout << "isReadAsLocalValue: " << isReadAsLocalValue
+                          << std::endl;
+                std::cout << "isRandomAccess: " << isRandomAccess << std::endl;
+                std::cout << "isSingleValue: " << isSingleValue << std::endl;
+                std::cout << "shapeID: " << shapeID << std::endl;
+                std::cout << "varType: " << *varTypeAsInt << std::endl;
+                // std::cout << "varType2: " << varTypePtr << std::endl;
+                // std::cout << "shapeSize: " << *shapeSize << std::endl;
+                // std::cout << "startSize: " << *startSize << std::endl;
+                // std::cout << "shapeSize: " << *shapeSize << std::endl;
+                std::cout << "countSize: " << countSize << std::endl;
+                std::cout << "startSize: " << startSize << std::endl;
+                std::cout << "countSize: " << countSize << std::endl;
+                std::cout << "count: " << count.front() << std::endl;
+                std::cout << "numberSteps: " << *numberSteps << std::endl;
+            }
+
+            if (shapeID == ShapeID::LocalValue)
+            {
+                // std::cout << " SHAPEID: LOCAL VALUE" << std::endl;
+                // localValue = true;
+            }
+            // // FIXME: localValueDim is screwing everything up
+            // if (strcmp(varName, "time") == 0)
+            // {
+            //     std::cout << "\n FIXME: time\n" << std::endl;
+            // }
+
+            adios2::DataType adiosType{
+                static_cast<adios2::DataType>(*varTypeAsInt)};
+
+            // std::cout << "adiosType: " << adiosType << std::endl;
+
+            // DBDefineVariableInEngineIO(io, varName, typeInt, *shapeID, shape,
+            // start, DBDefineVariableInEngineIO(io, varName, varTypeAsInt,
+            // *shapeID, shape, start,
+            DefineVariableInEngineIO(io, varName, adiosType, shapeID, shape,
+                                     start, count, isConstantDims,
+                                     isSingleValue);
+            // DBDefineVariableInInit(io, varName, varType, shape, start, count,
+            //                        *isConstantDims, *isSingleValue);
+            InitVariable(io, engine, projectNamespace, fileName, varName,
+                         blocks, *numberSteps, shapeID, isReadAsJoined,
+                         isReadAsLocalValue, isRandomAccess, isSingleValue);
+            if (*numberSteps > 0)
+            {
+                g_free(*tmpblocks);
+            }
+            // g_free(isConstantDims);
+            // g_free(isReadAsJoined);
+            // g_free(isReadAsLocalValue);
+            // g_free(isRandomAccess);
+            // g_free(varName);
+            // g_free(shapeID);
+            // g_free(isSingleValue);
+            // g_free(varTypePtr);
+            // g_free(shapeSize);
+            // g_free(startSize);
+            // g_free(countSize);
+            g_free(numberSteps);
+        }
+        // i++;
+        // }
+        // j_db_iterator_unref(iterator);
+        // j_db_entry_unref(entry);
+        // j_db_schema_unref(schema);
+        // j_db_selector_unref(selector);
+        j_batch_unref(batch);
+        j_semantics_unref(semantics);
     }
-    else
-    {
-        bson_init_static(&bson_metadata, (uint8_t *)meta_data_buf, mdLen);
-    }
-
-     if (bson_iter_init(&b_iter, &bson_metadata))
-    {
-        std::cout << "++ Julea Client Logic: Bson iterator is valid"
-                  << std::endl;
-    }
-    else
-    {
-        std::cout << "ERROR: Bson iterator is not valid!" << std::endl;
-    }
-    
-    //TODO: get all fields from BSON
-    
-    // j_db_iterator_get_field(iterator, "isConstantDims", &type,
-    //                         (gpointer *)&isConstantDims, &db_length, NULL);
-    // j_db_iterator_get_field(iterator, "isReadAsJoined", &type,
-    //                         (gpointer *)&isReadAsJoined, &db_length, NULL);
-    // j_db_iterator_get_field(iterator, "isReadAsLocalValue", &type,
-    //                         (gpointer *)&isReadAsLocalValue, &db_length,
-    //                         NULL);
-    // j_db_iterator_get_field(iterator, "isRandomAccess", &type,
-    //                         (gpointer *)&isRandomAccess, &db_length, NULL);
-    // j_db_iterator_get_field(iterator, "isSingleValue", &type,
-    //                         (gpointer *)&isSingleValue, &db_length, NULL);
-
-    // j_db_iterator_get_field(iterator, "shapeID", &type,
-    //                         (gpointer *)&shapeID, &db_length, NULL);
-    // j_db_iterator_get_field(iterator, "typeString", &type,
-    // (gpointer *)&varTypePtr, &db_length, NULL);
-    // std::string varType(varTypePtr);
-
-    // j_db_iterator_get_field(iterator, "typeInt", &type,
-    // (gpointer *)&typeInt, &db_length, NULL);
-    // j_db_iterator_get_field(iterator, "typeInt", &type,
-    //                         (gpointer *)&varTypeAsInt, &db_length, NULL);
-    // j_db_iterator_get_field(iterator, "shapeSize", &type,
-    //                         (gpointer *)&shapeSize, &db_length, NULL);
-
-    if (*shapeSize > 0)
-    {
-        size_t *tmpShapeBuffer;
-        // j_db_iterator_get_field(iterator, "shape", &type,
-        // (gpointer *)&tmpShapeBuffer, &db_length,
-        // NULL);
-        Dims tmpShape(tmpShapeBuffer, tmpShapeBuffer + *shapeSize);
-        shape = tmpShape;
-        g_free(tmpShapeBuffer);
-    }
-
-    // j_db_iterator_get_field(iterator, "startSize", &type,
-    // (gpointer *)&startSize, &db_length, NULL);
-    if (*startSize > 0)
-    {
-        size_t *tmpStartBuffer;
-        // j_db_iterator_get_field(iterator, "start", &type,
-        // (gpointer *)&tmpStartBuffer, &db_length,
-        // NULL);
-        Dims tmpStart(tmpStartBuffer, tmpStartBuffer + *startSize);
-        start = tmpStart;
-        g_free(tmpStartBuffer);
-    }
-
-    // j_db_iterator_get_field(iterator, "countSize", &type,
-    // (gpointer *)&countSize, &db_length, NULL);
-    if (*countSize > 0)
-    {
-        size_t *tmpCountBuffer;
-        // j_db_iterator_get_field(iterator, "count", &type,
-        // (gpointer *)&tmpCountBuffer, &db_length,
-        // NULL);
-
-        Dims tmpCount(tmpCountBuffer, tmpCountBuffer + *countSize);
-        count = tmpCount;
-        g_free(tmpCountBuffer);
-    }
-
-    // j_db_iterator_get_field(iterator, "numberSteps", &type,
-    // (gpointer *)&numberSteps, &db_length, NULL);
-    size_t *tmpblocks[*numberSteps];
-    if (*numberSteps > 0)
-    {
-        // j_db_iterator_get_field(iterator, "blockArray", &type,
-        // (gpointer *)tmpblocks, &db_length, NULL);
-        blocks = *tmpblocks;
-        // memcpy(blocks, *tmpblocks, sizeof(*tmpblocks));
-    }
-
-    if (false)
-    {
-        // std::cout << "numberSteps: " << blocks[0] << std::endl;
-        // std::cout << "numberSteps: " << blocks[1] << std::endl;
-        std::cout << "\nvarName = " << varName << std::endl;
-        // std::cout << "length: " << db_length << std::endl;
-        std::cout << "constantDims: " << *isConstantDims << std::endl;
-        std::cout << "isReadAsJoined: " << *isReadAsJoined << std::endl;
-        std::cout << "isReadAsLocalValue: " << *isReadAsLocalValue << std::endl;
-        std::cout << "isRandomAccess: " << *isRandomAccess << std::endl;
-        std::cout << "isSingleValue: " << *isSingleValue << std::endl;
-        std::cout << "shapeID: " << *shapeID << std::endl;
-        std::cout << "varType: " << *varTypeAsInt << std::endl;
-        // std::cout << "varType2: " << varTypePtr << std::endl;
-        std::cout << "shapeSize: " << *shapeSize << std::endl;
-        std::cout << "startSize: " << *startSize << std::endl;
-        std::cout << "countSize: " << *countSize << std::endl;
-        std::cout << "count: " << count.front() << std::endl;
-        std::cout << "numberSteps: " << *numberSteps << std::endl;
-	}
-
-    if (*shapeID == ShapeID::LocalValue)
-    {
-        // std::cout << " SHAPEID: LOCAL VALUE" << std::endl;
-        // localValue = true;
-    }
-    // // FIXME: localValueDim is screwing everything up
-    // if (strcmp(varName, "time") == 0)
-    // {
-    //     std::cout << "\n FIXME: time\n" << std::endl;
-    // }
-
-    adios2::DataType adiosType{static_cast<adios2::DataType>(*varTypeAsInt)};
-
-    // std::cout << "adiosType: " << adiosType << std::endl;
-
-    // DBDefineVariableInEngineIO(io, varName, typeInt, *shapeID, shape,
-    // start, DBDefineVariableInEngineIO(io, varName, varTypeAsInt,
-    // *shapeID, shape, start,
-    DefineVariableInEngineIO(io, varName, adiosType, *shapeID, shape, start,
-                             count, *isConstantDims, *isSingleValue);
-    // DBDefineVariableInInit(io, varName, varType, shape, start, count,
-    //                        *isConstantDims, *isSingleValue);
-    InitVariable(io, engine, projectNamespace, fileName, varName, blocks,
-                 *numberSteps, *shapeID, *isReadAsJoined, *isReadAsLocalValue,
-                 *isRandomAccess, *isSingleValue);
-    if (*numberSteps > 0)
-    {
-        g_free(*tmpblocks);
-    }
-    g_free(isConstantDims);
-    g_free(isReadAsJoined);
-    g_free(isReadAsLocalValue);
-    g_free(isRandomAccess);
-    g_free(varName);
-    g_free(shapeID);
-    g_free(isSingleValue);
-    // g_free(varTypePtr);
-    g_free(shapeSize);
-    g_free(startSize);
-    g_free(countSize);
-    g_free(numberSteps);
-    }
-    // i++;
-    // }
-    // j_db_iterator_unref(iterator);
-    // j_db_entry_unref(entry);
-    // j_db_schema_unref(schema);
-    // j_db_selector_unref(selector);
-    j_batch_unref(batch);
-    j_semantics_unref(semantics);
 }
 
 // TODO: projectnamespace

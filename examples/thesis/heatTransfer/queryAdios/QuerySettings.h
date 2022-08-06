@@ -14,10 +14,22 @@
 #include <string>
 #include <vector>
 
-class QuerySettings
+class AdiosQuerySettings
 {
 
 public:
+    enum AdiosQueryID
+    {
+        AQUERY_ALL_IN_RANGE,
+        AQUERY_HIGHEST_MEAN,
+        AQUERY_DRASTIC_LOCAL_CHANGE_IN_TIME,
+        AQUERY_NUMBER_DAYS_COLDER_THAN,
+        AQUERY_CI_DAYS,
+        AQUERY_LOWEST_TEMP_OVER_FILES,
+        AQUERY_RAIN_TEMP_COMBINED,
+    };
+    typedef enum AdiosQueryID AdiosQueryID;
+
     // user arguments
     std::string configfile;
     std::string inputfile;
@@ -38,7 +50,7 @@ public:
     std::vector<size_t>
         offset; // Offset of local array in X-Y dimensions on this process
 
-    QuerySettings(int argc, char *argv[], int rank, int nproc);
+    AdiosQuerySettings(int argc, char *argv[], int rank, int nproc);
     void DecomposeArray(int gndx, int gndy);
 };
 
