@@ -431,6 +431,7 @@ void JuleaKVInteractionReader::InitVariablesFromKV(
 
     auto completeNamespace = g_strdup_printf(
         "%s_%s_%s", "adios2", projectNamespace.c_str(), "variable-metadata");
+    std::cout << "completeNamespace: " << completeNamespace << "\n";
 
     // while (j_db_iterator_next(iterator, NULL))
     // {
@@ -444,6 +445,8 @@ void JuleaKVInteractionReader::InitVariablesFromKV(
     // get variable Name using kv iterator over namespace + prefix
     auto kvIterator = j_kv_iterator_new(completeNamespace, fileName.c_str());
 
+    std::cout << "fileName: " << fileName << "\n";
+
     while (j_kv_iterator_next(kvIterator))
     {
         gchar const *key;
@@ -455,10 +458,13 @@ void JuleaKVInteractionReader::InitVariablesFromKV(
         // get variable name
         key = j_kv_iterator_get(kvIterator, &value, &nameLen);
         varName = (char *)value;
+        // varName = "T";
+        std::cout << "varName: " << varName << "\n";
 
         auto fileVar = g_strdup_printf("%s_%s", fileName.c_str(), varName);
         auto varMetadata = j_kv_new(completeNamespace, fileVar);
 
+        std::cout << "fileVar: " << fileVar << "\n";
         //Read name from kv -> TODO: do something with key
 
         j_kv_get(varMetadata, &mdBuf, &mdLen, batch);
@@ -597,7 +603,7 @@ void JuleaKVInteractionReader::InitVariablesFromKV(
             //                         (gpointer *)&varTypeAsInt, &db_length,
             //                         NULL);
 
-            if (false)
+            if (true)
             {
                 // std::cout << "numberSteps: " << blocks[0] << std::endl;
                 // std::cout << "numberSteps: " << blocks[1] << std::endl;
