@@ -32,8 +32,8 @@ using namespace std::chrono;
 #include <string>
 #include <vector>
 
-#include "QueryPrintDataStep.h"
-#include "QuerySettings.h"
+#include "AdiosQueryPrintDataStep.h"
+#include "AdiosQuerySettings.h"
 
 void computeDistancesFromMean(const std::vector<double> &values,
                               std::vector<double> &TdifferencesMean,
@@ -136,17 +136,19 @@ void printQueryDurations(
 void AdiosQueryAllInRange(std::string fileName, adios2::IO inIO,
                           adios2::Engine reader)
 {
-    // adios2::IO inIO = ad.DeclareIO("readerInput");
-    tempVar = inIO.InquireVariable<double>("T");
+    auto tempVar = inIO.InquireVariable<double>("T");
 
-    auto blocksInfo = tempVar.AllStepsBlocksInfo();
+    auto blocksInfoAllSteps = tempVar.AllStepsBlocksInfo();
     std::vector<size_t> blockIDs;
 
-    for (auto block : blocksInfo)
+    for (auto blocksInfoPerStep : blocksInfoAllSteps)
     {
-        if ((block.Max() < 42) && (block.Min() > -42))
+        for (auto block : blocksInfoPerStep)
         {
-            blockIDs.push_back(block.BlockID)
+            if ((block.Max < 42) && (block.Min > -42))
+            {
+                blockIDs.push_back(block.BlockID);
+            }
         }
     }
 }
@@ -168,11 +170,6 @@ void AdiosQueryHighestMean(std::string fileName, adios2::IO inIO,
         dataSize *= element;
     }
 
-    // tempData.resize(dataSize * tempVar.Sizeof());
-    // reader.Get<double>(temperature, tempData.data(), adios2::Mode::Sync);
-    // ComputeMean(tempData,)
-    // auto blocksInfo = vTin.AllStepsBlocksInfo();
-
     std::vector<size_t> blockIDs;
 
     for (int i = 0; i < tempVar.Steps(); i++)
@@ -181,9 +178,9 @@ void AdiosQueryHighestMean(std::string fileName, adios2::IO inIO,
 
         for (int j = 0; j < blocksPerStep.size(); j++)
         {
-            tempVar.SetStepselection({i, 1});
+            tempVar.SetStepSelection({i, 1});
             tempVar.SetBlockSelection(j);
-            tempData.resize(dataSize * tempVar.Sizeof());
+            tempData.resize(tempVar.SelectionSize());
             reader.Get<double>(tempVar, tempData.data(), adios2::Mode::Sync);
             ComputeMean(tempData, mean);
 
@@ -201,7 +198,7 @@ void AdiosQueryDrasticLocalChangeInTimeInterval(std::string fileName,
 {
     adios2::Variable<double> tempVar = inIO.InquireVariable<double>("T");
 
-    auto blocksInfo = vTin.AllStepsBlocksInfo();
+    auto blocksInfo = tempVar.AllStepsBlocksInfo();
     double diff = 0;
     double maxDiff = 0;
 
@@ -212,27 +209,28 @@ void AdiosQueryDrasticLocalChangeInTimeInterval(std::string fileName,
     {
         for (int i = 0; i < blockInfos1.size(); ++i)
         {
-            result1 = blockInfos1[i].Max();
-            result1 = blockInfos100[i].Max();
+            auto result1 = blockInfos1[i].Max;
+            auto result100 = blockInfos100[i].Max;
 
-            diff = std::abs(result - result2);
+            diff = std::abs(result1 - result100);
             if (diff > maxDiff)
             {
                 maxDiff = diff;
             }
         }
     }
-    std::cout << "maxDiff: " << maxDiff << "\n";
+    // std::cout << "maxDiff: " << maxDiff << "\n";
 }
 
 // where is block max T > 40 and sum max P > 20?
 
 /**
- * @brief Find the blockID (=location) of the maximum precipiation block sum, where the maximum block temperature is > 40 
- * 
- * @param fileName 
- * @param inIO 
- * @param reader 
+ * @brief Find the blockID (=location) of the maximum precipiation block sum,
+ * where the maximum block temperature is > 40
+ *
+ * @param fileName
+ * @param inIO
+ * @param reader
  */
 void AdiosQueryRainTemperatureCombinedSimple(std::string fileName,
                                              adios2::IO inIO,
@@ -248,20 +246,18 @@ void AdiosQueryRainTemperatureCombinedSimple(std::string fileName,
     double maxSum = 0;
 
     // index in vector = step; vector content = blockIDs for this step
-    std::vector<std::vector<size_t>>
-        blockIDsQueryMet; 
+    std::vector<std::vector<size_t>> blockIDsQueryMet;
 
     for (int i = 0; i < tempVar.Steps(); i++)
     {
         auto blockInfos = reader.BlocksInfo(tempVar, i);
 
-        //TODO: constructor or anything needed here?
-        std::vector<size_t> blockIDs; 
+        std::vector<size_t> blockIDs;
         blockIDsQueryMet.push_back(blockIDs);
 
         for (int j = 0; j < blockInfos.size(); j++)
         {
-            if (blockInfos[j].Max() > 40)
+            if (blockInfos[j].Max > 40)
             {
                 blockIDsQueryMet[i].push_back(blockInfos[j].BlockID);
             }
@@ -272,13 +268,13 @@ void AdiosQueryRainTemperatureCombinedSimple(std::string fileName,
     {
         for (int j = 0; j < blockIDsQueryMet[i].size(); j++)
         {
-            tempVar.SetStepselection({i, 1});
+            tempVar.SetStepSelection({i, 1});
             tempVar.SetBlockSelection(blockIDsQueryMet[i][j]);
 
-            data.resize(SelectionSize());
+            precipData.resize(precipVar.SelectionSize());
             reader.Get<double>(precipVar, precipData.data(),
                                adios2::Mode::Sync);
-            sum = std::accumulate(precipData.begin(), precipData.end());
+            sum = std::accumulate(precipData.begin(), precipData.end(), 0);
 
             blockSums.push_back(sum);
         }
@@ -287,11 +283,10 @@ void AdiosQueryRainTemperatureCombinedSimple(std::string fileName,
     maxSum = *max_element(blockSums.begin(), blockSums.end());
 }
 
-// void AdiosQueryLowestTemp(std::string fileName, adios2::IO inIO,
-//                           adios2::Engine reader)
-// {
-// }
-
+void AdiosQueryLowestTemp(std::string fileName, adios2::IO inIO,
+                          adios2::Engine reader)
+{
+}
 
 // how many and which days had max temp below -12?
 void AdiosQueryDaysColderThan(std::string fileName, adios2::IO inIO,
@@ -310,25 +305,25 @@ void AdiosQuery(AdiosQuerySettings::AdiosQueryID queryID, std::string fileName,
     switch (queryID)
     {
     case AdiosQuerySettings::AQUERY_ALL_IN_RANGE:
-        QueryAllInRange(fileName, inIO, reader);
+        AdiosQueryAllInRange(fileName, inIO, reader);
         break;
     case AdiosQuerySettings::AQUERY_HIGHEST_MEAN:
-        QueryHighestMean(fileName, inIO, reader);
+        AdiosQueryHighestMean(fileName, inIO, reader);
         break;
     case AdiosQuerySettings::AQUERY_DRASTIC_LOCAL_CHANGE_IN_TIME:
-        QueryDrasticLocalChangeInTimeInterval(fileName, inIO, reader);
+        AdiosQueryDrasticLocalChangeInTimeInterval(fileName, inIO, reader);
         break;
     case AdiosQuerySettings::AQUERY_RAIN_TEMP_COMBINED:
-        QueryRainTemperatureCombinedSimple(fileName, inIO, reader);
+        AdiosQueryRainTemperatureCombinedSimple(fileName, inIO, reader);
         break;
     case AdiosQuerySettings::AQUERY_LOWEST_TEMP_OVER_FILES:
         // QueryLowestTemp(fileName, inIO, reader);
         break;
     case AdiosQuerySettings::AQUERY_NUMBER_DAYS_COLDER_THAN:
-        QueryDaysColderThan(fileName, inIO, reader);
+        // AdiosQueryDaysColderThan(fileName, inIO, reader);
         break;
     case AdiosQuerySettings::AQUERY_CI_DAYS:
-        QueryCIDays(fileName, inIO, reader);
+        // AdiosQueryCIDays(fileName, inIO, reader);
         break;
     }
 }
@@ -338,12 +333,12 @@ void AdiosSetupQueries(
 {
     allQueries->push_back(AdiosQuerySettings::AQUERY_ALL_IN_RANGE);
     allQueries->push_back(AdiosQuerySettings::AQUERY_HIGHEST_MEAN);
-    // allQueries->push_back(
-    //     JuleaQuerySettings::JQUERY_DRASTIC_LOCAL_CHANGE_IN_TIME);
-    // allQueries->push_back(JuleaQuerySettings::JQUERY_NUMBER_DAYS_COLDER_THAN);
-    // allQueries->push_back(JuleaQuerySettings::JQUERY_CI_DAYS);
-    // allQueries->push_back(JuleaQuerySettings::JQUERY_LOWEST_TEMP_OVER_FILES);
-    // allQueries->push_back(JuleaQuerySettings::JQUERY_RAIN_TEMP_COMBINED);
+    allQueries->push_back(
+        AdiosQuerySettings::AQUERY_DRASTIC_LOCAL_CHANGE_IN_TIME);
+    allQueries->push_back(AdiosQuerySettings::AQUERY_RAIN_TEMP_COMBINED);
+    // allQueries->push_back(AdiosQuerySettings::AQUERY_NUMBER_DAYS_COLDER_THAN);
+    // allQueries->push_back(AdiosQuerySettings::AQUERY_CI_DAYS);
+    // allQueries->push_back(AdiosQuerySettings::AQUERY_LOWEST_TEMP_OVER_FILES);
 }
 
 int main(int argc, char *argv[])
@@ -374,41 +369,31 @@ int main(int argc, char *argv[])
     {
         double timeStart = MPI_Wtime();
         AdiosQuerySettings settings(argc, argv, rank, nproc);
-        // std::cout << "configfile: " << settings.configfile << std::endl;
         adios2::ADIOS ad(settings.configfile, mpiQueryComm);
 
         adios2::IO inIO = ad.DeclareIO("readerInput");
-        // adios2::IO outIO = ad.DeclareIO("readerOutput");
 
-        // std::cout << "This is called -- 1" << std::endl;
-        MPI_Barrier(mpiQueryComm); // who knows maybe this helps for mariadb...
-        // std::cout << settings.inputfile << std::endl;
+        MPI_Barrier(mpiQueryComm);
         adios2::Engine reader =
             inIO.Open(settings.inputfile, adios2::Mode::Read, mpiQueryComm);
-        // std::cout << "This is called -- 2" << std::endl;
 
-        // std::cout << settings.inputfile << std::endl;
-        // std::cout << "steps = " << settings.steps << std::endl;
-        // settings.m_ProjectNamespace = "Postprocess_evaluation";
-        // settings.m_ProjectNamespace = "Thesis_eval";
         std::vector<AdiosQuerySettings::AdiosQueryID> allQueries;
-        SetupQueries(&allQueries);
-
-        std::cout << "length AllQueries: " << allQueries.size() << "\n";
+        AdiosSetupQueries(&allQueries);
 
         if (rank == 0)
         {
             std::cout << "\n# Read \t Compute \t Analysis" << std::endl;
         }
+        auto startAnalysis = high_resolution_clock::now();
+        auto stopAnalysis = high_resolution_clock::now();
 
         // evaluate all post-processing queries
         for (auto element : allQueries)
         {
-            std::cout << "Query Loop starts\n";
             startAnalysis = high_resolution_clock::now();
             // startRead = high_resolution_clock::now();
 
-            AdiosQuery(element, settings.m_Inputfile, inIO, reader);
+            AdiosQuery(element, settings.inputfile, inIO, reader);
             // ReadQuery(element, settings.m_ProjectNamespace,
             // settings.m_Inputfile);
 
@@ -421,10 +406,12 @@ int main(int argc, char *argv[])
             // stopCompute = high_resolution_clock::now();
             stopAnalysis = high_resolution_clock::now();
 
-            printQueryDurations(stopRead, startRead, stopCompute, startCompute,
-                                stopAnalysis, startAnalysis);
+            // printQueryDurations(stopRead, startRead, stopCompute,
+            // startCompute, stopAnalysis, startAnalysis);
+            printQueryDurations(stopAnalysis, startAnalysis, stopAnalysis,
+                                startAnalysis, stopAnalysis, startAnalysis);
         }
-
+        MPI_Barrier(mpiQueryComm);
         double timeEnd = MPI_Wtime();
         if (rank == 0)
             std::cout << "Total runtime = " << timeEnd - timeStart << "s\n"

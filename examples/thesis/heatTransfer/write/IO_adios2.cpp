@@ -12,6 +12,7 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
+#include <random>
 #include <sstream>
 #include <string>
 #include <math.h>
@@ -90,24 +91,20 @@ IO::~IO() { bpWriter.Close(); }
 void IO::write(int step, const HeatTransfer &ht, const Settings &s,
                MPI_Comm comm)
 {
-
-    // auto startBeginStep = high_resolution_clock::now();
-    // auto stopBeginStep = high_resolution_clock::now();
+    // example from https://stackoverflow.com/questions/288739/generate-random-numbers-uniformly-over-an-entire-range
+    const int rangeFrom  = 0;
+    // world record per day 1825 mm; here 2 steps per day  https://wmo.asu.edu/content/world-greatest-twenty-four-hour-1-day-rainfall
+    const int rangeTo    = 500;        
+    std::random_device randDev;
+    std::mt19937 generator(randDev());
+    std::uniform_int_distribution<int>  distrFrom(rangeFrom, 250);
+    std::uniform_int_distribution<int>  distrTo(251, rangeTo);
 
     // auto startEndStep = high_resolution_clock::now();
     auto stopEndStep = high_resolution_clock::now();
 
     auto startPut = high_resolution_clock::now();
     // auto stopPut = high_resolution_clock::now();
-
-    // right before and right after PUT; in case of deferred I/O nothing is
-    // actually written
-    // auto durationPut = duration_cast<microseconds>(stopPut - startPut);
-
-    // right before and right after ENDSTEP; this is where deferred writes
-    // happen
-    // auto durationEndStep =
-        // duration_cast<microseconds>(stopEndStep - startEndStep);
 
     // right before PUT and right after ENDSTEP; complete write time for
     // deferred writes
@@ -120,73 +117,54 @@ void IO::write(int step, const HeatTransfer &ht, const Settings &s,
     // added support for MemorySelection
     if (bpWriter.Type() == "BP3")
     {
-        startBeginStep = high_resolution_clock::now();
         bpWriter.BeginStep();
-        stopBeginStep = high_resolution_clock::now();
+
+       int numberElements = (s.ndx+2) * (s.ndy+2);
+        // double* data = new double[numberElements];
+        std::vector<double> data;
+        data.reserve(numberElements);
+
+        // to have more variation in the min/max between steps, the distribution range is set randomly each step.
+        //low range between 0 - 250; 
+        std::uniform_int_distribution<int>  distr2(distrFrom(generator), distrTo(generator));
+        for (int i = 0; i < numberElements; ++i )
+        {
+            data[i] = distr2(generator);
+        }
 
         startPut = high_resolution_clock::now();
         bpWriter.Put<double>(varT, ht.data());
-        bpWriter.Put<double>(varP, ht.data());
-        stopPut = high_resolution_clock::now();
+        bpWriter.Put<double>(varP, data.data());
 
-        startEndStep = high_resolution_clock::now();
         bpWriter.EndStep();
         stopEndStep = high_resolution_clock::now();
     }
     else
     {
-        startBeginStep = high_resolution_clock::now();
         bpWriter.BeginStep();
-        stopBeginStep = high_resolution_clock::now();
 
         std::vector<double> v = ht.data_noghost();
+         int numberElements = v.size();
+        // double* data = new double[numberElements];
+        std::vector<double> data;
+        data.reserve(numberElements);
+
+        std::uniform_int_distribution<int>  distr2(distrFrom(generator), distrTo(generator));
+        for (int i = 0; i < numberElements; ++i )
+        {
+            data[i] = distr2(generator);
+        }
 
         startPut = high_resolution_clock::now();
         bpWriter.Put<double>(varT, v.data());
-        stopPut = high_resolution_clock::now();
-        // bpWriter.Put<double>(varT, v.data(), adios2::Mode::Sync);
+        bpWriter.Put<double>(varP, data.data());
 
-        startEndStep = high_resolution_clock::now();
         bpWriter.EndStep();
         stopEndStep = high_resolution_clock::now();
     }
 
-    // durationPut = duration_cast<microseconds>(stopPut - startPut);
-    // durationEndStep = duration_cast<microseconds>(stopEndStep -
-    // startEndStep);
     durationWrite = duration_cast<microseconds>(stopEndStep - startPut);
-
-    // std::ofstream timeOutput;
-    // std::ofstream timeOutput("heatTransfer-Output.txt");
-    // timeOutput.open("heatTransfer-Output.txt", std::fstream::app);
-    // if (timeOutput.is_open())
-    // {
-    // timeOutput << "\n--- Write time in mikroseconds ---\n" << std::endl;
-    // timeOutput << "put: \t rank: \t" << s.rank << "\t" << durationPut.count()
-    // << std::endl;
-    // timeOutput << "step: \t rank: \t" << s.rank << "\t" <<
-    // durationEndStep.count()
-    // << std::endl;
-    // timeOutput << "write: \t rank: \t" << s.rank << "\t"
-    // << durationWrite.count()
-    // << "\n"
-    // << std::endl;
-    // timeOutput.close();
-
-    // std::stringstream outputBuffer;
-    // outputBuffer << "put: \t rank: \t" << s.rank << "\t" <<
-    // durationPut.count()
-    //              << "\n"
-    //              << "step: \t rank: \t" << s.rank << "\t"
-    //              << durationEndStep.count() << "\n"
-    //              << "write: \t rank: \t" << s.rank << "\t"
-    //              << durationWrite.count();
-    //              // << durationWrite.count() << std::endl;
-
-    // std::string output = outputBuffer.str();
-    // std::string input = std::string(output);
-
-    // std::cout << output << std::endl;
+    m_seedStep++;
 
     size_t writeSum = 0;
     size_t writeSquareSum = 0;
@@ -201,55 +179,31 @@ void IO::write(int step, const HeatTransfer &ht, const Settings &s,
     writeMean = writeSum / s.nproc;
     writeSdev = sqrt(writeSquareSum / s.nproc - (writeMean * writeMean));
 
-
     if (s.rank == 0)
     {
-        // std::cout << outputBuffer.str() << std::endl;
-        // std::cout << "put: \t rank: \t" << s.rank << "\t" <<
-        // durationPut.count()
-        //           << "\n"
-        //           << "step: \t rank: \t" << s.rank << "\t"
-        //           << durationEndStep.count() << "\n"
-        //           << "write: \t rank: \t" << s.rank << "\t"
-        //           << durationWrite.count() << std::endl;
-        // writeMean;
-        std::cout << writeMean;
-        std::cout << "\t " << writeSdev;
-        std::cout << "\t " << write;
-        for (int i = 1; i < s.nproc; i++)
+        if (step > 0)
         {
-            // size_t put, step, write;
-            MPI_Status status;
-
-            // MPI_Recv(&put, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, &status);
-            // MPI_Recv(&step, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, &status);
-            MPI_Recv(&write, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, &status);
-            // std::cout << "put: \t rank: \t" << i << "\t" << put << "\n"
-            //           << "step: \t rank: \t" << i << "\t" << step << "\n"
-            //           << "write: \t rank: \t" << i << "\t" << write
-            //           << std::endl;
-
+            std::cout << writeMean;
+            std::cout << "\t " << writeSdev;
             std::cout << "\t " << write;
         }
-        std::cout << std::endl;
+        for (int i = 1; i < s.nproc; i++)
+        {
+            MPI_Status status;
+
+            MPI_Recv(&write, 1, MPI_LONG, i, 0, MPI_COMM_WORLD, &status);
+            if (step > 0)
+            {
+                std::cout << "\t " << write;
+            }
+        }
+        if (step > 0)
+        {
+            std::cout << std::endl;
+        }
     }
     else
     {
-        // size_t put = durationPut.count();
-        // size_t step = durationEndStep.count();
-        // size_t write = durationWrite.count();
-
-        // MPI_Send(&put, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
-        // MPI_Send(&step, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
         MPI_Send(&write, 1, MPI_LONG, 0, 0, MPI_COMM_WORLD);
     }
-
-    // std::cout << "put: \t rank: \t" << s.rank << "\t" << durationPut.count()
-    //           << "\n"
-    //         << "step: \t rank: \t" << s.rank << "\t" <<
-    //         durationEndStep.count()
-    //           << "\n"
-    // << "write: \t rank: \t" << s.rank << "\t" << durationWrite.count()
-    //           << std::endl;
-    // }
 }

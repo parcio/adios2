@@ -107,32 +107,19 @@ int main(int argc, char *argv[])
 
         io.write(0, ht, settings, mpiHeatTransferComm);
 
-        // barrier just for output
-        // MPI_Barrier(mpiHeatTransferComm);
-        // std::ofstream timeOutput;
-        // if (rank == 0)
-        // {
-        //     timeOutput.open("heatTransfer-Output.txt", std::fstream::app);
-        //     timeOutput << "--- Ending step: " << 0 << " \t---\n\n" <<
-        //     std::endl; timeOutput.close(); std::cout << "--- Ending step: "
-        //     << 0 << " \t---\n\n" << std::endl;
-        // }
+        if (rank == 0)
+        {
+                std::cout << "\n# Mean \t Sdev \t Rank 0" << std::endl;
+        }
 
         for (unsigned int t = 1; t <= settings.steps; ++t)
         {
             // std::cout << "settings.steps: " << settings.steps << std::endl;
             if (rank == 0)
             {
-
                 // std::cout << "Step " << t << ":\n";
-                // std::cout << "--- Beginning step: " << t << " \t---\n\n"
-                // << std::endl;
-                // timeOutput.open("heatTransfer-Output.txt",
-                // std::fstream::app); timeOutput << "--- Beginning step: " << t
-                // << " \t---"
-                //            << std::endl;
-                // timeOutput.close();
             }
+
             for (unsigned int iter = 1; iter <= settings.iterations; ++iter)
             {
                 ht.iterate();
@@ -142,20 +129,6 @@ int main(int argc, char *argv[])
 
             io.write(t, ht, settings, mpiHeatTransferComm);
 
-            // this barrier is just to make output a little bit less random.
-            // since the measurements take place on a per step basis this
-            // barrier does not hurt the benchmarking
-            // MPI_Barrier(mpiHeatTransferComm);
-            // if (rank == 0)
-            // {
-            //     timeOutput.open("heatTransfer-Output.txt",
-            //     std::fstream::app); timeOutput << "--- Ending step: " << t <<
-            //     " \t---\n\n"
-            //                << std::endl;
-            //     timeOutput.close();
-            //     std::cout << "--- Ending step: " << t << " \t---\n\n"
-            //               << std::endl;
-            // }
         }
         MPI_Barrier(mpiHeatTransferComm);
 

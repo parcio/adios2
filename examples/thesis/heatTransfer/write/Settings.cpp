@@ -86,35 +86,6 @@ Settings::Settings(int argc, char *argv[], int rank, int nproc) : rank{rank}
     else
         rank_right = rank + npx;
 
-    // std::ofstream timeOutput("heatTransfer-Output.txt");
-    // if (timeOutput.is_open())
-    // {
-    //     if (rank == 0)
-    //     {
-    //         timeOutput << "configfile: " << configfile << "\n";
-    //         timeOutput << "outputfile: " << outputfile << "\n";
-    //         timeOutput << "N: " << npx << "\n";
-    //         timeOutput << "M: " << npy << "\n";
-    //         timeOutput << "nx: " << ndx << "\n";
-    //         timeOutput << "ny: " << ndy << "\n";
-    //         timeOutput << "steps: " << steps << "\n";
-    //         timeOutput << "iterations: " << iterations << "\n";
-
-    //         timeOutput << "\n --- measured times (mikroseconds): ---\n";
-    //         timeOutput
-    //             << "put: \t\t right before and right after PUT; in case of "
-    //                "deferred I/O nothing is actually written\n";
-    //         timeOutput
-    //             << "endstep: \t right before and right after ENDSTEP; this is
-    //             "
-    //                "where deferred writes happen\n";
-    //         timeOutput
-    //             << "write: \t\t right before PUT and right after ENDSTEP; "
-    //                "complete write time for deferred writes\n";
-    //         timeOutput << "\n--- Write time in mikroseconds ---" <<
-    //         std::endl; timeOutput.close();
-    //     }
-    // }
 
     if (rank == 0)
     {
@@ -125,25 +96,8 @@ Settings::Settings(int argc, char *argv[], int rank, int nproc) : rank{rank}
 
         std::cout << "# N \t M \t nx \t ny \t steps \t iterations" << std::endl;
         std::cout << npx << " \t " << npy << " \t " << ndx << " \t " << ndy
-                  << " \t " << steps << " \t " << iterations << "\n"
-                  << std::endl;
+                  << " \t " << steps << " \t " << iterations << std::endl;
 
-        std::cout << "# Mean \t Sdev \t Rank 0" << std::endl;
-        // std::cout << "# N: " << npx << "\n";
-        // std::cout << "# M: " << npy << "\n";
-        // std::cout << "# nx: " << ndx << "\n";
-        // std::cout << "# ny: " << ndy << "\n";
-        // std::cout << "# steps: " << steps << "\n";
-        // std::cout << "# iterations: " << iterations << "\n";
-        // std::cout << "# \n --- measured times (mikroseconds): ---\n";
-        // std::cout << "# put: \t\t right before and right after PUT; in case
-        // of "
-        //              "deferred I/O nothing is actually written\n";
-        // std::cout << "# step: \t right before and right after ENDSTEP; this
-        // is "
-        //              "where deferred writes happen\n";
-        // std::cout << "# write: \t\t right before PUT and right after ENDSTEP;
-        // "
-        //              "complete write time for deferred writes\n";
+        // std::cout << "# Mean \t Sdev \t Rank 0" << std::endl;
     }
 }

@@ -7,7 +7,7 @@ add_executable(
   # julea_heatTransfer_queryAdios
   thesis_eval_heatTransfer_queryAdios
   queryAdios.cpp 
-  QueryPrintDataStep.h 
-  QuerySettings.cpp
+  AdiosQueryPrintDataStep.h 
+  AdiosQuerySettings.cpp
 )
 target_link_libraries(thesis_eval_heatTransfer_queryAdios adios2::cxx11_mpi MPI::MPI_C)

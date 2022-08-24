@@ -8,7 +8,7 @@
  *      Author: Norbert Podhorszki
  */
 
-#include "QuerySettings.h"
+#include "AdiosQuerySettings.h"
 
 #include <cstdlib>
 #include <errno.h>
@@ -33,7 +33,7 @@ static unsigned int convertToUint(std::string varName, char *arg)
     return static_cast<unsigned int>(retval);
 }
 
-QuerySettings::QuerySettings(int argc, char *argv[], int rank, int nproc)
+AdiosQuerySettings::AdiosQuerySettings(int argc, char *argv[], int rank, int nproc)
 : rank{rank}
 {
     if (argc < 5)
@@ -83,7 +83,7 @@ QuerySettings::QuerySettings(int argc, char *argv[], int rank, int nproc)
     }
 }
 
-void QuerySettings::DecomposeArray(int gndx, int gndy)
+void AdiosQuerySettings::DecomposeArray(int gndx, int gndy)
 {
     // 2D decomposition of global array reading
     size_t ndx = gndx / npx;

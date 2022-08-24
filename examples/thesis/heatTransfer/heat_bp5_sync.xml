@@ -11,7 +11,7 @@
         ====================================-->
 
     <io name="writer">
-        <engine type="BP4">
+        <engine type="BP5">
             
             <!-- for vectorized memory operations, make sure your system 
                  enables threads--> 
@@ -62,7 +62,7 @@
         =======================================-->
 
     <io name="readerInput">
-        <engine type="BP4">
+        <engine type="BP5">
             
             <!-- for vectorized memory operations, make sure your system 
                  enables threads--> 
@@ -109,8 +109,7 @@
         <transport type="File">
             
             <!-- POSIX, stdio (C FILE*), fstream (C++) -->
-            <!-- <parameter key="Library" value="stdio"/> -->
-            <parameter key="Library" value="POSIX"/>
+            <parameter key="Library" value="stdio"/>
             
             <!-- For read/write, Microseconds (default), Milliseconds, Seconds, 
                  Minutes, Hours. open/close always in Microseconds -->

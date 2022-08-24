@@ -26,6 +26,7 @@ public:
 
 private:
     std::string m_outputfilename;
+    uint32_t m_seedStep = 0;
 
     // Generate a file name from the outputfile string and the arguments
     // default is add suffix if not already there

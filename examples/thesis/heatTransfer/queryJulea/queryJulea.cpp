@@ -484,13 +484,13 @@ void JuleaQuery(JuleaQuerySettings::JuleaQueryID queryID,
         QueryRainTemperatureCombinedSimple(projectNamespace, fileName);
         break;
     case JuleaQuerySettings::JQUERY_LOWEST_TEMP_OVER_FILES:
-        QueryLowestTemp(projectNamespace, fileName);
+        // QueryLowestTemp(projectNamespace, fileName);
         break;
     case JuleaQuerySettings::JQUERY_NUMBER_DAYS_COLDER_THAN:
-        QueryDaysColderThan(projectNamespace, fileName);
+        // QueryDaysColderThan(projectNamespace, fileName);
         break;
     case JuleaQuerySettings::JQUERY_CI_DAYS:
-        QueryCIDays(projectNamespace, fileName);
+        // QueryCIDays(projectNamespace, fileName);
         break;
     }
 }
