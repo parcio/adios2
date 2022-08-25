@@ -319,6 +319,7 @@ void JuleaKVWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
         fixed by setting them in 'JuleaDBDAISetMinMax' */
     if (m_WriterRank == 0)
     {
+        m_JuleaKVInteractionWriter.PutVarNameToJulea( m_ProjectNamespace, m_Name, variable.m_Name);
         /** updates the variable metadata as there is a new block now */
         m_JuleaKVInteractionWriter.PutVariableMetadataToJulea(
             variable, m_ProjectNamespace, m_Name, variable.m_Name,

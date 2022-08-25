@@ -49,6 +49,8 @@ void TestWriteVariableSync()
         "juleaFloats", {Nx}, {0}, {Nx}, adios2::ConstantDims);
     adios2::Variable<double> juleaDoubles = juleaIO.DefineVariable<double>(
         "T", {Nx}, {0}, {Nx}, adios2::ConstantDims);
+    adios2::Variable<double> juleaDoubles2 = juleaIO.DefineVariable<double>(
+        "P", {Nx}, {0}, {Nx}, adios2::ConstantDims);
         
     // adios2::Variable<float> juleaFloats2 = juleaIO.DefineVariable<float>(
     // "juleaFloats2", {}, {}, {Nx}, adios2::ConstantDims);
@@ -63,6 +65,7 @@ void TestWriteVariableSync()
 
     /** Write variable for buffering */
     juleaWriter.Put<double>(juleaDoubles, myDoubles.data(), adios2::Mode::Deferred);
+    juleaWriter.Put<double>(juleaDoubles2, myDoubles.data(), adios2::Mode::Deferred);
 
     //TODO: uncommented to debug for eval setup
     // juleaWriter.Put<float>(juleaFloats, myFloats.data(), adios2::Mode::Deferred);
