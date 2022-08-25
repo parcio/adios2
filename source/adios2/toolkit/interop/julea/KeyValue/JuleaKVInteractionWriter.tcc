@@ -215,7 +215,8 @@ void JuleaKVInteractionWriter::ParseVariableToBSON(core::Variable<T> &variable,
 
 template <class T>
 void JuleaKVInteractionWriter::ParseBlockToBSON(core::Variable<T> &variable,
-                                                bson_t *bsonMetadata)
+                                                bson_t *bsonMetadata,
+                                                size_t currentStep)
 {
     std::cout << "_____________________________________________" << std::endl;
     T min;
@@ -224,8 +225,16 @@ void JuleaKVInteractionWriter::ParseBlockToBSON(core::Variable<T> &variable,
     // std::cout << "-- bsonMetadata length: " << bsonMetadata->len <<
     // std::endl;
     uint data_size = 0;
-    size_t number_elements = 0;
+    // size_t number_elements = 0;
+    size_t numberSteps = currentStep + 1;
     char *key;
+
+    size_t blocks[numberSteps];
+    for (uint i = 0; i < numberSteps; i++)
+    {
+        blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].size();
+        // std::cout << "i: " << i << "  blocks: " << blocks[i] << std::endl;
+    }
 
     bson_append_int64(bsonMetadata, "shape_size", -1, variable.m_Shape.size());
     for (guint i = 0; i < variable.m_Shape.size(); ++i)
@@ -270,7 +279,13 @@ void JuleaKVInteractionWriter::ParseBlockToBSON(core::Variable<T> &variable,
     bson_append_int64(bsonMetadata, "steps_start", -1, variable.m_StepsStart);
     bson_append_int64(bsonMetadata, "steps_count", -1, variable.m_StepsCount);
 
-    // TODO: write blocks array?
+    bson_append_int64(bsonMetadata, "numberSteps", -1, numberSteps);
+    for (guint i = 0; i < numberSteps; ++i)
+    {
+        key = g_strdup_printf("blockArray%d", i);
+        bson_append_int64(bsonMetadata, key, -1, blocks[i]);
+    }
+
     AppendMinMaxToBSON(variable, bsonMetadata);
 
     /* compute data_size; dimension entries !> 0 are ignored ?!*/
@@ -282,6 +297,97 @@ void JuleaKVInteractionWriter::ParseBlockToBSON(core::Variable<T> &variable,
     std::cout << "-- block bsonMetadata length: " << bsonMetadata->len
               << std::endl;
     g_free(key);
+}
+
+/**
+ *  Writes name of a variable to Julea KV. Also checks if name is
+ * already in kv.
+ */
+void JuleaKVInteractionWriter::PutVarNameToJulea(
+    std::string const projectNamespace, std::string const fileName,
+    std::string const varName)
+{
+    bool err = false;
+    guint32 valueLen = 0;
+    bson_t *bsonNames;
+    bson_iter_t bIter;
+    bson_iter_t bIter2;
+
+    void *namesBuf = NULL;
+    auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+    auto batch = j_batch_new(semantics);
+    auto batch2 = j_batch_new(semantics);
+
+    auto completeNamespace = g_strdup_printf(
+        "%s_%s_%s", "adios2", projectNamespace.c_str(), "variable-names");
+
+    /** store all variable names for a file = namespace */
+    auto varNames = j_kv_new(completeNamespace, fileName.c_str());
+
+    j_kv_get(varNames, &namesBuf, &valueLen, batch);
+    err = j_batch_execute(batch);
+
+    // JULEA does not return an error value but TRUE or FALSE
+    if (err == false)
+    {
+        // std::cout << "something went wrong while retrieving the names from
+        // kv\n";
+    }
+    // auto name = (char *)namesBuf;
+    // std::cout << "namesBuf: " << namesBuf << "\n";
+    // std::cout << "namesBuf: " << &namesBuf << "\n";
+    // std::cout << "namesBuf: " << *&namesBuf << "\n";
+    // std::cout << "name: " << name << "\n";
+    // std::cout << "name: " << &name << "\n";
+    // std::cout << "valueLen: " << valueLen << "\n";
+
+    if (valueLen == 0)
+    {
+        bsonNames = bson_new();
+        std::cout << "valueLen = 0 \n";
+    }
+    else
+    {
+        bsonNames = bson_new_from_data((const uint8_t *)namesBuf, valueLen);
+        // std::cout << "value len not 0: new bson from data. namesBuf = " <<
+        // namesBuf <<"\n"; std::cout << "value len not 0: new bson from data.
+        // namesBuf = " << &namesBuf <<"\n"; std::cout << "value len not 0: new
+        // bson from data. namesBuf = " << *namesBuf <<"\n";
+    }
+    free(namesBuf);
+
+    /* Check if variable name is already in kv store */
+    if (!bson_iter_init_find(&bIter, bsonNames, varName.c_str()))
+    {
+        bson_append_int32(bsonNames, varName.c_str(), -1, 42);
+    }
+    else
+    {
+        std::cout << "++ Julea Interaction Writer:  " << varName
+                  << " already in kv store. " << std::endl;
+    }
+
+    // bson_iter_init_find(&bIter2, bsonNames, "T");
+    // auto key = bson_iter_key (&bIter2);
+    // auto value = bson_iter_value (&bIter2);
+    // std::cout << "key: " << key << " value: " << value << "\n";
+
+    // bson_iter_init_find(&bIter2, bsonNames, "P");
+    // key = bson_iter_key (&bIter2);
+    // value = bson_iter_value (&bIter2);
+    // std::cout << "key: " << key << " value: " << value << "\n";
+
+    namesBuf = g_memdup2(bson_get_data(bsonNames), bsonNames->len);
+    j_kv_put(varNames, namesBuf, bsonNames->len, g_free, batch2);
+    // err = j_batch_execute(batch2);
+    g_assert_true(j_batch_execute(batch2) == true);
+
+    // free(namesBuf); //TODO: why does this lead to segfaults?
+    bson_destroy(bsonNames);
+    j_kv_unref(varNames);
+    j_batch_unref(batch);
+    j_batch_unref(batch2);
+    j_semantics_unref(semantics);
 }
 
 template <class T>
@@ -328,7 +434,7 @@ void JuleaKVInteractionWriter::PutBlockMetadataToJulea(
         "%s_%s_%d_%d", fileName.c_str(), variable.m_Name.c_str(), step, block);
     auto varMetadata = j_kv_new(completeNamespace, fileVarStepBlock);
 
-    ParseBlockToBSON(variable, bsonMetadata);
+    ParseBlockToBSON(variable, bsonMetadata, step);
 
     j_kv_put(varMetadata, (gpointer)bson_get_data(bsonMetadata),
              bsonMetadata->len, g_free, batch);

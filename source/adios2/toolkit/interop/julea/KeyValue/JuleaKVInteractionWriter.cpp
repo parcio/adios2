@@ -49,7 +49,8 @@ void JuleaKVInteractionWriter::InitKV(std::string projectNamespace,
     template void JuleaKVInteractionWriter::ParseVariableToBSON(               \
         core::Variable<T> &variable, bson_t *bsonMetadata);                    \
     template void JuleaKVInteractionWriter::ParseBlockToBSON(                  \
-        core::Variable<T> &variable, bson_t *bsonMetadata);                    \
+        core::Variable<T> &variable, bson_t *bsonMetadata,                     \
+        size_t currentStep);                                                   \
     template void JuleaKVInteractionWriter::PutVariableMetadataToJulea(        \
         core::Variable<T> &variable, const std::string projectNamespace,       \
         const std::string fileName, const std::string varName,                 \

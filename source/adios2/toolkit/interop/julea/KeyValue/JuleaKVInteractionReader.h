@@ -76,9 +76,16 @@ public:
     //                           std::string *valueField, std::string
     //                           *meanField, const adios2::DataType varType);
 
-    void DefineVariableInInit(core::IO *io, const std::string varName,
-                              std::string type, Dims shape, Dims start,
-                              Dims count, bool constantDims, bool isLocalValue);
+    // void DefineVariableInInit(core::IO *io, const std::string varName,
+    //                           std::string type, Dims shape, Dims start,
+    //                           Dims count, bool constantDims, bool
+    //                           isLocalValue);
+    void ParseVariableFromBSON(bson_t *bsonMetadata, ShapeID *shapeID,
+                               int *varTypeAsInt, Dims *shape, Dims *start,
+                               Dims *count, size_t *numberSteps,
+                               size_t **blocks, bool *isConstantDims,
+                               bool *isReadAsJoined, bool *isReadAsLocalValue,
+                               bool *isRandomAccess, bool *isSingleValue);
 
     void InitVariable(core::IO *io, core::Engine &engine,
                       const std::string projectNamespace,
@@ -127,16 +134,16 @@ public:
     // FIXME: parameter description needs updating: new namespace
     /** Retrieves all variable names from key-value store. They are all stored
      * in one bson. */
-    void GetNamesFromJulea(const std::string projectNamespace,
-                           const std::string fileName, bson_t **bsonNames,
-                           unsigned int *varCount, bool isVariable);
+    void GetVarNamesFromJulea(const std::string projectNamespace,
+                              const std::string fileName, bson_t **bsonNames,
+                              unsigned int *varCount);
 
     /** Retrieves the metadata buffer for the variable metadata that do not vary
      * from block to block. The key is the variable name. */
     void GetVariableMetadataFromJulea(const std::string projectNamespace,
                                       const std::string fileName,
                                       const std::string varName,
-                                      gpointer *buffer, guint32 *buffer_len);
+                                      bson_t *bsonMetadata);
 
     /** Retrieves the block metadata buffer from the key-value store. The key
      * is: currentStep_currentBlock. The variable name and the nameSpace from

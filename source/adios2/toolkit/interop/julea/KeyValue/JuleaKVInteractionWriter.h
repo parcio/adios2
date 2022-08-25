@@ -44,6 +44,14 @@ public:
     // void InitTagTables(std::string projectNamespace);
 
     /**
+     *  Writes name of a variable to Julea KV. Also checks if name is
+     * already in kv.
+     */
+    void PutVarNameToJulea(std::string const projectNamespace,
+                           std::string const fileName,
+                           std::string const varName);
+
+    /**
      * Put the metadata for a specific block in a specific step to JULEA
      * database.
      */
@@ -69,7 +77,8 @@ public:
     void ParseVariableToBSON(core::Variable<T> &variable, bson_t *bsonMetadata);
 
     template <class T>
-    void ParseBlockToBSON(core::Variable<T> &variable, bson_t *bsonMetadata);
+    void ParseBlockToBSON(core::Variable<T> &variable, bson_t *bsonMetadata,
+                          size_t currentStep);
 
     template <class T>
     void AppendMinMaxToBSON(core::Variable<T> &variable, bson_t *bsonMetadata);
@@ -83,7 +92,8 @@ private:
     extern template void JuleaKVInteractionWriter::ParseVariableToBSON(        \
         core::Variable<T> &variable, bson_t *bsonMetadata);                    \
     extern template void JuleaKVInteractionWriter::ParseBlockToBSON(           \
-        core::Variable<T> &variable, bson_t *bsonMetadata);                    \
+        core::Variable<T> &variable, bson_t *bsonMetadata,                     \
+        size_t currentStep);                                                   \
     extern template void JuleaKVInteractionWriter::PutVariableMetadataToJulea( \
         core::Variable<T> &variable, const std::string projectNamespace,       \
         const std::string fileName, const std::string varName,                 \
