@@ -137,7 +137,8 @@ void IO::write(int step, const HeatTransfer &ht, const Settings &s,
     // https://wmo.asu.edu/content/world-greatest-twenty-four-hour-1-day-rainfall
     const int rangeTo = 500;
     std::random_device randDev;
-    std::mt19937 generator(randDev());
+    // std::mt19937 generator(randDev());
+    std::mt19937 generator(42+m_seedStep+s.rank);
     std::uniform_int_distribution<int> distrFrom(rangeFrom, 250);
     std::uniform_int_distribution<int> distrTo(251, rangeTo);
 
@@ -194,6 +195,7 @@ void IO::write(int step, const HeatTransfer &ht, const Settings &s,
 
         std::uniform_int_distribution<int> distr2(distrFrom(generator),
                                                   distrTo(generator));
+        // std::uniform_int_distribution<int> distr2(0,500);
         for (int i = 0; i < numberElements; ++i)
         {
             data[i] = distr2(generator);
