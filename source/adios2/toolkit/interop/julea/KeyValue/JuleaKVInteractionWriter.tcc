@@ -126,11 +126,10 @@ void JuleaKVInteractionWriter::ParseVariableToBSON(core::Variable<T> &variable,
     // std::cout << "Test" << std::endl;
     T min;
     T max;
-                    std::cout << "-- ParseVariableToBSON \n";
-
+    std::cout << "-- ParseVariableToBSON \n";
 
     // std::cout << "-- Variable bsonMetadata length: " << bsonMetadata->len
-            //   << std::endl;
+    //   << std::endl;
     uint data_size = 0;
     size_t number_elements = 0;
     size_t numberSteps = currentStep + 1;
@@ -202,7 +201,8 @@ void JuleaKVInteractionWriter::ParseVariableToBSON(core::Variable<T> &variable,
     {
         key = g_strdup_printf("blockArray_%d", i);
         bson_append_int64(bsonMetadata, key, -1, blocks[i]);
-        // std::cout << "blockArray: " << key << " value: " << blocks[i] << "\n";
+        // std::cout << "blockArray: " << key << " value: " << blocks[i] <<
+        // "\n";
     }
 
     // bson_append_int64(bsonMetadata, "block_id", -1, variable.m_BlockID);
@@ -307,7 +307,7 @@ void JuleaKVInteractionWriter::ParseBlockToBSON(core::Variable<T> &variable,
     // std::cout << "data_size: " << data_size << std::endl;
 
     // std::cout << "-- block bsonMetadata length: " << bsonMetadata->len
-            //   << std::endl;
+    //   << std::endl;
     g_free(key);
 }
 
@@ -319,7 +319,7 @@ void JuleaKVInteractionWriter::PutVarNameToJulea(
     std::string const projectNamespace, std::string const fileName,
     std::string const varName)
 {
-        std::cout << "-- PutVarNameToJulea \n";
+    std::cout << "-- PutVarNameToJulea \n";
 
     bool err = false;
     guint32 valueLen = 0;
@@ -413,7 +413,7 @@ void JuleaKVInteractionWriter::PutVariableMetadataToJulea(
     const std::string fileName, const std::string varName, size_t step,
     size_t block, bool original)
 {
-            std::cout << "-- PutVariableMetadataToJulea \n";
+    std::cout << "-- PutVariableMetadataToJulea \n";
 
     auto bsonMetadata = bson_new();
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -443,7 +443,7 @@ void JuleaKVInteractionWriter::PutBlockMetadataToJulea(
     T &blockMin, T &blockMax, T &blockMean, T &blockSum, T &blockVar,
     uint32_t &entryID, bool original)
 {
-                std::cout << "-- PutBlockMetadataToJulea \n";
+    std::cout << "-- PutBlockMetadataToJulea \n";
 
     auto bsonMetadata = bson_new();
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);

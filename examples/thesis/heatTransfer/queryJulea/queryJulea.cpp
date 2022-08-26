@@ -341,7 +341,7 @@ void QueryRainTemperatureCombinedSimple(std::string projectNamespace,
     double maxSum = 0;
 
     GArray *temperatureResults = g_array_new(true, true, sizeof(size_t));
-    GArray *precipResults = g_array_new(true, true, sizeof(size_t));
+    // GArray *precipResults = g_array_new(true, true, sizeof(size_t));
 
     std::cout << "--- QueryRainTemperatureCombinedSimple \n";
     startRead = high_resolution_clock::now();
@@ -378,23 +378,25 @@ void QueryRainTemperatureCombinedSimple(std::string projectNamespace,
         //   J_DAI_OP_GT, &tmpResult);
         // result = &tmpResult;
         std::cout << "result: " << result << "\n";
+        // std::cout << "result: " << &result << "\n";
         // std::cout << "application: result = " << tmpResult << "\n";
         // std::cout << "application: result = " << *tmpResult << "\n";
-        result = true;
-        if (result)
-        {
-            std::cout << "=== meets query\n";
-            steps[i] = step;
-            blocks[i] = block;
-            blockSums.push_back(g_array_index(temperatureResults, size_t, i));
-        }
+        // result = true;
+        // if (result)
+        // {
+            // std::cout << "=== meets query\n";
+            // steps[i] = step;
+            // blocks[i] = block;
+            // blockSums.push_back(result);
+            // blockSums.push_back(g_array_index(temperatureResults, size_t, i));
+        // }
         blockSums.push_back(result);
     }
     if (blockSums.size() > 0)
     {
         std::cout << "blockSums.size() " << blockSums.size() << "\n";
-        std::cout << "blockSums.size() " << blockSums[0] << "\n";
-        std::cout << "blockSums.size() " << blockSums[1] << "\n";
+        // std::cout << "blockSums.size() " << blockSums[0] << "\n";
+        // std::cout << "blockSums.size() " << blockSums[1] << "\n";
         maxSum = *max_element(blockSums.begin(), blockSums.end());
         std::cout << "maxSum: " << maxSum << "\n";
     }
