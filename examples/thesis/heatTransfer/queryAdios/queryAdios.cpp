@@ -189,6 +189,7 @@ void AdiosQueryHighestMean(std::string fileName, adios2::IO inIO,
     }
 
     double maxMean = *max_element(blockMeans.begin(), blockMeans.end());
+    std::cout << "maxMean: " << maxMean << "\n";
 }
 
 // Find biggest difference in max temperature between step 1 and step 100
@@ -211,6 +212,8 @@ void AdiosQueryDrasticLocalChangeInTimeInterval(std::string fileName,
         {
             auto result1 = blockInfos1[i].Max;
             auto result100 = blockInfos100[i].Max;
+            std::cout << "result1: " << result1 << "\n";
+            std::cout << "result100: " << result100 << "\n";
 
             diff = std::abs(result1 - result100);
             if (diff > maxDiff)
@@ -260,6 +263,7 @@ void AdiosQueryRainTemperatureCombinedSimple(std::string fileName,
             if (blockInfos[j].Max > 40)
             {
                 blockIDsQueryMet[i].push_back(blockInfos[j].BlockID);
+                std::cout << "max T > 40 \n";
             }
         }
     }
@@ -277,10 +281,14 @@ void AdiosQueryRainTemperatureCombinedSimple(std::string fileName,
             sum = std::accumulate(precipData.begin(), precipData.end(), 0);
 
             blockSums.push_back(sum);
+            std::cout << "sum: " << sum << "\n";
         }
     }
-
-    maxSum = *max_element(blockSums.begin(), blockSums.end());
+    if (blockSums.size() > 0)
+    {
+        std::cout << "befor max sum \n";
+        maxSum = *max_element(blockSums.begin(), blockSums.end());
+    }
 }
 
 void AdiosQueryLowestTemp(std::string fileName, adios2::IO inIO,

@@ -72,9 +72,9 @@ void SetDailyValues(JDBEntry *entry, interop::JuleaCDO &JuleaCDO,
             j_db_entry_set_field(entry, "daily_globalSum",
                                  &JuleaCDO.m_DPrecSum[day],
                                  sizeof(JuleaCDO.m_DPrecSum[day]), NULL);
-            j_db_entry_set_field(entry, "daily_globalVar",
-                                 &JuleaCDO.m_DPrecVar[day],
-                                 sizeof(JuleaCDO.m_DPrecVar[day]), NULL);
+            // j_db_entry_set_field(entry, "daily_globalVar",
+            //  &JuleaCDO.m_DPrecVar[day],
+            //  sizeof(JuleaCDO.m_DPrecVar[day]), NULL); //TODO: some error...
         }
         // // monthly values
         // else if (day == JuleaCDO.m_StoreMonthlyValue)

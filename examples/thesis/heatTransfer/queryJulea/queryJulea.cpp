@@ -199,8 +199,8 @@ void QueryAllInRange(std::string projectNamespace, std::string fileName)
                                 results);
                                 // &numberResults, &entryIDs);
     // std::cout << "numberResults: " << numberResults << "\n";
-    std::cout << "results->len: " << results->len << "\n";
-    std::cout << "results->len: " << &results->len << "\n";
+    // std::cout << "results->len: " << results->len << "\n";
+    // std::cout << "results->len: " << &results->len << "\n";
     // std::cout << "results->len: " << *results->len << "\n";
    
     stopRead = high_resolution_clock::now();
@@ -225,6 +225,8 @@ void QueryHighestMean(std::string projectNamespace, std::string fileName)
     startCompute = high_resolution_clock::now();
     // nothing to compute here
     stopCompute = high_resolution_clock::now();
+        std::cout << "maxMean: " << result << "\n";
+
 }
 
 // Find biggest difference in max temperature between step 1 and step 8760 ->

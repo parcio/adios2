@@ -87,6 +87,10 @@ void InitVariable(core::IO *io, core::Engine &engine,
     std::string meanField;
     std::string sumField;
 
+    // TODO: does it work with _id for all cases? what happens when different
+    // applications write concurrently? then _id does not reflect the any kind
+    // of continuous blockIDs
+
     /** AvailableStepBlockIndexOffsets stores the entries (= blocks) _id (= line
      * in the sql table) */
     if (type == DataType::Compound)
@@ -207,7 +211,7 @@ void DefineVariableInEngineIO(core::IO *io, const std::string varName,
                 //     variable->m_Shape;                                         \
 
     // std::cout << "--- DBDefineVariableInEngineIO" << std::endl;
-                // std::cout << "ShapeID = GlobalValue" << std::endl;             \
+    // std::cout << "ShapeID = GlobalValue" << std::endl;             \
                 // std::cout << "ShapeID = GlobalArray" << std::endl;             \
                 // std::cout << "ShapeID = LocalValue" << std::endl;              \
                 // std::cout << "ShapeID = LocalArray" << std::endl;              \
@@ -486,7 +490,6 @@ void JuleaDBInteractionReader::CheckSchemas(std::string projectNamespace)
     auto blockNamespace =
         g_strdup_printf("%s_%s", "adios2", projectNamespace.c_str());
     blockSchema = j_db_schema_new(blockNamespace, "block-metadata", NULL);
-   
 
     j_db_schema_get(varSchema, batch, NULL);
     bool existsVar = j_batch_execute(batch);

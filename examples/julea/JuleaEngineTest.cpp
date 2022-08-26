@@ -62,6 +62,7 @@ void TestWriteVariableSync()
     /** Engine derived class, spawned to start IO operations */
     // adios2::Engine juleaWriter = juleaIO.Open("testFile.jb", adios2::Mode::Write);
     adios2::Engine juleaWriter = juleaIO.Open("testFile.jv", adios2::Mode::Write);
+    // adios2::Engine juleaWriter = juleaIO.Open("testFile.bp", adios2::Mode::Write);
 
     /** Write variable for buffering */
     juleaWriter.Put<double>(juleaDoubles, myDoubles.data(), adios2::Mode::Deferred);
@@ -113,6 +114,7 @@ void TestReadVariableSync()
     /** Engine derived class, spawned to start IO operations */
     // adios2::Engine juleaReader = juleaIO.Open("testFile.jb", adios2::Mode::Read);
     adios2::Engine juleaReader = juleaIO.Open("testFile.jv", adios2::Mode::Read);
+    // adios2::Engine juleaReader = juleaIO.Open("testFile.bp", adios2::Mode::Read);
 
     // for(int i = 0; i <10; i++)
     // {
@@ -121,9 +123,19 @@ void TestReadVariableSync()
     /** global array: name, { shape (total dimensions) }, { start (local) },
      * { count (local) }, all are constant dimensions */
 
-
+    // std::cout << "Before inquire: \n";
     adios2::Variable<double> juleaDoubles = juleaIO.InquireVariable<double>("T");
+    adios2::Variable<double> juleaDoubles2 = juleaIO.InquireVariable<double>("P");
+    // std::cout << "After inquire: \n";
     
+    auto varNames = juleaIO.AvailableVariables(true);
+
+    std::cout << "====== number of variables: " << varNames.size() << "\n";
+    for (auto x: varNames)
+    {
+        std::cout << "======= varNames: " << x.first << "\n";
+    }
+
     //TODO: uncommented for eval setup
     // adios2::Variable<float> juleaFloats =
         // juleaIO.InquireVariable<float>("juleaFloats");
@@ -136,6 +148,7 @@ void TestReadVariableSync()
 
     if (juleaDoubles)
     {
+        std::cout << "get is called\n";
         juleaReader.Get<double>(juleaDoubles, myDoubles.data(),
                                adios2::Mode::Sync);
     //TODO: uncommented for eval setup
@@ -149,6 +162,7 @@ void TestReadVariableSync()
 
         juleaReader.PerformGets();
     }
+    juleaReader.Close();
 
     // std::cout << "Data: " << juleaFloats.Name() << std::endl;
     std::cout
@@ -184,7 +198,6 @@ void TestReadVariableSync()
     // }
     std::cout << std::endl;
     /** Create bp file, engine becomes unreachable after this*/
-    juleaReader.Close();
 }
 
 void TestWriteAttribute()
