@@ -33,7 +33,8 @@ static unsigned int convertToUint(std::string varName, char *arg)
     return static_cast<unsigned int>(retval);
 }
 
-AdiosQuerySettings::AdiosQuerySettings(int argc, char *argv[], int rank, int nproc)
+AdiosQuerySettings::AdiosQuerySettings(int argc, char *argv[], int rank,
+                                       int nproc)
 : rank{rank}
 {
     if (argc < 5)
@@ -52,7 +53,8 @@ AdiosQuerySettings::AdiosQuerySettings(int argc, char *argv[], int rank, int npr
     npy = convertToUint("M", argv[4]);
     // if (npx * npy != static_cast<unsigned int>(this->nproc))
     // {
-    //     throw std::invalid_argument("N*M must equal the number of processes");
+    //     throw std::invalid_argument("N*M must equal the number of
+    //     processes");
     // }
     posx = rank % npx;
     posy = rank / npx;

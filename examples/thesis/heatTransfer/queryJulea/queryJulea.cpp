@@ -187,8 +187,8 @@ void QueryAllInRange(std::string projectNamespace, std::string fileName)
     size_t numberResults = 0;
     size_t nDims = 0;
     // GArray *results = g_array_new(true,true,sizeof(size_t));
-    GArray *results = g_array_new(true,true,sizeof(size_t));
-    std::cout << "--- QueryAllInRange \n";
+    GArray *results = g_array_new(true, true, sizeof(size_t));
+    // std::cout << "--- QueryAllInRange \n";
     startRead = high_resolution_clock::now();
     // j_dai_get_entries_in_range_d(projectNamespace.c_str(), fileName.c_str(),
     //                              "T", J_DAI_STAT_MEAN, -42, 42,
@@ -197,12 +197,12 @@ void QueryAllInRange(std::string projectNamespace, std::string fileName)
     j_dai_range_query_get_ids_d(projectNamespace.c_str(), fileName.c_str(), "T",
                                 J_DAI_GRAN_BLOCK, J_DAI_STAT_MEAN, -42, 42,
                                 results);
-                                // &numberResults, &entryIDs);
+    // &numberResults, &entryIDs);
     // std::cout << "numberResults: " << numberResults << "\n";
     // std::cout << "results->len: " << results->len << "\n";
     // std::cout << "results->len: " << &results->len << "\n";
     // std::cout << "results->len: " << *results->len << "\n";
-   
+
     stopRead = high_resolution_clock::now();
     startCompute = high_resolution_clock::now();
     // nothing to compute here
@@ -213,7 +213,7 @@ void QueryAllInRange(std::string projectNamespace, std::string fileName)
 void QueryHighestMean(std::string projectNamespace, std::string fileName)
 {
     double result = 0;
-    std::cout << "--- QueryHighestMean \n";
+    // std::cout << "--- QueryHighestMean \n";
     startRead = high_resolution_clock::now();
     j_dai_query_get_global_stat_d(projectNamespace.c_str(), fileName.c_str(),
                                   "T", J_DAI_GRAN_BLOCK, J_DAI_STAT_MAX,
@@ -225,8 +225,7 @@ void QueryHighestMean(std::string projectNamespace, std::string fileName)
     startCompute = high_resolution_clock::now();
     // nothing to compute here
     stopCompute = high_resolution_clock::now();
-        std::cout << "maxMean: " << result << "\n";
-
+    // std::cout << "maxMean: " << result << "\n";
 }
 
 // Find biggest difference in max temperature between step 1 and step 8760 ->
@@ -243,7 +242,7 @@ void QueryDrasticLocalChangeInTimeInterval(std::string projectNamespace,
     double result2 = 0;
     double diff = 0;
     double maxDiff = 0;
-    std::cout << "--- QueryDrasticLocalChangeInTimeInterval \n";
+    // std::cout << "--- QueryDrasticLocalChangeInTimeInterval \n";
     startRead = high_resolution_clock::now();
     j_dai_step_get_ids(projectNamespace.c_str(), fileName.c_str(), "T", 1,
                        &nIDs1, &entryIDs1);
@@ -324,7 +323,8 @@ void QueryDrasticLocalChangeInTimeInterval(std::string projectNamespace,
 //     stopCompute = high_resolution_clock::now();
 // }
 
-// Find the blockID (=location) of the maximum precipiation block sum, where the maximum block temperature is > 40 
+// Find the blockID (=location) of the maximum precipiation block sum, where the
+// maximum block temperature is > 40
 void QueryRainTemperatureCombinedSimple(std::string projectNamespace,
                                         std::string fileName)
 {
@@ -333,10 +333,15 @@ void QueryRainTemperatureCombinedSimple(std::string projectNamespace,
 
     size_t step = 0;
     size_t block = 0;
-    bool result = 0;
+    bool tmpResult = 0;
+    double result = 0;
     size_t *steps;
     size_t *blocks;
-    GArray *results = g_array_new(true, true, sizeof(size_t));
+    std::vector<double> blockSums;
+    double maxSum = 0;
+
+    GArray *temperatureResults = g_array_new(true, true, sizeof(size_t));
+    GArray *precipResults = g_array_new(true, true, sizeof(size_t));
 
     std::cout << "--- QueryRainTemperatureCombinedSimple \n";
     startRead = high_resolution_clock::now();
@@ -344,22 +349,54 @@ void QueryRainTemperatureCombinedSimple(std::string projectNamespace,
     // get every entry where T > 40
     j_dai_query_get_ids_d(projectNamespace.c_str(), fileName.c_str(), "T",
                           J_DAI_GRAN_BLOCK, J_DAI_STAT_MAX, J_DAI_OP_GT, 40,
-                          results);
-                        //   &nIDs, &entryIDs);
+                          temperatureResults);
+    //   &nIDs, &entryIDs);
+    // j_dai_query_get_ids_d(projectNamespace.c_str(), fileName.c_str(), "P",
+    //                       J_DAI_GRAN_BLOCK, J_DAI_STAT_SUM, J_DAI_OP_GT, 20,
+    //                       precipResults);
 
-    for (int i = 0; i < nIDs; ++i)
+    for (int i = 0; i < temperatureResults->len; ++i)
     {
-        j_dai_entry_get_step(projectNamespace.c_str(), entryIDs[i], &step);
-        j_dai_entry_get_blockID(projectNamespace.c_str(), entryIDs[i], &block);
+        // std::cout << "entryID: " << results->data[0] << "\n";
+        // std::cout << "id_array0: " << g_array_index(results,size_t,0) <<
+        // "\n";
 
-        j_dai_entry_meets_query_d(projectNamespace.c_str(), fileName.c_str(),
-                                  "P", step, block, J_DAI_STAT_SUM, 20,
-                                  J_DAI_OP_GT, &result);
+        j_dai_entry_get_step(projectNamespace.c_str(),
+                             g_array_index(temperatureResults, size_t, i),
+                             &step);
+        std::cout << "step: " << step << "\n";
+        j_dai_entry_get_blockID(projectNamespace.c_str(),
+                                g_array_index(temperatureResults, size_t, i),
+                                &block);
+        std::cout << "block: " << block << "\n";
+
+        j_dai_block_get_stat_d(projectNamespace.c_str(), fileName.c_str(), "P",
+                               step, block, J_DAI_STAT_SUM, &result);
+        // j_dai_entry_meets_query_d(projectNamespace.c_str(), fileName.c_str(),
+        //   "P", step, block, J_DAI_STAT_SUM, 20,
+        //   J_DAI_OP_GT, &result);
+        //   J_DAI_OP_GT, &tmpResult);
+        // result = &tmpResult;
+        std::cout << "result: " << result << "\n";
+        // std::cout << "application: result = " << tmpResult << "\n";
+        // std::cout << "application: result = " << *tmpResult << "\n";
+        result = true;
         if (result)
         {
+            std::cout << "=== meets query\n";
             steps[i] = step;
             blocks[i] = block;
+            blockSums.push_back(g_array_index(temperatureResults, size_t, i));
         }
+        blockSums.push_back(result);
+    }
+    if (blockSums.size() > 0)
+    {
+        std::cout << "blockSums.size() " << blockSums.size() << "\n";
+        std::cout << "blockSums.size() " << blockSums[0] << "\n";
+        std::cout << "blockSums.size() " << blockSums[1] << "\n";
+        maxSum = *max_element(blockSums.begin(), blockSums.end());
+        std::cout << "maxSum: " << maxSum << "\n";
     }
     stopRead = high_resolution_clock::now();
     startCompute = high_resolution_clock::now();
@@ -386,8 +423,9 @@ void QueryRainTemperatureCombinedSimple(std::string projectNamespace,
 //         // projectNamespace.c_str(), fileName.c_str(), "T", J_DAI_STAT_MIN,
 //         // J_DAI_STAT_MEAN, J_DAI_GRAN_BLOCK, &minTemp);
 //         j_dai_query_get_global_stat_d(projectNamespace.c_str(),
-//                                       fileName.c_str(), "T", J_DAI_GRAN_BLOCK,
-//                                       J_DAI_STAT_MIN, J_DAI_STAT_MIN, &minTemp);
+//                                       fileName.c_str(), "T",
+//                                       J_DAI_GRAN_BLOCK, J_DAI_STAT_MIN,
+//                                       J_DAI_STAT_MIN, &minTemp);
 //         //    j_dai_get_global_min_stat_d(projectNamespace.c_str(),
 //         //    fileName.c_str(), "T", J_DAI_STAT_MIN, J_DAI_GRAN_BLOCK,
 //         //    &minTemp);
@@ -415,7 +453,7 @@ void QueryDaysColderThan(std::string projectNamespace, std::string fileName)
     int month = 0;
     int day = 0;
 
-    std::cout << "--- QueryDaysColderThan \n";
+    // std::cout << "--- QueryDaysColderThan \n";
 
     startRead = high_resolution_clock::now();
     j_dai_tag_get_entry_ids(projectNamespace.c_str(), tagName.c_str(),
@@ -441,7 +479,7 @@ void QueryCIDays(std::string projectNamespace, std::string fileName)
     size_t nCIDays;
     int numberYears = 5;
 
-    std::cout << "--- QueryCIDays \n";
+    // std::cout << "--- QueryCIDays \n";
     startRead = high_resolution_clock::now();
 
     for (int i = 0; i < numberYears; ++i)
@@ -469,7 +507,7 @@ void QueryCIDays(std::string projectNamespace, std::string fileName)
 }
 
 void JuleaQuery(JuleaQuerySettings::JuleaQueryID queryID,
-           std::string projectNamespace, std::string fileName)
+                std::string projectNamespace, std::string fileName)
 {
     switch (queryID)
     {
@@ -497,16 +535,17 @@ void JuleaQuery(JuleaQuerySettings::JuleaQueryID queryID,
     }
 }
 
-void JuleaSetupQueries(std::vector<JuleaQuerySettings::JuleaQueryID> *allQueries)
+void JuleaSetupQueries(
+    std::vector<JuleaQuerySettings::JuleaQueryID> *allQueries)
 {
     allQueries->push_back(JuleaQuerySettings::JQUERY_ALL_IN_RANGE);
     allQueries->push_back(JuleaQuerySettings::JQUERY_HIGHEST_MEAN);
-    // allQueries->push_back(
-    //     JuleaQuerySettings::JQUERY_DRASTIC_LOCAL_CHANGE_IN_TIME);
+    allQueries->push_back(
+        JuleaQuerySettings::JQUERY_DRASTIC_LOCAL_CHANGE_IN_TIME);
     // allQueries->push_back(JuleaQuerySettings::JQUERY_NUMBER_DAYS_COLDER_THAN);
     // allQueries->push_back(JuleaQuerySettings::JQUERY_CI_DAYS);
     // allQueries->push_back(JuleaQuerySettings::JQUERY_LOWEST_TEMP_OVER_FILES);
-    // allQueries->push_back(JuleaQuerySettings::JQUERY_RAIN_TEMP_COMBINED);
+    allQueries->push_back(JuleaQuerySettings::JQUERY_RAIN_TEMP_COMBINED);
 }
 
 // void InitDAI(std::string projectNamespace, std::string fileName)
@@ -553,7 +592,7 @@ int main(int argc, char *argv[])
     auto startAnalysis = high_resolution_clock::now();
     auto stopAnalysis = high_resolution_clock::now();
 
-    std::cout << "Query Julea Main begins...\n";
+    // std::cout << "Query Julea Main begins...\n";
 
     try
     {
@@ -566,7 +605,7 @@ int main(int argc, char *argv[])
         std::vector<JuleaQuerySettings::JuleaQueryID> allQueries;
         JuleaSetupQueries(&allQueries);
 
-        std::cout << "length AllQueries: " << allQueries.size() << "\n";
+        // std::cout << "length AllQueries: " << allQueries.size() << "\n";
 
         if (rank == 0)
         {
@@ -576,11 +615,12 @@ int main(int argc, char *argv[])
         // evaluate all post-processing queries
         for (auto element : allQueries)
         {
-            std::cout << "Query Loop starts\n";
+            // std::cout << "Query Loop starts\n";
             startAnalysis = high_resolution_clock::now();
             // startRead = high_resolution_clock::now();
 
-            JuleaQuery(element, settings.m_ProjectNamespace, settings.m_Inputfile);
+            JuleaQuery(element, settings.m_ProjectNamespace,
+                       settings.m_Inputfile);
             // ReadQuery(element, settings.m_ProjectNamespace,
             // settings.m_Inputfile);
 

@@ -253,6 +253,7 @@ void AdiosQueryRainTemperatureCombinedSimple(std::string fileName,
 
     for (int i = 0; i < tempVar.Steps(); i++)
     {
+        // std::cout << "i = " << i << "\n";
         auto blockInfos = reader.BlocksInfo(tempVar, i);
 
         std::vector<size_t> blockIDs;
@@ -260,9 +261,11 @@ void AdiosQueryRainTemperatureCombinedSimple(std::string fileName,
 
         for (int j = 0; j < blockInfos.size(); j++)
         {
+            // std::cout << "j = " << j << "\n";
             if (blockInfos[j].Max > 40)
             {
                 blockIDsQueryMet[i].push_back(blockInfos[j].BlockID);
+                std::cout << "blockInfos[j].Max:" << blockInfos[j].Max << "\n";
                 std::cout << "max T > 40 \n";
             }
         }
@@ -288,6 +291,7 @@ void AdiosQueryRainTemperatureCombinedSimple(std::string fileName,
     {
         std::cout << "befor max sum \n";
         maxSum = *max_element(blockSums.begin(), blockSums.end());
+        std::cout << "maxSum: " << maxSum << "\n";
     }
 }
 

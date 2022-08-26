@@ -87,7 +87,6 @@ Settings::Settings(int argc, char *argv[], int rank, int nproc) : rank{rank}
     else
         rank_right = rank + npx;
 
-
     if (rank == 0)
     {
         std::cout << "\n# --- Write time in mikroseconds ---" << std::endl;

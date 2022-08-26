@@ -43,11 +43,16 @@ public:
                 MPI_Comm comm) const; // debug: print local TCurrent on stdout
 
 private:
-    // const double edgetemp = 3.0; // temperature at the edges of the global plate
-    const double edgetemp = -130.0; // temperature at the edges of the global plate
-    const double edgetemp2 = -42.0; // temperature at the edges of the global plate
-    const double edgetemp3 = -42.0; // temperature at the edges of the global plate
-    const double edgetemp4 = 42.0; // temperature at the edges of the global plate
+    // const double edgetemp = 3.0; // temperature at the edges of the global
+    // plate
+    const double edgetemp =
+        -130.0; // temperature at the edges of the global plate
+    const double edgetemp2 =
+        -42.0; // temperature at the edges of the global plate
+    const double edgetemp3 =
+        -42.0; // temperature at the edges of the global plate
+    const double edgetemp4 =
+        42.0; // temperature at the edges of the global plate
     // plate
     const double omega =
         0.8;       // weight for current temp is (1-omega) in iteration
