@@ -236,7 +236,7 @@ public:
 
 private:
     helper::Comm const &m_Comm; ///< multi-process communicator from Engine
-    int m_Verbosity = 5;
+    int m_Verbosity = 0;
     int m_WriterRank;
     int m_SizeMPI;
 

@@ -251,8 +251,8 @@ void JuleaCDO::ComputeAllBlockStats(core::Variable<T> &variable, const T *data,
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "JuleaCDO (" << m_WriterRank
-                  << ") : ComputeAllBlockStats()\n";
+        // std::cout << "JuleaCDO (" << m_WriterRank
+                //   << ") : ComputeAllBlockStats()\n";
     }
 
     auto numberElements = adios2::helper::GetTotalSize(variable.m_Count);

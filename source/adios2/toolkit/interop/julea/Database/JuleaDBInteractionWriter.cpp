@@ -279,7 +279,7 @@ void JuleaDBInteractionWriter::InitTagTables(std::string projectNamespace)
 
         if (existsVar == 0)
         {
-            std::cout << "tag table does not exist yet" << std::endl;
+            // std::cout << "tag table does not exist yet" << std::endl;
             tagSchema = j_db_schema_new(completeNamespace, tagName, NULL);
             AddFieldsForTagTable(tagSchema);
             j_db_schema_create(tagSchema, batch, NULL);
