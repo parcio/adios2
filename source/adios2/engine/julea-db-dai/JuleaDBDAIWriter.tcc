@@ -183,8 +183,8 @@ void JuleaDBDAIWriter::TaggingDataIfRequired(
                         // std::cout << "Debug: J_DAI_OP_LT reached \n";
                         if (blockMax < threshold)
                         {
-                            std::cout << "this case is called\n";
-                            std::cout << "blockMax: " << blockMax << "\n";
+                            // std::cout << "this case is called\n";
+                            // std::cout << "blockMax: " << blockMax << "\n";
                             m_JuleaDBInteractionWriter.AddEntriesForTagTable(
                                 m_ProjectNamespace, tagName, fileName, varName,
                                 currentStep, blockID, blockMax);
@@ -411,8 +411,8 @@ void JuleaDBDAIWriter::ManageBlockStepMetadata(Variable<T> &variable,
         m_JuleaCDO.ComputeDailyStats(variable.m_Name);
         m_JuleaCDO.ComputeDateFromStep(m_CurrentStep, year, month, day);
 
-        std::cout << "Year: " << year << " Month: " << month << " Day: " << day
-                  << "\n";
+        // std::cout << "Year: " << year << " Month: " << month << " Day: " << day
+                //   << "\n";
         if (m_WriterRank == 0)
         {
             m_JuleaDBInteractionWriter.AddEntriesForDailyGlobalStatsTable(
@@ -541,11 +541,11 @@ void JuleaDBDAIWriter::ComputeGlobalDimensions(Variable<T> &variable)
 
     if (m_Comm.Size() == testNumberProcesses)
     {
-        std::cout << "wuhu: gleich groß \n";
+        // std::cout << "wuhu: gleich groß \n";
     }
 
-    std::cout << "X = " << m_JuleaCDO.m_numberBlocksX << "\n";
-    std::cout << "Y = " << m_JuleaCDO.m_numberBlocksY << "\n";
+    // std::cout << "X = " << m_JuleaCDO.m_numberBlocksX << "\n";
+    // std::cout << "Y = " << m_JuleaCDO.m_numberBlocksY << "\n";
 }
 
 template <class T>
