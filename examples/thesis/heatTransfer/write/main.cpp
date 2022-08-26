@@ -27,7 +27,7 @@
 
 void printUsage()
 {
-    std::cout << "Usage: heatTransfer  config   output  N  M   nx  ny   steps "
+    std::cout << "Usage: heatTransfer  config   output  N  M   nx  ny   steps  engine"
                  "iterations\n"
               << "  config: XML config file to use\n"
               << "  output: name of output data file/stream\n"
@@ -36,8 +36,10 @@ void printUsage()
               << "  nx:     local array size in X dimension per processor\n"
               << "  ny:     local array size in Y dimension per processor\n"
               << "  steps:  the total number of steps to output\n"
-              << "  iterations: one step consist of this many iterations\n\n";
+              << "  iterations: one step consist of this many iterations\n"
+              << "  engine: engine name to start JULEA server accordingly \n\n";
 }
+
 
 void SetupDAI(std::string projectNamespace, std::string fileName)
 {
@@ -92,7 +94,8 @@ int main(int argc, char *argv[])
         Settings settings(argc, argv, rank, nproc);
         HeatTransfer ht(settings);
 
-        if (wrank == 0)
+        if (wrank == 0 && ((settings.engine == "julea-kv") || (settings.engine == "julea-db") ))
+        // if (wrank == 0 )
         {
             SetupDAI("Thesis_eval", settings.outputfile);
         }

@@ -11,6 +11,10 @@
 #include <adios2.h>
 #include <chrono>
 #include <fstream>
+
+#include <julea-dai.h>
+#include <julea.h>
+
 #include <iostream>
 #include <random>
 #include <sstream>
@@ -25,6 +29,7 @@ adios2::Engine bpWriter;
 adios2::Variable<double> varT;
 adios2::Variable<double> varP;
 adios2::Variable<unsigned int> varGndx;
+// void SetupDAI(std::string projectNamespace, std::string fileName);
 
 IO::IO(const Settings &s, MPI_Comm comm)
 {
@@ -33,6 +38,11 @@ IO::IO(const Settings &s, MPI_Comm comm)
     ad = adios2::ADIOS(s.configfile, comm);
 
     adios2::IO bpio = ad.DeclareIO("writer");
+    // // if (s.rank == 0 && ((bpWriter.Type() == "julea-kv") || (bpWriter.Type() == "julea-db") ))
+    //  if (s.rank == 0 && ((bpio.EngineType() == "julea-kv") || (bpio.EngineType() == "julea-db") ))
+    //     {
+    //         SetupDAI("Thesis_eval", s.outputfile);
+    //     }
     if (!bpio.InConfigFile())
     {
         // if not defined by user, we can change the default settings
@@ -88,9 +98,34 @@ IO::IO(const Settings &s, MPI_Comm comm)
 
 IO::~IO() { bpWriter.Close(); }
 
+// void SetupDAI(std::string projectNamespace, std::string fileName)
+// {
+//     j_dai_init(projectNamespace.c_str());
+
+//     // j_dai_create_project_namespace(projectNamespace.c_str());
+
+//     j_dai_add_tag_d(projectNamespace.c_str(), "ColderThanMinus12", fileName.c_str(), "T",
+//                     J_DAI_GRAN_BLOCK, J_DAI_STAT_MAX,
+//                     J_DAI_OP_LT, -12.0);
+//     j_dai_pc_stat(
+//         projectNamespace.c_str(), "computeAllForT", fileName.c_str(), "T", J_DAI_GRAN_BLOCK,
+//         (JDAIStatistic)(J_DAI_STAT_MIN | J_DAI_STAT_MAX | J_DAI_STAT_MEAN |
+//                         J_DAI_STAT_SUM | J_DAI_STAT_VAR),
+//         0);
+//     j_dai_pc_ic(projectNamespace.c_str(), fileName.c_str(), "T",
+//                 (JDAIClimateIndex)(J_DAI_CI_SU | J_DAI_CI_FD | J_DAI_CI_ID |
+//                                    J_DAI_CI_TR));
+//     //  j_dai_pc_ic(
+//         // projectNamespace.c_str(), fileName.c_str(), "P",
+//         // (JDAIClimateIndex)(J_DAI_CI_PR1 | J_DAI_CI_PR10 | J_DAI_CI_PR20));
+//     j_dai_compute_stats_combined(projectNamespace.c_str(), fileName.c_str(),
+//                                  "T");
+// }
+
 void IO::write(int step, const HeatTransfer &ht, const Settings &s,
                MPI_Comm comm)
 {
+
     // example from https://stackoverflow.com/questions/288739/generate-random-numbers-uniformly-over-an-entire-range
     const int rangeFrom  = 0;
     // world record per day 1825 mm; here 2 steps per day  https://wmo.asu.edu/content/world-greatest-twenty-four-hour-1-day-rainfall
@@ -99,6 +134,7 @@ void IO::write(int step, const HeatTransfer &ht, const Settings &s,
     std::mt19937 generator(randDev());
     std::uniform_int_distribution<int>  distrFrom(rangeFrom, 250);
     std::uniform_int_distribution<int>  distrTo(251, rangeTo);
+
 
     // auto startEndStep = high_resolution_clock::now();
     auto stopEndStep = high_resolution_clock::now();

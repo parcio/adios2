@@ -20,6 +20,7 @@ public:
     // user arguments
     std::string configfile;
     std::string outputfile;
+    std::string engine;
     unsigned int npx;        // Number of processes in X (slow) dimension
     unsigned int npy;        // Number of processes in Y (fast) dimension
     unsigned int ndx;        // Local array size in X dimension per process
