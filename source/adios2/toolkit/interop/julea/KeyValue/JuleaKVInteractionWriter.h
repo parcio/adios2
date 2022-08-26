@@ -74,14 +74,16 @@ public:
         uint32_t &entryID, bool original);
 
     template <class T>
-    void ParseVariableToBSON(core::Variable<T> &variable, bson_t *bsonMetadata);
+    void ParseVariableToBSON(core::Variable<T> &variable, bson_t *bsonMetadata,
+                             size_t currentStep);
 
     template <class T>
     void ParseBlockToBSON(core::Variable<T> &variable, bson_t *bsonMetadata,
-                          size_t currentStep);
+                          T blockMin, T blockMax);
 
     template <class T>
-    void AppendMinMaxToBSON(core::Variable<T> &variable, bson_t *bsonMetadata);
+    void AppendMinMaxValueToBSON(core::Variable<T> &variable,
+                                 bson_t *bsonMetadata);
 
 private:
 }; // end namespace JuleaKVInteractionWriter
@@ -90,10 +92,11 @@ private:
 
 #define declare_template_instantiation(T)                                      \
     extern template void JuleaKVInteractionWriter::ParseVariableToBSON(        \
-        core::Variable<T> &variable, bson_t *bsonMetadata);                    \
-    extern template void JuleaKVInteractionWriter::ParseBlockToBSON(           \
         core::Variable<T> &variable, bson_t *bsonMetadata,                     \
         size_t currentStep);                                                   \
+    extern template void JuleaKVInteractionWriter::ParseBlockToBSON(           \
+        core::Variable<T> &variable, bson_t *bsonMetadata, T blockMin,         \
+        T blockMax);                                                           \
     extern template void JuleaKVInteractionWriter::PutVariableMetadataToJulea( \
         core::Variable<T> &variable, const std::string projectNamespace,       \
         const std::string fileName, const std::string varName,                 \

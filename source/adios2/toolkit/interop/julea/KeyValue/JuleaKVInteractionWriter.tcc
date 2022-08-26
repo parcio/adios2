@@ -33,8 +33,8 @@ namespace interop
 {
 
 template <class T>
-void JuleaKVInteractionWriter::AppendMinMaxToBSON(core::Variable<T> &variable,
-                                                  bson_t *bsonMetadata)
+void JuleaKVInteractionWriter::AppendMinMaxValueToBSON(
+    core::Variable<T> &variable, bson_t *bsonMetadata)
 {
     auto type = helper::GetDataType<T>();
     switch (type)
@@ -64,9 +64,11 @@ void JuleaKVInteractionWriter::AppendMinMaxToBSON(core::Variable<T> &variable,
         bson_append_double(bsonMetadata, "min_float64", -1, variable.m_Min);
         bson_append_double(bsonMetadata, "max_float64", -1, variable.m_Max);
         if (variable.m_SingleValue)
-            ;
-        //    bson_append_double(bsonMetadata, "value_float64", -1,
-        //    variable.m_Data);
+        {
+            // TODO: problems with different types; implement solution...
+            bson_append_double(bsonMetadata, "value_float64", -1,
+                               variable.m_Value);
+        }
         break;
     case adios2::DataType::String:
     case adios2::DataType::LongDouble:
@@ -81,7 +83,7 @@ void JuleaKVInteractionWriter::AppendMinMaxToBSON(core::Variable<T> &variable,
 }
 
 template <>
-void JuleaKVInteractionWriter::AppendMinMaxToBSON<std::string>(
+void JuleaKVInteractionWriter::AppendMinMaxValueToBSON<std::string>(
     core::Variable<std::string> &variable, bson_t *bsonMetadata)
 {
     // std::cout << "ParseVarTypeToBSON String: min = " << variable.Min()
@@ -89,7 +91,7 @@ void JuleaKVInteractionWriter::AppendMinMaxToBSON<std::string>(
 }
 
 template <>
-void JuleaKVInteractionWriter::AppendMinMaxToBSON<long double>(
+void JuleaKVInteractionWriter::AppendMinMaxValueToBSON<long double>(
     core::Variable<long double> &variable, bson_t *bsonMetadata)
 {
     // how to store long double in bson file?
@@ -98,7 +100,7 @@ void JuleaKVInteractionWriter::AppendMinMaxToBSON<long double>(
 }
 
 template <>
-void JuleaKVInteractionWriter::AppendMinMaxToBSON<std::complex<float>>(
+void JuleaKVInteractionWriter::AppendMinMaxValueToBSON<std::complex<float>>(
     core::Variable<std::complex<float>> &variable, bson_t *bsonMetadata)
 {
     // use two doubles? one for imaginary, one for real part?
@@ -107,7 +109,7 @@ void JuleaKVInteractionWriter::AppendMinMaxToBSON<std::complex<float>>(
 }
 
 template <>
-void JuleaKVInteractionWriter::AppendMinMaxToBSON<std::complex<double>>(
+void JuleaKVInteractionWriter::AppendMinMaxValueToBSON<std::complex<double>>(
     core::Variable<std::complex<double>> &variable, bson_t *bsonMetadata)
 {
     // use two doubles? one for imaginary, one for real part?
@@ -117,7 +119,8 @@ void JuleaKVInteractionWriter::AppendMinMaxToBSON<std::complex<double>>(
 
 template <class T>
 void JuleaKVInteractionWriter::ParseVariableToBSON(core::Variable<T> &variable,
-                                                   bson_t *bsonMetadata)
+                                                   bson_t *bsonMetadata,
+                                                   size_t currentStep)
 {
     std::cout << "_____________________________________________" << std::endl;
     // std::cout << "Test" << std::endl;
@@ -128,8 +131,17 @@ void JuleaKVInteractionWriter::ParseVariableToBSON(core::Variable<T> &variable,
               << std::endl;
     uint data_size = 0;
     size_t number_elements = 0;
+    size_t numberSteps = currentStep + 1;
     char *key;
     const int type = static_cast<int>(variable.m_Type);
+    int shapeID = static_cast<int>(variable.m_ShapeID);
+
+    size_t blocks[numberSteps];
+    for (uint i = 0; i < numberSteps; i++)
+    {
+        blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].size();
+        // std::cout << "i: " << i << "  blocks: " << blocks[i] << std::endl;
+    }
 
     // std::cout << "shape_size " << variable.m_Shape.size() << std::endl;
     // std::cout << "start_size " << variable.m_Start.size() << std::endl;
@@ -142,7 +154,8 @@ void JuleaKVInteractionWriter::ParseVariableToBSON(core::Variable<T> &variable,
 
         bson_append_int64(bsonMetadata, key, -1, variable.m_Shape[i]);
     }
-    bson_append_int32(bsonMetadata, "shape_id", -1, type);
+    bson_append_int32(bsonMetadata, "shape_id", -1, shapeID);
+    bson_append_int32(bsonMetadata, "type_int", -1, type);
 
     bson_append_int64(bsonMetadata, "start_size", -1, variable.m_Start.size());
     for (guint i = 0; i < variable.m_Start.size(); ++i)
@@ -181,8 +194,16 @@ void JuleaKVInteractionWriter::ParseVariableToBSON(core::Variable<T> &variable,
     bson_append_int64(bsonMetadata, "steps_count", -1, variable.m_StepsCount);
     // std::cout << "DEBUG: steps_start" << variable.m_StepsStart << std::endl;
     // std::cout << "DEBUG: steps_count" << variable.m_StepsCount << std::endl;
+    bson_append_int64(bsonMetadata, "number_steps", -1, numberSteps);
+    std::cout << "numberSteps: " << numberSteps << "\n";
+    for (guint i = 0; i < numberSteps; ++i)
+    {
+        key = g_strdup_printf("blockArray_%d", i);
+        bson_append_int64(bsonMetadata, key, -1, blocks[i]);
+        std::cout << "blockArray: " << key << " value: " << blocks[i] << "\n";
+    }
 
-    bson_append_int64(bsonMetadata, "block_id", -1, variable.m_BlockID);
+    // bson_append_int64(bsonMetadata, "block_id", -1, variable.m_BlockID);
     bson_append_int64(bsonMetadata, "index_start", -1, variable.m_IndexStart);
     bson_append_int64(bsonMetadata, "element_size", -1, variable.m_ElementSize);
     bson_append_int64(bsonMetadata, "available_steps_start", -1,
@@ -216,7 +237,7 @@ void JuleaKVInteractionWriter::ParseVariableToBSON(core::Variable<T> &variable,
 template <class T>
 void JuleaKVInteractionWriter::ParseBlockToBSON(core::Variable<T> &variable,
                                                 bson_t *bsonMetadata,
-                                                size_t currentStep)
+                                                T blockMin, T blockMax)
 {
     std::cout << "_____________________________________________" << std::endl;
     T min;
@@ -226,16 +247,9 @@ void JuleaKVInteractionWriter::ParseBlockToBSON(core::Variable<T> &variable,
     // std::endl;
     uint data_size = 0;
     // size_t number_elements = 0;
-    size_t numberSteps = currentStep + 1;
+
     char *key;
-
-    size_t blocks[numberSteps];
-    for (uint i = 0; i < numberSteps; i++)
-    {
-        blocks[i] = variable.m_AvailableStepBlockIndexOffsets[i].size();
-        // std::cout << "i: " << i << "  blocks: " << blocks[i] << std::endl;
-    }
-
+    bson_append_int64(bsonMetadata, "block_id", -1, variable.m_BlockID);
     bson_append_int64(bsonMetadata, "shape_size", -1, variable.m_Shape.size());
     for (guint i = 0; i < variable.m_Shape.size(); ++i)
     {
@@ -279,14 +293,9 @@ void JuleaKVInteractionWriter::ParseBlockToBSON(core::Variable<T> &variable,
     bson_append_int64(bsonMetadata, "steps_start", -1, variable.m_StepsStart);
     bson_append_int64(bsonMetadata, "steps_count", -1, variable.m_StepsCount);
 
-    bson_append_int64(bsonMetadata, "numberSteps", -1, numberSteps);
-    for (guint i = 0; i < numberSteps; ++i)
-    {
-        key = g_strdup_printf("blockArray%d", i);
-        bson_append_int64(bsonMetadata, key, -1, blocks[i]);
-    }
+    bson_append_int64(bsonMetadata, "is_value", -1, variable.m_SingleValue);
 
-    AppendMinMaxToBSON(variable, bsonMetadata);
+    AppendMinMaxValueToBSON(variable, bsonMetadata);
 
     /* compute data_size; dimension entries !> 0 are ignored ?!*/
     // number_elements = adios2::helper::GetTotalSize(variable.m_Count);
@@ -409,7 +418,7 @@ void JuleaKVInteractionWriter::PutVariableMetadataToJulea(
     // auto varMetadata = j_kv_new(completeNamespace, fileVarStepBlock);
     auto varMetadata = j_kv_new(completeNamespace, fileVar);
 
-    ParseVariableToBSON(variable, bsonMetadata);
+    ParseVariableToBSON(variable, bsonMetadata, step);
 
     j_kv_put(varMetadata, (gpointer)bson_get_data(bsonMetadata),
              bsonMetadata->len, g_free, batch);
@@ -434,7 +443,7 @@ void JuleaKVInteractionWriter::PutBlockMetadataToJulea(
         "%s_%s_%d_%d", fileName.c_str(), variable.m_Name.c_str(), step, block);
     auto varMetadata = j_kv_new(completeNamespace, fileVarStepBlock);
 
-    ParseBlockToBSON(variable, bsonMetadata, step);
+    ParseBlockToBSON(variable, bsonMetadata, blockMin, blockMax);
 
     j_kv_put(varMetadata, (gpointer)bson_get_data(bsonMetadata),
              bsonMetadata->len, g_free, batch);

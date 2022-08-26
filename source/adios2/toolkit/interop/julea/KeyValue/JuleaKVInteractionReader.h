@@ -83,16 +83,19 @@ public:
     void ParseVariableFromBSON(bson_t *bsonMetadata, ShapeID *shapeID,
                                int *varTypeAsInt, Dims *shape, Dims *start,
                                Dims *count, size_t *numberSteps,
-                               size_t **blocks, bool *isConstantDims,
+                               std::vector<size_t> *blocks,
+                               bool *isConstantDims,
+                               //    size_t **blocks, bool *isConstantDims,
                                bool *isReadAsJoined, bool *isReadAsLocalValue,
                                bool *isRandomAccess, bool *isSingleValue);
 
     void InitVariable(core::IO *io, core::Engine &engine,
                       const std::string projectNamespace,
                       const std::string fileName, std::string varName,
-                      size_t *blocks, size_t numberSteps, ShapeID shapeID,
-                      bool isReadAsJoined, bool isReadAsLocalValue,
-                      bool isRandomAccess, bool isSingleValue);
+                      std::vector<size_t> blocks, size_t numberSteps,
+                      ShapeID shapeID, bool isReadAsJoined,
+                      bool isReadAsLocalValue, bool isRandomAccess,
+                      bool isSingleValue);
 
     void DefineVariableInEngineIO(core::IO *io, const std::string varName,
                                   adios2::DataType type, ShapeID shapeID,
@@ -126,9 +129,8 @@ public:
     template <class T>
     std::unique_ptr<typename core::Variable<T>::Info>
     GetBlockMetadata(const core::Variable<T> &variable,
-                     std::string projectNamespace,
-                     // const std::string nameSpace, size_t step, size_t block,
-                     size_t entryID) const;
+                     std::string projectNamespace, const std::string fileName,
+                     size_t step, size_t block) const;
 
     /* --- Variables --- */
     // FIXME: parameter description needs updating: new namespace
@@ -166,7 +168,7 @@ private:
     extern template std::unique_ptr<typename core::Variable<T>::Info>          \
     JuleaKVInteractionReader::GetBlockMetadata(                                \
         const core::Variable<T> &variable, std::string projectNamespace,       \
-        size_t entryID) const;
+        const std::string fileName, size_t step, size_t block) const;
 ADIOS2_FOREACH_STDTYPE_1ARG(variable_template_instantiation)
 #undef variable_template_instantiation
 

@@ -193,6 +193,7 @@ void JuleaKVReader::ReadBlock(Variable<T> &variable, T *data, size_t blockID)
     /** only retrieve Count. Everything is only needed for bp3 and bp4 to
      * determine block position in buffer and for AllStepsBlockInfo for bpls */
     auto entryID = variable.m_AvailableStepBlockIndexOffsets[step + 1][blockID];
+    // auto entryID = variable.m_AvailableStepBlockIndexOffsets[step][blockID];
     m_JuleaKVInteractionReader.GetCountFromBlockMetadata(
         m_ProjectNamespace, fileName, variable.m_Name, step, blockID, &count,
         entryID, variable.m_SingleValue, data);
@@ -473,8 +474,10 @@ JuleaKVReader::AllStepsBlocksInfo(const core::Variable<T> &variable) const
         }
 
         // bp3 index starts at 1
-        allStepsBlocksInfo[step - 1] =
-            BlocksInfoCommon(variable, blockPositions, step - 1);
+        // allStepsBlocksInfo[step - 1] =
+        // BlocksInfoCommon(variable, blockPositions, step - 1);
+        allStepsBlocksInfo[step] =
+            BlocksInfoCommon(variable, blockPositions, step);
     }
     return allStepsBlocksInfo;
 }
@@ -511,7 +514,7 @@ JuleaKVReader::BlocksInfoCommon(const core::Variable<T> &variable,
         typename core::Variable<T>::Info info =
             // *DBGetBlockMetadata(variable, fileName, step, i, entryID);
             *m_JuleaKVInteractionReader.GetBlockMetadata(
-                variable, m_ProjectNamespace, entryID);
+                variable, m_ProjectNamespace, m_Name, step, entryID);
         info.IsReverseDims = false;
         info.Step = step;
 
@@ -562,6 +565,7 @@ JuleaKVReader::BlocksInfo(const core::Variable<T> &variable,
 
     // bp4 format starts at 1
     auto itStep = variable.m_AvailableStepBlockIndexOffsets.find(step + 1);
+    // auto itStep = variable.m_AvailableStepBlockIndexOffsets.find(step);
     if (itStep == variable.m_AvailableStepBlockIndexOffsets.end())
     {
         return std::vector<typename core::Variable<T>::Info>();
@@ -798,12 +802,15 @@ void JuleaKVReader::SetVariableBlockInfo(
 
     {
         //     const std::vector<char> &buffer = bufferSTL.m_Buffer;
-        size_t position = blockIndexOffset;
+        // size_t position = blockIndexOffset;
 
         // info = blockCharacteristics in BP3
+        /* here blockIndexOffset is the blockID because there is no entryID as
+         * with the db backend*/
+         //TODO: this may not be correct...
         typename core::Variable<T>::Info info =
             *m_JuleaKVInteractionReader.GetBlockMetadata(
-                variable, m_ProjectNamespace, blockIndexOffset);
+                variable, m_ProjectNamespace, m_Name, step, blockIndexOffset);
 
         // check if they intersect
         helper::SubStreamBoxInfo subStreamInfo;
@@ -909,8 +916,9 @@ void JuleaKVReader::SetVariableBlockInfo(
         // subStreamInfo.Seeks.first += 42;
         // subStreamInfo.Seeks.second += 42;
 
-        subStreamInfo.SubStreamID = static_cast<size_t>(blockIndexOffset);
-        // subStreamInfo.SubStreamID = static_cast<size_t>(info.BlockID);
+        // subStreamInfo.SubStreamID = static_cast<size_t>(blockIndexOffset);
+        // TODO: changed for kv reader to blockID
+        subStreamInfo.SubStreamID = static_cast<size_t>(info.BlockID);
         // static_cast<size_t>(blockCharacteristics.Statistics.FileIndex);
 
         blockInfo.StepBlockSubStreamsInfo[step].push_back(
@@ -921,6 +929,8 @@ void JuleaKVReader::SetVariableBlockInfo(
     const std::map<size_t, std::vector<size_t>> &indices =
         variable.m_AvailableStepBlockIndexOffsets;
 
+    // std::cout << "blockInfo.Start0: " << blockInfo.Start[0]
+            //   << " blockInfo.Count0: " << blockInfo.Count[0] << "\n";
     // last param is m_reverseDims
     const Box<Dims> selectionBox =
         helper::StartEndBox(blockInfo.Start, blockInfo.Count, false);
@@ -929,14 +939,17 @@ void JuleaKVReader::SetVariableBlockInfo(
 
     for (size_t i = 0; i < blockInfo.StepsCount; ++i)
     {
-        const size_t step = itStep->first;
+        // const size_t step = itStep->first;
+        // TODO: step was one too high... hacky temp solution
+        const size_t step = (itStep->first) - 1;
         const std::vector<size_t> &blockOffsets = itStep->second;
 
         if (variable.m_ShapeID == ShapeID::GlobalArray)
         {
             for (const size_t blockOffset : blockOffsets)
             {
-                // std::cout << "blockOffset: " << blockOffset << std::endl;
+                // std::cout << "step: " << step << "\n";
+                // std::cout << "blockOffset: " << blockOffset << "\n";
                 lf_SetSubStreamInfoGlobalArray(variable.m_Name, selectionBox,
                                                blockInfo, step, blockOffset,
                                                true);
