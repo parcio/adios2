@@ -12,6 +12,8 @@ mpirun -n 2 ./bin/thesis_eval_heatTransfer_write_adios2 ../examples/thesis/heatT
 
 mpirun -n 1 ./bin/thesis_eval_heatTransfer_queryAdios ../examples/thesis/heatTransfer/heat_julea-kv.xml heat_test-julea-kv.bp 1 1
 
+ mpirun -n 2 ./bin/thesis_eval_heatTransfer_read ../examples/thesis/heatTransfer/heat_julea-kv.xml heat_test-julea-kv.bp heat_kv-2.bp 2 1    :(
+
 
 # BP4
 mpirun -n 2 ./bin/thesis_eval_heatTransfer_write_adios2 ../examples/thesis/heatTransfer/heat_bp4_sync.xml heat_bp4.bp 2 1 10 10 4 10 bp4
@@ -49,6 +51,21 @@ maxSum: 46696
 5139 	 5139 	 5139
 Total runtime = 0.0380864s
 
+# Read 	 Compute 	 Analysis
+50742 	 50742 	 50742
+390388 	 390388 	 390388
+result1: 26.0796
+result100: 30.8967
+result1: 25.947
+result100: 31.546
+maxDiff: 5.59896
+49608 	 49608 	 49608
+50728 	 50728 	 50728
+Total runtime = 0.616336s
+
+
+
+
 
 # Julea-KV
 
@@ -77,6 +94,19 @@ befor max sum
 maxSum: 46696
 1067 	 1067 	 1067
 Total runtime = 0.00865388s
+
+# Read 	 Compute 	 Analysis
+4968 	 4968 	 4968
+58051 	 58051 	 58051
+result1: 26.0796
+result100: 30.8967
+result1: 25.947
+result100: 31.546
+maxDiff: 5.59896
+4433 	 4433 	 4433
+5502 	 5502 	 5502
+Total runtime = 0.0841792s
+
 
 
 ./bin/bpls -lD heat_bp4.bp

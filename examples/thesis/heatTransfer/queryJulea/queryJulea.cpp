@@ -234,38 +234,57 @@ void QueryHighestMean(std::string projectNamespace, std::string fileName)
 void QueryDrasticLocalChangeInTimeInterval(std::string projectNamespace,
                                            std::string fileName)
 {
-    size_t *entryIDs1;
-    size_t *entryIDs2;
+    // size_t *entryIDs1;
+    // size_t *entryIDs2;
     size_t nIDs1 = 0;
     size_t nIDs2 = 0;
-    double result = 0;
-    double result2 = 0;
+    double result1 = 0;
+    double result100 = 0;
     double diff = 0;
     double maxDiff = 0;
     // std::cout << "--- QueryDrasticLocalChangeInTimeInterval \n";
+
+    GArray *entryIDs1 = g_array_new(true, true, sizeof(size_t));
+    GArray *entryIDs100 = g_array_new(true, true, sizeof(size_t));
+
     startRead = high_resolution_clock::now();
     j_dai_step_get_ids(projectNamespace.c_str(), fileName.c_str(), "T", 1,
-                       &nIDs1, &entryIDs1);
+                       entryIDs1);
+    //    &nIDs1, &entryIDs1);
     j_dai_step_get_ids(projectNamespace.c_str(), fileName.c_str(), "T", 100,
-                       &nIDs2, &entryIDs2);
+                       entryIDs100);
+    //    &nIDs2, &entryIDs2);
 
-    if (nIDs1 == nIDs2)
+    // std::cout << "entryIDs1: " << entryIDs1->len << " entryIDs100: " <<
+    // entryIDs100->len << "\n";
+    if (entryIDs1->len == entryIDs100->len)
     {
 
-        for (int i = 0; i < nIDs1; ++i)
+        for (int i = 0; i < entryIDs1->len; ++i)
         {
-            j_dai_entry_get_stat_d(projectNamespace.c_str(), entryIDs1[i],
-                                   J_DAI_STAT_MAX, &result);
-            j_dai_entry_get_stat_d(projectNamespace.c_str(), entryIDs2[i],
-                                   J_DAI_STAT_MAX, &result2);
+            // std::cout << "id1: " << g_array_index(entryIDs1,size_t,i) <<
+            // "\n"; std::cout << "id100: " <<
+            // g_array_index(entryIDs100,size_t,i) << "\n";
+            // j_dai_entry_get_stat_d(projectNamespace.c_str(), entryIDs1[i],
+            //    J_DAI_STAT_MAX, &result);
+            j_dai_entry_get_stat_d(projectNamespace.c_str(),
+                                   g_array_index(entryIDs1, size_t, i),
+                                   J_DAI_STAT_MAX, &result1);
+            j_dai_entry_get_stat_d(projectNamespace.c_str(),
+                                   g_array_index(entryIDs100, size_t, i),
+                                   J_DAI_STAT_MAX, &result100);
 
-            diff = std::abs(result - result2);
+            //  std::cout << "result1: " << result1 << "\n";
+            // std::cout << "result100: " << result100 << "\n";
+            diff = std::abs(result1 - result100);
             if (diff > maxDiff)
             {
                 maxDiff = diff;
             }
         }
     }
+    // std::cout << "maxDiff: " << maxDiff << "\n";
+
     stopRead = high_resolution_clock::now();
     startCompute = high_resolution_clock::now();
     // nothing to compute here
@@ -334,71 +353,45 @@ void QueryRainTemperatureCombinedSimple(std::string projectNamespace,
     size_t step = 0;
     size_t block = 0;
     bool tmpResult = 0;
-    double result = 0;
+    double result = 0.0;
     size_t *steps;
     size_t *blocks;
     std::vector<double> blockSums;
     double maxSum = 0;
 
     GArray *temperatureResults = g_array_new(true, true, sizeof(size_t));
-    // GArray *precipResults = g_array_new(true, true, sizeof(size_t));
 
-    std::cout << "--- QueryRainTemperatureCombinedSimple \n";
+    // std::cout << "--- QueryRainTemperatureCombinedSimple \n";
     startRead = high_resolution_clock::now();
 
     // get every entry where T > 40
     j_dai_query_get_ids_d(projectNamespace.c_str(), fileName.c_str(), "T",
                           J_DAI_GRAN_BLOCK, J_DAI_STAT_MAX, J_DAI_OP_GT, 40,
                           temperatureResults);
-    //   &nIDs, &entryIDs);
-    // j_dai_query_get_ids_d(projectNamespace.c_str(), fileName.c_str(), "P",
-    //                       J_DAI_GRAN_BLOCK, J_DAI_STAT_SUM, J_DAI_OP_GT, 20,
-    //                       precipResults);
 
     for (int i = 0; i < temperatureResults->len; ++i)
     {
-        // std::cout << "entryID: " << results->data[0] << "\n";
+        // std::cout << "temperatureResults->len: " << temperatureResults->len
+        // << "\n"; std::cout << "entryID: " << results->data[0] << "\n";
         // std::cout << "id_array0: " << g_array_index(results,size_t,0) <<
         // "\n";
-
         j_dai_entry_get_step(projectNamespace.c_str(),
                              g_array_index(temperatureResults, size_t, i),
                              &step);
-        std::cout << "step: " << step << "\n";
         j_dai_entry_get_blockID(projectNamespace.c_str(),
                                 g_array_index(temperatureResults, size_t, i),
                                 &block);
-        std::cout << "block: " << block << "\n";
-
         j_dai_block_get_stat_d(projectNamespace.c_str(), fileName.c_str(), "P",
                                step, block, J_DAI_STAT_SUM, &result);
-        // j_dai_entry_meets_query_d(projectNamespace.c_str(), fileName.c_str(),
-        //   "P", step, block, J_DAI_STAT_SUM, 20,
-        //   J_DAI_OP_GT, &result);
-        //   J_DAI_OP_GT, &tmpResult);
-        // result = &tmpResult;
-        std::cout << "result: " << result << "\n";
-        // std::cout << "result: " << &result << "\n";
-        // std::cout << "application: result = " << tmpResult << "\n";
-        // std::cout << "application: result = " << *tmpResult << "\n";
-        // result = true;
-        // if (result)
-        // {
-            // std::cout << "=== meets query\n";
-            // steps[i] = step;
-            // blocks[i] = block;
-            // blockSums.push_back(result);
-            // blockSums.push_back(g_array_index(temperatureResults, size_t, i));
-        // }
         blockSums.push_back(result);
+        // std::cout << "result: " << result << "\n";
     }
     if (blockSums.size() > 0)
     {
-        std::cout << "blockSums.size() " << blockSums.size() << "\n";
-        // std::cout << "blockSums.size() " << blockSums[0] << "\n";
-        // std::cout << "blockSums.size() " << blockSums[1] << "\n";
-        maxSum = *max_element(blockSums.begin(), blockSums.end());
-        std::cout << "maxSum: " << maxSum << "\n";
+        maxSum = std::accumulate(blockSums.begin(), blockSums.end(), 0);
+        // TODO: originally the maximum should be picked.
+        //  maxSum = *max_element(blockSums.begin(), blockSums.end());
+        //  std::cout << "maxSum: " << maxSum << "\n";
     }
     stopRead = high_resolution_clock::now();
     startCompute = high_resolution_clock::now();
@@ -635,8 +628,10 @@ int main(int argc, char *argv[])
             // stopCompute = high_resolution_clock::now();
             stopAnalysis = high_resolution_clock::now();
 
-            printQueryDurations(stopRead, startRead, stopCompute, startCompute,
-                                stopAnalysis, startAnalysis);
+            // printQueryDurations(stopRead, startRead, stopCompute,
+            // startCompute, stopAnalysis, startAnalysis);
+            printQueryDurations(stopAnalysis, startAnalysis, stopAnalysis,
+                                startAnalysis, stopAnalysis, startAnalysis);
         }
 
         double timeEnd = MPI_Wtime();

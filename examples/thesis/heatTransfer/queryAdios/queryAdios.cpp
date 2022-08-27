@@ -189,7 +189,7 @@ void AdiosQueryHighestMean(std::string fileName, adios2::IO inIO,
     }
 
     double maxMean = *max_element(blockMeans.begin(), blockMeans.end());
-    std::cout << "maxMean: " << maxMean << "\n";
+    // std::cout << "maxMean: " << maxMean << "\n";
 }
 
 // Find biggest difference in max temperature between step 1 and step 100
@@ -212,8 +212,8 @@ void AdiosQueryDrasticLocalChangeInTimeInterval(std::string fileName,
         {
             auto result1 = blockInfos1[i].Max;
             auto result100 = blockInfos100[i].Max;
-            std::cout << "result1: " << result1 << "\n";
-            std::cout << "result100: " << result100 << "\n";
+            // std::cout << "result1: " << result1 << "\n";
+            // std::cout << "result100: " << result100 << "\n";
 
             diff = std::abs(result1 - result100);
             if (diff > maxDiff)
@@ -265,8 +265,9 @@ void AdiosQueryRainTemperatureCombinedSimple(std::string fileName,
             if (blockInfos[j].Max > 40)
             {
                 blockIDsQueryMet[i].push_back(blockInfos[j].BlockID);
-                std::cout << "blockInfos[j].Max:" << blockInfos[j].Max << "\n";
-                std::cout << "max T > 40 \n";
+                // std::cout << "blockInfos[j].BlockID: " << blockInfos[j].BlockID << "\n";
+                // std::cout << "blockInfos[j].Max:" << blockInfos[j].Max << "\n";
+                // std::cout << "max T > 40 \n";
             }
         }
     }
@@ -275,23 +276,35 @@ void AdiosQueryRainTemperatureCombinedSimple(std::string fileName,
     {
         for (int j = 0; j < blockIDsQueryMet[i].size(); j++)
         {
+            //TODO: wrong size
+            // std::cout << "blockIDsQueryMet.size(): " << blockIDsQueryMet.size() << "\n";
+            // std::cout << "blockIDsQueryMet[i].size(): " << blockIDsQueryMet[i].size() << "\n";
             tempVar.SetStepSelection({i, 1});
             tempVar.SetBlockSelection(blockIDsQueryMet[i][j]);
 
             precipData.resize(precipVar.SelectionSize());
+            // std::cout << "selection.size: " << precipVar.SelectionSize() << "\n";
             reader.Get<double>(precipVar, precipData.data(),
                                adios2::Mode::Sync);
             sum = std::accumulate(precipData.begin(), precipData.end(), 0);
+            // std::cout << "precip.data size: " << precipData.size() << "\n";
+            // for (int n : precipData) {
+            //     std::cout << n << ", ";
+            // }
+            auto minimum = *min_element(precipData.begin(), precipData.end());
+            auto maximum = *max_element(precipData.begin(), precipData.end());
+
+            // std::cout << "minium: " << minimum << "\n";
+            // std::cout << "maximum: " << maximum << "\n";
 
             blockSums.push_back(sum);
-            std::cout << "sum: " << sum << "\n";
+            // std::cout << "sum: " << sum << "\n";
         }
     }
     if (blockSums.size() > 0)
     {
-        std::cout << "befor max sum \n";
         maxSum = *max_element(blockSums.begin(), blockSums.end());
-        std::cout << "maxSum: " << maxSum << "\n";
+        // std::cout << "maxSum: " << maxSum << "\n";
     }
 }
 
