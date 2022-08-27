@@ -325,17 +325,27 @@ void JuleaKVWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
         m_JuleaKVInteractionWriter.PutVariableMetadataToJulea(
             variable, m_ProjectNamespace, m_Name, variable.m_Name,
             m_CurrentStep, m_CurrentBlockID, m_IsOriginalFormat);
-    }
 
-    /** put block metadata to DB */
-    m_JuleaKVInteractionWriter.PutBlockMetadataToJulea(
-        variable, m_ProjectNamespace, m_Name, variable.m_Name, m_CurrentStep,
-        m_CurrentBlockID, blockInfo, blockMin, blockMax, blockMean, blockSum,
-        blockVar, entryID, m_IsOriginalFormat);
+        // TODO: seems like key-value backend cannot handle parallel access ->
+        // master has to do everything
+        //  -> m_CurrentBlockID replaced by i
+        for (int i = 0; i < m_Comm.Size(); i++)
+        {
+            /** put block metadata to DB */
+            m_JuleaKVInteractionWriter.PutBlockMetadataToJulea(
+                variable, m_ProjectNamespace, m_Name, variable.m_Name,
+                m_CurrentStep, i, blockInfo, blockMin, blockMax, blockMean,
+                blockSum, blockVar, entryID, m_IsOriginalFormat);
+            // m_CurrentBlockID, blockInfo, blockMin, blockMax, blockMean,
+            // blockSum,
+        }
+    }
 
     /** put data to object store */
     m_JuleaKVInteractionWriter.PutVariableDataToJulea(
-        variable, data, m_ProjectNamespace, m_Name, entryID);
+        variable, data, m_ProjectNamespace, m_Name, m_CurrentStep,
+        m_CurrentBlockID, true);
+    // variable, data, m_ProjectNamespace, m_Name, entryID);
 }
 
 template <class T>

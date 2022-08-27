@@ -333,9 +333,10 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
         for (typename Variable<T>::Info &blockInfo : variable.m_BlocksInfo)
         {
             T *originalBlockData = blockInfo.Data;
-
+            // std::cout << "blockInfo.StepBlockSubStreamsInfo.Size() = " << blockInfo.StepBlockSubStreamsInfo.size() << "\n";
             for (const auto &stepPair : blockInfo.StepBlockSubStreamsInfo)
             {
+            // std::cout << "stepPair.second.Size() = " << stepPair.second.size() << "\n";
                 for (const helper::SubStreamBoxInfo &subStreamBoxInfo :
                      stepPair.second)
                 {
@@ -351,7 +352,8 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
                     // TODO: -1 because BP stuff starts at 1
 
                     size_t offset = subStreamBoxInfo.Seeks.first;
-                    size_t step = stepPair.first - 1;
+                    // size_t step = stepPair.first - 1;
+                    size_t step = stepPair.first;
 
                     // std::cout << "stepPair.first: " << stepPair.first
                     // << std::endl;
@@ -390,7 +392,9 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
                         std::vector<T> data = std::vector<T>(dataSize);
                         m_JuleaKVInteractionReader.GetVariableDataFromJulea(
                             variable, data.data(), m_ProjectNamespace, fileName,
-                            offset, dataSize, subStreamBoxInfo.SubStreamID);
+                            offset, dataSize, step, m_CurrentBlockID, true);
+
+                        // offset, dataSize, subStreamBoxInfo.SubStreamID);
 
                         const Dims blockInfoStart =
                             (variable.m_ShapeID == ShapeID::LocalArray &&
@@ -413,10 +417,13 @@ void JuleaKVReader::ReadVariableBlocks(Variable<T> &variable)
                         // std::cout << "dataSize: " << dataSize << std::endl;
 
                         // T data[dataSize];
+                        // true = is key value backend
                         std::vector<T> data = std::vector<T>(dataSize);
                         m_JuleaKVInteractionReader.GetVariableDataFromJulea(
                             variable, data.data(), m_ProjectNamespace, fileName,
-                            offset, dataSize, subStreamBoxInfo.SubStreamID);
+                            offset, dataSize, step, subStreamBoxInfo.SubStreamID, true);
+                            // offset, dataSize, step, m_CurrentBlockID, true);
+                        // offset, dataSize, subStreamBoxInfo.SubStreamID);
 
                         const Dims blockInfoStart =
                             (variable.m_ShapeID == ShapeID::LocalArray &&
@@ -807,7 +814,7 @@ void JuleaKVReader::SetVariableBlockInfo(
         // info = blockCharacteristics in BP3
         /* here blockIndexOffset is the blockID because there is no entryID as
          * with the db backend*/
-         //TODO: this may not be correct...
+        // TODO: this may not be correct...
         typename core::Variable<T>::Info info =
             *m_JuleaKVInteractionReader.GetBlockMetadata(
                 variable, m_ProjectNamespace, m_Name, step, blockIndexOffset);
@@ -930,7 +937,7 @@ void JuleaKVReader::SetVariableBlockInfo(
         variable.m_AvailableStepBlockIndexOffsets;
 
     // std::cout << "blockInfo.Start0: " << blockInfo.Start[0]
-            //   << " blockInfo.Count0: " << blockInfo.Count[0] << "\n";
+    //   << " blockInfo.Count0: " << blockInfo.Count[0] << "\n";
     // last param is m_reverseDims
     const Box<Dims> selectionBox =
         helper::StartEndBox(blockInfo.Start, blockInfo.Count, false);

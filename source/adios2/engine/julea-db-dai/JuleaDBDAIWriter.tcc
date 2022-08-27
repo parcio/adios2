@@ -411,8 +411,9 @@ void JuleaDBDAIWriter::ManageBlockStepMetadata(Variable<T> &variable,
         m_JuleaCDO.ComputeDailyStats(variable.m_Name);
         m_JuleaCDO.ComputeDateFromStep(m_CurrentStep, year, month, day);
 
-        // std::cout << "Year: " << year << " Month: " << month << " Day: " << day
-                //   << "\n";
+        // std::cout << "Year: " << year << " Month: " << month << " Day: " <<
+        // day
+        //   << "\n";
         if (m_WriterRank == 0)
         {
             m_JuleaDBInteractionWriter.AddEntriesForDailyGlobalStatsTable(
@@ -699,8 +700,10 @@ void JuleaDBDAIWriter::PutSyncToJulea(
         blockVar, entryID, m_IsOriginalFormat);
 
     /** put data to object store */
+    // false = not kv backend
     m_JuleaDBInteractionWriter.PutVariableDataToJulea(
-        variable, data, m_ProjectNamespace, m_Name, entryID);
+        variable, data, m_ProjectNamespace, m_Name, m_CurrentStep, entryID,
+        false);
 }
 
 template <class T>

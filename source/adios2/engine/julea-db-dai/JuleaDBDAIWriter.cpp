@@ -127,7 +127,7 @@ void JuleaDBDAIWriter::EndStep()
     if (m_WriterRank == 0)
     {
         // std::cout << "______________EndStep _____________________ step = "
-                //   << (m_CurrentStep - 1) << "\n " << std::endl;
+        //   << (m_CurrentStep - 1) << "\n " << std::endl;
     }
 }
 
@@ -244,8 +244,8 @@ void JuleaDBDAIWriter::Init()
 
     if (m_WriterRank == 0)
     {
-        // std::cout << "JDB Writer (" << m_WriterRank << ") : InitDBSchemas()\n";
-        // std::cout << "InitDBSchemas" << std::endl;
+        // std::cout << "JDB Writer (" << m_WriterRank << ") :
+        // InitDBSchemas()\n"; std::cout << "InitDBSchemas" << std::endl;
         InitParameters();
         InitDAI();
 
@@ -253,7 +253,7 @@ void JuleaDBDAIWriter::Init()
                                                  m_IsOriginalFormat);
         // Init();
         // std::cout << "JDB Writer (" << m_WriterRank
-                //   << ") : InitDBSchemas finished()\n";
+        //   << ") : InitDBSchemas finished()\n";
     }
 
     // TODO: figuring out how communicator work in ADIOS when used with

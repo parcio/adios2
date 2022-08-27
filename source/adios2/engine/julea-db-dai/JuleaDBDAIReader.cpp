@@ -142,8 +142,7 @@ void JuleaDBDAIReader::PerformGets()
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "JDB Reader " << m_ReaderRank
-                  << "     PerformGets()\n";
+        std::cout << "JDB Reader " << m_ReaderRank << "     PerformGets()\n";
     }
 
     /** if there are no deferred variables there is nothing to do */
@@ -263,8 +262,7 @@ void JuleaDBDAIReader::InitParameters()
 {
     if (m_Verbosity == 5)
     {
-        std::cout << "JDB Reader " << m_ReaderRank
-                  << " InitParameters()\n";
+        std::cout << "JDB Reader " << m_ReaderRank << " InitParameters()\n";
     }
 }
 
@@ -273,8 +271,7 @@ void JuleaDBDAIReader::InitTransports()
     // Nothing to process from m_IO.m_TransportsParameters
     if (m_Verbosity == 5)
     {
-        std::cout << "JDB Reader " << m_ReaderRank
-                  << " InitTransports()\n";
+        std::cout << "JDB Reader " << m_ReaderRank << " InitTransports()\n";
     }
 }
 

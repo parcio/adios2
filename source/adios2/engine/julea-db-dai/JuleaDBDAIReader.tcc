@@ -390,7 +390,10 @@ void JuleaDBDAIReader::ReadVariableBlocks(Variable<T> &variable)
                         std::vector<T> data = std::vector<T>(dataSize);
                         m_JuleaDBInteractionReader.GetVariableDataFromJulea(
                             variable, data.data(), m_ProjectNamespace, fileName,
-                            offset, dataSize, subStreamBoxInfo.SubStreamID);
+                            offset, dataSize, step,
+                            subStreamBoxInfo.SubStreamID, false);
+
+                        // offset, dataSize, subStreamBoxInfo.SubStreamID);
 
                         const Dims blockInfoStart =
                             (variable.m_ShapeID == ShapeID::LocalArray &&
@@ -413,10 +416,13 @@ void JuleaDBDAIReader::ReadVariableBlocks(Variable<T> &variable)
                         // std::cout << "dataSize: " << dataSize << std::endl;
 
                         // T data[dataSize];
+                        // false = is not key-value backend
                         std::vector<T> data = std::vector<T>(dataSize);
                         m_JuleaDBInteractionReader.GetVariableDataFromJulea(
                             variable, data.data(), m_ProjectNamespace, fileName,
-                            offset, dataSize, subStreamBoxInfo.SubStreamID);
+                            offset, dataSize, step,
+                            subStreamBoxInfo.SubStreamID, false);
+                        // offset, dataSize, subStreamBoxInfo.SubStreamID);
 
                         const Dims blockInfoStart =
                             (variable.m_ShapeID == ShapeID::LocalArray &&
