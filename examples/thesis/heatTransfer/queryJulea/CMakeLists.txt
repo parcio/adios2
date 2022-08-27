@@ -8,5 +8,5 @@ add_executable(thesis_eval_heatTransfer_queryDAI queryJulea.cpp JuleaQueryPrintD
         thesis_eval_heatTransfer_queryDAI adios2::cxx11_mpi MPI::MPI_C)
         target_link_libraries(
             thesis_eval_heatTransfer_queryDAI PkgConfig::JULEA)
-            target_link_libraries(
-            thesis_eval_heatTransfer_queryDAI glib-2.0)
+            # target_link_libraries(
+            # thesis_eval_heatTransfer_queryDAI glib-2.0)
