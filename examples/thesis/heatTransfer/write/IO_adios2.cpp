@@ -138,7 +138,7 @@ void IO::write(int step, const HeatTransfer &ht, const Settings &s,
     const int rangeTo = 500;
     std::random_device randDev;
     // std::mt19937 generator(randDev());
-    std::mt19937 generator(42+m_seedStep+s.rank);
+    std::mt19937 generator(42 + m_seedStep + s.rank);
     std::uniform_int_distribution<int> distrFrom(rangeFrom, 250);
     std::uniform_int_distribution<int> distrTo(251, rangeTo);
 
