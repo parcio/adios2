@@ -337,12 +337,12 @@ void JuleaKVInteractionWriter::PutVarNameToJulea(
 
     /** store all variable names for a file = namespace */
     auto varNames = j_kv_new(completeNamespace, fileName.c_str());
-    // std::cout << "debug 1\n";
+    std::cout << "debug 1\n";
     j_kv_get(varNames, &namesBuf, &valueLen, batch);
-    // std::cout << "debug 2\n";
+    std::cout << "debug 2\n";
     err = j_batch_execute(batch);
     // g_assert_true(j_batch_execute(batch) == true);
-    // std::cout << "debug 3\n";
+    std::cout << "debug 3\n";
 
     // JULEA does not return an error value but TRUE or FALSE
     if (err == false)
@@ -393,17 +393,21 @@ void JuleaKVInteractionWriter::PutVarNameToJulea(
     // key = bson_iter_key (&bIter2);
     // value = bson_iter_value (&bIter2);
     // std::cout << "key: " << key << " value: " << value << "\n";
+    std::cout << "debug 4\n";
 
     namesBuf = g_memdup2(bson_get_data(bsonNames), bsonNames->len);
+    std::cout << "debug 5\n";
     j_kv_put(varNames, namesBuf, bsonNames->len, g_free, batch2);
     // err = j_batch_execute(batch2);
+    std::cout << "debug 6\n";
     g_assert_true(j_batch_execute(batch2) == true);
+    std::cout << "debug 7\n";
 
     // free(namesBuf); //TODO: why does this lead to segfaults?
     bson_destroy(bsonNames);
     j_kv_unref(varNames);
     j_batch_unref(batch);
-    j_batch_unref(batch2);
+    // j_batch_unref(batch2);
     j_semantics_unref(semantics);
 }
 

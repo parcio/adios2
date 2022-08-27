@@ -78,15 +78,15 @@ public:
     template <class T>
     void PutVariableDataToJulea(core::Variable<T> &variable, const T *data,
                                 const std::string projectNamespace,
-                                const std::string fileName,
-                                uint32_t entryID) const;
+                                const std::string fileName, size_t step,
+                                uint32_t ID, bool isKV) const;
 
     template <class T>
     void GetVariableDataFromJulea(core::Variable<T> &variable, T *data,
                                   const std::string projectNamespace,
                                   const std::string fileName, size_t offset,
-                                  long unsigned int dataSize,
-                                  uint32_t entryID) const;
+                                  long unsigned int dataSize, const size_t step,
+                                  uint32_t ID, bool isKV) const;
     // TODO: GetVariableDataFromJulea
 
 protected:
@@ -101,11 +101,12 @@ private:
     extern template void JuleaInteraction::PutVariableDataToJulea(             \
         core::Variable<T> &variable, const T *data,                            \
         const std::string projectNamespace, const std::string fileName,        \
-        uint32_t entryID) const;                                               \
+        size_t step, uint32_t ID, bool isKV) const;                            \
     extern template void JuleaInteraction::GetVariableDataFromJulea(           \
         core::Variable<T> &variable, T *data,                                  \
         const std::string projectNamespace, const std::string fileName,        \
-        size_t offset, long unsigned int dataSize, uint32_t entryID) const;
+        size_t offset, long unsigned int dataSize, const size_t step,          \
+        uint32_t ID, bool isKV) const;
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
 
