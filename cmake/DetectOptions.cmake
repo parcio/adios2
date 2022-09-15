@@ -110,6 +110,7 @@ if(ADIOS2_USE_JULEA)
       julea-item
       julea-dai
       glib-2.0
+      gio-2.0
     )
   endif()
 
