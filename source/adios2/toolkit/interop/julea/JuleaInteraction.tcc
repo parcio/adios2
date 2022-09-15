@@ -129,7 +129,7 @@ void JuleaInteraction::GetVariableDataFromJulea(
     if (isKV)
     {
         auto stepBlockID = g_strdup_printf("%lu_%lu", step, ID);
-        std::cout << "stepBlockID: " << stepBlockID << "\n";
+        // std::cout << "stepBlockID: " << stepBlockID << "\n";
         dataObject = j_object_new(stringDataObject, stepBlockID);
     }
     else

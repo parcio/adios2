@@ -65,7 +65,7 @@ void JuleaKVInteractionReader::InitVariable(
     size_t numberSteps, ShapeID shapeID, bool isReadAsJoined,
     bool isReadAsLocalValue, bool isRandomAccess, bool isSingleValue)
 {
-    std::cout << "----- InitVariable --- " << varName << std::endl;
+    // std::cout << "----- InitVariable --- " << varName << std::endl;
     const adios2::DataType type(io->InquireVariableType(varName));
 
     // std::cout << "type(io->InquireVariableType(varName): " << type <<
@@ -202,7 +202,7 @@ void JuleaKVInteractionReader::DefineVariableInEngineIO(
     ShapeID shapeID, Dims shape, Dims start, Dims count, bool constantDims,
     bool isLocalValue)
 {
-    std::cout << "----- DefineVariableInEngineIO --- " << varName << std::endl;
+    // std::cout << "----- DefineVariableInEngineIO --- " << varName << std::endl;
 
     // std::cout << "shapeID: " << shapeID << "\n";
     // std::cout << "shape size: " << shape.size() << "\n";
@@ -283,14 +283,14 @@ void JuleaKVInteractionReader::GetVarNamesFromJulea(
 
     if (err != 0)
     {
-        std::cout << "j_batch_execute failed in GetNamesFromJulea. "
-                  << std::endl;
+        // std::cout << "j_batch_execute failed in GetNamesFromJulea. "
+                //   << std::endl;
     }
 
     if (valueLen == 0)
     {
-        std::cout << "WARNING: The kv store: " << kvName << " is empty!"
-                  << std::endl;
+        // std::cout << "WARNING: The kv store: " << kvName << " is empty!"
+                //   << std::endl;
 
         *varCount = 0;
         free(namesBuf);
@@ -525,7 +525,7 @@ void JuleaKVInteractionReader::ParseVariableFromBSON(
 
     gchar const *key;
 
-    std::cout << "----- ParseVariableFromBSON --- " << std::endl;
+    // std::cout << "----- ParseVariableFromBSON --- " << std::endl;
     if (bson_iter_init(&bIter, bsonMetadata))
     {
         // std::cout << "++ Julea Client Logic: Bson iterator is valid"
@@ -703,8 +703,8 @@ void JuleaKVInteractionReader::GetVariableMetadataFromJulea(
     const std::string varName, bson_t *bsonMetadata)
 // const std::string varName, gpointer *buffer, guint32 *buffer_len)
 {
-    std::cout << "----- GetVariableMetadataFromJulea --- " << varName
-              << std::endl;
+    // std::cout << "----- GetVariableMetadataFromJulea --- " << varName
+    //           << std::endl;
 
     int err = 0;
     JDBType type;
@@ -789,7 +789,7 @@ void JuleaKVInteractionReader::InitVariablesFromKV(
     const std::string projectNamespace, const std::string fileName,
     core::IO *io, core::Engine &engine)
 {
-    std::cout << "--- InitVariablesFromKV ---" << std::endl;
+    // std::cout << "--- InitVariablesFromKV ---" << std::endl;
     int err = 0;
     char *varName;
     bson_t bsonMetadata;
@@ -811,7 +811,7 @@ void JuleaKVInteractionReader::InitVariablesFromKV(
     {
         // if (m_Verbosity == 5)
         // {
-        std::cout << "++ InitVariables: no variables stored in KV" << std::endl;
+        // std::cout << "++ InitVariables: no variables stored in KV" << std::endl;
         // }
     }
     else

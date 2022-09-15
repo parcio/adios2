@@ -240,11 +240,11 @@ void JuleaKVWriter::ComputeGlobalDimensions(Variable<T> &variable)
 
     if (m_Comm.Size() == testNumberProcesses)
     {
-        std::cout << "wuhu: gleich groß \n";
+        // std::cout << "wuhu: gleich groß \n";
     }
 
-    std::cout << "X = " << m_JuleaCDO.m_numberBlocksX << "\n";
-    std::cout << "Y = " << m_JuleaCDO.m_numberBlocksY << "\n";
+    // std::cout << "X = " << m_JuleaCDO.m_numberBlocksX << "\n";
+    // std::cout << "Y = " << m_JuleaCDO.m_numberBlocksY << "\n";
 }
 
 template <class T>
@@ -326,20 +326,27 @@ void JuleaKVWriter::PutSyncToJulea(Variable<T> &variable, const T *data,
             variable, m_ProjectNamespace, m_Name, variable.m_Name,
             m_CurrentStep, m_CurrentBlockID, m_IsOriginalFormat);
 
-        // TODO: seems like key-value backend cannot handle parallel access ->
+        // TODO: only for SQLite Backend seems like key-value backend cannot handle parallel access ->
         // master has to do everything
         //  -> m_CurrentBlockID replaced by i
-        for (int i = 0; i < m_Comm.Size(); i++)
-        {
-            /** put block metadata to DB */
-            m_JuleaKVInteractionWriter.PutBlockMetadataToJulea(
-                variable, m_ProjectNamespace, m_Name, variable.m_Name,
-                m_CurrentStep, i, blockInfo, blockMin, blockMax, blockMean,
-                blockSum, blockVar, entryID, m_IsOriginalFormat);
-            // m_CurrentBlockID, blockInfo, blockMin, blockMax, blockMean,
-            // blockSum,
-        }
+        // for (int i = 0; i < m_Comm.Size(); i++)
+        // {
+        //     /** put block metadata to DB */
+        //     m_JuleaKVInteractionWriter.PutBlockMetadataToJulea(
+        //         variable, m_ProjectNamespace, m_Name, variable.m_Name,
+        //         m_CurrentStep, i, blockInfo, blockMin, blockMax, blockMean,
+        //         blockSum, blockVar, entryID, m_IsOriginalFormat);
+        //     // m_CurrentBlockID, blockInfo, blockMin, blockMax, blockMean,
+        //     // blockSum,
+        // }
     }
+
+    /** put block metadata to DB */
+    m_JuleaKVInteractionWriter.PutBlockMetadataToJulea(
+        variable, m_ProjectNamespace, m_Name, variable.m_Name,
+        m_CurrentStep, m_CurrentBlockID, blockInfo, blockMin, blockMax, blockMean,
+        blockSum, blockVar, entryID, m_IsOriginalFormat);
+
 
     /** put data to object store */
     m_JuleaKVInteractionWriter.PutVariableDataToJulea(

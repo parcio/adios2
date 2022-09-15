@@ -122,11 +122,11 @@ void JuleaKVInteractionWriter::ParseVariableToBSON(core::Variable<T> &variable,
                                                    bson_t *bsonMetadata,
                                                    size_t currentStep)
 {
-    std::cout << "_____________________________________________" << std::endl;
+    // std::cout << "_____________________________________________" << std::endl;
     // std::cout << "Test" << std::endl;
     T min;
     T max;
-    std::cout << "-- ParseVariableToBSON \n";
+    // std::cout << "-- ParseVariableToBSON \n";
 
     // std::cout << "-- Variable bsonMetadata length: " << bsonMetadata->len
     //   << std::endl;
@@ -193,8 +193,6 @@ void JuleaKVInteractionWriter::ParseVariableToBSON(core::Variable<T> &variable,
 
     bson_append_int64(bsonMetadata, "steps_start", -1, variable.m_StepsStart);
     bson_append_int64(bsonMetadata, "steps_count", -1, variable.m_StepsCount);
-    // std::cout << "DEBUG: steps_start" << variable.m_StepsStart << std::endl;
-    // std::cout << "DEBUG: steps_count" << variable.m_StepsCount << std::endl;
     bson_append_int64(bsonMetadata, "number_steps", -1, numberSteps);
     // std::cout << "numberSteps: " << numberSteps << "\n";
     for (guint i = 0; i < numberSteps; ++i)
@@ -241,11 +239,11 @@ void JuleaKVInteractionWriter::ParseBlockToBSON(core::Variable<T> &variable,
                                                 bson_t *bsonMetadata,
                                                 T blockMin, T blockMax)
 {
-    std::cout << "_____________________________________________" << std::endl;
+    // std::cout << "_____________________________________________" << std::endl;
     T min;
     T max;
 
-    std::cout << "-- ParseBlockToBSON \n";
+    // std::cout << "-- ParseBlockToBSON \n";
     // std::cout << "-- bsonMetadata length: " << bsonMetadata->len <<
     // std::endl;
     uint data_size = 0;
@@ -319,7 +317,7 @@ void JuleaKVInteractionWriter::PutVarNameToJulea(
     std::string const projectNamespace, std::string const fileName,
     std::string const varName)
 {
-    std::cout << "-- PutVarNameToJulea \n";
+    // std::cout << "-- PutVarNameToJulea \n";
 
     bool err = false;
     guint32 valueLen = 0;
@@ -337,12 +335,10 @@ void JuleaKVInteractionWriter::PutVarNameToJulea(
 
     /** store all variable names for a file = namespace */
     auto varNames = j_kv_new(completeNamespace, fileName.c_str());
-    std::cout << "debug 1\n";
+
     j_kv_get(varNames, &namesBuf, &valueLen, batch);
-    std::cout << "debug 2\n";
     err = j_batch_execute(batch);
     // g_assert_true(j_batch_execute(batch) == true);
-    std::cout << "debug 3\n";
 
     // JULEA does not return an error value but TRUE or FALSE
     if (err == false)
@@ -361,7 +357,6 @@ void JuleaKVInteractionWriter::PutVarNameToJulea(
     if (valueLen == 0)
     {
         bsonNames = bson_new();
-        std::cout << "valueLen = 0 \n";
     }
     else
     {
@@ -380,8 +375,8 @@ void JuleaKVInteractionWriter::PutVarNameToJulea(
     }
     else
     {
-        std::cout << "++ Julea Interaction Writer:  " << varName
-                  << " already in kv store. " << std::endl;
+        // std::cout << "++ Julea Interaction Writer:  " << varName
+                //   << " already in kv store. " << std::endl;
     }
 
     // bson_iter_init_find(&bIter2, bsonNames, "T");
@@ -393,15 +388,11 @@ void JuleaKVInteractionWriter::PutVarNameToJulea(
     // key = bson_iter_key (&bIter2);
     // value = bson_iter_value (&bIter2);
     // std::cout << "key: " << key << " value: " << value << "\n";
-    std::cout << "debug 4\n";
 
     namesBuf = g_memdup2(bson_get_data(bsonNames), bsonNames->len);
-    std::cout << "debug 5\n";
     j_kv_put(varNames, namesBuf, bsonNames->len, g_free, batch2);
     // err = j_batch_execute(batch2);
-    std::cout << "debug 6\n";
     g_assert_true(j_batch_execute(batch2) == true);
-    std::cout << "debug 7\n";
 
     // free(namesBuf); //TODO: why does this lead to segfaults?
     bson_destroy(bsonNames);
@@ -417,7 +408,7 @@ void JuleaKVInteractionWriter::PutVariableMetadataToJulea(
     const std::string fileName, const std::string varName, size_t step,
     size_t block, bool original)
 {
-    std::cout << "-- PutVariableMetadataToJulea \n";
+    // std::cout << "-- PutVariableMetadataToJulea \n";
 
     auto bsonMetadata = bson_new();
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -447,7 +438,7 @@ void JuleaKVInteractionWriter::PutBlockMetadataToJulea(
     T &blockMin, T &blockMax, T &blockMean, T &blockSum, T &blockVar,
     uint32_t &entryID, bool original)
 {
-    std::cout << "-- PutBlockMetadataToJulea \n";
+    // std::cout << "-- PutBlockMetadataToJulea \n";
 
     auto bsonMetadata = bson_new();
     auto semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);

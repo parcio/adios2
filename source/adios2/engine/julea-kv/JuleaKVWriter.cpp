@@ -119,7 +119,7 @@ void JuleaKVWriter::EndStep()
     m_CurrentBlockID = 0;
 
     m_Comm.Barrier();
-    if (m_WriterRank == 0)
+    if ((m_WriterRank == 0) && (m_Verbosity == 5))
     {
         std::cout << "______________EndStep _____________________ step = "
                   << (m_CurrentStep - 1) << "\n " << std::endl;
@@ -237,13 +237,13 @@ void JuleaKVWriter::Init()
 
     if (m_WriterRank == 0)
     {
-        std::cout << "JKV Writer (" << m_WriterRank << ") : InitDBSchemas()\n";
+        // std::cout << "JKV Writer (" << m_WriterRank << ") : InitDBSchemas()\n";
         InitParameters();
 
         m_JuleaKVInteractionWriter.InitKV(m_ProjectNamespace,
                                           m_IsOriginalFormat);
-        std::cout << "JKV Writer (" << m_WriterRank
-                  << ") : InitKV finished()\n";
+        // std::cout << "JKV Writer (" << m_WriterRank
+                //   << ") : InitKV finished()\n";
     }
 }
 
