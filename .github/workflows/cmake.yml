@@ -17,37 +17,37 @@ jobs:
           
     steps:
     # TODO: run for official JULEA as well in case local fork does not have all updates?
-    - name: Checkout JULEA
-    # TODO: with JULEA system packages have to be removed; necessary here as well?
-      run: |
-        # TODO: only DAI branch for now
-        git clone https://github.com/Bella42/julea.git
-    - name: Install JULEA dependencies
-    - name: Set up MySQL
-      if: ${{ matrix.julea.db == 'mysql' && matrix.julea.db-server == 'mysql' }}
-    - name: Set up MariaDB
-      if: ${{ matrix.julea.db == 'mysql' && matrix.julea.db-server == 'mariadb' }}
-    - name: Setup JULEA environment
-      env:
-      run: |
-        . scripts/environment.sh
-    - name: Configure JULEA
-    - name: Compile JULEA
-      run: ninja -C bld
-    - name: Create JULEA configuration
-      run: |
-        . scripts/environment.sh
-        # TODO: set JULEA components
-    - name: Run JULEA tests
-      env:
-          LSAN_OPTIONS: exitcode=0
-      run: |
-        . scripts/environment.sh
-        ./scripts/setup.sh start
-        ./scripts/test.sh
-        sleep 10
-        ./scripts/test.sh
-        ./scripts/setup.sh stop
+      - name: Checkout JULEA
+      # TODO: with JULEA system packages have to be removed; necessary here as well?
+        run: |
+          # TODO: only DAI branch for now
+          git clone https://github.com/Bella42/julea.git
+      - name: Install JULEA dependencies
+      - name: Set up MySQL
+        if: ${{ matrix.julea.db == 'mysql' && matrix.julea.db-server == 'mysql' }}
+      - name: Set up MariaDB
+        if: ${{ matrix.julea.db == 'mysql' && matrix.julea.db-server == 'mariadb' }}
+      - name: Setup JULEA environment
+        env:
+        run: |
+          . scripts/environment.sh
+      - name: Configure JULEA
+      - name: Compile JULEA
+        run: ninja -C bld
+      - name: Create JULEA configuration
+        run: |
+          . scripts/environment.sh
+          # TODO: set JULEA components
+      - name: Run JULEA tests
+        env:
+            LSAN_OPTIONS: exitcode=0
+        run: |
+          . scripts/environment.sh
+          ./scripts/setup.sh start
+          ./scripts/test.sh
+          sleep 10
+          ./scripts/test.sh
+          ./scripts/setup.sh stop
     - name: Make example
     - name: Run example
     
