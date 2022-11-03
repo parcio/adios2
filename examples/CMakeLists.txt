@@ -8,12 +8,15 @@ add_subdirectory(hello)
 add_subdirectory(query)
 add_subdirectory(useCases)
 add_subdirectory(inlineMWE)
-add_subdirectory(julea)
-add_subdirectory(julea_SYSTOR2021)
-add_subdirectory(thesis)
 
 if(ADIOS2_HAVE_MPI)
   add_subdirectory(heatTransfer)
+endif()
+
+if(ADIOS2_HAVE_JULEA)
+  add_subdirectory(julea)
+  add_subdirectory(code_SYSTOR2021)
+  add_subdirectory(thesis)
 endif()
 
 if(ADIOS2_BUILD_EXAMPLES_EXPERIMENTAL)
