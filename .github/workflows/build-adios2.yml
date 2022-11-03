@@ -22,7 +22,7 @@ jobs:
 
     - name: Build
       # TODO: number processes?
-      run: make -j 4
+      run: cd ${{github.workspace}}/build && make -j 4
 
     - name: Test
       working-directory: ${{github.workspace}}/build
