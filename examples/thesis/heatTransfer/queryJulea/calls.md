@@ -20,7 +20,7 @@ mpirun -n 2 ./bin/thesis_eval_heatTransfer_write_adios2 ../examples/thesis/heatT
 
 mpirun -n 1 ./bin/thesis_eval_heatTransfer_queryAdios ../examples/thesis/heatTransfer/heat_bp4_sync.xml heat_bp4.bp 1 1
 
- mpirun -n 2 ./bin/thesis_eval_heatTransfer_read ../examples/thesis/heatTransfer/heat_bp4_sync.xml heat_bp4.bp heat_bp4-2.bp 2 1    :(
+ mpirun -n 2 ./bin/thesis_eval_heatTransfer_read ../examples/thesis/heatTransfer/heat_bp4_sync.xml heat_bp4.bp heat_bp4-2.bp 2 1 
 
 
 
