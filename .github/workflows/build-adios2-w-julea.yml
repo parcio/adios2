@@ -12,60 +12,98 @@ env:
   BUILD_TYPE: Release
 
 jobs:
-  build-adios2-w-julea:
-    runs-on: ubuntu-latest
-
+  # Job: Install JULEA dependencies
+  julea-dependencies:
+    name: Dependencies
+    runs-on: ${{ matrix.os.dist }}
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          # - dist: ubuntu-22.04
+          #   compiler: gcc
+          #   compiler_version: 11.3.0
+          # - dist: ubuntu-20.04
+          #   compiler: gcc
+          #   compiler_version: 9.4.0
+          - dist: ubuntu-18.04
+            compiler: gcc
+            compiler_version: 7.5.0
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+      - name: Checkout JULEA
+        run: git clone -b dai https://github.com/Bella42/julea.git
+        # with:
+        #   persist-credentials: false
+      - name: Cache dependencies
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: dependencies
+          key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{ hashFiles('scripts/spack', 'scripts/install-dependencies.sh') }}
+      - name: Install dependencies
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        env:
+          JULEA_SPACK_COMPILER: ${{ matrix.os.compiler }}@${{ matrix.os.compiler_version }}
+        run: ${{github.workspace}}/julea/scripts/install-dependencies.sh
+  # # Job: Build JULEA
+  # build-julea:
+  # # Job: Build ADIOS2 with JULEA enabled for JULEA engines and according examples
+  # build-adios2-w-julea:
+    # runs-on: ubuntu-latest
 
-    - name: Checkout JULEA
-      run: git clone -b dai https://github.com/Bella42/julea.git
+    # steps:
+    # - uses: actions/checkout@v3
 
-      # TODO: with JULEA system packages have to be removed; necessary here as well?
-    - name: Install JULEA dependencies
-      run: ${{github.workspace}}/julea/scripts/install-dependencies.sh
+    # - name: Checkout JULEA
+    #   run: git clone -b dai https://github.com/Bella42/julea.git
 
-    #TODO: configure MariaDB and MySQL
-    #   if: ${{ matrix.julea.db == 'mysql' && matrix.julea.db-server == 'mysql' }}
-    # - name: Set up MariaDB
-    #   if: ${{ matrix.julea.db == 'mysql' && matrix.julea.db-server == 'mariadb' }}
-    - name: Setup JULEA environment
-      # env:
-      run: ${{github.workspace}}/julea/scripts/environment.sh
+    #   # TODO: with JULEA system packages have to be removed; necessary here as well?
+    # - name: Install JULEA dependencies
+    #   run: ${{github.workspace}}/julea/scripts/install-dependencies.sh
+
+    # #TODO: configure MariaDB and MySQL
+    # #   if: ${{ matrix.julea.db == 'mysql' && matrix.julea.db-server == 'mysql' }}
+    # # - name: Set up MariaDB
+    # #   if: ${{ matrix.julea.db == 'mysql' && matrix.julea.db-server == 'mariadb' }}
+    # - name: Setup JULEA environment
+    #   # env:
+    #   run: ${{github.workspace}}/julea/scripts/environment.sh
     
-    - name: Configure JULEA with meson
-      # TODO: use and install release build
-      run: meson setup --prefix="julea-install" bld
+    # - name: Configure JULEA with meson
+    #   # TODO: use and install release build
+    #   run: meson setup --prefix="julea-install" bld
     
-    - name: Compile JULEA
-      run: ninja -C bld
+    # - name: Compile JULEA
+    #   run: ninja -C bld
     
-    - name: Create JULEA configuration
-      # run: julea-config --user --object-servers="$(hostname)" --kv-servers="$(hostname)" --db-servers="$(hostname)" --object-backend=posix --object-component=server --object-path="/tmp/julea-$(id -u)/posix" --kv-backend=lmdb --kv-component=server --kv-path="/tmp/julea-$(id -u)/lmdb" --db-backend=sqlite --db-component=server --db-path="/tmp/julea-$(id -u)/sqlite"
-      run: |
-        julea-config --user --object-servers="$(hostname)" --kv-servers="$(hostname)" --db-servers="$(hostname)" --object-backend="${{ matrix.julea.object }}" --object-component=server --object-path="/tmp/julea/object/${{ matrix.julea.object }}" --kv-backend="${{ matrix.julea.kv }}" --kv-component="${JULEA_KV_COMPONENT}" --kv-path="${JULEA_KV_PATH}" --db-backend="${{ matrix.julea.db }}" --db-component="${JULEA_DB_COMPONENT}" --db-path="${JULEA_DB_PATH}"
+    # - name: Create JULEA configuration
+    #   # run: julea-config --user --object-servers="$(hostname)" --kv-servers="$(hostname)" --db-servers="$(hostname)" --object-backend=posix --object-component=server --object-path="/tmp/julea-$(id -u)/posix" --kv-backend=lmdb --kv-component=server --kv-path="/tmp/julea-$(id -u)/lmdb" --db-backend=sqlite --db-component=server --db-path="/tmp/julea-$(id -u)/sqlite"
+    #   run: |
+    #     julea-config --user --object-servers="$(hostname)" --kv-servers="$(hostname)" --db-servers="$(hostname)" --object-backend="${{ matrix.julea.object }}" --object-component=server --object-path="/tmp/julea/object/${{ matrix.julea.object }}" --kv-backend="${{ matrix.julea.kv }}" --kv-component="${JULEA_KV_COMPONENT}" --kv-path="${JULEA_KV_PATH}" --db-backend="${{ matrix.julea.db }}" --db-component="${JULEA_DB_COMPONENT}" --db-path="${JULEA_DB_PATH}"
     
-    - name: Run JULEA tests
-      env:
-          LSAN_OPTIONS: exitcode=0
-      run: |
-          . scripts/environment.sh
-          ./scripts/setup.sh start
-          ./scripts/test.sh
-          sleep 10
-          ./scripts/test.sh
-          ./scripts/setup.sh stop
-    # - name: Make example
-    # - name: Run example
+    # - name: Run JULEA tests
+    #   env:
+    #       LSAN_OPTIONS: exitcode=0
+    #   run: |
+    #       . scripts/environment.sh
+    #       ./scripts/setup.sh start
+    #       ./scripts/test.sh
+    #       sleep 10
+    #       ./scripts/test.sh
+    #       ./scripts/setup.sh stop
+    # # - name: Make example
+    # # - name: Run example
 
 
 
-    - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DADIOS2_USE_Fortran=OFF -DADIOS2_USE_MPI=OFF -DADIOS2_USE_DataMan=OFF -DADIOS2_USE_BZip2=OFF -DADIOS2_USE_PNG=OFF -DADIOS2_USE_JULEA=OFF
+    # - name: Configure CMake
+    #   run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DADIOS2_USE_Fortran=OFF -DADIOS2_USE_MPI=OFF -DADIOS2_USE_DataMan=OFF -DADIOS2_USE_BZip2=OFF -DADIOS2_USE_PNG=OFF -DADIOS2_USE_JULEA=OFF
 
-    - name: Build
-      run: cd ${{github.workspace}}/build && make -j 2
+    # - name: Build
+    #   run: cd ${{github.workspace}}/build && make -j 2
 
-    # - name: Test
-    #   working-directory: ${{github.workspace}}/build
-    #   run: ctest -C ${{env.BUILD_TYPE}}
+    # # - name: Test
+    # #   working-directory: ${{github.workspace}}/build
+    # #   run: ctest -C ${{env.BUILD_TYPE}}
