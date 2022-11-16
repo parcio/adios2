@@ -48,15 +48,16 @@ jobs:
         env:
           JULEA_SPACK_COMPILER: ${{ matrix.os.compiler }}@${{ matrix.os.compiler_version }}
         run: ${{github.workspace}}/julea/scripts/install-dependencies.sh
-      - name: Setup JULEA environment
-        # env:
-        run: . ${{github.workspace}}/julea/scripts/environment.sh
+      # - name: Setup JULEA environment
+      #   # env:
+      #   run: . ${{github.workspace}}/julea/scripts/environment.sh
     
       # TODO: use and install release build
       - name: Configure JULEA with meson
         run: |
           . ${{github.workspace}}/julea/scripts/environment.sh 
-          meson setup --prefix="julea-install" bld
+        # meson setup --prefix="julea-install" bld
+          meson setup --prefix="${{github.workspace}}/julea-install" --buildtype=release --werror bld
     
       - name: Compile JULEA
         run: |
