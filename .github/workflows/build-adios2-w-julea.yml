@@ -56,7 +56,6 @@ jobs:
       - name: Configure JULEA with meson
         run: |
           . ${{github.workspace}}/julea/scripts/environment.sh 
-        # meson setup --prefix="julea-install" bld
           meson setup --prefix="${{github.workspace}}/julea-install" --buildtype=release --werror bld
     
       - name: Compile JULEA
