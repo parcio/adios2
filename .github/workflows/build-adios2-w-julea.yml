@@ -56,15 +56,17 @@ jobs:
       - name: Configure JULEA with meson
         run: |
           . ${{github.workspace}}/julea/scripts/environment.sh 
-          meson setup --prefix="${{github.workspace}}/julea-install" --buildtype=release --werror bld
+          cd ${{github.workspace}}/julea && meson setup --prefix="${{github.workspace}}/julea-install" --buildtype=release --werror bld
     
       - name: Compile JULEA
         run: |
           . ${{github.workspace}}/julea/scripts/environment.sh 
-          ninja -C bld
+          cd ${{github.workspace}}/julea && ninja -C bld
     
       - name: Create JULEA configuration
-        run: julea-config --user --object-servers="$(hostname)" --kv-servers="$(hostname)" --db-servers="$(hostname)" --object-backend=posix --object-component=server --object-path="/tmp/julea-$(id -u)/posix" --kv-backend=lmdb --kv-component=server --kv-path="/tmp/julea-$(id -u)/lmdb" --db-backend=sqlite --db-component=server --db-path="/tmp/julea-$(id -u)/sqlite"
+        run: |
+          . ${{github.workspace}}/julea/scripts/environment.sh 
+          cd ${{github.workspace}}/julea && julea-config --user --object-servers="$(hostname)" --kv-servers="$(hostname)" --db-servers="$(hostname)" --object-backend=posix --object-component=server --object-path="/tmp/julea-$(id -u)/posix" --kv-backend=lmdb --kv-component=server --kv-path="/tmp/julea-$(id -u)/lmdb" --db-backend=sqlite --db-component=server --db-path="/tmp/julea-$(id -u)/sqlite"
     #   run: |
     #     julea-config --user --object-servers="$(hostname)" --kv-servers="$(hostname)" --db-servers="$(hostname)" --object-backend="${{ matrix.julea.object }}" --object-component=server --object-path="/tmp/julea/object/${{ matrix.julea.object }}" --kv-backend="${{ matrix.julea.kv }}" --kv-component="${JULEA_KV_COMPONENT}" --kv-path="${JULEA_KV_PATH}" --db-backend="${{ matrix.julea.db }}" --db-component="${JULEA_DB_COMPONENT}" --db-path="${JULEA_DB_PATH}"
 
