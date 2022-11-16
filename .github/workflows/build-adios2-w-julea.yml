@@ -33,15 +33,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Checkout JULEA
-        run: git clone -b dai https://github.com/Bella42/julea.git
+        run: git clone -b dai-copy https://github.com/Bella42/julea.git ${{github.workspace}}/julea
         # with:
         #   persist-credentials: false
       - name: Cache dependencies
         id: cache
         uses: actions/cache@v3
         with:
-          path: dependencies
-          key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{ hashFiles('scripts/spack', 'scripts/install-dependencies.sh') }}
+          path: ${{github.workspace}}/julea/dependencies
+          # key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{ hashFiles('scripts/spack', 'scripts/install-dependencies.sh') }}
+          key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}
       - name: Install dependencies
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         env:
