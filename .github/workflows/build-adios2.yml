@@ -27,6 +27,6 @@ jobs:
       # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
       run: cd ${{github.workspace}}/build && make -j 2
 
-    # - name: Test
-    #   working-directory: ${{github.workspace}}/build
-    #   run: ctest -C ${{env.BUILD_TYPE}}
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      run: ctest -C ${{env.BUILD_TYPE}}
