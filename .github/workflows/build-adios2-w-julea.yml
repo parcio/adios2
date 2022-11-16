@@ -50,10 +50,10 @@ jobs:
         run: ${{github.workspace}}/julea/scripts/install-dependencies.sh
       - name: Setup JULEA environment
         # env:
-        run: ${{github.workspace}}/julea/scripts/environment.sh
+        run: . ${{github.workspace}}/julea/scripts/environment.sh
     
-      - name: Configure JULEA with meson
       # TODO: use and install release build
+      - name: Configure JULEA with meson
         run: meson setup --prefix="julea-install" bld
     
       - name: Compile JULEA
