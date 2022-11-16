@@ -1,26 +1,31 @@
-name: Formatting
+name: Formatting New
 
-on: 
-  push: 
-    branches: 
-    - master 
-    - release* 
-  pull_request: 
-    branches: 
-    - master 
-    - release* 
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  # TODO: Debug?
+  BUILD_TYPE: Release
 
 jobs:
-  format:
+  format-new:
+    # needs: git_checks
+    # if: needs.git_checks.outputs.num_code_changes > 0
     runs-on: ubuntu-latest
-    container:
-      image: ornladios/adios2:ci-formatting
+    # container:
+    #   image: ornladios/adios2:ci-formatting
 
     steps:
-    - uses: actions/checkout@v2
-      with:
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: CXX
-      run: scripts/ci/scripts/run-clang-format.sh
-    - name: Python
-      run: scripts/ci/scripts/run-flake8.sh
+      # - uses: actions/checkout@v3
+      #   with:
+      #     path: gha
+      # - uses: actions/checkout@v3
+      #   with:
+      #     ref: ${{ github.event.pull_request.head.sha }}
+      #     path: source
+      # - name: CXX
+      #   working-directory: source
+      #   run: ../gha/scripts/ci/scripts/run-clang-format.sh
