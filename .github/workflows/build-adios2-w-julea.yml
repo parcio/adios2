@@ -41,11 +41,10 @@ jobs:
         # Dependencies
       - name: Cache dependencies
         id: dep-cache
-        working-directory: julea
         uses: actions/cache@v3
         with:
-          path: dependencies
-          key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{ hashFiles('scripts/spack', 'scripts/install-dependencies.sh') }}-dependencies
+          path: julea/dependencies
+          key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{ hashFiles('julea/scripts/spack', 'julea/scripts/install-dependencies.sh') }}-dependencies
       
       - name: Install dependencies
         if: ${{ steps.dep-cache.outputs.cache-hit != 'true' }}
