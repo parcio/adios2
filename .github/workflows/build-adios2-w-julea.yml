@@ -64,6 +64,7 @@ jobs:
           . ${{github.workspace}}/julea/scripts/environment.sh 
           cd ${{github.workspace}}/julea && ninja -C bld
     
+      # TODO: move to later point?
       - name: Create JULEA configuration
         run: |
           . ${{github.workspace}}/julea/scripts/environment.sh 
@@ -77,9 +78,6 @@ jobs:
     # - name: Set up MariaDB
     # #   if: ${{ matrix.julea.db == 'mysql' && matrix.julea.db-server == 'mariadb' }}
    
-  # # Job: Build JULEA
-  # build-julea:
-  
   # # Job: Build ADIOS2 with JULEA enabled for JULEA engines and according examples
   # build-adios2-w-julea:
     # runs-on: ubuntu-latest

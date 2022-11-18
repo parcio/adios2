@@ -23,9 +23,11 @@ jobs:
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DADIOS2_USE_Fortran=OFF -DADIOS2_USE_MPI=OFF -DADIOS2_USE_DataMan=OFF -DADIOS2_USE_BZip2=OFF -DADIOS2_USE_PNG=OFF -DADIOS2_USE_JULEA=OFF
 
     - name: Build
+      working-directory: ${{github.workspace}}/build
       # 2-core CPU for Linux VMs acc. to hosted runners documentation:
       # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
-      run: cd ${{github.workspace}}/build && make -j 2
+      # run: cd ${{github.workspace}}/build && make -j 2
+      run: make -j 2
 
     - name: Test
       working-directory: ${{github.workspace}}/build
