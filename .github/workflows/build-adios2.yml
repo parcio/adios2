@@ -17,10 +17,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout ADIOS2
+      uses: actions/checkout@v3
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DADIOS2_USE_Fortran=OFF -DADIOS2_USE_MPI=OFF -DADIOS2_USE_DataMan=OFF -DADIOS2_USE_BZip2=OFF -DADIOS2_USE_PNG=OFF -DADIOS2_USE_JULEA=OFF
+
+    - name: Build
+      working-directory: ${{github.workspace}}/build
+      # 2-core CPU for Linux VMs acc. to hosted runners documentation:
+      # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
+      # run: cd ${{github.workspace}}/build && make -j 2
+      run: make -j 2
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      run: ctest -C ${{env.BUILD_TYPE}}
+
+  build-adios2-mpi:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout ADIOS2
+      uses: actions/checkout@v3
+
+    - name: Install MPI
+      run: |
+        sudo apt update || true
+        sudo apt --yes --no-install-recommends install libopenmpi-dev openmpi-bin
+
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DADIOS2_USE_Fortran=OFF -DADIOS2_USE_MPI=ON -DADIOS2_USE_DataMan=OFF -DADIOS2_USE_BZip2=OFF -DADIOS2_USE_PNG=OFF -DADIOS2_USE_JULEA=OFF
 
     - name: Build
       working-directory: ${{github.workspace}}/build
