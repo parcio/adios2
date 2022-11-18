@@ -41,8 +41,8 @@ jobs:
         # Dependencies
       - name: Cache dependencies
         id: dep-cache
-        uses: actions/cache@v3
         working-directory: julea
+        uses: actions/cache@v3
         with:
           path: dependencies
           key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{ hashFiles('scripts/spack', 'scripts/install-dependencies.sh') }}-dependencies
@@ -63,8 +63,8 @@ jobs:
       
       - name: Cache JULEA
         id: julea-cache
-        uses: actions/cache@v3
         working-directory: julea
+        uses: actions/cache@v3
         with:
           path: julea-install
           key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{steps.julea-hash.outputs.hash}}
