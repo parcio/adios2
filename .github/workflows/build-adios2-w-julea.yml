@@ -62,10 +62,9 @@ jobs:
       
       - name: Cache JULEA
         id: julea-cache
-        working-directory: julea
         uses: actions/cache@v3
         with:
-          path: julea-install
+          path: julea/julea-install
           key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{steps.julea-hash.outputs.hash}}
 
 
