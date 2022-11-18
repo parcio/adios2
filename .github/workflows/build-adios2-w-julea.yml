@@ -34,7 +34,7 @@ jobs:
       - name: Checkout JULEA
         uses: actions/checkout@v3
         with:
-          repo: Bella42/julea
+          repository: Bella42/julea
           ref: dai-copy
           path: julea
 
