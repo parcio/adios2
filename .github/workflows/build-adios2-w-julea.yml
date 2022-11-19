@@ -102,8 +102,8 @@ jobs:
           ls -la
           pwd
           ls -la ~
-          . ../julea/scripts/environment.sh
-          . ../../julea/scripts/environment.sh
+          # . ../julea/scripts/environment.sh
+          # . ../../julea/scripts/environment.sh
           . ${{github.workspace}}/julea/scripts/environment.sh
           cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DADIOS2_USE_Fortran=OFF -DADIOS2_USE_MPI=ON -DADIOS2_USE_DataMan=OFF -DADIOS2_USE_BZip2=OFF -DADIOS2_USE_PNG=OFF -DADIOS2_USE_JULEA=ON
 
