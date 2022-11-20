@@ -15,7 +15,7 @@ endif()
 
 if(ADIOS2_HAVE_JULEA)
   add_subdirectory(julea)
-  add_subdirectory(code_SYSTOR2021)
+  add_subdirectory(julea_SYSTOR2021)
   add_subdirectory(thesis)
 endif()
 
