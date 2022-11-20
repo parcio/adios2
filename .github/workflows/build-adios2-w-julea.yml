@@ -24,12 +24,14 @@ jobs:
           # - dist: ubuntu-22.04
           #   compiler: gcc
           #   compiler_version: 11.3.0
-          # - dist: ubuntu-20.04
-          #   compiler: gcc
-          #   compiler_version: 9.4.0
-          - dist: ubuntu-18.04
+          - dist: ubuntu-20.04
             compiler: gcc
-            compiler_version: 7.5.0
+            compiler_version: 9.4.0
+          # doesn't work:
+          # "sorry, unimplemented: non-trivial designated initializers not supported"
+          # - dist: ubuntu-18.04
+          #   compiler: gcc
+          #   compiler_version: 7.5.0
     steps:
       - name: Checkout JULEA
         uses: actions/checkout@v3
