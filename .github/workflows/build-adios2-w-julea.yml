@@ -100,7 +100,7 @@ jobs:
 
       
       - name: Configure CMake
-        working-directory: julea
+        # working-directory: julea
         run: |
           pwd
           ls -la ..
