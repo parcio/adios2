@@ -103,6 +103,7 @@ jobs:
         # working-directory: julea
         run: |
           pwd
+          ls -la
           ls -la ..
           ls -la ../..
           . scripts/environment.sh
