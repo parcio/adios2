@@ -57,6 +57,7 @@ jobs:
       # https://github.com/actions/checkout/issues/209
       - name: Get commit hash
         id: julea-hash
+        working-directory: julea
         run: |
           pwd
           echo ::set-output name=hash::$(git rev-parse --short HEAD)
@@ -65,7 +66,7 @@ jobs:
         id: julea-cache
         uses: actions/cache@v3
         with:
-          path: julea/julea-install
+          path: julea-install
           key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{steps.julea-hash.outputs.hash}}
 
       # Build JULEA
@@ -104,7 +105,7 @@ jobs:
       - name: Configure CMake
         working-directory: adios2
         env:
-          JULEA_PREFIX: /home/runner/work/adios2/adios2/julea/julea-install
+          JULEA_PREFIX: {{github.workspace}}/julea-install
         run: |
           pwd
           . ../julea/scripts/environment.sh
