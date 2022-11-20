@@ -103,6 +103,8 @@ jobs:
       
       - name: Configure CMake
         working-directory: adios2
+        env:
+          JULEA_PREFIX: ${{github.workspace}}/julea/julea-install
         run: |
           pwd
           . ../julea/scripts/environment.sh
