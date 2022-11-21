@@ -118,8 +118,12 @@ jobs:
           . ../julea/scripts/environment.sh
           cd ${{github.workspace}}/build && make -j 2
 
-      - name: Run example application
-        working-directory: ${{github.workspace}}/examples
+      # - name: Run example application
+      #   working-directory: ${{github.workspace}}/examples
+      #   env:
+      #     JULEA_PREFIX: ${{github.workspace}}/julea-install
+      #   run: |
+      #     . ../julea/scripts/environment.sh
       #   run: ctest -C ${{env.BUILD_TYPE}}
 
 
