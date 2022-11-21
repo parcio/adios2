@@ -115,7 +115,11 @@ jobs:
 
       - name: Build
         working-directory: ${{github.workspace}}/build
-        run: make -j 2
+        env:
+          JULEA_PREFIX: ${{github.workspace}}/julea-install
+        run: |
+          . ../../julea/scripts/environment.sh
+          make -j 2
 
       # - name: Test
       #   working-directory: ${{github.workspace}}/build
