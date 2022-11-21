@@ -1,18 +1,18 @@
 name: Compile ADIOS2 with JULEA
 
 on:
-  #TODO use dispatch so it is triggered when JULEA is updated?
   push:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
+  schedule:
+  # using a schedule instead of dispatch to trigger workflow when JULEA is updated
+    - cron: '0 0 * * 0'
 
 env:
-  # TODO: Debug?
   BUILD_TYPE: Release
 
 jobs:
-  # Job: Install JULEA dependencies, build JULEA and configure it
   build-adios2-julea:
     name: Build ADIOS2 with JULEA
     runs-on: ${{ matrix.os.dist }}
@@ -21,13 +21,13 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          # - dist: ubuntu-22.04
-          #   compiler: gcc
-          #   compiler_version: 11.3.0
+          - dist: ubuntu-22.04
+            compiler: gcc
+            compiler_version: 11.3.0
           - dist: ubuntu-20.04
             compiler: gcc
             compiler_version: 9.4.0
-          # doesn't work:
+          # doesn't work: Compiler too old for C++ application
           # "sorry, unimplemented: non-trivial designated initializers not supported"
           # - dist: ubuntu-18.04
           #   compiler: gcc
@@ -40,7 +40,6 @@ jobs:
           ref: dai-copy
           path: julea
 
-        # Dependencies
       - name: Cache dependencies
         id: dep-cache
         uses: actions/cache@v3
@@ -54,7 +53,6 @@ jobs:
         env:
           JULEA_SPACK_COMPILER: ${{ matrix.os.compiler }}@${{ matrix.os.compiler_version }}
         run: ./scripts/install-dependencies.sh
-      
 
       # https://github.com/actions/checkout/issues/209
       - name: Get commit hash
@@ -70,19 +68,21 @@ jobs:
           path: julea-install
           key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{steps.julea-hash.outputs.hash}}
 
-      # Build JULEA
+      # --- Build JULEA
       - name: Configure JULEA with meson
         if: ${{ steps.julea-cache.outputs.cache-hit != 'true' }}
         working-directory: julea
         run: |
           . scripts/environment.sh
           meson setup --prefix="${GITHUB_WORKSPACE}/julea-install" --buildtype=release bld
+
       - name: Build JULEA with ninja
         if: ${{ steps.julea-cache.outputs.cache-hit != 'true' }}
         working-directory: julea
         run: |
           . scripts/environment.sh
           ninja -C bld
+
       - name: Install
         if: ${{ steps.julea-cache.outputs.cache-hit != 'true' }}
         working-directory: julea
@@ -90,7 +90,7 @@ jobs:
           . scripts/environment.sh
           ninja -C bld install
    
-  
+      # --- Build ADIOS2
       - name: Checkout ADIOS2
         uses: actions/checkout@v3
         with:
@@ -101,7 +101,6 @@ jobs:
           sudo apt update || true
           sudo apt --yes --no-install-recommends install libopenmpi-dev openmpi-bin
 
-      
       - name: Configure CMake
         working-directory: adios2
         env:
@@ -118,85 +117,186 @@ jobs:
           . ../julea/scripts/environment.sh
           cd ${{github.workspace}}/build && make -j 2
 
-      # - name: Run example application
-      #   working-directory: ${{github.workspace}}/examples
-      #   env:
-      #     JULEA_PREFIX: ${{github.workspace}}/julea-install
-      #   run: |
-      #     . ../julea/scripts/environment.sh
-      #   run: ctest -C ${{env.BUILD_TYPE}}
+  # test-application:
+  #   name: Run example application
+  #   needs: build-adios2-julea
+  #   runs-on: ${{ matrix.os.dist }}
+  #   timeout-minutes: 180
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       os:
+  #         # - dist: ubuntu-22.04
+  #         #   compiler: gcc
+  #         #   compiler_version: 11.3.0
+  #         - dist: ubuntu-20.04
+  #           compiler: gcc
+  #           compiler_version: 9.4.0
+  #         # doesn't work: Compiler too old for C++ application
+  #         # "sorry, unimplemented: non-trivial designated initializers not supported"
+  #         # - dist: ubuntu-18.04
+  #         #   compiler: gcc
+  #         #   compiler_version: 7.5.0
+  #       julea:
+  #         # Default
+  #         - object: posix
+  #           kv: lmdb
+  #           db: sqlite
+  #         # KV backends
+  #         - object: posix
+  #           kv: leveldb
+  #           db: sqlite
+  #         - object: posix
+  #           kv: rocksdb
+  #           db: sqlite
+  #         - object: posix
+  #           kv: sqlite
+  #           db: sqlite
+  #         # DB backends
+  #         - object: posix
+  #           kv: lmdb
+  #           db: mysql
+  #           db-server: mysql
+  #         - object: posix
+  #           kv: lmdb
+  #           db: mysql
+  #           db-server: mariadb
+  #     steps:
+  #     - name: Checkout JULEA
+  #       uses: actions/checkout@v3
+  #       with:
+  #         repository: Bella42/julea
+  #         ref: dai-copy
+  #         path: julea
 
+  #     - name: Cache dependencies
+  #       id: dep-cache
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: julea/dependencies
+  #         key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{ hashFiles('julea/scripts/spack', 'julea/scripts/install-dependencies.sh') }}-dependencies
+      
+  #     - name: Install dependencies
+  #       if: ${{ steps.dep-cache.outputs.cache-hit != 'true' }}
+  #       working-directory: julea
+  #       env:
+  #         JULEA_SPACK_COMPILER: ${{ matrix.os.compiler }}@${{ matrix.os.compiler_version }}
+  #       run: ./scripts/install-dependencies.sh
 
+  #     # https://github.com/actions/checkout/issues/209
+  #     - name: Get commit hash
+  #       id: julea-hash
+  #       working-directory: julea
+  #       run: |
+  #         echo ::set-output name=hash::$(git rev-parse --short HEAD)
+      
+  #     - name: Cache JULEA
+  #       id: julea-cache
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: julea-install
+  #         key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{steps.julea-hash.outputs.hash}}
 
-      # TODO: move to later point?
-      # - name: Create JULEA configuration
-        # run: |
-          # . ${{github.workspace}}/julea/scripts/environment.sh 
-          # cd ${{github.workspace}}/julea && julea-config --user --object-servers="$(hostname)" --kv-servers="$(hostname)" --db-servers="$(hostname)" --object-backend=posix --object-component=server --object-path="/tmp/julea-$(id -u)/posix" --kv-backend=lmdb --kv-component=server --kv-path="/tmp/julea-$(id -u)/lmdb" --db-backend=sqlite --db-component=server --db-path="/tmp/julea-$(id -u)/sqlite"
-    #   run: |
-    #     julea-config --user --object-servers="$(hostname)" --kv-servers="$(hostname)" --db-servers="$(hostname)" --object-backend="${{ matrix.julea.object }}" --object-component=server --object-path="/tmp/julea/object/${{ matrix.julea.object }}" --kv-backend="${{ matrix.julea.kv }}" --kv-component="${JULEA_KV_COMPONENT}" --kv-path="${JULEA_KV_PATH}" --db-backend="${{ matrix.julea.db }}" --db-component="${JULEA_DB_COMPONENT}" --db-path="${JULEA_DB_PATH}"
+  #     # --- Build JULEA
+  #     - name: Configure JULEA with meson
+  #       if: ${{ steps.julea-cache.outputs.cache-hit != 'true' }}
+  #       working-directory: julea
+  #       run: |
+  #         . scripts/environment.sh
+  #         meson setup --prefix="${GITHUB_WORKSPACE}/julea-install" --buildtype=release bld
 
+  #     - name: Build JULEA with ninja
+  #       if: ${{ steps.julea-cache.outputs.cache-hit != 'true' }}
+  #       working-directory: julea
+  #       run: |
+  #         . scripts/environment.sh
+  #         ninja -C bld
 
-      # #TODO: configure MariaDB and MySQL
-      # if: ${{ matrix.julea.db == 'mysql' && matrix.julea.db-server == 'mysql' }}
-    # - name: Set up MariaDB
-    # #   if: ${{ matrix.julea.db == 'mysql' && matrix.julea.db-server == 'mariadb' }}
+  #     - name: Install
+  #       if: ${{ steps.julea-cache.outputs.cache-hit != 'true' }}
+  #       working-directory: julea
+  #       run: |
+  #         . scripts/environment.sh
+  #         ninja -C bld install
    
-  # # Job: Build ADIOS2 with JULEA enabled for JULEA engines and according examples
-  # build-adios2-w-julea:
-    # runs-on: ubuntu-latest
+  #     # --- Build ADIOS2
+  #     - name: Checkout ADIOS2
+  #       uses: actions/checkout@v3
+  #       with:
+  #         path: adios2
 
-    # steps:
-    # - uses: actions/checkout@v3
+  #     - name: Install MPI
+  #       run: |
+  #         sudo apt update || true
+  #         sudo apt --yes --no-install-recommends install libopenmpi-dev openmpi-bin
 
-    # - name: Checkout JULEA
-    #   run: git clone -b dai https://github.com/Bella42/julea.git
+  #     - name: Configure CMake
+  #       working-directory: adios2
+  #       env:
+  #         JULEA_PREFIX: ${{github.workspace}}/julea-install
+  #       run: |
+  #         . ../julea/scripts/environment.sh
+  #         cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DADIOS2_USE_Fortran=OFF -DADIOS2_USE_MPI=ON -DADIOS2_USE_SST=OFF -DADIOS2_USE_SSC=OFF -DADIOS2_USE_DataMan=OFF -DADIOS2_USE_BZip2=OFF -DADIOS2_USE_PNG=OFF -DADIOS2_USE_JULEA=ON
 
-    #   # TODO: with JULEA system packages have to be removed; necessary here as well?
-    # - name: Install JULEA dependencies
-    #   run: ${{github.workspace}}/julea/scripts/install-dependencies.sh
+  #     - name: Build
+  #       working-directory: adios2
+  #       env:
+  #         JULEA_PREFIX: ${{github.workspace}}/julea-install
+  #       run: |
+  #         . ../julea/scripts/environment.sh
+  #         cd ${{github.workspace}}/build && make -j 2
 
-    # #TODO: configure MariaDB and MySQL
-    # #   if: ${{ matrix.julea.db == 'mysql' && matrix.julea.db-server == 'mysql' }}
-    # # - name: Set up MariaDB
-    # #   if: ${{ matrix.julea.db == 'mysql' && matrix.julea.db-server == 'mariadb' }}
-    # - name: Setup JULEA environment
-    #   # env:
-    #   run: ${{github.workspace}}/julea/scripts/environment.sh
+  #     # --- Setup servers for JULEA database backends
+  #     - name: Set up MySQL
+  #       if: ${{ matrix.julea.db == 'mysql' && matrix.julea.db-server == 'mysql' }}
+  #       run: |
+  #         sudo systemctl start mysql.service
+  #         mysql --user=root --password=root --execute="CREATE DATABASE juleadb;"
+  #         mysql --user=root --password=root --execute="CREATE USER 'julea'@'localhost' IDENTIFIED WITH mysql_native_password BY 'aeluj';"
+  #         mysql --user=root --password=root --execute="GRANT ALL ON juleadb.* TO 'julea'@'localhost';"
+
+  #     - name: Set up MariaDB
+  #       if: ${{ matrix.julea.db == 'mysql' && matrix.julea.db-server == 'mariadb' }}
+  #       # FIXME https://bugs.launchpad.net/ubuntu/+source/mariadb-10.1/+bug/1806263
+  #       # Ubuntu 18.04 has MySQL 5.7, Ubuntu 20.04 has MySQL 8.0
+  #       run: |
+  #         if test "${{ matrix.os.dist }}" = 'ubuntu-18.04'
+  #         then
+  #           sudo apt --yes purge mysql-client mysql-client-5.7 mysql-server mysql-server-5.7
+  #         else
+  #           sudo apt --yes purge mysql-client mysql-client-8.0 mysql-server mysql-server-8.0
+  #         fi
+  #         sudo apt --yes --purge autoremove
+  #         sudo aa-remove-unknown
+  #         sudo rm --recursive --force /var/lib/mysql
+  #         sudo apt update || true
+  #         sudo apt --yes --no-install-recommends install mariadb-server
+  #         sudo systemctl start mariadb.service
+  #         sudo mariadb --execute="CREATE DATABASE juleadb;"
+  #         sudo mariadb --execute="CREATE USER 'julea'@'localhost' IDENTIFIED BY 'aeluj';"
+  #         sudo mariadb --execute="GRANT ALL ON juleadb.* TO 'julea'@'localhost';"
     
-    # - name: Configure JULEA with meson
-    #   # TODO: use and install release build
-    #   run: meson setup --prefix="julea-install" bld
-    
-    # - name: Compile JULEA
-    #   run: ninja -C bld
-    
-    # - name: Create JULEA configuration
-    #   # run: julea-config --user --object-servers="$(hostname)" --kv-servers="$(hostname)" --db-servers="$(hostname)" --object-backend=posix --object-component=server --object-path="/tmp/julea-$(id -u)/posix" --kv-backend=lmdb --kv-component=server --kv-path="/tmp/julea-$(id -u)/lmdb" --db-backend=sqlite --db-component=server --db-path="/tmp/julea-$(id -u)/sqlite"
-    #   run: |
-    #     julea-config --user --object-servers="$(hostname)" --kv-servers="$(hostname)" --db-servers="$(hostname)" --object-backend="${{ matrix.julea.object }}" --object-component=server --object-path="/tmp/julea/object/${{ matrix.julea.object }}" --kv-backend="${{ matrix.julea.kv }}" --kv-component="${JULEA_KV_COMPONENT}" --kv-path="${JULEA_KV_PATH}" --db-backend="${{ matrix.julea.db }}" --db-component="${JULEA_DB_COMPONENT}" --db-path="${JULEA_DB_PATH}"
-    
-    # - name: Run JULEA tests
-    #   env:
-    #       LSAN_OPTIONS: exitcode=0
-    #   run: |
-    #       . scripts/environment.sh
-    #       ./scripts/setup.sh start
-    #       ./scripts/test.sh
-    #       sleep 10
-    #       ./scripts/test.sh
-    #       ./scripts/setup.sh stop
-    # # - name: Make example
-    # # - name: Run example
-
-
-
-    # - name: Configure CMake
-    #   run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DADIOS2_USE_Fortran=OFF -DADIOS2_USE_MPI=OFF -DADIOS2_USE_DataMan=OFF -DADIOS2_USE_BZip2=OFF -DADIOS2_USE_PNG=OFF -DADIOS2_USE_JULEA=OFF
-
-    # - name: Build
-    #   run: cd ${{github.workspace}}/build && make -j 2
-
-    # # - name: Test
-    # #   working-directory: ${{github.workspace}}/build
-    # #   run: ctest -C ${{env.BUILD_TYPE}}
+  #     # --- Create JULEA configurations
+  #     - name: Create configuration
+  #       # FIXME We need to use 127.0.0.1 because localhost tries to use the socket (/tmp/mysql.sock), which does not exist.
+  #       working-directory: adios2
+  #       env:
+  #         JULEA_PREFIX: ${{github.workspace}}/julea-install
+  #       run: |
+  #         . ../julea/scripts/environment.sh
+  #         JULEA_KV_COMPONENT='server'
+  #         if test "${{ matrix.julea.kv }}" = 'mongodb'; then JULEA_KV_COMPONENT='client'; fi
+  #         JULEA_KV_PATH="/tmp/julea/kv/${{ matrix.julea.kv }}"
+  #         JULEA_DB_COMPONENT='server'
+  #         if test "${{ matrix.julea.db }}" = 'mysql'; then JULEA_DB_COMPONENT='client'; fi
+  #         JULEA_DB_PATH="/tmp/julea/db/${{ matrix.julea.db }}"
+  #         if test "${{ matrix.julea.db }}" = 'mysql'; then JULEA_DB_PATH='127.0.0.1:juleadb:julea:aeluj'; fi
+  #         julea-config --user --object-servers="$(hostname)" --kv-servers="$(hostname)" --db-servers="$(hostname)" --object-backend="${{ matrix.julea.object }}" --object-component=server --object-path="/tmp/julea/object/${{ matrix.julea.object }}" --kv-backend="${{ matrix.julea.kv }}" --kv-component="${JULEA_KV_COMPONENT}" --kv-path="${JULEA_KV_PATH}" --db-backend="${{ matrix.julea.db }}" --db-component="${JULEA_DB_COMPONENT}" --db-path="${JULEA_DB_PATH}"
+      
+  #     - name: Test application
+  #       working-directory: adios2
+  #       env:
+  #         JULEA_PREFIX: ${{github.workspace}}/julea-install
+  #       run: |
+  #         . ../julea/scripts/environment.sh
+  #         # TODO: example application that takes ADIOS2 configuration XML files for setting engines etc
