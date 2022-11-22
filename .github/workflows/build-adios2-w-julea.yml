@@ -122,13 +122,13 @@ jobs:
     needs: build-adios2-julea
     runs-on: ${{ matrix.os.dist }}
     timeout-minutes: 180
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - dist: ubuntu-22.04
-            compiler: gcc
-            compiler_version: 11.3.0
+    # strategy:
+    #   fail-fast: false
+    #   matrix:
+    #     os:
+    #       - dist: ubuntu-22.04
+    #         compiler: gcc
+    #         compiler_version: 11.3.0
           # - dist: ubuntu-20.04
           #   compiler: gcc
           #   compiler_version: 9.4.0
