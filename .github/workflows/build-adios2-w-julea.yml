@@ -137,37 +137,37 @@ jobs:
           # - dist: ubuntu-18.04
           #   compiler: gcc
           #   compiler_version: 7.5.0
-        julea:
-          # Default
-          - object: posix
-            kv: lmdb
-            db: sqlite
-          # KV backends
-          - object: posix
-            kv: leveldb
-            db: sqlite
-          - object: posix
-            kv: rocksdb
-            db: sqlite
-          - object: posix
-            kv: sqlite
-            db: sqlite
-          # DB backends
-          - object: posix
-            kv: lmdb
-            db: mysql
-            db-server: mysql
-          - object: posix
-            kv: lmdb
-            db: mysql
-            db-server: mariadb
-      steps:
-      - name: Checkout JULEA Test
-        uses: actions/checkout@v3
-        with:
-          repository: Bella42/julea
-          ref: dai-copy
-          path: julea
+      #   julea:
+      #     # Default
+      #     - object: posix
+      #       kv: lmdb
+      #       db: sqlite
+      #     # KV backends
+      #     - object: posix
+      #       kv: leveldb
+      #       db: sqlite
+      #     - object: posix
+      #       kv: rocksdb
+      #       db: sqlite
+      #     - object: posix
+      #       kv: sqlite
+      #       db: sqlite
+      #     # DB backends
+      #     - object: posix
+      #       kv: lmdb
+      #       db: mysql
+      #       db-server: mysql
+      #     - object: posix
+      #       kv: lmdb
+      #       db: mysql
+      #       db-server: mariadb
+      # steps:
+      # - name: Checkout JULEA
+      #   uses: actions/checkout@v3
+      #   with:
+      #     repository: Bella42/julea
+      #     ref: dai-copy
+      #     path: julea
 
       # - name: Cache dependencies
       #   id: dep-cache
