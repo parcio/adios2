@@ -119,7 +119,7 @@ jobs:
 
   test-application:
     name: Run example application
-    needs: build-adios2-julea
+    # needs: build-adios2-julea
     runs-on: ${{ matrix.os.dist }}
     timeout-minutes: 180
     strategy:
@@ -219,32 +219,32 @@ jobs:
         . scripts/environment.sh
         ninja -C bld install
    
-      # # --- Build ADIOS2
-      # - name: Checkout ADIOS2
-      #   uses: actions/checkout@v3
-      #   with:
-      #     path: adios2
+    # --- Build ADIOS2
+    - name: Checkout ADIOS2
+      uses: actions/checkout@v3
+      with:
+        path: adios2
 
-      # - name: Install MPI
-      #   run: |
-      #     sudo apt update || true
-      #     sudo apt --yes --no-install-recommends install libopenmpi-dev openmpi-bin
+    - name: Install MPI
+      run: |
+        sudo apt update || true
+        sudo apt --yes --no-install-recommends install libopenmpi-dev openmpi-bin
 
-      # - name: Configure CMake
-      #   working-directory: adios2
-      #   env:
-      #     JULEA_PREFIX: ${{github.workspace}}/julea-install
-      #   run: |
-      #     . ../julea/scripts/environment.sh
-      #     cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DADIOS2_USE_Fortran=OFF -DADIOS2_USE_MPI=ON -DADIOS2_USE_SST=OFF -DADIOS2_USE_SSC=OFF -DADIOS2_USE_DataMan=OFF -DADIOS2_USE_BZip2=OFF -DADIOS2_USE_PNG=OFF -DADIOS2_USE_JULEA=ON
+    - name: Configure CMake
+      working-directory: adios2
+      env:
+        JULEA_PREFIX: ${{github.workspace}}/julea-install
+      run: |
+        . ../julea/scripts/environment.sh
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DADIOS2_USE_Fortran=OFF -DADIOS2_USE_MPI=ON -DADIOS2_USE_SST=OFF -DADIOS2_USE_SSC=OFF -DADIOS2_USE_DataMan=OFF -DADIOS2_USE_BZip2=OFF -DADIOS2_USE_PNG=OFF -DADIOS2_USE_JULEA=ON
 
-      # - name: Build
-      #   working-directory: adios2
-      #   env:
-      #     JULEA_PREFIX: ${{github.workspace}}/julea-install
-      #   run: |
-      #     . ../julea/scripts/environment.sh
-      #     cd ${{github.workspace}}/build && make -j 2
+    - name: Build
+      working-directory: adios2
+      env:
+        JULEA_PREFIX: ${{github.workspace}}/julea-install
+      run: |
+        . ../julea/scripts/environment.sh
+        cd ${{github.workspace}}/build && make -j 2
 
   #     # --- Setup servers for JULEA database backends
   #     - name: Set up MySQL
