@@ -143,24 +143,24 @@ jobs:
             kv: lmdb
             db: sqlite
           # KV backends
-          - object: posix
-            kv: leveldb
-            db: sqlite
-          - object: posix
-            kv: rocksdb
-            db: sqlite
-          - object: posix
-            kv: sqlite
-            db: sqlite
-          # DB backends
-          - object: posix
-            kv: lmdb
-            db: mysql
-            db-server: mysql
-          - object: posix
-            kv: lmdb
-            db: mysql
-            db-server: mariadb
+          # - object: posix
+          #   kv: leveldb
+          #   db: sqlite
+          # - object: posix
+          #   kv: rocksdb
+          #   db: sqlite
+          # - object: posix
+          #   kv: sqlite
+          #   db: sqlite
+          # # DB backends
+          # - object: posix
+          #   kv: lmdb
+          #   db: mysql
+          #   db-server: mysql
+          # - object: posix
+          #   kv: lmdb
+          #   db: mysql
+          #   db-server: mariadb
     steps:
     - name: Checkout JULEA
       uses: actions/checkout@v3
