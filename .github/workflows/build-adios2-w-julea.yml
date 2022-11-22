@@ -162,40 +162,40 @@ jobs:
             db: mysql
             db-server: mariadb
       steps:
-      - name: Checkout JULEA
+      - name: Checkout JULEA Test
         uses: actions/checkout@v3
         with:
           repository: Bella42/julea
           ref: dai-copy
           path: julea
 
-      - name: Cache dependencies
-        id: dep-cache
-        uses: actions/cache@v3
-        with:
-          path: julea/dependencies
-          key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{ hashFiles('julea/scripts/spack', 'julea/scripts/install-dependencies.sh') }}-dependencies
+      # - name: Cache dependencies
+      #   id: dep-cache
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: julea/dependencies
+      #     key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{ hashFiles('julea/scripts/spack', 'julea/scripts/install-dependencies.sh') }}-dependencies
       
-      - name: Install dependencies
-        if: ${{ steps.dep-cache.outputs.cache-hit != 'true' }}
-        working-directory: julea
-        env:
-          JULEA_SPACK_COMPILER: ${{ matrix.os.compiler }}@${{ matrix.os.compiler_version }}
-        run: ./scripts/install-dependencies.sh
+      # - name: Install dependencies
+      #   if: ${{ steps.dep-cache.outputs.cache-hit != 'true' }}
+      #   working-directory: julea
+      #   env:
+      #     JULEA_SPACK_COMPILER: ${{ matrix.os.compiler }}@${{ matrix.os.compiler_version }}
+      #   run: ./scripts/install-dependencies.sh
 
-      # https://github.com/actions/checkout/issues/209
-      - name: Get commit hash
-        id: julea-hash
-        working-directory: julea
-        run: |
-          echo ::set-output name=hash::$(git rev-parse --short HEAD)
+      # # https://github.com/actions/checkout/issues/209
+      # - name: Get commit hash
+      #   id: julea-hash
+      #   working-directory: julea
+      #   run: |
+      #     echo ::set-output name=hash::$(git rev-parse --short HEAD)
       
-      - name: Cache JULEA
-        id: julea-cache
-        uses: actions/cache@v3
-        with:
-          path: julea-install
-          key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{steps.julea-hash.outputs.hash}}
+      # - name: Cache JULEA
+      #   id: julea-cache
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: julea-install
+      #     key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{steps.julea-hash.outputs.hash}}
 
       # # --- Build JULEA
       # - name: Configure JULEA with meson
