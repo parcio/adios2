@@ -122,13 +122,13 @@ jobs:
     needs: build-adios2-julea
     runs-on: ${{ matrix.os.dist }}
     timeout-minutes: 180
-    # strategy:
-    #   fail-fast: false
-    #   matrix:
-    #     os:
-    #       - dist: ubuntu-22.04
-    #         compiler: gcc
-    #         compiler_version: 11.3.0
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - dist: ubuntu-22.04
+            compiler: gcc
+            compiler_version: 11.3.0
           # - dist: ubuntu-20.04
           #   compiler: gcc
           #   compiler_version: 9.4.0
@@ -137,87 +137,87 @@ jobs:
           # - dist: ubuntu-18.04
           #   compiler: gcc
           #   compiler_version: 7.5.0
-        # julea:
-        #   # Default
-        #   - object: posix
-        #     kv: lmdb
-        #     db: sqlite
-        #   # KV backends
-        #   - object: posix
-        #     kv: leveldb
-        #     db: sqlite
-        #   - object: posix
-        #     kv: rocksdb
-        #     db: sqlite
-        #   - object: posix
-        #     kv: sqlite
-        #     db: sqlite
-        #   # DB backends
-        #   - object: posix
-        #     kv: lmdb
-        #     db: mysql
-        #     db-server: mysql
-        #   - object: posix
-        #     kv: lmdb
-        #     db: mysql
-        #     db-server: mariadb
-      # steps:
-      # - name: Checkout JULEA
-      #   uses: actions/checkout@v3
-      #   with:
-      #     repository: Bella42/julea
-      #     ref: dai-copy
-      #     path: julea
+        julea:
+          # Default
+          - object: posix
+            kv: lmdb
+            db: sqlite
+          # KV backends
+          - object: posix
+            kv: leveldb
+            db: sqlite
+          - object: posix
+            kv: rocksdb
+            db: sqlite
+          - object: posix
+            kv: sqlite
+            db: sqlite
+          # DB backends
+          - object: posix
+            kv: lmdb
+            db: mysql
+            db-server: mysql
+          - object: posix
+            kv: lmdb
+            db: mysql
+            db-server: mariadb
+    steps:
+    - name: Checkout JULEA
+      uses: actions/checkout@v3
+      with:
+        repository: Bella42/julea
+        ref: dai-copy
+        path: julea
 
-      # - name: Cache dependencies
-      #   id: dep-cache
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: julea/dependencies
-      #     key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{ hashFiles('julea/scripts/spack', 'julea/scripts/install-dependencies.sh') }}-dependencies
+    - name: Cache dependencies
+      id: dep-cache
+      uses: actions/cache@v3
+      with:
+        path: julea/dependencies
+        key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{ hashFiles('julea/scripts/spack', 'julea/scripts/install-dependencies.sh') }}-dependencies
+    
+    - name: Install dependencies
+      if: ${{ steps.dep-cache.outputs.cache-hit != 'true' }}
+      working-directory: julea
+      env:
+        JULEA_SPACK_COMPILER: ${{ matrix.os.compiler }}@${{ matrix.os.compiler_version }}
+      run: ./scripts/install-dependencies.sh
+
+    # https://github.com/actions/checkout/issues/209
+    - name: Get commit hash
+      id: julea-hash
+      working-directory: julea
+      run: |
+        echo ::set-output name=hash::$(git rev-parse --short HEAD)
       
-      # - name: Install dependencies
-      #   if: ${{ steps.dep-cache.outputs.cache-hit != 'true' }}
-      #   working-directory: julea
-      #   env:
-      #     JULEA_SPACK_COMPILER: ${{ matrix.os.compiler }}@${{ matrix.os.compiler_version }}
-      #   run: ./scripts/install-dependencies.sh
+    - name: Cache JULEA
+      id: julea-cache
+      uses: actions/cache@v3
+      with:
+        path: julea-install
+        key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{steps.julea-hash.outputs.hash}}
 
-      # # https://github.com/actions/checkout/issues/209
-      # - name: Get commit hash
-      #   id: julea-hash
-      #   working-directory: julea
-      #   run: |
-      #     echo ::set-output name=hash::$(git rev-parse --short HEAD)
-      
-      # - name: Cache JULEA
-      #   id: julea-cache
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: julea-install
-      #     key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{steps.julea-hash.outputs.hash}}
+    # --- Build JULEA
+    - name: Configure JULEA with meson
+      if: ${{ steps.julea-cache.outputs.cache-hit != 'true' }}
+      working-directory: julea
+      run: |
+        . scripts/environment.sh
+        meson setup --prefix="${GITHUB_WORKSPACE}/julea-install" --buildtype=release bld
 
-      # # --- Build JULEA
-      # - name: Configure JULEA with meson
-      #   if: ${{ steps.julea-cache.outputs.cache-hit != 'true' }}
-      #   working-directory: julea
-      #   run: |
-      #     . scripts/environment.sh
-      #     meson setup --prefix="${GITHUB_WORKSPACE}/julea-install" --buildtype=release bld
+    - name: Build JULEA with ninja
+      if: ${{ steps.julea-cache.outputs.cache-hit != 'true' }}
+      working-directory: julea
+      run: |
+        . scripts/environment.sh
+        ninja -C bld
 
-      # - name: Build JULEA with ninja
-      #   if: ${{ steps.julea-cache.outputs.cache-hit != 'true' }}
-      #   working-directory: julea
-      #   run: |
-      #     . scripts/environment.sh
-      #     ninja -C bld
-
-      # - name: Install
-      #   if: ${{ steps.julea-cache.outputs.cache-hit != 'true' }}
-      #   working-directory: julea
-      #   run: |
-      #     . scripts/environment.sh
-      #     ninja -C bld install
+    - name: Install
+      if: ${{ steps.julea-cache.outputs.cache-hit != 'true' }}
+      working-directory: julea
+      run: |
+        . scripts/environment.sh
+        ninja -C bld install
    
       # # --- Build ADIOS2
       # - name: Checkout ADIOS2
