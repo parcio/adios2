@@ -117,21 +117,21 @@ jobs:
           . ../julea/scripts/environment.sh
           cd ${{github.workspace}}/build && make -j 2
 
-  test-application:
-    name: Run example application
-    needs: build-adios2-julea
-    runs-on: ${{ matrix.os.dist }}
-    timeout-minutes: 180
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          # - dist: ubuntu-22.04
-          #   compiler: gcc
-          #   compiler_version: 11.3.0
-          - dist: ubuntu-20.04
-            compiler: gcc
-            compiler_version: 9.4.0
+  # test-application:
+  #   name: Run example application
+  #   needs: build-adios2-julea
+  #   runs-on: ${{ matrix.os.dist }}
+  #   timeout-minutes: 180
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       os:
+  #         # - dist: ubuntu-22.04
+  #         #   compiler: gcc
+  #         #   compiler_version: 11.3.0
+  #         - dist: ubuntu-20.04
+  #           compiler: gcc
+  #           compiler_version: 9.4.0
           # doesn't work: Compiler too old for C++ application
           # "sorry, unimplemented: non-trivial designated initializers not supported"
           # - dist: ubuntu-18.04
