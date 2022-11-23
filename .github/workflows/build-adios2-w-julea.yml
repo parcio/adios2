@@ -252,7 +252,7 @@ jobs:
         JULEA_PREFIX: ${{github.workspace}}/julea-install
       run: |
         . ../julea/scripts/environment.sh
-        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DADIOS2_USE_Fortran=OFF -DADIOS2_USE_MPI=ON -DADIOS2_USE_SST=OFF -DADIOS2_USE_SSC=OFF -DADIOS2_USE_DataMan=OFF -DADIOS2_USE_BZip2=OFF -DADIOS2_USE_PNG=OFF -DADIOS2_USE_JULEA=ON DADIOS2_USE_NetCDF=OFF
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DADIOS2_USE_Fortran=OFF -DADIOS2_USE_MPI=ON -DADIOS2_USE_SST=OFF -DADIOS2_USE_SSC=OFF -DADIOS2_USE_DataMan=OFF -DADIOS2_USE_BZip2=OFF -DADIOS2_USE_PNG=OFF -DADIOS2_USE_JULEA=ON -DADIOS2_USE_NetCDF=OFF
 
     - name: Build
       working-directory: adios2
