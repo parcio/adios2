@@ -29,218 +29,210 @@
 #include <vector>
 #include <errno.h>
 
-
-
 // #include "adios2/helper/adiosString.h" // EndsWith
-// #include "adios2/helper/adiosSystem.h" //isHDF5File
-// #include <adios2sys/CommandLineArguments.hxx>
-// #include <adios2sys/SystemTools.hxx>
-// #include <pugixml.hpp>
+#include "adios2/helper/adiosSystem.h" //isHDF5File
+#include <adios2sys/CommandLineArguments.hxx>
+#include <adios2sys/SystemTools.hxx>
 
 namespace adios2
 {
 namespace utils
 {
 
-using EntryMap = std::map<std::string, Entry>;
-
-// global variables
-// Values from the arguments or defaults
-
-// output files' starting path (can be extended with subdirs,
-// names, indexes)
-std::string outpath;
-char *varmask[MAX_MASKS]; // can have many -var masks (either shell patterns or
-                          // extended regular expressions)
-int nmasks;               // number of masks specified
-char *vfile;              // file name to bpls
-std::string start;        // dimension spec starting points
-std::string count;        // dimension spec counts
-std::string format;       // format string for one data element (e.g. %6.2f)
-
-// Flags from arguments or defaults
-bool dump; // dump data not just list info(flag == 1)
-bool output_xml;
-bool use_regexp;       // use varmasks as regular expressions
-bool sortnames;        // sort names before listing
-bool listattrs;        // do list attributes too
-bool listmeshes;       // do list meshes too
-bool attrsonly;        // do list attributes only
-bool longopt;          // -l is turned on
-bool timestep;         // read step by step
-bool noindex;          // do no print array indices with data
-bool printByteAsChar;  // print 8 bit integer arrays as string
-bool plot;             // dump histogram related information
-bool hidden_attrs;     // show hidden attrs in BP file
-int hidden_attrs_flag; // to be passed on in option struct
-bool show_decomp;      // show decomposition of arrays
-bool show_version;     // print binary version info of file before work
-
-// other global variables
-char *prgname; /* argv[0] */
-// long timefrom, timeto;
-int64_t istart[MAX_DIMS], icount[MAX_DIMS]; // negative values are allowed
-int ndimsspecified = 0;
-#ifdef USE_C_REGEX
-regex_t varregex[MAX_MASKS]; // compiled regular expressions of varmask
-#else
-std::vector<std::regex> varregex;
-#endif
-int ncols = 6; // how many values to print in one row (only for -p)
-int verbose = 0;
-FILE *outf; // file to print to or stdout
-char commentchar;
-
-// help function
-void display_help()
+void showUsage()
 {
-    // printf( "Usage: %s  \n", prgname);
-    printf(
-        "usage: import_nc input_file output_file engine\n"
-        "\nImport a NetCDF file (.nc) into ADIOS2. \n"
-        "The given file will be imported using the specified engine "
-        "and stored in the corresponding format using the passed \n"
-        "output file name. \n"
-        "Note that using the JULEA engines the data is stored only \n"
-        "in JULEA. No separate file is created in contrast to using \n"
-        "the ADIOS2 engines. \n"
-        "\n"
-        "  --long      | -l           Print values of all scalars and "
-        "\n"
-        "Help options\n"
-        "  --help      | -h           Print this help.\n"
-        "  --verbose   | -v           Print log about what this program is "
-        "doing.\n"
-        // "                               Use multiple -v to increase logging "
-        // "level.\n"
-        // "  --version   | -V           Print version information; compatible "
-        // " with\n"
-        // "                               --verbose for additional information, "
-        // "i.e.\n"
-        // "                               -v --version.\n"
-        "\nTypical use: import_nc -lav <input_file> <output_file> <engine>\n");
-        "\nExample: import_nc weather.nc weather.bp bp4\n");
-        "\nExample: import_nc weather.nc weather.bp julea-db\n");
+    std::cout
+        << "Usage: \n"
+        << "-h: help\n"
+        << "-i: additional information for engines and bpls (optional, no value)\n"
+        << "-v: print provided parameters (optional, no value)\n"
+        << "-d: NetCDF file to read in (value required)\n"
+        << "-f: ADIOS2 file to write to (value required)\n"
+        << "-n: name of engine to use (value required) \n"
+        << "    'bp3'\n"
+        << "    'bp4'\n"
+        << "    'bp5'\n"
+        << "    if compiled accordingly:\n"
+        << "    'julea-db-dai'\n"
+        << "    'julea-db'\n"
+        << "    'julea-kv'\n"
+        << "    'hdf5'\n"
+        << "-o: print output: (optional,value required)\n"
+        << "    0: none\n"
+        << "    1: print file dimensions\n"
+        << "    2: print variables\n"
+        << "    3: print both\n"
+        << "-t: data needs transformation from short with scale and offset to float (optional, no value)\n"
+        << std::endl;
 }
 
-bool option_help_was_called = false;
-int optioncb_help(const char *argument, const char *value, void *call_data)
+void showGeneralInformation()
 {
-    // adios2sys::CommandLineArguments *arg =
-    // static_cast<adios2sys::CommandLineArguments *>(call_data);
-    // printf("%s\n", arg->GetHelp());
-    display_help();
-    option_help_was_called = true;
-    return 1;
+    std::cout
+              << "\n_______________________ NC to BP "
+                 "_____________________________________\n" <<
+    " Converts NetCDF4 variable to ADIOS2 variables \n and writes them to one of the following formats:\n"
+              << " 'bp3' for BP3 format\n"
+              << " 'bp4' for BP4 format\n"
+              << " 'bp5' for BP5 format\n"
+              << "\n If compiled accordingly the following formats are also "
+                 "available.\n"
+
+             << " 'hdf5' for HDF5 format\n"
+             << " 'julea-db-dai' to store ADIOS 2 metadata in JULEA database backenend\n   and data in the object store backend.\n"
+                 "Additional data characteristics like the mean, the sum and the variance are computed besides the minimum and maximum.\n"
+             << " 'julea-db' to store ADIOS 2 metadata in JULEA database backenend\n   and data in the object store backend\n"
+             << " 'julea-jv' to store ADIOS 2 metadata in JULEA key-value backenend\n   and data in the object store backend\n"
+        << std::endl;
+
+    std::cout
+              << "\n----------------------- bpls usage "
+                 "-----------------------------------\n"
+              << " 'bpls -D file.bp' to show variable decomposition\n"
+              << " 'bpls -d file.bp' to dump content of file\n"
+              << " 'bpls -d -l file.bp' to dump content of file "
+                 "with min/max values\n"
+              << " 'bpls -d -l file.bp variableName' to dump variable "
+                 "with min/max values\n"
+              << std::endl;
 }
 
-/** Main */
-int import_ncMain(int argc, char *argv[])
+void showFileInfo()
 {
-    int retval = 0;
+    std::cout << "\n----------------------- NetCDF4 files "
+                 "---------------------------------\n"
+              << "  Example NetCDF files can be found at    \n"
+                 "    https://www.unidata.ucar.edu/software/netcdf/examples/"
+                 "files.html\n"
+              << "  For larger NetCDF files from ECWMF check:    \n"
+              << "    https://apps.ecmwf.int/datasets\n"
+              << std::endl;
+}
 
-    init_globals();
+int parseParameters(int argc, char *argv[])
+{
 
-    adios2sys::CommandLineArguments arg;
-    arg.Initialize(argc, argv);
-    typedef adios2sys::CommandLineArguments argT;
-    arg.StoreUnusedArguments(true);
-    arg.AddCallback("-v", argT::NO_ARGUMENT, optioncb_verbose, nullptr, "");
-    arg.AddCallback("--verbose", argT::NO_ARGUMENT, optioncb_verbose, nullptr,
-                    "Print information about what bpls is doing");
-    arg.AddCallback("--help", argT::NO_ARGUMENT, optioncb_help, &arg, "Help");
-    arg.AddCallback("-h", argT::NO_ARGUMENT, optioncb_help, &arg, "");
-    arg.AddBooleanArgument("--dump", &dump,
-                           "Dump matched variables/attributes");
-    arg.AddBooleanArgument("-d", &dump, "");
-    arg.AddBooleanArgument(
-        "--long", &longopt,
-        "Print values of all scalars and attributes and min/max "
-        "values of arrays");
-    arg.AddBooleanArgument("-l", &longopt, "");
-    arg.AddBooleanArgument("--regexp", &use_regexp,
-                           "| -e Treat masks as extended regular expressions");
-    arg.AddBooleanArgument("-e", &use_regexp, "");
-    arg.AddArgument("--output", argT::SPACE_ARGUMENT, &outpath,
-                    "| -o opt    Print to a file instead of stdout");
-    arg.AddArgument("-o", argT::SPACE_ARGUMENT, &outpath, "");
-    arg.AddArgument("--start", argT::SPACE_ARGUMENT, &start,
-                    "| -s opt    Offset indices in each dimension (default is "
-                    "0 for all dimensions).  opt<0 is handled as in python (-1 "
-                    "is last)");
-    arg.AddArgument("-s", argT::SPACE_ARGUMENT, &start, "");
-    arg.AddArgument("--count", argT::SPACE_ARGUMENT, &count,
-                    "| -c opt    Number of elements in each dimension. -1 "
-                    "denotes 'until end' of dimension. default is -1 for all "
-                    "dimensions");
-    arg.AddArgument("-c", argT::SPACE_ARGUMENT, &count, "");
-    arg.AddBooleanArgument("--noindex", &noindex,
-                           " | -y Print data without array indices");
-    arg.AddBooleanArgument("-y", &noindex, "");
-    arg.AddBooleanArgument("--timestep", &timestep,
-                           " | -t Print values of timestep elements");
-    arg.AddBooleanArgument("-t", &timestep, "");
-    arg.AddBooleanArgument("--attrs", &listattrs,
-                           " | -a List/match attributes too");
-    arg.AddBooleanArgument("-a", &listattrs, "");
-    arg.AddBooleanArgument("--attrsonly", &attrsonly,
-                           " | -A List/match attributes only (no variables)");
-    arg.AddBooleanArgument("-A", &attrsonly, "");
-    arg.AddBooleanArgument("--meshes", &listmeshes, " | -m List meshes");
-    arg.AddBooleanArgument("-m", &listmeshes, "");
-    arg.AddBooleanArgument("--string", &printByteAsChar,
-                           " | -S Print 8bit integer arrays as strings");
-    arg.AddBooleanArgument("-S", &printByteAsChar, "");
-    arg.AddArgument("--columns", argT::SPACE_ARGUMENT, &ncols,
-                    "| -n opt    Number of data elements per row to print");
-    arg.AddArgument("-n", argT::SPACE_ARGUMENT, &ncols, "");
-    arg.AddArgument("--format", argT::SPACE_ARGUMENT, &format,
-                    "| -f opt    Format string to use for one data item ");
-    arg.AddArgument("-f", argT::SPACE_ARGUMENT, &format, "");
-    arg.AddBooleanArgument("--hidden_attrs", &hidden_attrs,
-                           "  Show hidden ADIOS attributes in the file");
-    arg.AddBooleanArgument(
-        "--decompose", &show_decomp,
-        "| -D Show decomposition of variables as layed out in file");
-    arg.AddBooleanArgument("-D", &show_decomp, "");
-    arg.AddBooleanArgument(
-        "--version", &show_version,
-        "Print version information (add -verbose for additional"
-        " information)");
-    arg.AddBooleanArgument("-V", &show_version, "");
+    int rank = 0;
+    bool printVariable = 0;
+    bool printDimensions = 0;
+    bool verbose = 0;
+    bool needsTransform = 0;
 
-    if (!arg.Parse())
+    int8_t opt;
+    uint8_t output; // print output option
+
+    std::string NetCDFFile; // NetCDF file to read in
+    std::string engineName; // valid engines: bp3, bp4, julea-db, julea-kv
+    std::string ADIOSFile;  // name for new file
+
+    try
     {
-        fprintf(stderr, "Parsing arguments failed\n");
-        return 1;
+        while ((opt = getopt(argc, argv, "hivo:d:f:n:t")) != -1)
+        {
+            switch (opt)
+            {
+            case 'h':
+                showUsage();
+                break;
+            case 'i':
+                showGeneralInformation();
+                showFileInfo();
+                break;
+            case 'v':
+                verbose = 1;
+                break;
+            case 'o':
+                output = atoi(optarg);
+                switch (output)
+                {
+                case 0:
+                    printDimensions = 0;
+                    printVariable = 0;
+                    break;
+                case 1:
+                    printDimensions = 1;
+                    break;
+                case 2:
+                    printVariable = 1;
+                    break;
+                case 3:
+                    printDimensions = 1;
+                    printVariable = 1;
+                    break;
+                }
+                break;
+            case 'd':
+                NetCDFFile = optarg;
+                break;
+            case 'f':
+                ADIOSFile = optarg;
+                break;
+            case 'n':
+                engineName = optarg;
+                break;
+            case 't':
+                needsTransform = true;
+                break;
+            default: /* '?' */
+                exit(EXIT_FAILURE);
+            }
+            if (optind > argc)
+            {
+                std::cout << "optind: " << optind << std::endl;
+                std::cerr << "Expected argument after options" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+        }
+        if(verbose)
+        {
+             std::cout << "passed parameters:\n"
+                << "d: NetCDF4 file = " << NetCDFFile
+                << "\nf: ADIOS2 file = " << ADIOSFile
+                << "\nn: engine name = " << engineName
+                << "\no: print output = " << output << std::endl;
+        }
+        // NCReadFile(engineName, NetCDFFile, ADIOSFile, printDimensions,
+        //            printVariable, needsTransform);
     }
-    if (option_help_was_called)
-        return 0;
-
-    retval = process_unused_args(arg);
-    if (retval)
+    catch (std::invalid_argument &e)
     {
-        return retval;
+        if (rank == 0)
+        {
+            std::cout << "Invalid argument exception, STOPPING PROGRAM\n";
+            std::cout << e.what() << "\n";
+        }
     }
-    if (option_help_was_called)
-        return 0;
-
-    return retval;
+    catch (std::ios_base::failure &e)
+    {
+        if (rank == 0)
+        {
+            std::cout << "System exception, STOPPING PROGRAM\n";
+            std::cout << e.what() << "\n";
+        }
+    }
+    catch (std::exception &e)
+    {
+        if (rank == 0)
+        {
+            std::cout << "Exception, STOPPING PROGRAM\n";
+            std::cout << e.what() << "\n";
+        }
+    }
+    return 0;
 }
 
-void init_globals()
-{
-    int i;
-    verbose = 0;
-}
 
+
+// end of namespace
+}
+}
 
 int main(int argc, char *argv[])
 {
     int retval = 1;
     try
     {
-        retval = adios2::utils::import_ncMain(argc, argv);
+        retval = adios2::utils::parseParameters(argc, argv);
     }
     catch (std::exception &e)
     {

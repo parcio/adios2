@@ -28,6 +28,15 @@ file(GENERATE
 )
 
 
+# IMPORT_NC
+add_executable(import_nc ./import_nc/import_nc.cpp)
+target_link_libraries(import_nc adios2_core adios2sys)
+target_include_directories(import_nc PRIVATE ${PROJECT_BINARY_DIR})
+# install(TARGETS import_nc EXPORT adios2
+#   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT adios2_tools-runtime
+# )
+
+
 # BPSPLIT
 #add_executable(bpsplit ./bpsplit/bpsplit.cpp)
 #target_link_libraries(bpsplit adios2::cxx11 adios2sys_interface adios2::thirdparty::pugixml)
