@@ -29,12 +29,19 @@ file(GENERATE
 
 
 # IMPORT_NC
-add_executable(import_nc ./import_nc/import_nc.cpp)
-target_link_libraries(import_nc adios2_core adios2sys)
-target_include_directories(import_nc PRIVATE ${PROJECT_BINARY_DIR})
-# install(TARGETS import_nc EXPORT adios2
-#   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT adios2_tools-runtime
-# )
+if(ADIOS2_HAVE_NetCDF)
+  set(NC_SOURCES ./import_nc/import_nc.cpp
+  ./import_nc/benchmark_source/nc_read.cpp ./import_nc/benchmark_source/nc_read.h)
+  add_executable(import_nc ${NC_SOURCES})
+  # add_executable(import_nc ./import_nc/import_nc.cpp)
+  target_link_libraries(import_nc adios2_core adios2sys)
+  target_link_libraries(import_nc PkgConfig::NetCDF)
+  target_include_directories(import_nc PRIVATE ${PROJECT_BINARY_DIR})
+  # install(TARGETS import_nc EXPORT adios2
+  #   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT adios2_tools-runtime
+  # )
+endif()
+
 
 
 # BPSPLIT
