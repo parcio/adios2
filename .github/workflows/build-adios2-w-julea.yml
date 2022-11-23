@@ -314,11 +314,9 @@ jobs:
       env:
         JULEA_PREFIX: ${{github.workspace}}/julea-install
       run: |
-        pwd
-        ls -la
-        ls -la ..
-        ls -la ../adios2
-        ls -la ../..
         . ../julea/scripts/environment.sh
         ../julea/scripts/setup.sh start
         mpirun -n 2 ./bin/thesis_eval_heatTransfer_write_adios2 ../adios2/examples/thesis/heatTransfer/heat_julea-db.xml heat_test-julea-db.bp 2 1 10 10 4 10 julea-db
+        mpirun -n 2 ./bin/thesis_eval_heatTransfer_write_adios2 ../adios2/examples/thesis/heatTransfer/heat_julea-kv.xml heat_test-julea-kv.bp 2 1 10 10 4 10 julea-kv
+        mpirun -n 2 ./bin/thesis_eval_heatTransfer_write_adios2 ../adios2/examples/thesis/heatTransfer/heat_bp3_sync.xml heat_test-bp3.bp 2 1 10 10 4 10
+        mpirun -n 2 ./bin/thesis_eval_heatTransfer_write_adios2 ../adios2/examples/thesis/heatTransfer/heat_bp4_sync.xml heat_test-bp4.bp 2 1 10 10 4 10
