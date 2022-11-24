@@ -22,6 +22,8 @@ namespace adios2
 namespace utils
 {
 
+void NCReadFile(std::string engine, std::string ncFileName, std::string adiosFileName,
+          bool printDimensions, bool printVariable, bool needsTransform);
 
 // close namespace
 }

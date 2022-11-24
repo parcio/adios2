@@ -30,7 +30,8 @@ file(GENERATE
 
 # IMPORT_NC
 if(ADIOS2_HAVE_NetCDF)
-  set(NC_SOURCES ./import_nc/import_nc.cpp
+  set(NC_SOURCES ./import_nc/import_nc.cpp 
+  # ./import_nc/nc_read.cpp
   ./import_nc/benchmark_source/nc_read.cpp ./import_nc/benchmark_source/nc_read.h)
   add_executable(import_nc ${NC_SOURCES})
   # add_executable(import_nc ./import_nc/import_nc.cpp)

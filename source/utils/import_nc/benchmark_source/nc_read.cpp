@@ -12,7 +12,13 @@
  */
 #include "nc_read.h"
 // #include <adios2.h>
+#include "adios2/common/ADIOSMacros.h"
 #include "adios2/core/ADIOS.h"
+#include "adios2/core/Engine.h"
+#include "adios2/core/IO.h"
+#include "adios2/helper/adiosComm.h"
+#include "adios2/helper/adiosFunctions.h"
+#include "adios2/helper/adiosString.h"
 #include <chrono>
 #include <fstream>
 #include <iomanip>
@@ -348,191 +354,192 @@ void NCReadFile(std::string engine, std::string ncFileName,
     //     std::cout << "group attribute name:" << attrName << std::endl;
     // }
 
-//     auto varMap = dataFile.getVars();
+    auto varMap = dataFile.getVars();
+    
+    adios2::core::IO &io = adios.DeclareIO("nc_import");
+    // adios2::core::IO io = adios.DeclareIO("Output");
+    io.SetEngine(engine);
+    // std::cout << "adiosFileName: " << adiosFileName << std::endl;
 
-//     adios2::IO io = adios.DeclareIO("Output");
-//     io.SetEngine(engine);
-//     // std::cout << "adiosFileName: " << adiosFileName << std::endl;
+    startOpen = Clock::now(); // start time complete I/O
 
-//     startOpen = Clock::now(); // start time complete I/O
+    adios2::core::Engine &writer = io.Open(adiosFileName, adios2::Mode::Write);
+    // adios2::core::Engine writer = io.Open(adiosFileName, adios2::Mode::Write);
+    startNcStuff = Clock::now();
 
-//     adios2::Engine writer = io.Open(adiosFileName, adios2::Mode::Write);
-//     startNcStuff = Clock::now();
+    /** all variables declared in the nc file */
+    for (const auto &var : varMap)
+    {
 
-//     /** all variables declared in the nc file */
-//     for (const auto &var : varMap)
-//     {
+        std::string name = var.first;
+        netCDF::NcVar variable = var.second;
+        // std::cout << "\n " << name << std::endl;
+        outputFile << "\n " << name << std::endl;
 
-//         std::string name = var.first;
-//         netCDF::NcVar variable = var.second;
-//         // std::cout << "\n " << name << std::endl;
-//         outputFile << "\n " << name << std::endl;
+        netCDF::NcType type = variable.getType();
+        auto typeID = type.getId();
+        auto typeName = type.getName();
+        std::vector<netCDF::NcDim> varDims = variable.getDims();
 
-//         netCDF::NcType type = variable.getType();
-//         auto typeID = type.getId();
-//         auto typeName = type.getName();
-//         std::vector<netCDF::NcDim> varDims = variable.getDims();
+        auto varAttrMap = variable.getAtts();
 
-//         auto varAttrMap = variable.getAtts();
+        adios2::Dims shape;
+        adios2::Dims start;
+        adios2::Dims count;
 
-//         adios2::Dims shape;
-//         adios2::Dims start;
-//         adios2::Dims count;
+        std::vector<size_t> ncStart;
+        std::vector<size_t> ncCount;
 
-//         std::vector<size_t> ncStart;
-//         std::vector<size_t> ncCount;
+        dimCount = 0;
+        dataSize = 1;
+        hasSteps = 0;
+        isTime = 0;
+        
 
-//         dimCount = 0;
-//         dataSize = 1;
-//         hasSteps = 0;
-//         isTime = 0;
+        if (printVariable)
+        {
+            std::cout << "\n---------------------- variable: " << varCount
+                      << "----------------------" << std::endl;
+            std::cout << "" << name << " - " << type.getName() << ":"
+                      << std::endl;
+        }
 
-//         if (printVariable)
-//         {
-//             std::cout << "\n---------------------- variable: " << varCount
-//                       << "----------------------" << std::endl;
-//             std::cout << "" << name << " - " << type.getName() << ":"
-//                       << std::endl;
-//         }
+        /** all dimensions for the current variable */
+        for (const auto &dims : varDims)
+        {
 
-//         /** all dimensions for the current variable */
-//         for (const auto &dims : varDims)
-//         {
+            std::string dimsName = dims.getName();
+            dimsSize = dims.getSize();
 
-//             std::string dimsName = dims.getName();
-//             dimsSize = dims.getSize();
+            /** if variable is time variable */
+            if ((strcmp(dimsName.c_str(), "time") == 0) &&
+                (varDims.size() == 1))
+            {
+                hasSteps = true;
+                isTime = true;
+                numberSteps = dimsSize;
+                if (dimsSize == 0)
+                {
+                    numberSteps = 1;
+                }
+                // ncStart.push_back(0);
+                // ncCount.push_back(1);
+                shape.push_back(dimsSize);
+                start.push_back(0);
+                count.push_back(dimsSize);
 
-//             /** if variable is time variable */
-//             if ((strcmp(dimsName.c_str(), "time") == 0) &&
-//                 (varDims.size() == 1))
-//             {
-//                 hasSteps = true;
-//                 isTime = true;
-//                 numberSteps = dimsSize;
-//                 if (dimsSize == 0)
-//                 {
-//                     numberSteps = 1;
-//                 }
-//                 // ncStart.push_back(0);
-//                 // ncCount.push_back(1);
-//                 shape.push_back(dimsSize);
-//                 start.push_back(0);
-//                 count.push_back(dimsSize);
+                ncStart.push_back(0);
+                ncCount.push_back(1);
+            }
+            /** if variable has time dependency */
+            else if (strcmp(dimsName.c_str(), "time") == 0)
+            {
+                hasSteps = true;
+                numberSteps = dimsSize;
+                ncStart.push_back(0);
+                ncCount.push_back(1);
+            }
+            else
+            {
+                dataSize = dataSize * dimsSize;
 
-//                 ncStart.push_back(0);
-//                 ncCount.push_back(1);
-//             }
-//             /** if variable has time dependency */
-//             else if (strcmp(dimsName.c_str(), "time") == 0)
-//             {
-//                 hasSteps = true;
-//                 numberSteps = dimsSize;
-//                 ncStart.push_back(0);
-//                 ncCount.push_back(1);
-//             }
-//             else
-//             {
-//                 dataSize = dataSize * dimsSize;
+                shape.push_back(dimsSize);
+                start.push_back(0);
+                count.push_back(dimsSize);
 
-//                 shape.push_back(dimsSize);
-//                 start.push_back(0);
-//                 count.push_back(dimsSize);
+                if (hasSteps)
+                {
+                    ncStart.push_back(0);
+                    ncCount.push_back(dimsSize);
+                }
+            }
 
-//                 if (hasSteps)
-//                 {
-//                     ncStart.push_back(0);
-//                     ncCount.push_back(dimsSize);
-//                 }
-//             }
+            if (printVariable)
+            {
+                std::cout << "\n-- Dim: " << dimCount + 1 << std::endl;
+                std::cout << "Name: " << dims.getName() << std::endl;
+                std::cout << "getID: " << dims.getId() << std::endl;
+                std::cout << "size: " << dims.getSize() << std::endl;
+                std::cout << "isUnlimited: " << dims.isUnlimited() << std::endl;
 
-//             if (printVariable)
-//             {
-//                 std::cout << "\n-- Dim: " << dimCount + 1 << std::endl;
-//                 std::cout << "Name: " << dims.getName() << std::endl;
-//                 std::cout << "getID: " << dims.getId() << std::endl;
-//                 std::cout << "size: " << dims.getSize() << std::endl;
-//                 std::cout << "isUnlimited: " << dims.isUnlimited() << std::endl;
+                std::cout << "hasSteps: " << hasSteps << std::endl;
+                std::cout << "numberSteps: " << numberSteps << std::endl;
+            }
+            ++dimCount;
+        }
 
-//                 std::cout << "hasSteps: " << hasSteps << std::endl;
-//                 std::cout << "numberSteps: " << numberSteps << std::endl;
-//             }
-//             ++dimCount;
-//         }
+        std::string adiosType = mapNCTypeToAdiosType(typeID);
 
-//         std::string adiosType = mapNCTypeToAdiosType(typeID);
+        /** Define and write ADIOS 2 variable */
+        if (adiosType == "compound")
+        {
+        }
+        else if ((adiosType == "int16_t") && needsTransform)
+        {
+            adios2::core::Variable<float> &adiosVar = io.DefineVariable<float>(name, shape, start, count);
+            int16_t data[dataSize];
+            float data2[dataSize];
+            outputFile << "BlkCnt \t" << numberSteps << std::endl;
+            startPuts = Clock::now();
+            if (hasSteps)
+            {
+                for (uint i = 0; i < numberSteps; i++)
+                {
+                    ncStart[0] = i;
 
-//         /** Define and write ADIOS 2 variable */
-//         if (adiosType == "compound")
-//         {
-//         }
-//         else if ((adiosType == "int16_t") && needsTransform)
-//         {
-//             adios2::Variable<float> adiosVar;
-//             adiosVar = io.DefineVariable<float>(name, {}, {}, count);
-//             // adiosVar = io.DefineVariable<float>(name, shape, start, count);
-//             int16_t data[dataSize];
-//             float data2[dataSize];
-//             outputFile << "BlkCnt \t" << numberSteps << std::endl;
-//             startPuts = Clock::now();
-//             if (hasSteps)
-//             {
-//                 for (uint i = 0; i < numberSteps; i++)
-//                 {
-//                     ncStart[0] = i;
+                    startNcGet = Clock::now();
+                    variable.getVar(ncStart, ncCount, data);
+                    transformValues(name, variable, data, dataSize, data2);
+                    endNcGet = Clock::now();
 
-//                     startNcGet = Clock::now();
-//                     variable.getVar(ncStart, ncCount, data);
-//                     transformValues(name, variable, data, dataSize, data2);
-//                     endNcGet = Clock::now();
+                    ncGetDelta =
+                        duration_cast<milliseconds>(endNcGet - startNcGet);
+                    ncGetDeltaVector.push_back(ncGetDelta);
+                    // std::cout << "ncGetDelta: " << ncGetDelta.count() <<
+                    // std::endl;
 
-//                     ncGetDelta =
-//                         duration_cast<milliseconds>(endNcGet - startNcGet);
-//                     ncGetDeltaVector.push_back(ncGetDelta);
-//                     // std::cout << "ncGetDelta: " << ncGetDelta.count() <<
-//                     // std::endl;
+                    // std::cout << "data2: " << data2[0] << std::endl;
+                    startPutBlock = Clock::now();
+                    writer.Put<float>(adiosVar, data2, adios2::Mode::Sync);
+                    endPutBlock = Clock::now();
+                    blockDelta = duration_cast<milliseconds>(endPutBlock -
+                                                             startPutBlock);
+                    putBlockDelta.push_back(blockDelta);
+                }
+                writer.PerformPuts();
+            }
+            else
+            {
+                startNcGet = Clock::now();
+                variable.getVar(data);
+                endNcGet = Clock::now();
 
-//                     // std::cout << "data2: " << data2[0] << std::endl;
-//                     startPutBlock = Clock::now();
-//                     writer.Put<float>(adiosVar, data2, adios2::Mode::Sync);
-//                     endPutBlock = Clock::now();
-//                     blockDelta = duration_cast<milliseconds>(endPutBlock -
-//                                                              startPutBlock);
-//                     putBlockDelta.push_back(blockDelta);
-//                 }
-//                 writer.PerformPuts();
-//             }
-//             else
-//             {
-//                 startNcGet = Clock::now();
-//                 variable.getVar(data);
-//                 endNcGet = Clock::now();
-
-//                 ncGetDelta = duration_cast<milliseconds>(endNcGet - startNcGet);
-//                 ncGetDeltaVector.push_back(ncGetDelta);
-//                 // std::cout << "ncGetDelta: " << ncGetDelta.count() <<
-//                 // std::endl;
-//                 if (printVariable)
-//                     std::cout << "GetType: " << adios2::GetType<float>()
-//                               << std::endl;
-//                 if (adiosVar)
-//                 {
-//                     startPutBlock = Clock::now();
-//                     writer.Put<float>(adiosVar, data2, adios2::Mode::Sync);
-//                     writer.PerformPuts();
-//                     endPutBlock = Clock::now();
-//                     blockDelta = duration_cast<milliseconds>(endPutBlock -
-//                                                              startPutBlock);
-//                     putBlockDelta.push_back(blockDelta);
-//                 }
-//             }
-//             endPuts = Clock::now();
-//             putDelta = duration_cast<milliseconds>(endPuts - startPuts);
-//             putsDelta.push_back(putDelta);
-//         }
+                ncGetDelta = duration_cast<milliseconds>(endNcGet - startNcGet);
+                ncGetDeltaVector.push_back(ncGetDelta);
+                // std::cout << "ncGetDelta: " << ncGetDelta.count() <<
+                // std::endl;
+                if (printVariable)
+                    std::cout << "GetType: " << adios2::helper::GetDataType<float>()
+                              << std::endl;
+                // if (adiosVar)
+                // {
+                    startPutBlock = Clock::now();
+                    writer.Put<float>(adiosVar, data2, adios2::Mode::Sync);
+                    writer.PerformPuts();
+                    endPutBlock = Clock::now();
+                    blockDelta = duration_cast<milliseconds>(endPutBlock -
+                                                             startPutBlock);
+                    putBlockDelta.push_back(blockDelta);
+                // }
+            }
+            endPuts = Clock::now();
+            putDelta = duration_cast<milliseconds>(endPuts - startPuts);
+            putsDelta.push_back(putDelta);
+        }
 // #define declare_type(T)                                                        \
-//     else if (adiosType == adios2::GetType<T>())                                \
+//     else if (adiosType == adios2::helper::GetDataType<T>())                                \
 //     {                                                                          \
-//         adios2::Variable<T> adiosVar;                                          \
+//         adios2::core::Variable<T> adiosVar;                                          \
 //         if (isTime)                                                            \
 //         {                                                                      \
 //             adiosVar = io.DefineVariable<T>(name, {adios2::LocalValueDim});    \
@@ -573,9 +580,7 @@ void NCReadFile(std::string engine, std::string ncFileName,
 //             ncGetDelta = duration_cast<milliseconds>(endNcGet - startNcGet);   \
 //             ncGetDeltaVector.push_back(ncGetDelta);                            \
 //             if (printVariable)                                                 \
-//                 std::cout << "GetType: " << adios2::GetType<T>() << std::endl; \
-//             if (adiosVar)                                                      \
-//             {                                                                  \
+//                 std::cout << "GetType: " << adios2::helper::GetDataType<T>() << std::endl; \
 //                 startPutBlock = Clock::now();                                  \
 //                 writer.Put<T>(adiosVar, (T *)data, adios2::Mode::Sync);    \
 //                 endPutBlock = Clock::now();                                    \
@@ -583,7 +588,6 @@ void NCReadFile(std::string engine, std::string ncFileName,
 //                     duration_cast<milliseconds>(endPutBlock - startPutBlock);  \
 //                 putBlockDelta.push_back(blockDelta);                           \
 //                 writer.PerformPuts();                                          \
-//             }                                                                  \
 //         }                                                                      \
 //         endPuts = Clock::now();                                                \
 //         putDelta = duration_cast<milliseconds>(endPuts - startPuts);           \
@@ -592,40 +596,52 @@ void NCReadFile(std::string engine, std::string ncFileName,
 //         ADIOS2_FOREACH_STDTYPE_1ARG(declare_type)
 // #undef declare_type
 
-//         ++varCount;
+            // if (adiosVar)                                                      \
+            // {                                                                  \
+            //     startPutBlock = Clock::now();                                  \
+            //     writer.Put<T>(adiosVar, (T *)data, adios2::Mode::Sync);    \
+            //     endPutBlock = Clock::now();                                    \
+            //     blockDelta =                                                   \
+            //         duration_cast<milliseconds>(endPutBlock - startPutBlock);  \
+            //     putBlockDelta.push_back(blockDelta);                           \
+            //     writer.PerformPuts();                                          \
+            // }                                                                  \
 
-//         NCcalculateMeanTime(outputFile, putBlockDelta, false);
-//         NCcalculateMeanTime(outputFile, putsDelta, true);
 
-//         size_t ncTime = getTime(outputFile, ncGetDeltaVector);
-//         // std::cout << "ncTime: " << ncTime << std::endl;
-//         sumNcGetDeltaVector.push_back(ncTime);
+        ++varCount;
 
-//         putsDelta.clear();
-//         putBlockDelta.clear();
-//         ncGetDeltaVector.clear();
-//     }
-//     writer.Close();
-//     endOpen = Clock::now();
+        NCcalculateMeanTime(outputFile, putBlockDelta, false);
+        NCcalculateMeanTime(outputFile, putsDelta, true);
 
-//     size_t sumNcTimes = 0;
-//     // size_t mean = 0;
-//     for (auto &time : sumNcGetDeltaVector)
-//     {
-//         sumNcTimes += time;
-//         // std::cout << "delta: " << times.count() << std::endl;
-//     }
+        size_t ncTime = getTime(outputFile, ncGetDeltaVector);
+        // std::cout << "ncTime: " << ncTime << std::endl;
+        sumNcGetDeltaVector.push_back(ncTime);
 
-//     milliseconds timeOpenClose =
-//         duration_cast<milliseconds>(endOpen - startOpen);
+        putsDelta.clear();
+        putBlockDelta.clear();
+        ncGetDeltaVector.clear();
+    }
+    // writer.Close();
+    // endOpen = Clock::now();
 
-//     size_t sumIOWithoutNc = timeOpenClose.count() - sumNcTimes;
+    // size_t sumNcTimes = 0;
+    // // size_t mean = 0;
+    // for (auto &time : sumNcGetDeltaVector)
+    // {
+    //     sumNcTimes += time;
+    //     // std::cout << "delta: " << times.count() << std::endl;
+    // }
 
-//     outputFile << "SumIO \t" << timeOpenClose.count() << std::endl;
-//     outputFile << "sumIOWithoutNc \t" << sumIOWithoutNc << std::endl;
-//     outputFile << "-------------------------------\n" << std::endl;
+    // milliseconds timeOpenClose =
+    //     duration_cast<milliseconds>(endOpen - startOpen);
 
-//     // outputFile << "complete: "<< timeOpenClose.count() << "\t nc: " << sumNcTimes<< " \t without nc: "<< sumIOWithoutNc << std::endl;
-//     // std::cout  << "complete: "<< timeOpenClose.count() << "\t nc: " << sumNcTimes<< " \t without nc: "<< sumIOWithoutNc << std::endl;
-//     std::cout << sumIOWithoutNc << std::endl;
+    // size_t sumIOWithoutNc = timeOpenClose.count() - sumNcTimes;
+
+    // outputFile << "SumIO \t" << timeOpenClose.count() << std::endl;
+    // outputFile << "sumIOWithoutNc \t" << sumIOWithoutNc << std::endl;
+    // outputFile << "-------------------------------\n" << std::endl;
+
+    // // outputFile << "complete: "<< timeOpenClose.count() << "\t nc: " << sumNcTimes<< " \t without nc: "<< sumIOWithoutNc << std::endl;
+    // // std::cout  << "complete: "<< timeOpenClose.count() << "\t nc: " << sumNcTimes<< " \t without nc: "<< sumIOWithoutNc << std::endl;
+    // std::cout << sumIOWithoutNc << std::endl;
 }
