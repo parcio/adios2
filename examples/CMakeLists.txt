@@ -19,6 +19,12 @@ if(ADIOS2_HAVE_JULEA)
   add_subdirectory(thesis)
 endif()
 
+if(ADIOS2_HAVE_NetCDF AND ADIOS2_HAVE_JULEA)
+  add_subdirectory(importNC)
+endif()
+
+
+add_subdirectory(importNC)
 if(ADIOS2_BUILD_EXAMPLES_EXPERIMENTAL)
   add_subdirectory(experimental)
 endif()
