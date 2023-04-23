@@ -2,7 +2,7 @@ name: Compile ADIOS2 with JULEA
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "CI/cleanup" ]
   pull_request:
     branches: [ "master" ]
   # schedule:
