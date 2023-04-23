@@ -24,14 +24,6 @@ jobs:
           - dist: ubuntu-22.04
             compiler: gcc
             compiler_version: 11.3.0
-          # - dist: ubuntu-20.04
-          #   compiler: gcc
-          #   compiler_version: 9.4.0
-          # doesn't work: Compiler too old for C++ application
-          # "sorry, unimplemented: non-trivial designated initializers not supported"
-          # - dist: ubuntu-18.04
-          #   compiler: gcc
-          #   compiler_version: 7.5.0
     steps:
       - name: Checkout JULEA
         uses: actions/checkout@v3
@@ -54,23 +46,8 @@ jobs:
           JULEA_SPACK_COMPILER: ${{ matrix.os.compiler }}@${{ matrix.os.compiler_version }}
         run: ./scripts/install-dependencies.sh
 
-      # https://github.com/actions/checkout/issues/209
-      - name: Get commit hash
-        id: julea-hash
-        working-directory: julea
-        run: |
-          echo ::set-output name=hash::$(git rev-parse --short HEAD)
-      
-      - name: Cache JULEA
-        id: julea-cache
-        uses: actions/cache@v3
-        with:
-          path: julea-install
-          key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{steps.julea-hash.outputs.hash}}
-
       # --- Build JULEA
       - name: Configure JULEA with meson
-        if: ${{ steps.julea-cache.outputs.cache-hit != 'true' }}
         working-directory: julea
         run: |
           . scripts/environment.sh
@@ -109,22 +86,6 @@ jobs:
           . ../julea/scripts/environment.sh
           cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DADIOS2_USE_Fortran=OFF -DADIOS2_USE_MPI=ON -DADIOS2_USE_SST=OFF -DADIOS2_USE_SSC=OFF -DADIOS2_USE_DataMan=OFF -DADIOS2_USE_BZip2=OFF -DADIOS2_USE_PNG=OFF -DADIOS2_USE_JULEA=ON -DADIOS2_USE_NetCDF=OFF
 
-      # --- Cache ADIOS2 
-      # Check whether only the workflow files and not the source files changed
-      # - name: Check changed files
-      #   id: adios2-hash
-      #   working-directory: adios2
-      #   run: |
-      #     echo ::set-output name=hash::$(git rev-parse --short HEAD)
-      
-      # TODO: before or after configuring cmake? is build dir available before?
-      # - name: Cache ADIOS2
-      #   id: adios2-cache
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: ${{github.workspace}}/build # TODO: does this work?
-      #     key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{steps.adios2-hash.outputs.hash}}
-
       - name: Build
         working-directory: adios2
         env:
@@ -132,10 +93,21 @@ jobs:
         run: |
           . ../julea/scripts/environment.sh
           cd ${{github.workspace}}/build && make -j 2
+        
+      - name: Store build for tests
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: |
+            julea
+            ${{github.workspace}}/julea-install
+            adios2
+          
+
 
   test-application:
     name: Run example application
-    # needs: build-adios2-julea
+    needs: build-adios2-julea
     runs-on: ${{ matrix.os.dist }}
     timeout-minutes: 180
     strategy:
@@ -145,14 +117,6 @@ jobs:
           - dist: ubuntu-22.04
             compiler: gcc
             compiler_version: 11.3.0
-          # - dist: ubuntu-20.04
-          #   compiler: gcc
-          #   compiler_version: 9.4.0
-          # doesn't work: Compiler too old for C++ application
-          # "sorry, unimplemented: non-trivial designated initializers not supported"
-          # - dist: ubuntu-18.04
-          #   compiler: gcc
-          #   compiler_version: 7.5.0
         julea:
           # Default
           - object: posix
@@ -178,89 +142,15 @@ jobs:
           #   db: mysql
           #   db-server: mariadb
     steps:
-    - name: Checkout JULEA
-      uses: actions/checkout@v3
-      with:
-        repository: Bella42/julea
-        ref: dai-copy
-        path: julea
-
-    - name: Cache dependencies
-      id: dep-cache
-      uses: actions/cache@v3
-      with:
-        path: julea/dependencies
-        key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{ hashFiles('julea/scripts/spack', 'julea/scripts/install-dependencies.sh') }}-dependencies
-    
-    - name: Install dependencies
-      if: ${{ steps.dep-cache.outputs.cache-hit != 'true' }}
-      working-directory: julea
-      env:
-        JULEA_SPACK_COMPILER: ${{ matrix.os.compiler }}@${{ matrix.os.compiler_version }}
-      run: ./scripts/install-dependencies.sh
-
-    # https://github.com/actions/checkout/issues/209
-    - name: Get commit hash
-      id: julea-hash
-      working-directory: julea
-      run: |
-        echo ::set-output name=hash::$(git rev-parse --short HEAD)
-      
-    - name: Cache JULEA
-      id: julea-cache
-      uses: actions/cache@v3
-      with:
-        path: julea-install
-        key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-${{steps.julea-hash.outputs.hash}}
-
-    # --- Build JULEA
-    - name: Configure JULEA with meson
-      if: ${{ steps.julea-cache.outputs.cache-hit != 'true' }}
-      working-directory: julea
-      run: |
-        . scripts/environment.sh
-        meson setup --prefix="${GITHUB_WORKSPACE}/julea-install" --buildtype=release bld
-
-    - name: Build JULEA with ninja
-      if: ${{ steps.julea-cache.outputs.cache-hit != 'true' }}
-      working-directory: julea
-      run: |
-        . scripts/environment.sh
-        ninja -C bld
-
-    - name: Install
-      if: ${{ steps.julea-cache.outputs.cache-hit != 'true' }}
-      working-directory: julea
-      run: |
-        . scripts/environment.sh
-        ninja -C bld install
-   
-    # --- Build ADIOS2
-    - name: Checkout ADIOS2
-      uses: actions/checkout@v3
-      with:
-        path: adios2
-
     - name: Install MPI
       run: |
         sudo apt update || true
         sudo apt --yes --no-install-recommends install libopenmpi-dev openmpi-bin
-
-    - name: Configure CMake
-      working-directory: adios2
-      env:
-        JULEA_PREFIX: ${{github.workspace}}/julea-install
-      run: |
-        . ../julea/scripts/environment.sh
-        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DADIOS2_USE_Fortran=OFF -DADIOS2_USE_MPI=ON -DADIOS2_USE_SST=OFF -DADIOS2_USE_SSC=OFF -DADIOS2_USE_DataMan=OFF -DADIOS2_USE_BZip2=OFF -DADIOS2_USE_PNG=OFF -DADIOS2_USE_JULEA=ON -DADIOS2_USE_NetCDF=OFF
-
-    - name: Build
-      working-directory: adios2
-      env:
-        JULEA_PREFIX: ${{github.workspace}}/julea-install
-      run: |
-        . ../julea/scripts/environment.sh
-        cd ${{github.workspace}}/build && make -j 2
+    
+    - name: Download JULEA and ADIOS
+      uses: actions/download-artifact@v3
+      with:
+        name: build
 
     # --- Setup servers for JULEA database backends
     - name: Set up MySQL
