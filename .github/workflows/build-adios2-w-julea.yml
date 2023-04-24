@@ -101,6 +101,7 @@ jobs:
             julea
             julea-install
             adios2
+            build
           key: ${{ runner.os }}-adios+julea
 
 
@@ -149,6 +150,7 @@ jobs:
       - name: Cache build
         uses: actions/cache/restore@v3
         with:
+          fail-on-cache-miss: true
           path: |
             julea
             julea-install
