@@ -14,7 +14,7 @@ env:
 
 jobs:
   build-adios2-julea:
-    name: Build ADIOS2 with JULEA
+    name: Build
     runs-on: ${{ matrix.os.dist }}
     timeout-minutes: 180
     strategy:
@@ -47,20 +47,20 @@ jobs:
         run: ./scripts/install-dependencies.sh
 
       # --- Build JULEA
-      - name: Configure JULEA with meson
+      - name: Configure JULEA
         working-directory: julea
         run: |
           . scripts/environment.sh
           meson setup --prefix="${GITHUB_WORKSPACE}/julea-install" --buildtype=release bld
 
-      - name: Build JULEA with ninja
+      - name: Build JULEA
         if: ${{ steps.julea-cache.outputs.cache-hit != 'true' }}
         working-directory: julea
         run: |
           . scripts/environment.sh
           ninja -C bld
 
-      - name: Install
+      - name: Install JULEA
         if: ${{ steps.julea-cache.outputs.cache-hit != 'true' }}
         working-directory: julea
         run: |
@@ -78,7 +78,7 @@ jobs:
           sudo apt update || true
           sudo apt --yes --no-install-recommends install libopenmpi-dev openmpi-bin
 
-      - name: Configure CMake
+      - name: Configure ADIOS2
         working-directory: adios2
         env:
           JULEA_PREFIX: ${{github.workspace}}/julea-install
@@ -86,7 +86,7 @@ jobs:
           . ../julea/scripts/environment.sh
           cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DADIOS2_USE_Fortran=OFF -DADIOS2_USE_MPI=ON -DADIOS2_USE_SST=OFF -DADIOS2_USE_SSC=OFF -DADIOS2_USE_DataMan=OFF -DADIOS2_USE_BZip2=OFF -DADIOS2_USE_PNG=OFF -DADIOS2_USE_JULEA=ON -DADIOS2_USE_NetCDF=OFF
 
-      - name: Build
+      - name: Build ADIOS2
         working-directory: adios2
         env:
           JULEA_PREFIX: ${{github.workspace}}/julea-install
@@ -99,10 +99,10 @@ jobs:
         with:
           path: |
             julea
-            julea-install
+            ${{github.workspace}}/julea-install
             adios2
-            build
-          key: ${{ runner.os }}-adios+julea
+            ${{github.workspace}}/build
+          key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-testenv
 
 
   test-application:
@@ -153,9 +153,10 @@ jobs:
           fail-on-cache-miss: true
           path: |
             julea
-            julea-install
+            ${{github.workspace}}/julea-install
             adios2
-          key: ${{ runner.os }}-adios+julea
+            ${{github.workspace}}/build
+          key: ${{ matrix.os.dist }}-${{ matrix.os.compiler }}-${{ matrix.os.compiler_version }}-testenv
 
       # --- Setup servers for JULEA database backends
       - name: Set up MySQL
