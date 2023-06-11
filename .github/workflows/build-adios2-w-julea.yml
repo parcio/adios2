@@ -130,10 +130,10 @@ jobs:
             kv: sqlite
             db: sqlite
           # DB backends
-          - object: posix
-            kv: lmdb
-            db: mysql
-            db-server: mysql
+          # - object: posix
+          #   kv: lmdb
+          #   db: mysql
+          #   db-server: mysql
           - object: posix
             kv: lmdb
             db: mysql
